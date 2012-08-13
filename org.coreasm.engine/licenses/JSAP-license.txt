@@ -1,0 +1,22 @@
+JSAP License (http://www.martiansoftware.com/jsap/license.html)
+===============================================================
+Copyright (c) 2004, Marty Lamb. All rights reserved.
+
+JSAP is licensed under the Lesser GNU Public License. A copy of this license is
+available at http://www.fsf.org/licenses/licenses.html#LGPL.
+
+Note: There has been much discussion recently regarding the LGPL and Java-based
+projects. As a result, the following LGPL clarification applies (based upon a
+similar clarification at http://www.hibernate.org):
+
+JSAP is Free Software. The LGPL license is sufficiently flexible to allow the
+use of JSAP in both open source and commercial projects. Using JSAP (by
+importing JSAP's public interfaces in your Java code), and extending JSAP (by
+subclassing) are considered by the authors of JSAP to be dynamic linking. Hence
+our interpretation of the LGPL is that the use of the unmodified JSAP source or
+binary, or the rebundling of unmodified JSAP classes into your program's .jar
+file, does not affect the license of your application code.
+
+If you modify JSAP and redistribute your modifications, the LGPL applies. 
+
+
