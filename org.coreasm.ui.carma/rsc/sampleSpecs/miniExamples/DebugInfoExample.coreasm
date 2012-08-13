@@ -1,0 +1,25 @@
+CoreASM DebugInfoExample
+
+use Standard
+use DebugInfo
+use Options
+
+option DebugInfo.activeChannels ALL
+//option DebugInfo.activeChannels "ch1 ch2"
+//option DebugInfo.activeChannels "ch1,ch2"
+//option DebugInfo.activeChannels ch1
+//option DebugInfo.activeChannels NONE
+
+init R1
+
+rule R1 = {
+	if mode = undef then {
+		debuginfo ch1 "initializing."
+		mode := "counting"
+		counter := 0
+	} else {
+		debuginfo ch2 "counting."
+		counter := counter + 1
+	}
+}
+

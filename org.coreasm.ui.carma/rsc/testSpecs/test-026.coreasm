@@ -1,0 +1,14 @@
+CoreASM Test_026 //Testing pick expression
+
+use Standard
+
+init R1
+
+rule R1 = {
+	seqblock
+		print pick x in {1}
+		print pick x in [1..10] with x memberof {5, 115, 700} 
+	endseqblock
+	program(self) := undef
+}
+

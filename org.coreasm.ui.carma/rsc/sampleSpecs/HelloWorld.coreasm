@@ -1,0 +1,15 @@
+/* Hello World in CoreASM */
+
+CoreASM HelloWorld
+
+use Standard
+
+init MainProgram
+
+rule MainProgram = {
+	print "Hello World!"
+	program(self) := undef
+	// an alternative way would be to use
+	// the SchedulingPolicies plugin and simply call:
+    // shutdown
+}

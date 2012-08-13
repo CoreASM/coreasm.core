@@ -1,0 +1,320 @@
+/* 
+ * Train Control System 
+ * CoreASM specification
+ * (c) 2009 by Cocco Gabriele
+ * 
+ * Minor revisions by Roozbeh Farahbod, 2011 
+ */
+
+CoreASM ControlStation
+
+use StandardPlugins
+use TimePlugin
+use MathPlugin
+use ListPlugin
+use QueuePlugin
+use IOPlugin
+
+universe Route = {route1, route2}
+universe Block = {block1, block2}
+universe SpecialComponent = {comp1}
+universe Train = {train1, train2}
+universe Signal = {signal1, signal2}
+universe Sensor = {sensor1, sensor2, sensor3, sensor4}
+
+enum TrainStatus = {WAITING, MOVING, STOPPED}
+enum BlockStatus = {FREE, UNOCCUPIED, OCCUPIED}
+enum RouteStatus = {UNRESERVED, RESERVED, FORMED}
+enum SignalStatus = {GREEN, RED}
+enum SpecialComponentType = {CROSSING, POINT}
+enum SpecialComponentPosition = {UP, DOWN}
+enum EventType = {OUTIN, INOUT}
+
+/**/  
+function currentRoute: Train -> Route
+function currentTrain: Route -> Train
+function blocks: Route -> LIST 
+function specialComponents: Route -> LIST 
+function currentPosition: SpecialComponent -> SpecialComponentPosition 
+function position: SpecialComponent * Route -> SpecialComponentPosition 
+function trainStatus: Train -> TrainStatus
+function blockStatus: Block -> BlockStatus 
+function routeStatus: Route -> RouteStatus 
+function signalStatus: Signal -> SignalStatus 
+function type: SpecialComponent -> SpecialComponentType 
+function signal: Route -> Signal
+function startSensor: Block * Route -> Sensor 
+function endSensor: Block * Route -> Sensor 
+function inOutEvent: Sensor -> BOOLEAN 
+function outInEvent: Sensor -> BOOLEAN 
+function lastEvent: Sensor -> EventType 
+function currentOwnerRoute: Block -> Route
+function sensorsSequence: Train * Route -> LIST
+
+//Functions used to simulate the time taken by trains to travel on the routes
+function iteration: -> NUMBER 
+function lastIteration: -> NUMBER
+/**/
+
+universe Agents = {trackAgent, trainAgent, trainSimulator}
+
+derived reserved(block) = 
+	not (blockStatus(block) = FREE)
+
+derived firstBlock(route) = 
+	head(blocks(route))
+
+derived lastBlock(route) = 
+	last(blocks(route))
+
+init InitRule
+
+rule InitRule =
+	par
+		//Define labels for debugging
+		label(train1) := "1" 
+		label(train2) := "2" 
+		label(route1) := "1" 
+		label(route2) := "2" 
+		label(block1) := "1" 
+		label(block2) := "2"
+
+		label(sensor1) := "1" 
+		label(sensor2) := "2" 
+		label(sensor3) := "3" 
+		label(sensor4) := "4"
+	
+		//Define the blocks of each route
+		blocks(route1) := [block1, block2] 
+		blocks(route2) := [block2, block1] 
+		
+		//Define the special components (poins and crossing) of each route 
+		specialComponents(route1) := [] 
+		specialComponents(route2) := [] 
+
+		//Define the signal of each route 
+		signal(route1) := signal1 
+		signal(route2) := signal2
+
+		//Define the type of each components
+		type(comp1) := POINT
+		//Define the position of each component
+		position(comp1) := UP
+		//Define the position of each component for all the routes
+		position(comp1, route1) := UP 
+		position(comp1, route2) := DOWN
+
+		//Define the sensors of each route
+		startSensor(block1, route1) := sensor1 
+		endSensor(block1, route1) := sensor2 
+		startSensor(block2, route1) := sensor3 
+		endSensor(block2, route1) := sensor4
+		startSensor(block1, route2) := sensor4 
+		endSensor(block1, route2) := sensor3 
+		startSensor(block3, route2) := sensor2 
+		endSensor(block3, route2) := sensor1 
+		
+		/*
+		 * Define the sequence considered in simulating the travelling 
+		 * of a train on a route. The first time a sensor is dequeued 
+		 * the simulator produces an OUTIN event regarding it. The 
+		 * second time the simulator produces an INOUT event for that 
+		 * sensor, and so on.
+		 * The production of events on the sensors permits to simulate 
+		 * the travelling of a train 
+		 */
+		 
+		sensorsSequence(train1, route1) := [sensor1, sensor1, sensor2, sensor3, sensor2, sensor3, sensor4, sensor4]
+		sensorsSequence(train2, route2) := [sensor4, sensor4, sensor3, sensor2, sensor3, sensor2, sensor1, sensor1]
+
+		//Initialize the signals
+		forall signal in Signal do 
+			signalStatus(signal) := RED
+		//Initialize the sensors
+		forall sensor in Sensor do 
+			par
+				outInEvent(sensor) := false 
+				inOutEvent(sensor) := false 
+				lastEvent(sensor) := undef
+			endpar
+
+		//Initialize the blocks
+		forall block in Block do
+			par
+				blockStatus(block) := FREE
+				currentOwnerRoute(block) := undef 
+			endpar
+
+		//Initialize the routes
+		forall route in Route do 
+			routeStatus(route) := FREE
+		
+		//Initalize the trains
+		trainStatus(train2) := WAITING 
+		currentRoute(train2) := route2
+
+		currentRoute(train1) := route1 
+		trainStatus(train1) := WAITING
+
+		/*
+		 * Enqueuing a train in the waiting-queue means 
+		 * that the train requests to travel on the network 
+		 */
+		waitingTrains := [train1,train2]
+		iteration := 0 
+		lastIteration := 0
+
+		program(trackAgent) := @TrackControl
+		program(trainAgent) := @TrainAgent
+		program(trainSimulator) := @TrainSimulator 
+		program(self) := undef
+		Agents(self) := false
+	endpar
+
+
+rule TrainAgent =
+	if size(waitingTrains) > 0 then
+			let t = head(waitingTrains) in 
+				if not exists block in blocks(currentRoute(t)) with reserved(block) then
+					seqblock
+						dequeue tt from waitingTrains 
+						print "\nRoute " + label(currentRoute(t)) + " can be reserved to the train " + label(t) 
+						ReserveRoute(t, currentRoute(t))
+						print "Route " + label(currentRoute(t)) + " reserved to the train " + label(t)
+						MoveSpecialComponent(currentRoute(t))
+						print "Components of the route " + label(currentRoute(t)) + " correctly moved (" + routeStatus(currentRoute(t)) + ")"
+						GivePermission(t, currentRoute(t))
+						print "Train " + label(t) + " starts\n" 
+					endseqblock
+				else
+					print "Route " + currentRoute(t) + " cannot be reserved to the train " + label(t) + ": enqueue"
+				
+				
+rule ReserveRoute(train, route) =
+	seq
+		par
+			forall b in blocks(route) do 
+				par
+					blockStatus(b) := COMMITTED
+					currentOwnerRoute(b) := route
+				endpar
+			currentTrain(route) := train
+			routeStatus(route) := RESERVED
+		endpar	
+	next
+		print "Route " + route + " is " + routeStatus(route)		
+
+
+rule MoveSpecialComponent(route) =
+	seq
+		par
+			forall comp in specialComponents(route) do
+				if type(comp) = POINT and currentPosition(comp) != position(comp, route) then 
+					SwitchComponent(comp)
+			routeStatus(route) := FORMED
+		endpar
+	next
+		print "Route " + route + " is " + routeStatus(route)
+
+
+rule GivePermission(train, route) =
+	seq
+		par
+			trainStatus(train) := MOVING
+			signalStatus(signal(route)) := GREEN
+		endpar
+	next
+		print "Route " + route + " has signal " + signalStatus(signal(route)) + " and the train is " + trainStatus(train)
+	
+
+rule SwitchComponent(comp) =
+	if(currentPosition(comp) = UP) then
+		currentPosition(comp) := DOWN
+	else
+		currentPosition(comp) := UP
+
+		
+rule TrackControl = 
+	forall block in Block do par
+		if outInEvent(startSensor(block, currentOwnerRoute(block))) then 
+			par
+				print "Train " + label(currentTrain(currentOwnerRoute(block))) + " enters block " + label(block)
+				blockStatus(block) := OCCUPIED
+				
+				//The train is moving backward
+				if not(blockStatus(block) = COMMITTED) then 
+					par
+						print "Train " + label(currentTrain(currentOwnerRoute(block))) + " is going backward!!! Stop it"
+						trainStatus(currentTrain(currentOwnerRoute(block))) := STOPPED
+					endpar
+				
+				if block = firstBlock(currentOwnerRoute(block)) then 
+				//The train has started even if signal was red 
+					if signalStatus(signal(currentOwnerRoute(block))) = RED then
+						trainStatus(currentTrain(currentOwnerRoute(block))) := STOPPED
+					else
+						signalStatus(signal(currentOwnerRoute(block))) := RED 
+						
+				outInEvent(startSensor(block, currentOwnerRoute(block))) := false
+			endpar
+			
+		if inOutEvent(endSensor(block, currentOwnerRoute(block))) then 
+			par
+				print "Train " + label(currentTrain(currentOwnerRoute(block))) + " exit block " + label(block)
+				blockStatus(block) := FREE 
+				currentOwnerRoute(block) := undef
+				
+				if block = lastBlock(currentOwnerRoute(block)) then 
+					par
+						print "Train " + label(currentTrain(currentOwnerRoute(block))) + " arrived at destination\n"
+						routeStatus(currentOwnerRoute(block)) := FREE 
+						trainStatus(currentTrain(currentOwnerRoute(block))) := undef 
+						currentRoute(currentTrain(currentOwnerRoute(block))) := undef 
+						currentTrain(currentOwnerRoute(block)) := undef
+					endpar
+				
+				inOutEvent(endSensor(block, currentOwnerRoute(block))) := false 
+			endpar
+
+			if outInEvent(endSensor(block, currentOwnerRoute(block))) then 
+				par
+					print "Train " + label(currentTrain(currentOwnerRoute(block))) + " reached the end of the block " + label(block)
+					outInEvent(endSensor(block, currentOwnerRoute(block))) := false 
+				endpar
+				
+			if inOutEvent(startSensor(block, currentOwnerRoute(block))) then 
+				par
+					print "Train " + label(currentTrain(currentOwnerRoute(block))) + " is going to exit the block " + label(block)
+					inOutEvent(startSensor(block, currentOwnerRoute(block))) := false 
+				endpar
+	endpar 
+	
+	
+rule TrainSimulator = 
+	choose train in Train with trainStatus(train) = MOVING do
+		if size(sensorsSequence(train, currentRoute(train))) > 0 and iteration - lastIteration >= 5 then
+			seqblock 
+				dequeue next_sensor from sensorsSequence(train, currentRoute(train)) 
+				par
+					if lastEvent(next_sensor)=undef or lastEvent(next_sensor)=INOUT then 
+						par
+							print "Train " + label(train) + " fired OUTIN event on the sensor " + label(next_sensor)
+							outInEvent(next_sensor) := true 
+							//Remember the last fired event type 
+							lastEvent(next_sensor) := OUTIN
+						endpar
+					else 
+						par
+							print "Train " + label(train) + " fired INOUT event on the sensor " + label(next_sensor)
+							inOutEvent(next_sensor) := true 
+							//Remember the last fired event type 
+							lastEvent(next_sensor) := INOUT
+						endpar
+
+					lastIteration := iteration
+				endpar 
+			endseqblock
+		else
+			iteration := iteration + 1
+			
+			

@@ -1,0 +1,37 @@
+CoreASM TestInconsistency
+
+use Standard
+
+init InitRule
+
+rule InitRule = {
+	program("A1") := @Rule1
+	Agents("A1") := true
+	program("A2") := @Rule2
+	Agents("A2") := true
+	program("A3") := @Rule3
+	Agents("A3") := true
+
+	print "starting... it may end due to an inconsistent update."
+
+	program(self) := undef
+}
+
+rule Rule1 =  {
+	a := 5
+	program(self) := undef
+}
+
+rule Rule2 = {
+	b := 5
+	a := 10
+	print "rule2"
+	program(self) := undef
+}
+
+rule Rule3 = {
+	c := 100
+	c := 1
+	program(self) := undef
+}
+

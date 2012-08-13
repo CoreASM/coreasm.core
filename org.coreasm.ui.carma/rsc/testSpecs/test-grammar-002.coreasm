@@ -1,0 +1,27 @@
+CoreASM simple
+
+use StandardPlugins
+use GrammarPlugin
+use TreePlugin
+use Options
+use ListPlugin
+
+option TREE_OUTPUT_STRING "short"
+
+
+
+init R1
+
+rule R1 = {
+	seqblock
+		
+		A := "a" | "b" 
+		
+		B := "c" || "d" . @B
+		
+		T := parse(B, "d d c")
+		print T
+		
+	endseqblock
+	program(self) := undef
+	}

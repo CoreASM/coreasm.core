@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CSDe:Map xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:CSDe="http://www.example.org/CSDe">
+  <rootElements xsi:type="CSDe:Condition" text="stayOther > 0" true="//@rootElements.1" false="//@rootElements.8"/>
+  <rootElements xsi:type="CSDe:Rule" text=" "/>
+  <rootElements xsi:type="CSDe:Rule" text="choose x in [ 1 .. mediumStaying * 2 ] do&#xA; &#xA;  &#xA; &#xA;"/>
+  <rootElements xsi:type="CSDe:Rule" text="StepInside" next="//@rootElements.4"/>
+  <rootElements xsi:type="CSDe:Rule" text="Inside"/>
+  <rootElements xsi:type="CSDe:Condition" text="isInside" true="//@rootElements.6"/>
+  <rootElements xsi:type="CSDe:Rule" text="Inside"/>
+  <rootElements xsi:type="CSDe:Rule" text="stayOther := stayOther - 1"/>
+  <rootElements xsi:type="CSDe:Rule" text=" "/>
+  <rootElements xsi:type="CSDe:Rule" text="choose fail in [ 1 .. 100 ] do&#xA; &#xA; &#xA; &#xA; &#xA; &#xA; &#xA; &#xA; &#xA; &#xA; &#xA;"/>
+  <rootElements xsi:type="CSDe:Condition" text="fail &lt;= failureProbability" true="//@rootElements.11" false="//@rootElements.3"/>
+  <rootElements xsi:type="CSDe:Rule" text="StepOutside"/>
+  <rootElements xsi:type="CSDe:Rule" text="stayOther := x"/>
+</CSDe:Map>

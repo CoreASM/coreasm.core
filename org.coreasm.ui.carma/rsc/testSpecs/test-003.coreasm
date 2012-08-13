@@ -1,0 +1,52 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM Import
+
+use ConditionalRulePlugin
+use BlockRulePlugin
+use NumberPlugin
+
+init InitRule
+
+
+rule Rule1 =
+	par
+		program(self) := undef
+		if c = undef then
+			import new do
+				c := new
+		else
+			b := 10
+	endpar
+
+
+rule Rule2 = 
+	par
+		a := b
+		d := c
+		program(self) := undef
+	endpar
+
+rule InitRule = 
+	par	
+		program(self) := undef
+		Agents(self) := false
+	
+		import e do
+			par
+				program(e) := ruleelement Rule1
+				Agents(e) := true
+			endpar
+	
+		import f do
+			par
+				program(f) := ruleelement Rule2
+				Agents(f) := true
+			endpar
+	endpar
+    

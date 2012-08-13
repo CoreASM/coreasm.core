@@ -1,0 +1,98 @@
+/* 
+ * Dining Philosphers
+ * A Sample Specification in CoreASM
+ * 
+ * (c) 2006-2009 George Ma and Roozbeh Farahbod
+ */
+CoreASM DiningPhilosophers
+
+use Standard
+
+enum Chopstick = {c1, c2, c3, c4, c5}
+enum Philosophers = {Albert, Herbert, Fredrich, Sina, Juan}
+
+function eating: Philosophers -> BOOLEAN
+function hungry: Philosophers -> BOOLEAN
+function leftChop: Philosophers -> Chopstick
+function rightChop: Philosophers -> Chopstick
+function chopOwner: Chopstick -> Philosophers
+
+init initRule
+
+/* ---- Program of Every Philosopher ---- */
+rule PhilosopherProgram = {
+	if hungry(self) and (not eating(self)) then
+		if canPickBothChopsticks then 
+			StartEating 
+	else 
+		print self + " is hungry but can't eat."
+	  
+	if (not hungry(self)) and eating(self) then
+		StopEating
+	  
+	hungry(self) := flip
+}  
+  
+rule StartEating = {
+	chopOwner(leftChop(self)) := self
+	chopOwner(rightChop(self)) := self
+	eating(self) := true
+	print self + " starts eating."
+}
+
+rule StopEating = {
+	chopOwner(leftChop(self)) := undef
+	chopOwner(rightChop(self)) := undef
+	eating(self) := false
+	print self + " stops eating."
+}
+
+/* ---- Initializing the Table ----- */
+rule initRule = {
+	/* Sets up philosophers around table with chopsticks in between.
+	   No philosopher is initially eating.
+	   Philosophers are hungry at random. 
+	 */
+	forall p in Philosophers do {
+		Agents(p) := true
+		program(p) := @PhilosopherProgram
+		eating(p) := false
+		hungry(p) := flip
+	}
+	
+	rightChop(Albert) := c5
+	leftChop(Albert) := c1 
+
+	rightChop(Herbert) := c1
+	leftChop(Herbert) := c2
+
+	rightChop(Fredrich) := c2
+	leftChop(Fredrich) := c3
+	
+	rightChop(Sina) := c3
+	leftChop(Sina) := c4
+		
+	rightChop(Juan) := c4
+	leftChop(Juan) := c5
+	
+	/* all chopsticks are intially free */
+	forall c in Chopstick do
+		chopOwner(c) := undef
+	
+	print "TABLE:  c1  Herbert  c2  Fredrich  c3  Sina  c4  Juan  c5  Albert  c1\n" 
+	
+	Agents(self) := false
+}
+
+/* ---- Derived Functions ----- */
+derived canPickBothChopsticks =	
+			(chopOwner(leftChop(self)) = undef) 
+			and (chopOwner(rightChop(self)) = undef)
+
+// flip of a coin
+derived flip = pick b in BOOLEAN
+
+  
+/* ---- Turning Signature Checking On ----- */ 
+use Options
+option Signature.NoUndefinedId strict

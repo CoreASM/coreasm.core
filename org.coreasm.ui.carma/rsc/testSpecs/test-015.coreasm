@@ -1,0 +1,42 @@
+CoreASM TestList
+
+use StandardPlugins
+use ListPlugin
+use StackPlugin
+
+init R1 
+
+rule R1 = 
+	seq
+		myList := [1, 2, 3]
+	next
+		seq
+			push 4 into myList
+		next 
+		par
+			pop e from myList
+			print myList
+			program(self) := @R2
+		endpar
+
+rule R2 = 
+	seq 
+	par
+		myStack := [1, 2, 3, 4]
+		anotherStack := []
+	endpar
+	next
+		seq
+			while (|myStack| > 0)
+			par
+				pop e from myStack
+				push head(myStack) into anotherStack
+				print "mystack : " + myStack
+			endpar
+		next
+			seqblock
+				print myStack
+				print anotherStack
+				print "peek : " + peek(anotherStack)
+				program(self) := undef
+			endseqblock

@@ -1,0 +1,21 @@
+CoreASM TestTime_01
+
+use Number
+use String
+use Time
+use ConditionalRule
+use BlockRule
+use IO
+use PredicateLogic
+
+init R1
+
+rule R1 = {
+	time := now
+	if time != undef then {
+		if stepcount < 10 then 
+			print stepcount + ", " + (now > time)
+		else
+			program(self) := undef
+	}
+ }	

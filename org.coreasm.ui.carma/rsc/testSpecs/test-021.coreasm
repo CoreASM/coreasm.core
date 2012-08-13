@@ -1,0 +1,35 @@
+CoreASM TestList
+
+use StandardPlugins
+use ListPlugin
+
+init R1 
+
+rule R1 = 
+	seq
+		myList := [1, 2, 3, 4, 5, 6, 3]
+	next
+	seqblock
+		print cons("new", myList)
+		print drop(myList, 0)
+		print drop(myList, 1)
+		print drop(myList, 3)
+		print drop(myList, size(myList))
+		print head(myList)
+		print tail(myList)
+		print indexes(myList, 3)
+		print indices(myList, 8)
+
+		add 20 to myList
+		add 10 to myList
+		add 10 to myList
+		print myList
+		add 20 to myList
+		print myList
+		remove 20 from myList
+		print myList
+
+		program(self) := undef
+	endseqblock
+
+

@@ -1,0 +1,109 @@
+CoreASM RailRoadCrossing
+
+use StandardPlugins
+use TimePlugin
+use MathPlugin
+
+enum Track = {track1, track2}
+enum TrackStatus = {empty, coming, crossing}
+enum Direction = {open, close}
+enum GateState = {opened, closed}
+
+function deadline : Track -> TIME
+function trackStatus : Track -> TrackStatus 
+function dir : -> Direction
+function gateState : -> GateState
+
+universe Agents = {trackController, gateController, observer, environment}
+
+// Is it safe to open the guard?
+derived safeToOpen = 
+    forall t in Track holds trackStatus(t) = empty 
+    						or (now + dopen) < deadline(t)
+
+init InitRule
+
+rule InitRule = {
+	dmin := 5000
+	dmax := 10000
+	dopen := 2000
+	dclose := 2000
+	waitTime := 3000 
+	gateState := opened
+	startTime := now
+	forall t in Track do {
+		trackStatus(t) := empty
+		deadline(t) := infinity
+	}
+	program(trackController) := @TrackControl
+	program(gateController) := @GateControl
+	program(observer) := @ObserverProgram
+	program(environment) := @EnvironmentProgram
+	program(self) := undef
+}
+
+rule TrackControl = { 
+	forall t in Track do { 
+		SetDeadline(t)
+		SignalClose(t)
+		ClearDeadline(t)
+	}
+	SignalOpen
+}
+
+rule GateControl = {  
+	if dir = open then gateState := opened
+	if dir = close then gateState := closed
+}
+
+rule SetDeadline(x) =
+	if trackStatus(x) = coming and deadline(x) = infinity then
+		deadline(x) := now + waitTime
+
+
+rule SignalClose(x) =
+	if now >= deadline(x) and now <= deadline(x) + 1000 then
+		dir := close
+
+
+rule ClearDeadline(x) = 
+	if trackStatus(x) = empty and deadline(x) < infinity then
+		deadline(x) := infinity
+
+
+rule SignalOpen = 
+	if dir = close and safeToOpen then
+		dir := open
+
+// The observer
+rule ObserverProgram =
+	seqblock
+		print "Time: " + ((now - startTime) / 1000) + " seconds"
+		forall t in Track do
+			print "Track " + t + " is " + trackStatus(t)
+		print "Gate is " + gateState
+		print ""
+	endseqblock
+
+
+// The environment
+rule EnvironmentProgram = 
+	choose t in Track do {
+		if trackStatus(t) = empty then 
+			if random < 0.05 then {
+				trackStatus(t) := coming
+				passingTime(t) := now + dmin 
+			}
+		
+		if trackStatus(t) = coming then
+			if passingTime(t) < now then {
+				trackStatus(t) := crossing
+				passingTime(t) := now + 3000
+			}
+		
+		if trackStatus(t) = crossing then
+			if passingTime(t) < now then
+				trackStatus(t) := empty
+	}
+
+	

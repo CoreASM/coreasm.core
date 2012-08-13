@@ -1,0 +1,64 @@
+CoreASM simple
+
+use CollectionPlugin
+use BlockRulePlugin
+use ChooseRulePlugin
+use ConditionalRulePlugin
+use ForallRulePlugin
+use ExtendRulePlugin
+use IOPlugin
+use NumberPlugin
+use StringPlugin
+use LetRulePlugin
+use PredicateLogicPlugin
+use TurboASMPlugin
+use SetPlugin
+use SignaturePlugin
+use PropertyPlugin
+use ListPlugin
+use AbstractionPlugin
+use KernelExtensions
+
+enum DOOP = {amir, ali}
+
+function controlled func : NUMBER -> STRING initially ["george", "roozbeh"] 
+function func2 : DOOP -> BOOLEAN initially {ali}
+
+init R1
+
+function b: NUMBER -> NUMBER
+
+rule R1 = 
+	par
+		program(self) := @Main
+		b := 0
+		b(1) := 1 + "a"
+		f(100) := @b
+		f(101) := {1, 2, 3}
+		rooz := [ 4, 3, 2, 1 ]
+		seq
+			print func(1)
+		next 
+			print "func2(" + "ali" + ") = " + func2(ali)
+	endpar
+
+rule Main =
+	par 
+		//a := b(1)
+		a := (f(100))(1)
+		aa:= (f(101))(4)
+		ab:= ({1, 2, 3})(3)
+		c := b(1)
+		d := b()
+		seq
+			print rooz()(1)
+		next
+			anotherRule
+		program(self) := undef
+	endpar
+
+rule anotherRule = 
+	abstract "anotherRule is called."
+
+
+

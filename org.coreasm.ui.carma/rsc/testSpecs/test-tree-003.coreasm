@@ -1,0 +1,76 @@
+CoreASM simple
+
+use StandardPlugins
+
+use TreePlugin
+
+option TREE_OUTPUT_STRING "short"
+option LIST_FOR_TREES "short"
+option TREE_TRAVERSAL "depth-first"
+
+init R1
+
+rule R1 = {
+	seqblock
+
+		make [1, [2, 3, 4]] into tree T1
+		print "T1= " + T1
+		
+		make [5, [6, 7]] into tree T2
+		print "T2= " + T2
+		
+		make [8, 9, 10] into tree T3
+		print "T3= " + T3
+		
+		add child T2 to T1
+		print "add child T2 to T1: " + T1
+		
+		remove child T2 from T1
+		print "remove child T2 from T1: " + T1
+		
+		treeValue(root(T3)) := 1000
+		print "T3:"  + T3
+		
+		remove child at 2 from T3
+		print "remove child at 2 from T3: " + T3
+		
+		add child T3 to T2 at 2
+		print "add child T3 to T2 at 2: " + T2
+		
+		add child T3 to T1
+		print "After add child T3 to T1"
+		print "T3 (unchanged): " + T3
+		print "T2: " + T2
+		print "T1: " + T1
+		
+		make [1, 2, [3, 4]] into tree T
+		add child "test" to treeFirst(T)
+		print "T: " + T
+		
+		v := treeValues(T)
+		print "Values: " + v
+		
+		n := treeNodes(T)
+		print "Nodes: " + n
+		
+		r3Val := treeValue(treeRoot(T3))
+		r1Val := treeValue(treeRoot(T1))
+		print "The following two values should be equal:"
+		print "Value of T3's root: " + r3Val
+		print "Value of T1's root: " + r1Val
+		
+		Q := treeNext(treeFirst(T))
+		print "Value of treeNext(treeFirst(T)): " + treeValue(Q)
+		
+		make [1, [ [2, [3,4]], [5, [6, 7]] ] ] into tree A
+		print "Tree A: " + A
+		
+		dft := treeDFT(A)
+		bft := treeBFT(A)
+		
+		print "Values by DFT: " + dft
+		print "Values by BFT: " + bft
+		
+	endseqblock
+	program(self) := undef
+	}

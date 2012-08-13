@@ -1,0 +1,37 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM SetExamples
+
+use Standard
+
+init InitRule
+
+
+rule InitRule = 
+	par
+		a := {1, 4, 7}
+		b := {y is z * x | x in [1..10:2], z in [2..4] with x > 5}
+		c := { 		}
+		program(self) := ruleelement Main
+	endpar
+
+
+rule Main =
+	if |a| = 3 then
+		par
+			add 5 to a
+			add 6 to a
+			remove 1 from a
+			d := a diff b
+		endpar
+	else
+		par	
+			print size(a) + " " + size(b) + " " + |c|
+			program(self) := undef
+		endpar
+

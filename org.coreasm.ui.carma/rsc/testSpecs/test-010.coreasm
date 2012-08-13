@@ -1,0 +1,11 @@
+CoreASM CheckPrecedence
+
+use Standard
+
+init R1
+
+rule R1 = 
+	par
+		print 5 + 6 = 111 or {5} union {6} = {5, 6}
+		program(self) := undef
+	endpar

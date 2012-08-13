@@ -1,0 +1,33 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM NumberFunctionExamples
+
+use BlockRulePlugin
+use NumberPlugin
+use StringPlugin
+use PredicateLogicPlugin
+use TurboASM
+use IO
+
+init InitRule
+
+rule InitRule = 
+	seqblock
+		print 1 > 2
+		print 2 >= 2
+		print 4 < 3
+		print 3 <= 3
+		print isNaturalNumber(8-789)
+		print isIntegerNumber(24/3)
+		print isRealNumber("hello")
+		print isOddNumber(371)
+		print isEvenNumber(371)
+		print 6 memberof [1 .. 20]
+		print 4 memberof [100 .. 200]
+		program(self) := undef
+	endseqblock

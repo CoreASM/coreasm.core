@@ -1,0 +1,81 @@
+CoreASM Test_023_Forall
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+		mode := 1
+		counter := 0
+		program(self) := @Main
+	endpar
+
+rule Main = 
+	par
+		if mode = 1 then 
+		par
+			forall x in {11, 12, 14, 15} do
+				r(x) := true
+
+			forall x in [20..30] with x > 25 do
+				r(x) := true
+
+			forall x in [31..40] with x > 50 do
+				r(1) := true
+
+			forall x in {} do 
+				r(2) := true
+
+			forall x in {} with x = x do
+				r(3) := true
+
+			mode := 2
+		endpar
+
+		if mode = 2 then 
+		par
+	
+			seqblock
+				print "-------"
+				print r(1) 
+				print r(2) 
+				print r(3) 
+				print r(4) 
+				print r(5) 
+				print r(6) 
+				print r(7) 
+				print r(8) 
+				print r(9) 
+				print r(10) 
+				print r(11) 
+				print r(12) 
+				print r(13) 
+				print r(14) 
+				print r(15) 
+				print r(16) 
+				print r(17) 
+				print r(18) 
+				print r(19) 
+				print r(20) 
+				print r(21) 
+				print r(22) 
+				print r(23) 
+				print r(24) 
+				print r(25) 
+				print r(26) 
+				print r(27) 
+				print r(28) 
+				print r(29) 
+				print r(30) 
+				print r(31) 
+			endseqblock
+
+			mode := 1
+		endpar
+
+		if counter > 4 then
+			program(self) := undef  // terminate
+
+		counter := counter + 1
+	endpar

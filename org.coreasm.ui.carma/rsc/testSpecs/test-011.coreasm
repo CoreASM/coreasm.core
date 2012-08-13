@@ -1,0 +1,42 @@
+/**
+ * CoreASM Test Specification
+ *
+ * (c) 2007 CoreASM Development Team
+ *
+ */
+
+CoreASM BasicTest
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+		if mode = "end" then 
+			program(self) := undef
+
+		if a = undef then
+		par
+			a := -5
+			b := (54 + (-4)) / 10
+			c := (- (-10) ) div 2
+			d := 2 * 3 * 4 - 5 * 4 * 3 / 5
+			e := (1)+2*3
+		endpar
+		else
+			if con = undef then
+			par 
+				seq
+					con := true and (false or (true xor false))
+				next
+					notcon := not con
+			endpar
+			else
+				par
+					mode := "end"
+					print a + " " + b + " " + c + " " + d + " " + e + " " + con + " " + notcon
+				endpar
+	endpar
+
+	

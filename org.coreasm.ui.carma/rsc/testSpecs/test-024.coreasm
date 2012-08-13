@@ -1,0 +1,67 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM BagExamples
+
+use Standard
+use Bag
+
+init InitRule
+
+
+rule InitRule = 
+	par
+		a := << 3, 3, 4, 7, 7, 7, 3 >>
+		b := <<y is z * x | x in [1..10:2], z in [2..4] with x > 5 >>
+		c := << x is m + n | m in <<1, 2, 2, 3>>, n in {10} >>
+		d := << x | x in <<1, 2, 2, 3>> with x < 10 >>
+		program(self) := ruleelement Main
+	endpar
+
+
+rule Main =
+	if |a| = 7 then
+		par
+			print "Testing Bags"
+			add 5 to a
+			add 6 to a
+			seqblock
+				add 9 to a
+				remove 100 from a
+				add 7 to a
+				add 7 to a
+				add 5 to a
+				remove 9 from a
+				add 100 to a
+			endseqblock
+			add 5 to a
+			remove 1 from a
+			add 1 to a
+
+			e := a union <<500, 3, 3>>
+			f := a union <<"f1", 3>>
+			g := c diff <<11, 12>>
+			h := a intersect d
+			j := a + <<500, 3, 3>>			
+			i := << x | x in {1, 2} with x < 0>>
+		endpar
+	else
+		seqblock
+			print [ |a|, |b|, |c|, |d|, |e|, |f|, |g|, |h|, |i|, |j| ]
+			//print "a = " + a
+			print "a()(7) = " + a()(7)
+			print "a()(77) = " + a()(77)
+			//print a + " " + b + " " + c + " " + d
+			print "e(500) = " + e()(500)
+			print "e(3) = " + e()(3)
+			print "j(3) = " + j()(3)
+			print "j(7) = " + j()(7)
+			print "j(500) = " + j()(500)
+			print <<>>
+			program(self) := undef
+		endseqblock
+

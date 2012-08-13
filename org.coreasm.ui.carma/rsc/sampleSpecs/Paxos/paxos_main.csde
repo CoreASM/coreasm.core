@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CSDe:Map xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:CSDe="http://www.example.org/CSDe">
+  <rootElements xsi:type="CSDe:ControlState" text="idle" next="//@rootElements.1"/>
+  <rootElements xsi:type="CSDe:Condition" text="isPresident" true="//@rootElements.2"/>
+  <rootElements xsi:type="CSDe:ControlState" text="president" next="//@rootElements.3"/>
+  <rootElements xsi:type="CSDe:Rule" text="InitiateBallot&#xA;ResetTimer" next="//@rootElements.4"/>
+  <rootElements xsi:type="CSDe:ControlState" text="initiatingBallot" next="//@rootElements.5"/>
+  <rootElements xsi:type="CSDe:Condition" text="haveFoundMajority" true="//@rootElements.13" false="//@rootElements.11"/>
+  <rootElements xsi:type="CSDe:Rule" text="BeginBallot&#xA;ResetTimer" next="//@rootElements.7"/>
+  <rootElements xsi:type="CSDe:ControlState" text="awaitingVotes" next="//@rootElements.8"/>
+  <rootElements xsi:type="CSDe:Condition" text="receivedAllVotes" true="//@rootElements.9" false="//@rootElements.10"/>
+  <rootElements xsi:type="CSDe:Rule" text="Success" next="//@rootElements.12"/>
+  <rootElements xsi:type="CSDe:Condition" text="isTimeout" true="//@rootElements.2"/>
+  <rootElements xsi:type="CSDe:Condition" text="isTimeout" true="//@rootElements.2"/>
+  <rootElements xsi:type="CSDe:ControlState" text="readyToStart" next="//@rootElements.14"/>
+  <rootElements xsi:type="CSDe:Rule" text="PrepareQuorum" next="//@rootElements.12"/>
+  <rootElements xsi:type="CSDe:Condition" text="haveDecreeToPass" true="//@rootElements.6"/>
+  <rootStart startState="//@rootElements.0"/>
+</CSDe:Map>

@@ -1,0 +1,71 @@
+CoreASM Test_022_Choose
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+		forall i in [1..8] do
+			r(i) := 0
+
+		mode := 1
+		counter := 0
+		program(self) := @Main
+	endpar
+
+rule Main = 
+	par
+		if mode = 1 then 
+		par
+			choose x in {1, -1} do
+				r(1) := r(1) + x
+
+			choose x in [1..10] with x = 7 do
+				r(2) := x
+
+			choose x in {} do
+				r(3) := 1000
+
+			choose x in [10..20] with x = 21 do
+				r(4) := 1000
+
+
+			choose x in {5, -5} do
+				r(5) := r(5) + x
+			ifnone
+				r(5) := 1000
+
+			choose x in [21..30] with x = 23 do
+				r(6) := x
+
+			choose x in {} do 
+				r(7) := 1000
+			ifnone 
+				r(7) := 100
+
+			choose x in [41..50] with x = 61 do
+				r(8) := 10
+			ifnone
+				r(8) := 100
+
+			mode := 2
+		endpar
+
+		if mode = 2 then 
+		par
+
+			if (r(1) > 10) or (r(2) != 7) or (r(3) != 0) or (r(4) != 0) or 
+					(r(5) > 50) or (r(6) != 23) or (r(7) != 100) or (r(8) != 100) then
+				print "Problem?"
+			else
+				print "OK!"
+
+			mode := 1
+		endpar
+
+		if counter > 20 then
+			program(self) := undef  // terminate
+
+		counter := counter + 1
+	endpar

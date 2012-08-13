@@ -1,0 +1,5 @@
+echo "Testing CoreASM files..."
+for i in test-*.coreasm; do ./testSpec $i $*; done
+echo "Testing OpenOffice documents..."
+for i in test-*.odt; do ./testSpec $i $*; done
+

@@ -1,0 +1,41 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM EnumerableExamples
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+		program(self) := ruleelement Main
+		setOfNumbers := {1,2,3}
+	endpar
+	
+
+rule Main = 
+	seqblock
+	   inTrue := 1 memberof setOfNumbers
+	   intFalse := 32 memberof setOfNumbers
+	   notinTrue := 32 notmemberof setOfNumbers
+	   notinFalse := 1 notmemberof setOfNumbers
+		existsFalse := exists x in {1,2,4,5} with exists y in {1,2} with x + y = 8
+		existsTrue := exists x in {1,2,4,5} with exists y in {1,2} with x + y = 5
+		forallTrue := forall x in {1,2,3} holds NUMBER(x)
+		forallFalse := forall x in {1,2,"as"} holds NUMBER(x)
+		forallwithTrue := forall x in {1,2} holds forall y in {0,1} holds ((x+y=1) or (x+y=2) or (x+y=3))
+		forallwithFalse := forall x in {1,2} holds forall y in {0,1} holds ((x+y=1) or (x+y=2))
+		program(self) := undef
+		print inTrue + ", " + intFalse + ", " + notinTrue  +  ", " + notinFalse + ", " + existsFalse + ", " + existsTrue + ", " + forallTrue  + ", " + forallFalse + ", " + forallwithTrue + ", " + forallwithFalse
+		print {} subset {1, 2, 3, 4}
+		print {} subset {}
+		print {1, 2, "Ali"} subset {1, 2, 3, "Ali"}
+		print {"a", "b", 3} subset {"a", "b", 3}
+		print {1, 5} subset {1, 20}
+	endseqblock
+	

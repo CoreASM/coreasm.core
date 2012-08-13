@@ -1,0 +1,30 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM ForallExamples
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+	  program(self) := ruleelement main
+	  a := {}   
+	endpar
+	
+rule main =
+  seqblock
+    forall n in [1 .. 3] with isOddNumber(n) do
+      forall x in [12 .. 17] do
+        add {n,x} to a
+	print size(a)
+	program(self) := undef
+  endseqblock
+	
+
+	

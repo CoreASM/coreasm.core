@@ -1,0 +1,114 @@
+CoreASM RailRoadCrossing
+
+use StandardPlugins
+use TimePlugin
+use MathPlugin
+
+enum Track = {track1, track2}
+enum TrackStatus = {empty, coming, crossing}
+enum Direction = {open, close}
+enum GateState = {opened, closed}
+
+function deadline : Track -> TIME
+function trackStatus : Track -> TrackStatus 
+function dir : -> Direction
+function gateState : -> GateState
+
+
+init InitRule
+
+rule InitRule = 
+	par
+		dmin := 5000
+		dmax := 10000
+		dopen := 2000
+		dclose := 2000
+		waitTime := 3000 
+		gateState := opened
+		startTime := now
+		forall t in Track do par
+			trackStatus(t) := empty
+			deadline(t) := infinity
+		endpar
+		extend Agents with trackController do
+			program(trackController) := @TrackControl
+		extend Agents with gateController do
+			program(gateController) := @GateControl
+		extend Agents with observer do
+			program(observer) := @ObserverProgram
+		extend Agents with environment do
+			program(environment) := @EnvironmentProgram
+		program(self) := undef
+	endpar
+	
+
+rule TrackControl = 
+	par
+		forall x in Track do par
+			SetDeadline(x)
+			SignalClose(x)
+			ClearDeadline(x)
+		endpar
+		SignalOpen
+	endpar
+
+rule GateControl = 
+	par
+		if gateState = closed and dir = open then gateState := opened
+		if gateState = opened and dir = close then gateState := closed
+	endpar
+
+rule SetDeadline(a) =
+	if trackStatus(a) = coming and deadline(a) = infinity then
+		deadline(a) := now + waitTime
+
+rule SignalClose(a) =
+	if now >= deadline(a) and now <= deadline(a) + 1000 then
+		dir := close
+
+rule ClearDeadline(a) = 
+	if trackStatus(a) = empty and deadline(a) < infinity then
+		deadline(a) := infinity
+
+rule SignalOpen = 
+	if dir = close and safeToOpen then
+		dir := open
+
+rule safeToOpen = 
+    return (forall tx in Track holds trackStatus(tx) = empty or (now + dopen) < deadline(tx)) in skip
+
+
+
+rule ObserverProgram =
+	if gateState = closed then
+		par
+			forall a in Agents do
+				program(a) := undef
+			print "OK"
+		endpar
+	/*
+	par
+		print "Time: " + ((now - startTime) / 1000) + " seconds"
+		forall t in Track do
+			print "Track " + t + " is " + trackStatus(t)
+		print "Gate is " + gateState
+	endpar
+	*/
+
+rule EnvironmentProgram = 
+	choose t in Track do par
+		if trackStatus(t) = empty then 
+			if random < 0.05 then par
+				trackStatus(t) := coming
+				passingTime(t) := now + dmin 
+			endpar
+		if trackStatus(t) = coming then
+			if passingTime(t) < now then par
+				trackStatus(t) := crossing
+				passingTime(t) := now + 3000
+			endpar
+		if trackStatus(t) = crossing then
+			if passingTime(t) < now then
+				trackStatus(t) := empty
+	endpar
+

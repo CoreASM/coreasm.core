@@ -1,0 +1,495 @@
+/*
+ * Implementation of the Multi-Decree Parliament Protocol as in Chapter 3 of
+ * The Part-Time Parliament, ACM Transactions on Computer Systems, Volume 16 ,  Issue 2  (May 1998)
+ *
+ * (c) 2008 Paolo Herms 
+ */ 
+
+CoreASM paxos
+
+use StandardPlugins
+use TimePlugin
+use Math
+
+//parameters:
+derived failureProbability = 20 // in percent
+derived mediumStaying = 9 // in n° of steps where agent is chosen
+derived numberOfPriests = 10
+derived waitstateTimeout = 5000 // in ms
+derived terminateOnSuccess = false 
+
+universe Priests
+universe Votes
+universe Decrees
+universe Ballots
+universe Messages
+universe DecreeSequences
+
+enum STATE = {idle,president,initiatingBallot,readyToBegin,awaitingVotes}
+
+enum MESSAGE_TYPE = { MSG_NextBallot, MSG_BeginBallot, MSG_Success, MSG_LastVote, MSG_Voted, MSG_AddRequest }
+
+// data attribute functions
+function ballotOwner: Ballots -> Priests
+function ballotNumber: Ballots -> NUMBER  // undef -> -inf
+
+function leastDecreeNumber: DecreeSequences -> NUMBER
+function greatestDecreeNumber: DecreeSequences -> NUMBER
+function numberedDecree: DecreeSequences * NUMBER -> Decrees
+derived isEmptySequence (d) = leastDecreeNumber (d) > greatestDecreeNumber (d)
+
+function votePriest: Votes -> Priests
+function voteBallot: Votes -> Ballots
+function voteDecree: Votes -> DecreeSequences
+derived stringOfVote (v) = "{ priest = " + votePriest (v) + "; ballot = " + voteBallot (v) + "; decree = " + voteDecree (v) + " }"
+
+function messageType: Messages -> MESSAGE_TYPE
+function nextBallotMessageBallot: Messages -> Ballots
+function nextBallotMessageLeastUnknownOutcomeNumber: Messages -> NUMBER
+function beginBallotMessageBallot: Messages -> Ballots
+function beginBallotMessageDecree: Messages -> DecreeSequences
+function successMessageDecree: Messages -> DecreeSequences
+function lastVoteMessageBallot: Messages -> Ballots
+function lastVoteMessageVote: Messages -> Votes
+function lastVoteMessageLeastUnknownOutcomeNumber: Messages -> NUMBER
+function votedMessageBallot: Messages -> Ballots
+function votedMessagePriest: Messages -> Priests
+function addRequestMessageDecrees: Messages -> SET // of Decrees
+
+// global state
+function currentPresident: -> Priests
+function isInside: Priests -> BOOLEAN
+function incomingMessages: Priests -> SET
+// + universe of priests, known to every priest
+  
+// local state
+function state: Agents -> STATE
+function timer: Agents -> NUMBER
+function lastTried: Agents -> Ballots
+function prevVotes: Agents -> SET
+function prevLeastUnknownOutcomeNumbers: Agents -> SET
+function quorum: Agents -> SET
+function voters: Agents -> SET
+function decree: Agents -> DecreeSequences
+function leastUnknownOutcomeNumber: Agents -> NUMBER
+function outcome: Agents -> DecreeSequences
+function pendingRequests: Agents -> SET
+
+function nextBallot: Agents -> Ballots
+function prevVote: Agents -> Votes 
+
+function priestOfAgent: Agents -> Priests
+function stayOther: Agents -> NUMBER
+
+derived mePriest = priestOfAgent (self)
+derived isTimeout = now - timer(self) > waitstateTimeout
+derived isMajoritySet (set) = | set | > | Priests | / 2
+derived haveFoundMajority = isMajoritySet (prevVotes (self))
+derived receivedAllVotes = quorum (self) subset voters (self)
+derived hasReceivedMessage = 
+	incomingMessages (mePriest) != undef and
+		incomingMessages (mePriest) != { }
+derived haveDecreeToPass = decree (self) != undef // possible in first loop after becoming president 
+			or pendingRequests (self) != { }
+
+init InitRule
+
+rule InitRule = par
+	Ballots(undef) := true
+	ballotNumber (undef) := -infinity
+	leastDecreeNumber (undef) := 0
+	greatestDecreeNumber (undef) := -1
+	forall n in [ 1 .. numberOfPriests ] do
+		extend Agents with a do
+		extend Priests with p do
+		extend Votes with nullVote do par
+			program (a) := @Priest
+			priestOfAgent (a) := p
+			votePriest (nullVote) := p
+			prevVote (a) := nullVote
+			isInside (p) := false
+			DecreeSequences (a) := true
+			outcome (a) := a
+			leastUnknownOutcomeNumber (a) := 0
+			pendingRequests (a) := { }
+			stayOther (a) := 0
+		endpar
+	extend Agents with a do par
+		program (a) := @Test
+		testWait := 0
+	endpar
+	program (self) := @LeaderElection
+endpar
+
+rule LeaderElection =
+	if currentPresident = undef then
+		choose p in Priests with isInside (p) do par
+			currentPresident := p
+			Info (p + " becomes president")
+		endpar
+
+rule Priest =
+	if stayOther (self) > 0 then par
+		stayOther (self) := stayOther (self) - 1
+		if isInside (mePriest) then Inside
+	endpar
+	else par
+		choose x in [ 1 .. mediumStaying * 2 ] do
+			stayOther (self) := x
+		choose fail in [ 1 .. 100 ] do
+			if fail <= failureProbability then
+				StepOutside
+			else
+				seq
+					StepInside
+				next 
+					Inside
+	endpar
+
+rule StepOutside = 
+	if isInside (mePriest) then par
+		if currentPresident = mePriest then
+			currentPresident := undef
+		isInside (mePriest) := false
+		Info ("going out")
+	endpar
+
+rule StepInside = 
+	if not isInside (mePriest) then par
+		state (self) := idle
+		incomingMessages (mePriest) := { }
+		isInside (mePriest) := true
+		Info ("I'm in")
+	endpar
+
+rule Inside = par
+	Main
+	HandleIncomingMessages
+endpar
+	 
+// Main rule: Control State behaviour is controlled here
+rule Main = par
+	if (state (self) = idle) then
+		if currentPresident = mePriest then
+			state (self) := president
+		else 
+			ForwardPendingRequests
+
+	if (state (self) = president) then
+		par
+			InitiateBallot
+			ResetTimer
+			state (self) := initiatingBallot
+		endpar
+
+	if (state (self) = initiatingBallot) then
+		par
+			if haveFoundMajority then
+				par
+					PrepareQuorum
+					state (self) := readyToBegin
+				endpar
+			else
+				if isTimeout then
+					state (self) := president
+		endpar
+
+	if (state (self) = readyToBegin) then
+		par
+			if haveDecreeToPass then
+				par
+					BeginBallot
+					ResetTimer
+					state (self) := awaitingVotes
+				endpar
+		endpar
+
+	if (state (self) = awaitingVotes) then
+		par
+			if receivedAllVotes then
+				par
+					Success
+					state (self) := readyToBegin
+				endpar
+			else
+				if isTimeout then
+					state (self) := president
+		endpar
+endpar
+
+rule ResetTimer =
+	timer (self) := now
+
+rule InitiateBallot = 
+	extend Ballots with b do 	
+	let msg = b in par
+		Messages (msg) := true
+		lastTried (self) := b
+		ballotOwner (b) := mePriest
+		let n = ballotNumber (lastTried (self)) in 
+			if n < 0 then
+				ballotNumber (b) := 0
+			else
+				ballotNumber (b) := n + 1 
+		prevVotes (self) := { }
+		prevLeastUnknownOutcomeNumbers (self) := { leastUnknownOutcomeNumber (self) } //to be sure it's in
+		messageType (msg) := MSG_NextBallot
+		nextBallotMessageBallot (msg) := b
+		nextBallotMessageLeastUnknownOutcomeNumber (msg) := leastUnknownOutcomeNumber (self) 
+		SendAll (Priests,  msg)
+	endpar
+	
+rule PrepareQuorum = par
+	quorum (self) := { p is votePriest (v) | v in prevVotes (self) }
+	choose maxVote in prevVotes (self) with
+		voteBallot (maxVote) != undef and 
+		forall v in prevVotes (self) holds 
+			ballotNumber (voteBallot (v)) <= ballotNumber (voteBallot (maxVote)) and
+				greatestDecreeNumber (voteDecree (v)) <= greatestDecreeNumber (voteDecree (maxVote))
+	do
+		let d = voteDecree (maxVote) in 
+		let minLeastUnknownOutcomeNumber = min(prevLeastUnknownOutcomeNumbers (self)) in par
+			if not isEmptySequence (d) then 
+				extend DecreeSequences with new do par
+					decree (self) := new
+					TraverseDecreeSequence (d, new, leastUnknownOutcomeNumber (self), greatestDecreeNumber (d))
+					if minLeastUnknownOutcomeNumber < leastUnknownOutcomeNumber (self) then
+						TraverseDecreeSequence (outcome (self), new, minLeastUnknownOutcomeNumber, leastUnknownOutcomeNumber (self) - 1)
+					greatestDecreeNumber (new) := greatestDecreeNumber (d)
+					leastDecreeNumber (new) := minLeastUnknownOutcomeNumber
+				endpar
+			Assert (leastDecreeNumber (d) <= leastUnknownOutcomeNumber (self), 
+					"maxVote = " + maxVote
+					 + " - leastDecreeNumber (maxVote) = " + leastDecreeNumber (maxVote)
+					 + " <= " + leastUnknownOutcomeNumber (self) + " leastUnknownOutcomeNumber") //This should not happen  
+			choose maxDecNumVote in prevVotes (self) with 
+				forall v in prevVotes (self) holds greatestDecreeNumber (voteDecree (v)) <=  greatestDecreeNumber (voteDecree (maxDecNumVote))
+			do
+				Assert (greatestDecreeNumber (voteDecree (maxDecNumVote)) = greatestDecreeNumber (voteDecree (maxVote)),
+						"maxVote doesn't have latest decree number " +  greatestDecreeNumber (voteDecree (maxDecNumVote)) + " > " + greatestDecreeNumber (voteDecree (maxVote))
+						 + "\n\tmaxDecNumVote (" + maxDecNumVote + ") = " + stringOfVote (maxDecNumVote)
+						 + "\n\tmaxVote (" + maxVote + ") = " + stringOfVote (maxVote))
+		endpar
+	ifnone
+		decree (self) := undef
+endpar
+
+rule BeginBallot = 
+	seq
+		if decree (self) = undef then
+			MakeDecreeOfPendingRequests
+	next
+		let msg = decree (self) in par
+			Messages (msg) := true
+			messageType (msg) := MSG_BeginBallot
+			beginBallotMessageDecree (msg) := decree (self)
+			beginBallotMessageBallot (msg) := lastTried (self)
+			SendAll (quorum (self), msg) 
+			voters (self) := { }
+		endpar
+	
+rule MakeDecreeOfPendingRequests =
+	extend DecreeSequences with d do  
+	local t in
+		seq par
+			decree (self) := d
+			leastDecreeNumber (d) := leastUnknownOutcomeNumber (self)
+			greatestDecreeNumber (d) := leastUnknownOutcomeNumber (self) - 1
+			t := pendingRequests (self) 
+		endpar
+		next
+			iterate // would need a sequential forall here 
+				choose x in t do
+				let i = greatestDecreeNumber (d) + 1 in par
+					numberedDecree (d, i) := x
+					greatestDecreeNumber (d) := i
+					remove x from t
+				endpar
+		
+rule Success = 
+	let d = decree (self) in
+	let o = outcome (self) in
+	extend Messages with msg do par
+		decree (self) := undef
+		messageType (msg) := MSG_Success
+		successMessageDecree (msg) := d
+		SendAll ({ p | p in Priests with p != mePriest }, msg)
+		forall i in [ leastDecreeNumber (d) .. greatestDecreeNumber (d) ] do
+			Info ("Passing decree " + i + ": " + numberedDecree (d, i))
+		HandleSuccess (d)
+	endpar
+
+rule HandleLastVote (b, v, n) = 
+	if b = lastTried (self) then par
+		add v to prevVotes (self)
+		add n to prevLeastUnknownOutcomeNumbers (self)
+	endpar
+
+rule HandleVoted (b, q) = 
+	if b = lastTried (self) then
+		add q to voters (self)
+
+rule HandleIncomingMessages =
+	forall m in incomingMessages (mePriest) do par
+		PrintMessage (m)
+		HandleMessage (m)
+		remove m from incomingMessages (mePriest)
+	endpar
+
+rule HandleMessage (m) = par
+	if messageType (m) = MSG_NextBallot then
+		HandleNextBallot (nextBallotMessageBallot (m), nextBallotMessageLeastUnknownOutcomeNumber (m))
+	if messageType (m) = MSG_BeginBallot then
+		HandleBeginBallot (beginBallotMessageBallot (m), beginBallotMessageDecree (m))
+	if messageType (m) = MSG_Success then 
+		HandleSuccess (successMessageDecree (m))
+	if messageType (m) = MSG_AddRequest then 
+		HandleAddRequest (addRequestMessageDecrees (m))
+	if messageType (m) = MSG_LastVote and state (self) = initiatingBallot then 
+		HandleLastVote (lastVoteMessageBallot (m), lastVoteMessageVote (m), lastVoteMessageLeastUnknownOutcomeNumber (m))
+	if messageType (m) = MSG_Voted and state (self) = awaitingVotes then 
+		HandleVoted (votedMessageBallot (m), votedMessagePriest (m))
+endpar
+
+rule HandleNextBallot (b, n) =
+	if ballotNumber (b) > ballotNumber (nextBallot (self)) then 
+		extend Messages with msg do
+			let v = prevVote (self) in 
+			let d = voteDecree (v) in par
+				messageType (msg) := MSG_LastVote
+				lastVoteMessageVote (msg) := v
+				if n < leastDecreeNumber (d) then par
+					leastDecreeNumber (voteDecree (v)) := n
+					TraverseDecreeSequence (outcome (self), d, n, leastDecreeNumber (d) - 1)
+				endpar
+				lastVoteMessageBallot (msg) := b
+				lastVoteMessageLeastUnknownOutcomeNumber (msg) := leastUnknownOutcomeNumber (self)
+				Send (ballotOwner (b), msg)
+				nextBallot (self) := b
+			endpar
+		
+rule HandleBeginBallot (b, d) =
+	if b = nextBallot (self) then 
+		extend Votes with vote do 
+		let msg = vote in par
+			Messages (msg) := true
+			prevVote (self) := vote
+			votePriest (vote) := mePriest
+			voteBallot (vote) := b
+			DecreeSequences (vote) := true
+			voteDecree (vote) := vote
+			CopyFullDecreeSequence (d, vote)
+			messageType (msg) := MSG_Voted
+			votedMessagePriest (msg) := mePriest
+			votedMessageBallot (msg) := b
+			Send (ballotOwner (b), msg)
+		endpar
+		
+rule HandleSuccess (d) =
+	if d = undef then Assert (false, "This is a bug") else
+	let dee = d in  // workaround a very ugly bug in CoreASM - try to uncomment the line below...
+	let n = leastDecreeNumber (dee) in
+	let m = greatestDecreeNumber (dee) in par
+		//if d = undef then ThisIsABugInCoreASM
+		forall i in [ n .. m ] do
+			remove numberedDecree (dee, i) from pendingRequests (self)
+		TraverseFullDecreeSequence (dee, outcome (self))
+		if n <= leastUnknownOutcomeNumber (self) then 
+			leastUnknownOutcomeNumber (self) := m + 1
+	endpar 
+
+rule HandleAddRequest (s) = 
+	forall x in s do
+		add x to pendingRequests (self)
+
+rule ForwardPendingRequests =
+	if currentPresident != undef and pendingRequests (self) != { } then
+		extend Messages with msg do par
+			addRequestMessageDecrees (msg) := pendingRequests (self)
+			Send (currentPresident, msg)
+		endpar
+
+rule SendAll (rcvs, msg) = 
+	forall p in rcvs do
+		Send (p, msg)
+
+rule Send (rcv, msg) = 
+	if isInside (rcv) then
+		add msg to incomingMessages (rcv)
+	
+rule CopyDecreeSequence (src, dest, n, m) = par 
+	TraverseDecreeSequence (src, dest, n, m)
+	leastDecreeNumber (dest) := n
+	greatestDecreeNumber (dest) := m
+endpar
+
+rule CopyFullDecreeSequence (src, dest) =
+	CopyDecreeSequence (src, dest, leastDecreeNumber (src), greatestDecreeNumber (src))
+	
+rule TraverseDecreeSequence (src, dest, n, m) =
+	seq Assert (n <= m, src + " - " + dest + " - " + n + " - " + m)
+	if (n <= m) then
+	forall i in [ n .. m ] do par
+		numberedDecree (dest, i) := numberedDecree (src, i)
+		Assert (numberedDecree (dest, i) = undef or numberedDecree (dest, i) = numberedDecree (src, i),
+					"trying to overwrite existing decree!")
+	endpar
+
+rule TraverseFullDecreeSequence (src, dest) =
+	TraverseDecreeSequence (src, dest, leastDecreeNumber (src), greatestDecreeNumber (src))
+
+rule Info (text) =
+	if currentPresident = mePriest then
+		print "President: " + text
+	else
+		print self + ": " + text
+	
+rule Assert (c, text) =
+	if not c then 
+		KillallPrint ("Assertion Error (" + self + "): " + text)
+
+rule KillallPrint (s) = par
+	print s
+	forall a in Agents do
+		program(a) := undef
+endpar
+
+rule PrintMessage (m) = 
+	let s = "received message - " + messageType (m) in par
+		if messageType (m) = MSG_NextBallot then
+			Info (s + " { ballot = " + nextBallotMessageBallot (m) + " }")
+		if messageType (m) = MSG_BeginBallot then
+			Info (s + " { ballot = " + beginBallotMessageBallot (m) + "; decree = " + beginBallotMessageDecree (m) + " }")
+		if messageType (m) = MSG_Success then 
+			Info (s + " { decree = " + successMessageDecree (m) + " } ")
+		if messageType (m) = MSG_LastVote then 
+			Info (s + " { ballot = " + lastVoteMessageBallot (m) + "; vote = " +  stringOfVote (lastVoteMessageVote (m)) + " }")
+		if messageType (m) = MSG_Voted then 
+			Info (s + " { ballot = " + votedMessageBallot (m) + "; priest = " + votedMessagePriest (m) + " }")
+		if messageType (m) = MSG_AddRequest then
+			Info (s + " " + addRequestMessageDecrees (m))
+	endpar
+
+
+rule Test =
+	if testWait > 0 then
+		testWait := testWait - 1
+	else par
+		choose p in Priests with isInside (p) do 
+			extend Messages with msg do
+			seqblock	
+				par
+					addRequestMessageDecrees (msg) := { }
+					messageType (msg) := MSG_AddRequest
+					Send (currentPresident, msg)
+				endpar
+				choose n in [ 1 .. 11 ] do
+					forall i in [ 1 .. n ] do 
+						import x do
+							add x to addRequestMessageDecrees (msg)
+				print "Test: requesting " + addRequestMessageDecrees (msg)
+			endseqblock
+		choose w in [ 1 .. 17 ] do
+			testWait := w
+	endpar
+

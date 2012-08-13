@@ -1,0 +1,15 @@
+CoreASM Test_Static_Functions
+
+use Standard
+
+function static a: NUMBER -> NUMBER initially {1 -> 10, 2 -> 20}
+function static b: NUMBER * NUMBER -> NUMBER initially {[3, 2] -> 5, [5, 7] -> 12}
+function static c: -> NUMBER initially 100
+
+init R1
+
+rule R1 = {
+	print [a(1), a(5), b(3), b(3, 2), b(5, 7), c]
+	program(self) := undef
+}
+

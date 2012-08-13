@@ -1,0 +1,34 @@
+/*
+ * An example to show the use of 'onebyone' scheduling policy.
+ * Tested with CoreASM engine ver 1.1
+ * 
+ * (c) 2009 Roozbeh Farahbod 
+ */
+
+CoreASM TestOneByOnePolicy
+
+use Standard
+use Options
+use SchedulingPolicies
+
+option SchedulingPolicies.policy onebyone
+
+init InitRule
+
+rule InitRule = {
+	forall a in {1, 2, 3, 4} do {
+		Agents(a) := true
+		program(a) := @AgentProgram
+	}
+	set := {}
+	program(self) := undef
+}
+
+rule AgentProgram = {
+	if self memberof set then
+		remove self from set
+	else
+		add self to set
+	print set
+}
+

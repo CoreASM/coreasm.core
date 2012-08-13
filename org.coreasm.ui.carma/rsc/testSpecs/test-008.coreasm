@@ -1,0 +1,51 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM Test2
+
+use ConditionalRulePlugin
+use BlockRulePlugin
+use Collection
+use SetPlugin
+use NumberPlugin
+use StringPlugin
+use IO
+
+init InitRule
+
+rule InitRule = 
+	par
+		program(self) := ruleelement Main
+		addition := 2 + 2.0
+		subtraction := 2 - 2.0
+		multiplication := 2 * 2.0
+		division := 2 / 2.0
+		modulus := 2 % 2
+		stringConcat := "Howdie" + "\"" + "1" + "\n" + me + "\t" + "You"
+		setOfNumbersAndBool := {1,(12-3*4),true}
+	endpar
+	
+
+rule Main = 
+	par
+		print stringConcat
+		remove 0.0 from setOfNumbersAndBool
+		add -2 to setOfNumbersAndBool
+		stringConcat := stringConcat + " Mr. Mr."
+		setCardinalityResult := size(setOfNumbersAndBool)
+		nonSetCardinalityResult := size(true)
+		program(self) := @Main2
+	endpar
+	
+rule Main2 =
+	par
+		print nonSetCardinalityResult + " " + setCardinalityResult
+		setEquality := {{1,{7,5,9},"hello",2},{2,1}}
+		setEquality := {{2,1},{1,2,"hello",{9,5,7}}}
+		setEquality := {{"hello",2,{9,7,5},1},{1,2}}
+		program(self) := undef
+	endpar

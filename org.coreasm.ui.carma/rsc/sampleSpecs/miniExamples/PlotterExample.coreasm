@@ -1,0 +1,26 @@
+CoreASM TestPlotter
+
+use Standard
+use Plotter
+
+init MainRule
+
+rule MainRule =
+	if f(0) = undef then 
+		forall x in [-100 .. 100] do
+			choose y in [-(x * x) .. (x * x)] do
+				choose z in [-(x * x) .. (x * x)] do {
+		            f(x) := y
+					g(x) := z
+			        h(x) := x * x * x / (x + 0.5) 
+				}
+	else
+		extend PLOTWINDOW with pw do {
+	  		plot @f in pw
+	  		plot @g in pw
+	  		plot @h in pw
+	  		plot @g
+			Agents(self) := false
+	  	}
+
+	  	

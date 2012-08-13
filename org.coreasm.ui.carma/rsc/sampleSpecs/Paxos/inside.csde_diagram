@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:CSDe="http://www.example.org/CSDe" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.1/notation" xmi:id="_mYf3EL2eEd2n5uwKlXL6pA" type="CSDe" name="inside.csde_diagram" measurementUnit="Pixel">
+  <children xmi:type="notation:Node" xmi:id="_syiiUL2eEd2n5uwKlXL6pA" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_syjJYL2eEd2n5uwKlXL6pA" type="4001"/>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_syiiUb2eEd2n5uwKlXL6pA" fontName="Sans Serif"/>
+    <element xmi:type="CSDe:Rule" href="inside.csde#//@rootElements.2"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_syiiUr2eEd2n5uwKlXL6pA" x="360" y="156" width="205" height="121"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="_nOmYoL2eEd2n5uwKlXL6pA" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_nOnmwL2eEd2n5uwKlXL6pA" type="4001"/>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_nOmYob2eEd2n5uwKlXL6pA" fontName="Sans Serif"/>
+    <element xmi:type="CSDe:Rule" href="inside.csde#//@rootElements.0"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_nOmYor2eEd2n5uwKlXL6pA" x="368" y="170" width="185"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="_poBHEL2eEd2n5uwKlXL6pA" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_poC8QL2eEd2n5uwKlXL6pA" type="4001"/>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_poBHEb2eEd2n5uwKlXL6pA" fontName="Sans Serif"/>
+    <element xmi:type="CSDe:Rule" href="inside.csde#//@rootElements.1"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_poBHEr2eEd2n5uwKlXL6pA" x="369" y="226" width="184"/>
+  </children>
+  <styles xmi:type="notation:DiagramStyle" xmi:id="_mYf3Eb2eEd2n5uwKlXL6pA"/>
+  <element xmi:type="CSDe:Map" href="inside.csde#/"/>
+</notation:Diagram>

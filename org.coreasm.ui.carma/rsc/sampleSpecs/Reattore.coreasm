@@ -1,0 +1,105 @@
+/*
+ A biological reactor. 
+ We have a culture of tissue cells, which produce OH- and H+ as part of
+ their metabolysm. We can spray CO2 inside the culture chamber to
+ keep the Ph under control, but it will take some time before it affects
+ the acidity inside the chamber, and the effect is influenced by many
+ biological factors (here considered an unknown), so we have to adjust
+ continually. Moreover, we can only spray a fixed amount of CO2, so our
+ only option is to control how often to open the valve.
+
+ Inspired by A. Cisternino and D. Mazzei attempts at a control system :-)
+
+ Run for 50~100 steps to observe how the system works.
+
+ V. Gervasi 12/9/2006
+ Minor changes by Roozbeh Farahbod, July 2007
+*/
+
+CoreASM Bioreactor
+
+use StandardPlugins
+use PlotterPlugin
+
+init InitializeState
+
+rule InitializeState = 
+	let timeLimit = 200 in
+		par
+			finalTime := timeLimit
+			deltaRange := [-0.01 .. 0.01 step 0.002]
+			now := 0
+			laste := 0
+			lastc := 0
+			suppress := 0
+			ph(-16) := 6
+			forall t in [-15 .. timeLimit + 10] do // should really be a default, but we are testing...
+			par
+				ph(t) := 7.4
+				spray(t) := 0
+			endpar
+			program(self) := @Main
+		endpar
+
+
+// The World
+
+rule Main = 
+	let	baselineph=7.4, phgrowth=0.01, delay=6, sprayamount=0.1, suppresslength=10, limit=7.45 in 
+	par
+		Controller	// the software
+		Environment	// the cells
+		Kronos		// the Merciless God
+		Monitor		// for display purposes
+	endpar
+
+
+// The components
+
+rule Kronos =
+	now := now+1
+
+rule Environment = 
+	par
+		choose unknown in deltaRange do	
+			ph(now+1) := ph(laste) + phgrowth - (0.5*spray(now-delay+1))
+						- spray(now-delay) - (0.5*spray(now-delay-1)) 
+						- (0.25*spray(now-delay-2))+unknown
+		laste := now+1
+	endpar
+
+rule Controller =
+	par
+		let delta = ph(now) - ph(lastc) in
+			if delta < 0 then
+				skip	// Ph is already decreasing, no intervention
+			else
+				if ph(now) > limit then	// We'd better do something
+					if (now > suppress) then 
+					par
+						Spray
+						suppress := now + suppresslength
+					endpar
+		lastc := now
+	endpar
+
+
+rule Monitor =
+	if now = finalTime then
+		par 
+			/*
+			forall t in [0 .. finalTime]  do
+				print t + "," + ph(t)
+			*/
+			plot @ph
+			program(self) := undef
+		endpar
+	else
+		print now
+		 
+
+// What do we mean, "Spray"? :)
+rule Spray =
+	spray(now+1) := sprayamount
+	
+// End! BTW, better models could be developed... consider this just a test.

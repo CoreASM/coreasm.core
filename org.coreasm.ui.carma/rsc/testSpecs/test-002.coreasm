@@ -1,0 +1,28 @@
+/**
+ * CoreASM Test Specification
+ *
+ * (c) 2007 CoreASM Development Team
+ *
+ */
+
+CoreASM LetExample
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	par
+	  program(self) := undef
+	  let x = 7, y = 3 in
+	  	seqblock
+	     	a := x * y 
+			let x = 8 in
+				b := x * y
+			c := x * y
+			if (a = c) and (b > c) then
+				print "OK"
+		endseqblock
+	endpar
+
+	

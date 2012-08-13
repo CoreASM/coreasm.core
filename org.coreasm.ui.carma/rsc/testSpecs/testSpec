@@ -1,0 +1,19 @@
+#!/bin/sh
+
+specFileName=$1
+testName=${specFileName%.*}
+tempOutput=${specFileName}.out.temp
+
+CARMA_HOME=..
+
+if [ -e ${testName}.out ] 
+then
+../carma -pq $2 $3 $4 $5 $6 $7 $specFileName > $tempOutput
+if diff $tempOutput ${testName}.out
+then echo "${testName} is OK."
+else echo "${testName} has ERROR !!"
+fi
+rm $tempOutput
+else echo "Skipping ${testName}. There is no '.out' file."
+fi
+

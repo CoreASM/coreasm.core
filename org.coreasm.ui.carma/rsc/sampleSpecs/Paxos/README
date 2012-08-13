@@ -1,0 +1,5 @@
+
+The two implementations are in synod.casm and paxos.casm.
+The diagrams synod_main.csde_diagram and paxos_main.csde_diagram describe the
+implementations' control state behaviour, while priest.csde_diagram and
+inside.csde_diagram are only for presentation purpose.

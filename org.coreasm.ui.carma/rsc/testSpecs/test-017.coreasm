@@ -1,0 +1,44 @@
+/* CoreASM specification */
+CoreASM example
+
+use StandardPlugins
+use AbstractionPlugin
+
+init InitRule2
+
+rule InitRule2 =
+	par
+		extend Agents with aa do
+				program(aa) := @RuleA
+		extend Agents with bb do
+				program(bb) := @RuleB
+		program(self) := undef
+		AisDone := false
+		BisDone := false
+	endpar
+
+rule RuleA =
+	par 
+		if (AisDone and BisDone) then
+		par
+			program(self) := undef
+			print "done"
+		endpar
+		if a = 6 then
+			BisDone := true
+		a := 5
+	endpar
+											
+rule RuleB =
+	par
+		if (AisDone and BisDone) then
+		par
+			program(self) := undef
+			print "done"
+		endpar
+		if a = 5 then
+			AisDone := true
+		a := 6
+	endpar
+														
+

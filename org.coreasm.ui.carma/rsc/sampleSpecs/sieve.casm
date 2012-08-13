@@ -1,0 +1,56 @@
+/*
+ * Sieve Algorithm 
+ * sample CoreASM specification
+ * 
+ * Roozbeh Farahbod, 2010
+ * 
+ */
+CoreASM SievePrimes
+
+use Standard
+use Math
+
+init InitRule
+
+rule InitRule = {
+	let m = 10000 in {
+		limit := m
+		numbers := toSet([2 .. m])
+	}
+	primes := {}
+	
+	program(self) := @SieveProgram2	
+}
+
+
+/* 
+ * Sieve algorithm done for number 2 only 
+ */
+rule SieveProgram2 = 
+	let p = 2 in {
+		remove p from numbers
+		if p * p <= limit then 
+			forall n in {x is p * y | y in [p .. (limit div p)]} do
+				remove n from numbers
+		add p to primes
+		program(self) := undef
+	}
+
+
+/*   
+ * The actual Sieve algorithm
+ */ 
+rule SieveProgram = 
+	if |numbers| > 0 then
+		let p = min(numbers) in {
+			remove p from numbers
+			if p * p <= limit then 
+				forall n in {x is p * y | y in [p .. (limit div p)]} do
+					remove n from numbers
+			add p to primes
+		}
+	else {
+		print primes
+		program(self) := undef
+	}
+

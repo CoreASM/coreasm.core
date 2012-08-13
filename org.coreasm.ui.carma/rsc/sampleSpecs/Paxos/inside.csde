@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CSDe:Map xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:CSDe="http://www.example.org/CSDe">
+  <rootElements xsi:type="CSDe:Rule" text="Main"/>
+  <rootElements xsi:type="CSDe:Rule" text="HandleIncomingMessages"/>
+  <rootElements xsi:type="CSDe:Rule" text=" "/>
+</CSDe:Map>

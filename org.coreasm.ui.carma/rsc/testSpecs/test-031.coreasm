@@ -1,0 +1,35 @@
+CoreASM Testing_Agent_Control_Rules
+
+use Standard
+use SchedulingPolicies
+use Options
+
+option SchedulingPolicies.policy allfirst
+
+init InitRule
+
+rule InitRule = 
+	if mode = undef then  {
+		forall a in {1} do {
+			Agents(a) := true
+			program(a) := @Program
+		}
+		mode := 1
+	} else {
+		mode := mode + 1
+		if mode = 5 then
+			suspend 1
+		if mode = 10 then
+			resume 1
+		if mode = 15 then
+			terminate 1
+		if mode = 20 then {
+			Agents(5) := true
+			program(5) := @Program
+		}
+		if mode = 25 then
+			shutdown
+	}
+
+rule Program =
+	print self + " observes mode being " + mode

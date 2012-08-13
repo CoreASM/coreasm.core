@@ -1,0 +1,44 @@
+CoreASM Test_Step_Rule_1
+
+use Standard
+use Step
+use Bag
+use Math
+
+function c: -> BAG initially <<>>
+
+init Main
+
+rule Main = {
+	step stepwise {R2 R3 R4} then program(self) := undef
+	print sum(c)
+}
+
+rule R2 = {
+	add 4 to c
+	R5
+	R6
+}
+
+rule R3 = 
+	step add 8 to c
+	then add 16 to c
+
+rule R4 = 
+	step add 4096 to c
+	then add 8192 to c
+
+rule R5 = 
+	stepwise {
+		add 32 to c
+		add 64 to c
+		add 128 to c
+		add 256 to c
+		R6
+	}
+
+rule R6 = 
+	stepwise { 
+		add 1024 to c 
+		add 2048 to c
+	}

@@ -1,0 +1,85 @@
+CoreASM simple
+
+use StandardPlugins
+
+//use TreePlugin
+
+option TREE_OUTPUT_STRING "long"
+option LIST_FOR_TREES "short"
+option TREE_TRAVERSAL "depth-first"
+
+init R1
+
+rule R1 = {
+	seqblock
+	
+		K := tree[1, 2, 3]
+		print "K: " + K
+	
+	
+		B := tree [100, [101, 102]]
+		C := tree [200, []]
+		A :=  tree [1, [2, [4]], B, C]
+		print "A: " + A
+		
+		print "nodes(A): " + nodes(A)
+		
+		print "values(A): " + values(A)
+		
+		print "value(A): " + value(A)
+		
+		print "root(A): " + root(A)
+		
+		print "DFT(A): " + DFT(A)
+		print "DFTN(A): " + DFTN(A)
+		
+		print "BFT(A): " + BFT(A)
+		print "BFTN(A): "  + BFTN(A)
+		
+		print "Parent(B): " + parent(B)
+		print "First(B): " + firstchild(B)
+		print "nextsibling(B): " +  nextsibling(B)
+		
+		
+		A := tree[100, []]
+		B := tree[101, []]
+		
+		
+		
+		print "A: " + A
+		print "B: " + B
+		print "add child B to A at 5"
+		add child B to A at 5
+		print "A: " + A
+		print "Val of parent(B): " + value(parent(B))
+		
+		C := tree [102, []]
+		print "C: " + C
+		
+		add child C to A
+		print "add child C to A"
+		print "A: " + A
+		
+		add child C to A at 1
+		print "add child C to A at 1"
+		print "A: " + A
+		
+		remove child C from A
+		print "remove child C from A"
+		print "A: " + A
+		
+		remove child at 5 from A
+		print "remove child at 5 from A"
+		print "A: " + A
+		
+		
+		Z := tree[1, [3, 4]]
+		ZZ := tree[2, []]
+		first(Z) := ZZ
+		print Z
+		
+		
+		
+	endseqblock
+	program(self) := undef
+	}

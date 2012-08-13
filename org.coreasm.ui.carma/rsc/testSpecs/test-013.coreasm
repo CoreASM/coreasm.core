@@ -1,0 +1,45 @@
+CoreASM MathPluginExample
+
+use StandardPlugins
+
+init Init
+
+rule Init = 
+   par
+      emptyMap := { -> }
+	  aMap := {"a"->"b", 1 -> 3}
+	  program(self) := @Main
+   endpar
+
+rule Main =
+	seqblock
+		print "aMap is " + aMap
+		print "range of aMap = " + range(aMap)
+		print "aMap()(1) = " + aMap()(1)
+		print "aMap = {1 -> 3, 'a' -> 'b'} is " + ({1->3,"a"->"b"} = aMap)
+		choose x in aMap with head(x)=1 do
+			print "aMap as a set includes " + x
+		print "{1->'a', 1->'b'} = ['a', 'b'] is " + ({0->"a", 1->"b"} = ["a", "b"])
+		print undef = toMap({[1, 2], [1, 3]})
+		print undef = toMap(5)
+		print undef = toMap({[1, 2], "me"})
+		print {1 -> "John", 2 -> "Mary"} = toMap([[1, "John"], [2, "Mary"]])
+		print {} = mapToPairs({->})
+		print {[1, "John"], [2, "Mary"]} = mapToPairs({1 -> "John", 2 -> "Mary"})
+		print mapToPairs(5)
+
+		// testing add/remove
+		m1 := { 1 -> 2, 5 -> 6}
+		add {6 -> 10, 12 -> 20} to m1
+		print m1
+		add {"hi"} to m1
+		print m1
+		remove 12 from m1
+		print m1
+		remove {6 -> 100} from m1
+		print m1
+		remove {1, 4} from m1
+		print m1
+
+		program(self) := undef
+	endseqblock

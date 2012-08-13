@@ -1,0 +1,45 @@
+/**
+ * Sample CoreASM Specification
+ *
+ * (c) 2006 CoreASM Development Team
+ *
+ */
+
+CoreASM ChooseExamples
+
+use StandardPlugins
+
+init InitRule
+
+rule InitRule = 
+	seq
+	par
+	   program(self) := undef
+	   choose x in [5 .. 17] do
+	     a := x
+	   ifnone
+	     a := 777
+	   endchoose
+	   choose x in [1 .. 10] with isEvenNumber(x) do
+	     par
+	       b := x
+	       c := 3 * x
+	     endpar	  
+	   ifnone
+	       b := 1337
+	   endchoose
+	   choose x in [1 .. 5] do
+	     choose y in {"a","b","c"} do
+	       choose z in [6 .. 10] do
+	         d := {x,y,z}
+		choose m in [1..100] with m + 5 = 100 do
+			foundM := true
+		choose m in [1..100] with m + 5 = 110 do
+			notFoundM := true
+		ifnone
+			notFoundM := false
+	endpar
+	next
+		print |d| + " " + foundM + " " + notFoundM
+
+	

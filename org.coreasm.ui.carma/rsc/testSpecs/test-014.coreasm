@@ -1,0 +1,28 @@
+CoreASM testQueue
+
+use StandardPlugins
+use QueuePlugin
+use StackPlugin
+
+init R
+
+rule R =
+	seqblock
+		queue := [1, 2]
+		enqueue 5 into queue
+		dequeue a from queue
+		enqueue 12 into queue
+		print queue
+		print a
+		print "head : " + head(queue)
+		print "peek : " + peek(queue)
+		print "tail : " + tail(queue)
+		print "last : " + last(queue)
+		dequeue a from queue
+		dequeue a from queue
+		dequeue a from queue
+		print a
+		print queue
+		program(self) := undef
+	endseqblock
+

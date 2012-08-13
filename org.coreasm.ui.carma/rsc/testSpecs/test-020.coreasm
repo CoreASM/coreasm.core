@@ -1,0 +1,28 @@
+CoreASM MathPluginExample
+
+use Standard
+use MathPlugin
+
+init Init
+
+rule Init = 
+   par
+      program(self) := @Main
+      a(1) := 5
+      a(2) := 10
+      a(100) := 500
+   endpar
+
+rule Main = 
+   let e = MathE in
+   seqblock
+   	  program(self) := undef
+      print "'e' = " + e
+      print "log(e) = " + log(e)
+      print "sin(30) = " + round( sin( toRadians(30) ) * 10 ) / 10
+      print "asin(0.5) = " + round( toDegrees( asin(0.5) ) )
+      print "min(51, 43) = " + min(51, 43)
+      print "sum( {1, 2, 100} ) = " + sum({1, 2, 100})
+      print "sum( {1, 2, 100}, @a ) = " + sum({1, 2, 100}, @a)
+   endseqblock
+

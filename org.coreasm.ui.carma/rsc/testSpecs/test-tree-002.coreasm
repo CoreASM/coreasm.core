@@ -1,0 +1,74 @@
+CoreASM simple
+
+use StandardPlugins
+
+use TreePlugin
+
+option TREE_OUTPUT_STRING "short"
+option LIST_FOR_TREES "short"
+option TREE_TRAVERSAL "depth-first"
+
+init R1
+
+rule R1 = {
+	seqblock
+	
+		make [1, [2, 3, 4]] into tree T1
+		
+		print "T1=[1, [2, 3, 4]]? " + T1
+		
+		make [5, 6, 7] into tree T2
+		print "T2=[5,6,7]? " + T2
+		
+		
+		
+		make [1, [T2]] into tree T3
+		print "T3=[1, [T2]]? " + T3
+		
+		
+		make [1, 2, [3, 4]] into tree T
+		print "T=[1,2,[3,4]]? " + T
+		
+		add child "test" to firstchild(T)
+		print "add child 'test' to firstchild(T)? " + T
+		
+		
+		make [1, []] into tree C
+		print "C= " + C
+		make [2, []] into tree D
+		print "D= " + D
+		make [100, [C, D, 3]] into tree T4
+		print "T4=[100, [C, D, 3]? " + T4
+		
+		remove child D from T4
+		print "remove child D from T4. T4= " + T4
+	
+	
+		print "value(treeparent(D))= " + value(treeparent(D))
+		print "value(treeparent(C))= " + value(treeparent(C))
+		
+		add child "ciao" to T4 at 1
+		print "add child \"ciao\" to T4 at 1. T4= " + T4
+		
+		
+		add child "prova" to T4 at 3
+		print "add child \"prova\" to T4 at 3. T4 = " + T4
+		
+		add child "ultimo" to T4 at 5
+		print "add child \"ultimo\" to T4 at 5. T4= " +  T4
+		
+		add child "ultimo2" to T4
+		print "add child \"ultimo2\" to T4. T4= " + T4
+		
+		make [1000, []] into tree TMP
+		print "make [1000, []] into tree TMP= " + TMP
+		
+		add child TMP to T4 at 1
+		print "add child TMP to T4 at 1. T4= " +  T4
+		
+		add child C to TMP at 1
+		print "add child D to T4 at 1. T4= " + T4
+		
+	endseqblock
+	program(self) := undef
+	}

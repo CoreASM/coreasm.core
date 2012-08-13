@@ -1,0 +1,42 @@
+CoreASM TestCase
+
+use Standard
+
+init R1 
+
+rule R1 = 
+  case a of
+	undef : a := 5
+		
+    5 : {
+			print "a is " + a
+			a := 7
+		 }
+
+	7 : case b of 
+			undef : b := 100
+
+			c : c := 60
+
+			100 : b := c
+
+			60 : 
+				par
+					print b + ":" + c
+					b := 0
+				endpar
+
+			0 : a := 10
+		endcase
+
+	10 : 
+		{
+			case c of
+				5 : print "oh, no!"
+				10 : print "not again!"
+		  	endcase
+			program(self) := undef 
+		}
+
+  endcase
+    

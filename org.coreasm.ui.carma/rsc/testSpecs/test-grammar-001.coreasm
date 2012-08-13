@@ -1,0 +1,76 @@
+CoreASM simple
+
+use StandardPlugins
+use GrammarPlugin
+use TreePlugin
+use Options
+use ListPlugin
+
+option TREE_OUTPUT_STRING "long" 
+init R1
+
+rule R1 = {
+	seqblock
+		
+		G := "B" | @H
+		H01 := "D" | "F"
+		parse "D" by H01 into T1
+		print T1
+		
+		IN := grammarINT
+		parse "1" by IN into YYYY
+		print YYYY
+		
+		
+		
+		
+		AA := "a" | "a"
+		BB := "b" | "b"
+		CC := "c" | "c"
+		
+		A := AA . BB . CC
+		
+		parse "a b c" by A into B
+		print B
+	
+		C := "abc"
+		D := "z" | @C
+		parse "abc" by D into T
+		print T
+		
+		NN := grammarID 
+		parse "identifier" by NN into T
+		print T
+		
+		KK := grammarDEC
+		parse "12.2" by KK into T3
+		print T3
+		
+		OO := grammarDQSTR
+		parse "\"prova\"" by OO into T4
+		print T4					
+		
+		WW := grammarSQCHAR
+		parse "'a'" by WW into T5
+		print T5
+		
+		OO := grammarREGEX("[a-d&&[^b]]*") 
+		parse "adda" by OO into T6
+		print T6
+		
+		// YY := grammarDEC | grammarDQSTR
+		// parse "\"pro  va\"" by YY into T7
+		// print T7
+		
+		G1 := grammarDEC | grammarINT
+		parse "10.0" by G1 into T1
+		print T1
+		
+		G2 := grammarHEX
+		parse "0xA" by G2 into TT2
+		print TT2
+		
+		
+	endseqblock
+	program(self) := undef
+	}

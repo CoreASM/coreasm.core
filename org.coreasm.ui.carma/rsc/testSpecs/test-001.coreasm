@@ -1,0 +1,11 @@
+CoreASM simple
+
+use StandardPlugins
+
+init R1
+
+rule R1 = 
+	par
+		print "Hellow World!"
+		program(self) := undef
+	endpar

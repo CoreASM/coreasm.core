@@ -1,0 +1,22 @@
+CoreASM TestExtensiveForall
+
+use Standard
+
+init R1
+
+rule R1 = 
+	if mode = 1 then
+		par
+			program(self) := undef
+			print "OK"
+		endpar
+	else
+	par
+		forall a in [1..500] do
+			forall b in [1..a] do
+				skip
+		if mode = undef then
+			mode := 1
+		else
+			mode := mode + 1
+	endpar
