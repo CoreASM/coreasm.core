@@ -21,21 +21,21 @@ while the engine itself can be used as an stand-alone tool (using its
 command-line or Eclipse plugin UI).
 
 What is Carma?
-==============
+--------------
 
 Carma is a command-line CoreASM Engine driver. It runs CoreASM specifications
 using a CoreASM Engine and offers control over the engine.  
 
 
 The Latest Version
-==================
+------------------
 
 Latest versions of Carma and the CoreASM Engine can be found on the CoreASM 
 Project web site <http://www.coreasm.org>.
 
 
 Licensing
-=========
+---------
  
 Both the Carma project and the CoreASM Engine project are licensed under the 
 Academic Free License version 3.0 which is available from either of these

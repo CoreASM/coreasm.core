@@ -1,4 +1,3 @@
-
 CoreASM License
 ===============
 
@@ -17,7 +16,7 @@ A copy of this license can be found here:
 
 
 Academic Free License ("AFL") v. 3.0
-====================================
+------------------------------------
 
 This Academic Free License (the "License") applies to any original work of
 authorship (the "Original Work") whose owner (the "Licensor") has placed the
