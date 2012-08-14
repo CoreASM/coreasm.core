@@ -20,18 +20,36 @@ be viewed as a tool suite with different tools it offers around the engine,
 while the engine itself can be used as an stand-alone tool (using its
 command-line or Eclipse plugin UI).
 
-What is Carma?
---------------
+### What is Carma?
 
 Carma is a command-line CoreASM Engine driver. It runs CoreASM specifications
 using a CoreASM Engine and offers control over the engine.  
 
 
+### How is it related to CoreASM on SourceForge?
+
+These are the same projects. At some point in 2012 we have stopped maintaing the
+code on sourceforge and started moving the repository to github.
+
+
+How To Build CoreASM?
+---------------------
+
+You can build the CoreASM core projects using [Maven](http://maven.apache.org). 
+Just run the following command in `org.coreasm.parent` project:
+
+    mvn clean install
+
+To build/update eclipse project files, run:
+
+    mvn eclipse:eclipse
+
+
 The Latest Version
 ------------------
 
-Latest versions of Carma and the CoreASM Engine can be found on the CoreASM 
-Project web site <http://www.coreasm.org>.
+Latest released versions of Carma and the CoreASM Engine can be found on the CoreASM 
+Project web site <http://www.coreasm.org>. 
 
 
 Licensing
