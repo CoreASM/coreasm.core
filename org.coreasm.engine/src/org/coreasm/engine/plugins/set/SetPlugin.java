@@ -14,10 +14,10 @@
 package org.coreasm.engine.plugins.set;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,12 +34,12 @@ import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.PluginAggregationAPI;
+import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.absstorage.PluginCompositionAPI;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
-import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
@@ -47,10 +47,9 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
@@ -58,7 +57,8 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.engine.plugins.collection.AbstractSetElement;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * Plugin for finite set related rules, literals, 
@@ -72,6 +72,8 @@ public class SetPlugin extends Plugin
 				ParserPlugin, InterpreterPlugin {
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 10, 2, "");
+
+	protected static final Logger logger = LoggerFactory.getLogger(SetPlugin.class);
 	
 	public static final String PLUGIN_NAME = SetPlugin.class.getSimpleName();
 
@@ -899,7 +901,7 @@ public class SetPlugin extends Plugin
 			
 			return new Update(l, new SetElement(resultSet), Update.UPDATE_ACTION, contributingAgents, contributingNodes);
 		} else
-			Logger.log(Logger.ERROR, Logger.storage, "Value is not a set (in SetPlugin Composition).");
+			logger.error("Value is not a set (in SetPlugin Composition).");
 		
 		return null;
 	}

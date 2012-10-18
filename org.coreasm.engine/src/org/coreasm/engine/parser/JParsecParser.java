@@ -13,15 +13,12 @@
  
 package org.coreasm.engine.parser;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.codehaus.jparsec.Parsers;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
@@ -31,8 +28,9 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * This is an implementation of the {@link Parser} component 
@@ -43,6 +41,8 @@ import org.coreasm.util.Tools;
  */
 public class JParsecParser implements Parser {
 
+	private static final Logger logger = LoggerFactory.getLogger(JParsecParser.class);
+	
 	/** Control API of engine which this parser belongs to */
 	private ControlAPI capi;
 		
@@ -123,7 +123,7 @@ public class JParsecParser implements Parser {
 			// error if specification is not set
 			if (specification==null)
 			{
-				Logger.parser.log(Logger.FATAL, "Specification file must first be set before its header can be parsed.");
+				logger.error("Specification file must first be set before its header can be parsed.");
 				throw new ParserException("Specification file must first be set before its header can be parsed.");
 			}
 		
@@ -147,7 +147,7 @@ public class JParsecParser implements Parser {
 		}
 		catch (NullPointerException e)
 		{
-			Logger.parser.log(Logger.ERROR,"CoreASM specification cannot be read from.");	
+			logger.error("CoreASM specification cannot be read from.");	
 		} 
 	}
 
@@ -177,7 +177,7 @@ public class JParsecParser implements Parser {
 							cause.printStackTrace(new PrintWriter(strWriter));
 							errorLogMsg = errorLogMsg + Tools.getEOL() + strWriter.toString();
 						}
-						Logger.parser.log(Logger.ERROR, errorLogMsg);
+						logger.error(errorLogMsg);
 						
 						throw new ParserException(msg, 
 								new CharacterPosition(pe.getLocation().line, pe.getLocation().column));
@@ -185,11 +185,11 @@ public class JParsecParser implements Parser {
 					throw new ParserException(e);
 				}
 			} else {
-				Logger.parser.log(Logger.FATAL, "Parser cannot find the Kernel plugin.");
+				logger.error("Parser cannot find the Kernel plugin.");
 				throw new EngineError("Parser cannot find the Kernel plugin.");
 			}
 		} else {
-			Logger.parser.log(Logger.FATAL, "Header must be parsed before the entire specification can be parsed.");
+			logger.error("Header must be parsed before the entire specification can be parsed.");
 			throw new ParserException("Header must be parsed before the entire specification can be parsed.");
 		}
 	}

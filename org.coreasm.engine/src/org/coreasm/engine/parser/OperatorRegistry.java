@@ -18,7 +18,8 @@ import java.util.Set;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  *	The registry of operators and their contributors.
@@ -30,7 +31,9 @@ import org.coreasm.util.Logger;
  *  
  */
 public final class OperatorRegistry {
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(OperatorRegistry.class);
+
 	private static Map<ControlAPI, OperatorRegistry> instances = null;
 	
 	// Maps of the form: Operator -> (PluginName -> OperatorRule) 
@@ -90,7 +93,7 @@ public final class OperatorRegistry {
 			if (mapping != null) 
 				names = mapping.keySet();
 		} else {
-			Logger.log(Logger.ERROR, Logger.parser, "\"" + grammarClass + "\" is not a supported class of operators (for operator \"" + token + "\").");
+			logger.error("\"" + grammarClass + "\" is not a supported class of operators (for operator \"" + token + "\").");
 		}
 		
 		return names;

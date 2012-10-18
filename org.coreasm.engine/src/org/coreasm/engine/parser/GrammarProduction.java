@@ -14,17 +14,17 @@
 
 package org.coreasm.engine.parser;
 
-import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.codehaus.jparsec.Parser;
-
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.GrammarRule.GRType;
 import org.coreasm.util.CoreASMGlobal;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** 
@@ -35,6 +35,8 @@ import org.coreasm.util.Logger;
  *  
  */
 public class GrammarProduction {
+
+	private static final Logger logger = LoggerFactory.getLogger(GrammarProduction.class);
 
 	private String nonterminal = null;
 	private final Hashtable<String, BodySegmentContributor> bodyContributors = new Hashtable<String,BodySegmentContributor>();
@@ -85,7 +87,7 @@ public class GrammarProduction {
 			this.parser = parser;
 		else
 			if (parser != null && this.parser != parser)
-			 Logger.parser.log(Logger.ERROR,"Production for \""+nonterminal+"\" was given multiple parsers.");
+			 logger.error("Production for '{}' was given multiple parsers.", nonterminal);
 	}
 	
 	/**
@@ -139,7 +141,7 @@ public class GrammarProduction {
 			
 		if (parser == null)
 		{
-			Logger.parser.log(Logger.FATAL,"Production for \""+nonterminal+"\" has no parser.");
+			logger.error("Production for \""+nonterminal+"\" has no parser.");
 			throw new ParserException("Production for \""+nonterminal+"\" has no parser.");
 		}
 				
@@ -179,7 +181,7 @@ public class GrammarProduction {
 			this.nonterminal = nonterminal;
 		// else if nonterminal IS given, but not the same as set observer
 		else if (nonterminal != null && this.nonterminal.equals(nonterminal) != true)
-			Logger.parser.log(Logger.ERROR,"Production for \""+this.nonterminal+"\" was given an grammar rule for nonterminal \""+nonterminal+"\".");	
+			logger.error("Production for \""+this.nonterminal+"\" was given an grammar rule for nonterminal \""+nonterminal+"\".");	
 	}
 	
 	/**
@@ -193,7 +195,7 @@ public class GrammarProduction {
 		// if body segment exists, it was already added by a different contributor
 		if (bodyContributors.containsKey(body))
 		{
-			Logger.parser.log(Logger.INFORMATION,"Production for \""+nonterminal+"\" contains duplicate body segment \""+body+"\", readded by \""+contributor+"\".");
+			logger.debug("Production for \""+nonterminal+"\" contains duplicate body segment \""+body+"\", readded by \""+contributor+"\".");
 			
 			// add the other contributor for this body segment
 			bodyContributors.get(body).addContributor(contributor);
@@ -216,7 +218,7 @@ public class GrammarProduction {
 		// if body segment exists, it was already added by a different contributor
 		if (bodyContributors.containsKey(body))
 		{
-			Logger.parser.log(Logger.INFORMATION,"Production for \""+nonterminal+"\" contains duplicate body segment \""+body+"\", readded by \""+contributors.toString()+"\".");
+			logger.debug("Production for \""+nonterminal+"\" contains duplicate body segment \""+body+"\", readded by \""+contributors.toString()+"\".");
 			
 			// add the other contributors for this body segment
 			bodyContributors.get(body).addContributor(contributors);
@@ -238,7 +240,7 @@ public class GrammarProduction {
 			this.type = type;
 		// else if type IS given, but not the same as set type
 		else if (type != null && this.type.equals(type) != true)
-			Logger.parser.log(Logger.ERROR,"Production for \""+this.nonterminal+"\" was given multiple rule types \""+this.type.toString()+"\", \""+type.toString()+"\".");	
+			logger.error("Production for \""+this.nonterminal+"\" was given multiple rule types \""+this.type.toString()+"\", \""+type.toString()+"\".");	
 	}
 	
 	/** 

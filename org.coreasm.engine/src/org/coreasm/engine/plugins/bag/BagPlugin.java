@@ -15,14 +15,14 @@ package org.coreasm.engine.plugins.bag;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -37,12 +37,12 @@ import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.PluginAggregationAPI;
+import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.absstorage.PluginCompositionAPI;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
-import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
@@ -50,18 +50,18 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMapN;
-import org.coreasm.engine.parser.ParserTools.ArrayParseMap;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParserTools.ArrayParseMap;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * Plugin providing the Bag background.
@@ -72,6 +72,8 @@ import org.coreasm.util.Logger;
 public class BagPlugin extends Plugin 
 		implements VocabularyExtender, OperatorProvider, Aggregator, 
 				ParserPlugin, InterpreterPlugin {
+
+	private static final Logger logger = LoggerFactory.getLogger(BagPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 0, 2, "beta");
 	
@@ -923,7 +925,7 @@ public class BagPlugin extends Plugin
 			result = new Update(l, newBag, Update.UPDATE_ACTION, contributingAgents, contributingNodes);
 			
 		} else
-			Logger.log(Logger.ERROR, Logger.storage, "Value is not a bag in BagPlugin composition.");
+			logger.error("Value is not a bag in BagPlugin composition.");
 		
 		return result;
 	}

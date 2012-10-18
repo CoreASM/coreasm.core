@@ -17,6 +17,7 @@ import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.Node;
+import org.slf4j.Logger;
 
 /**
  * This class provides various static methods that are considered to be
@@ -35,17 +36,17 @@ public class PluginTools {
 	 * 
 	 * @param node a node
 	 * @param capi the Control API of the plugin that calls this method
-	 * @param logger a logger (e.g., {@link Logger#interpreter})
+	 * @param logger a logger instance ({@link Logger}).
 	 * @return <code>true</code> if the node has updates; <code>false</code> otherwise.
 	 * 
 	 * @see Node
-	 * @see Logger
+	 * @see Loggers
 	 */
 	public static boolean hasUpdates(Interpreter interpreter, ASTNode node, ControlAPI capi, Logger logger) {
     	if (node.getUpdates() == null) {
 			String msg = "Rule provides no updates.";
 			if (logger != null)
-				Logger.log(Logger.ERROR, logger, msg + "[at " + node.getScannerInfo().getPos() + ")");
+				logger.error(msg + "[at " + node.getScannerInfo().getPos() + ")");
 			capi.error(msg, node, interpreter);
 			return false;
     	} else

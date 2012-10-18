@@ -1,9 +1,7 @@
 /*
- * Engine.java 	1.0 	$Revision: 243 $
+ * Engine.java 	
  *
- * Copyright (C) 2005 Roozbeh Farahbod 
- * 
- * Last modified by $Author: rfarahbod $ on $Date: 2011-03-29 02:05:21 +0200 (Di, 29 Mrz 2011) $.
+ * Copyright (C) 2005-2012 Roozbeh Farahbod 
  *
  * Licensed under the Academic Free License version 3.0 
  *   http://www.opensource.org/licenses/afl-3.0.php
@@ -33,10 +31,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -67,21 +65,22 @@ import org.coreasm.engine.plugin.ServiceProvider;
 import org.coreasm.engine.plugin.ServiceRequest;
 import org.coreasm.engine.scheduler.Scheduler;
 import org.coreasm.engine.scheduler.SchedulerImp;
-import org.coreasm.util.CoreASMGlobal;
-import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides the actual implementation of a CoreASM engine. It implements {@link ControlAPI} and has
  * four components: a {@link Parser}, a {@link Scheduler}, an {@link Interpreter}, and an {@link AbstractStorage}.
  * 
  * @author Roozbeh Farahbod
- * @version 1.5
  * 
  */
 public class Engine implements ControlAPI {
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 5, 6, "beta");
+	
+	private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 	
 	private static final String PLUGIN_PROPERTIES_FILE_NAME = "CoreASMPlugin.properties";
 	private static final String PLUGIN_ID_FILE_NAME = "CoreASMPlugin.id";
@@ -100,9 +99,6 @@ public class Engine implements ControlAPI {
 	private final Scheduler scheduler;
 
 	private final Interpreter interpreter;
-	
-//	TODO: comment me
-	private LinkedList<InterpreterListener> interpreterListeners = new LinkedList<InterpreterListener>();
 
 	/** Map of available plugin names to available plugins. */
 	private Map<String, Plugin> allPlugins;
@@ -143,6 +139,8 @@ public class Engine implements ControlAPI {
 
 	/** Collection of registered observers */
 	private Collection<EngineObserver> observers;
+
+	private LinkedList<InterpreterListener> interpreterListeners;
 
 	/** Remaining steps of the current run */
 	private int remainingRunCount = 0;
@@ -192,6 +190,7 @@ public class Engine implements ControlAPI {
 		operatorRules = new ArrayList<OperatorRule>();
 		engineMode = EngineMode.emIdle;
 		observers = new HashSet<EngineObserver>();
+		interpreterListeners = new LinkedList<InterpreterListener>();
 		modeEventCache = new HashMap<EngineMode, Map<EngineMode,EngineModeEvent>>();
 		specification = null;
 		warnings = new ArrayList<CoreASMWarning>();
@@ -386,17 +385,6 @@ public class Engine implements ControlAPI {
 		return scheduler.getUpdateInstructions();
 	}
 
-	// /**
-	// * @see ControlAPI#setState(State)
-	// */
-	// public void setState(State newState) {
-	// if (engineMode == EngineMode.emIdle)
-	// storage.setState(newState);
-	// else
-	// Logger.log(Logger.ERROR, Logger.controlAPI, "Cannot change engine state
-	// when engine is not in the idle mode.");
-	// }
-
 	@Override
 	public void updateState(Set<Update> update)
 			throws InconsistentUpdateSetException, InvalidLocationException {
@@ -406,8 +394,7 @@ public class Engine implements ControlAPI {
 			else
 				throw new InconsistentUpdateSetException();
 		else
-			Logger.log(Logger.ERROR, Logger.controlAPI,
-							"Cannot update engine state when engine is not in the idle mode.");
+			logger.error("Cannot update engine state when engine is not in the idle mode.");
 	}
 
 	/**
@@ -433,9 +420,7 @@ public class Engine implements ControlAPI {
 		if (getEngineMode() == EngineMode.emIdle)
 			this.properties = new EngineProperties(newProperties);
 		else
-			Logger
-					.log(Logger.ERROR, Logger.controlAPI,
-							"Cannot change engine properties when engine is not in the idle mode.");
+			logger.error("Cannot change engine properties when engine is not in the idle mode.");
 	}
 
 	@Override
@@ -541,10 +526,10 @@ public class Engine implements ControlAPI {
 	 * 
 	 */
 	private void loadCatalog() throws IOException {
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
+		logger.debug(
 				"Loading plugin catalog...");
 		
-		String rootFolder = CoreASMGlobal.getRootFolder();
+		String rootFolder = Tools.getRootFolder();
 		
 		// drop '/' from the end
 		if (rootFolder.charAt(rootFolder.length() - 1) == '/') 
@@ -568,14 +553,12 @@ public class Engine implements ControlAPI {
 	 */
 	private void loadCatalog(String folder, boolean enforceFolder) throws IOException {
 		File pluginsDir = new File(folder);
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
-				"Plugin folder: " + pluginsDir);
+		logger.debug("Plugin folder: {}", pluginsDir);
 
 		String[] folders = pluginsDir.list();
 		if (folders == null) {
 			if (enforceFolder) {
-				Logger.log(Logger.ERROR, Logger.controlAPI,
-						"Problem reading pluging folder: " + folder);
+				logger.error("Problem reading pluging folder: {}", folder);
 				throw new IOException("Cannot read plugin folder ("
 						+ pluginsDir.getName() + ").");
 			} else {
@@ -588,7 +571,7 @@ public class Engine implements ControlAPI {
 			
 			// ignore .svn and other hidden files/folders
 			if (folders[i].startsWith(".")) {
-				Logger.log(Logger.WARNING, Logger.controlAPI, "Ignoring " + fullName);
+				logger.warn("Ignoring {}", fullName);
 				continue;
 			}
 			loadPluginClasses(fullName);
@@ -616,9 +599,7 @@ public class Engine implements ControlAPI {
 			else
 				throw new EngineException("Cannot detect plugin.");
 		} catch (EngineException e) {
-			Logger.log(Logger.ERROR, Logger.controlAPI,
-					"Cannot load plugin '" + fileName
-							+ "'. " + e.getMessage() + " Skipping this plugin.");
+			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", fileName, e.getMessage());
 		}
 	}
 
@@ -719,7 +700,7 @@ public class Engine implements ControlAPI {
 		Object o = null;
 		Class pc = null;
 		try {
-			Logger.log(Logger.INFORMATION, Logger.controlAPI, "Loading plugin: " + className);
+			logger.debug( "Loading plugin: {}", className);
 			pc = loader.loadClass(className);
 			/*
 			MinimumEngineVersion minVersion = (MinimumEngineVersion)pc.getAnnotation(MinimumEngineVersion.class);
@@ -737,23 +718,17 @@ public class Engine implements ControlAPI {
 			*/
 			o = pc.newInstance();
 		} catch (Exception e) {
-			Logger.log(Logger.ERROR, Logger.controlAPI,
-					"Cannot load plugin '" + pName + "' ("
-							+ e.getMessage() + "). Skipping this plugin.");
+			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", pName, e.getMessage());
 			return;
 		}
 		if (o instanceof Plugin) {
 			Plugin p = (Plugin) o;
 			p.setControlAPI(this);
-			Logger.log(Logger.INFORMATION, Logger.controlAPI, "Plugin '"
-					+ p.getName() + "' is usable.");
+			logger.debug("Plugin '{}' is usable.", p.getName());
 			allPlugins.put(p.getName(), p);
 		} else
-			Logger.log(	Logger.ERROR,
-						Logger.controlAPI,
-						"Invalid plugin '"
-								+ className
-								+ "'. This class does not extend the CoreASM Pluing class.");
+			logger.error(
+						"Invalid plugin '{}'. This class does not extend the CoreASM Pluing class.", className);
 	}
 	
 	
@@ -809,12 +784,12 @@ public class Engine implements ControlAPI {
 	 * Loads core plugins.
 	 */
 	private void loadCorePlugins() {
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
+		logger.debug(
 				"Load Core Plugins is called.");
 
 		// Explicitly loading the kernel plugin
 		Kernel kernelPlugin = new Kernel();
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
+		logger.debug(
 				"Kernel Plugin loaded.");
 		allPlugins.put(kernelPlugin.getName(), kernelPlugin); // get plugin
 																// uses
@@ -926,15 +901,14 @@ public class Engine implements ControlAPI {
 		if (loadedPlugins.contains(p))
 			return;
 
-		Logger.log(Logger.INFORMATION, Logger.controlAPI, "initializing "
-				+ p.getName() + "...");
+		logger.debug( "initializing {}...",  p.getName());
 		
 		try {
 			// this plugin is associated with this engine
 			// instance
 			p.initialize(this);
 		} catch (InitializationFailedException e) {
-			Logger.log(Logger.ERROR, Logger.controlAPI, e.getMessage());
+			logger.error( e.getMessage());
 			throw new EngineError(e.getMessage());
 		} 
 
@@ -951,8 +925,7 @@ public class Engine implements ControlAPI {
 	 */
 	private void notifySuccess() {
 		// TODO no notification is sent
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
-				"Last update succeeded.");
+		logger.debug("Last update succeeded.");
         scheduler.incrementStepCount();
 	}
 
@@ -971,7 +944,7 @@ public class Engine implements ControlAPI {
 			if (observer instanceof EngineStepObserver)
 				observer.update(event);
 		}
-		Logger.log(Logger.WARNING, Logger.controlAPI, "Last update failed.");
+		logger.warn("Last update failed.");
 	}
 
 	/**
@@ -1122,7 +1095,7 @@ public class Engine implements ControlAPI {
 				EngineProperties.YES))
 			e.cause.printStackTrace();
 
-		Logger.log(Logger.ERROR, Logger.controlAPI, e.showError(parser, specification));
+		logger.error( e.showError(parser, specification));
 	}
 	
 	@Override
@@ -1169,7 +1142,7 @@ public class Engine implements ControlAPI {
 			if (o instanceof EngineWarningObserver)
 				o.update(event);
 		}
-		Logger.log(Logger.WARNING, Logger.controlAPI, w.showWarning(parser, specification));
+		logger.warn(w.showWarning(parser, specification));
 	}
 	
 
@@ -1199,8 +1172,7 @@ public class Engine implements ControlAPI {
 				e.printStackTrace();
 			}
 		}
-		Logger.log(Logger.INFORMATION, Logger.controlAPI,
-				"Finished waiting... mode: " + getEngineMode());
+		logger.debug("Finished waiting. (Mode: {})",getEngineMode());
 	}
 
 	@Override
@@ -1264,7 +1236,7 @@ public class Engine implements ControlAPI {
 							try {
 								Thread.sleep(100);
 							} catch (InterruptedException e) {
-								Logger.log(Logger.INFORMATION, Logger.controlAPI, "Engine is forced to stop.");
+								logger.debug( "Engine is forced to stop.");
 							}
 						}
 
@@ -1449,9 +1421,7 @@ public class Engine implements ControlAPI {
 										// Recover by going to the idle mode
 										next(EngineMode.emIdle);
 										lastError = null;
-										Logger.log(Logger.INFORMATION,
-														Logger.controlAPI,
-														"Engine recovered from error by user command.");
+										logger.debug("Engine recovered from error by user command.");
 										break;
 									}
 								}
@@ -1461,15 +1431,16 @@ public class Engine implements ControlAPI {
 						}
 					} catch (CoreASMError ce) {
 						error(ce);
-						Logger.log(Logger.ERROR, Logger.controlAPI, "Error occured: " + ce.showError());
+						logger.error( "Error occured: {}", ce.showError());
 					} catch (Throwable e) {
 						if (e instanceof ParserException)
 							error(new CoreASMError((ParserException)e));
 						else
 							error(e);
-						StackTraceElement[] trace = e.getStackTrace();
-						for (StackTraceElement ste: trace)
-							Logger.log(Logger.ERROR, Logger.controlAPI, ste.toString());
+						logger.error("Exception occured. ", e);
+						// StackTraceElement[] trace = e.getStackTrace();
+						// for (StackTraceElement ste: trace)
+						//   logger.error( ste.toString());
 					}
 				}
 				
@@ -1590,7 +1561,7 @@ public class Engine implements ControlAPI {
 						try {
 							specification = new Specification(Engine.this, new File((String)cmdData.specInfo));
 							parser.setSpecification(specification);
-							Logger.log(Logger.INFORMATION, Logger.controlAPI, tempMsg + ": " + cmdData.specInfo);
+							logger.debug("{}: {}", tempMsg, cmdData.specInfo);
 							next(EngineMode.emParsingHeader);
 						} catch (FileNotFoundException e) {
 							error("Specification file is not found (" + cmdData.specInfo + ")\n. Nothing is loaded.");
@@ -1603,7 +1574,7 @@ public class Engine implements ControlAPI {
 							try {
 								specification = new Specification(Engine.this, nsrData.reader, nsrData.fileName);
 								parser.setSpecification(specification);
-								Logger.log(Logger.INFORMATION, Logger.controlAPI, tempMsg + ".");
+								logger.debug("{}.", tempMsg);
 								next(EngineMode.emParsingHeader);
 							} catch (IOException e) {
 								error("Specification file cannot be read from (" + nsrData.fileName + ")\n. Nothing is loaded.");
@@ -1746,7 +1717,6 @@ public class Engine implements ControlAPI {
 	public List<InterpreterListener> getInterpreterListeners() {
 		return interpreterListeners;
 	}
-
 }
 
 /**

@@ -25,7 +25,8 @@ import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterImp;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.FJTask;
 
@@ -40,7 +41,9 @@ import EDU.oswego.cs.dl.util.concurrent.FJTask;
 public class ConcurrentProgramEvaluator extends FJTask {
 
 	public static final int DEFAULT_BATCH_SIZE = 1;
-	
+
+	protected static final Logger logger = LoggerFactory.getLogger(ConcurrentProgramEvaluator.class);
+
 	public final AgentContextMap agentContextMap;
 	
 	private final ControlAPI capi;
@@ -179,8 +182,8 @@ public class ConcurrentProgramEvaluator extends FJTask {
 		else
 			result = rootNode.getUpdates();
 		
-		if (Logger.verbosityLevel >= Logger.INFORMATION)
-			Logger.log(Logger.INFORMATION, Logger.scheduler, "Updates are: " + result.toString());
+		if (logger.isDebugEnabled())
+			logger.debug("Updates are: " + result.toString());
 
 	}
 	

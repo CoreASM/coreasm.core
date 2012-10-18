@@ -15,20 +15,18 @@
 package org.coreasm.engine.plugins.schedulingpolicies;
 
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineException;
-import org.coreasm.engine.scheduler.SchedulingPolicy;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -50,9 +48,8 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.ParseMap;
-import org.coreasm.engine.parser.ParseMapN;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.InterpreterPlugin;
@@ -60,7 +57,9 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.SchedulerPlugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.util.Logger;
+import org.coreasm.engine.scheduler.SchedulingPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides some basic scheduling policies for running agents.
@@ -71,6 +70,8 @@ import org.coreasm.util.Logger;
 
 public class SchedulingPoliciesPlugin extends Plugin implements 
 			SchedulerPlugin, ParserPlugin, InterpreterPlugin, VocabularyExtender, ExtensionPointPlugin {
+
+	protected static final Logger logger = LoggerFactory.getLogger(SchedulingPoliciesPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 6, 3, "alpha");
 	
@@ -97,8 +98,6 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 	private static final String SHUTDOWN_KEYWORD = "shutdown";
 	private static final String AGENT_SCHEDULING_STATUS_FUNC_NAME = "SchedulingPolicies.agentSchedulingStatus";
 
-	private static final String LOG_PREFIX = "SchedulingPolicies: ";
-	
 	private final NameElement suspendedFlag = new NameElement("suspended");
 	private final NameElement terminatedFlag = new NameElement("terminated");
 	private final MapFunction agentSchedulingStatusFunction = new MapFunction();
@@ -277,7 +276,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 							new Update(getSchedulingStatusLocation(agentNode.getValue()), 
 									suspendedFlag, Update.UPDATE_ACTION, interpreter.getSelf(), pos.getScannerInfo())), null);
 
-					Logger.log(Logger.INFORMATION, Logger.plugins, LOG_PREFIX + "suspending agent " + agentNode.getValue());
+					logger.debug("Suspending agent '{}'.", agentNode.getValue());
 				}
 			} else 
 				if (node.getKeyword().equals(RESUME_AGENT_KEYWORD)) {
@@ -295,7 +294,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 									new Update(getSchedulingStatusLocation(agentNode.getValue()), 
 											Element.UNDEF, Update.UPDATE_ACTION, interpreter.getSelf(), pos.getScannerInfo())), null);
 
-							Logger.log(Logger.INFORMATION, Logger.plugins, LOG_PREFIX + "resuming agent " + agentNode.getValue());
+							logger.debug("Resuming agent '{}'", agentNode.getValue());
 						} else
 							capi.error("The agent is not suspended and cannot be resumed.", pos, interpreter);
 					}
@@ -318,7 +317,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 
 							pos.setNode(null, updates, null);
 
-							Logger.log(Logger.INFORMATION, Logger.plugins, LOG_PREFIX + "terminating agent " + agentNode.getValue());
+							logger.debug("Terminating agent '{}'.", agentNode.getValue());
 						}
 					} else 
 						if (node.getKeyword().equals(SHUTDOWN_KEYWORD)) {
@@ -333,7 +332,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 							}
 							pos.setNode(null, updates, null);
 
-							Logger.log(Logger.INFORMATION, Logger.plugins, LOG_PREFIX + "shutting down.");
+							logger.debug("Shutting down.");
 						}
 			
 		} 

@@ -22,14 +22,15 @@ import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRegistry;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParseMap;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -42,6 +43,8 @@ import org.coreasm.util.Logger;
  */
 
 public class ExpressionParserFactory {
+
+	private static final Logger logger = LoggerFactory.getLogger(ExpressionParserFactory.class);
 
 	private final Parser<Node> termParser;
 	private final Parser<Node> basicExprParser;
@@ -294,7 +297,7 @@ public class ExpressionParserFactory {
 					+ oprToken + "\" from " + oprRule.contributor + " with precedence level " 
 					+ oprRule.precedence + " conflicts with the same operator from "
 					+ anotherRule.contributor + " with precedence level " + anotherRule.precedence + ".";
-				Logger.log(Logger.ERROR, Logger.plugins, errorMsg);
+				logger.error(errorMsg);
 				throw new EngineError(errorMsg);
 			}
 	}

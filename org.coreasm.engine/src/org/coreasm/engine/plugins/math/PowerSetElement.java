@@ -26,7 +26,8 @@ import java.util.Set;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.plugins.set.SetElement;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provide the powerset of an enumerable.
@@ -40,6 +41,8 @@ public class PowerSetElement extends Element implements Enumerable, Collection<E
 
 	public static final int MAX_SIZE = 31;
 	
+	protected static final Logger logger = LoggerFactory.getLogger(PowerSetElement.class);
+
 	private final ArrayList<Element> elements;
 	private Set<Element> elementsSet = null;
 	private String denotationalValue = null;
@@ -47,7 +50,7 @@ public class PowerSetElement extends Element implements Enumerable, Collection<E
 	public PowerSetElement(Enumerable baseSet) {
 		Collection<? extends Element> base = baseSet.enumerate();
 		if (base.size() > MAX_SIZE)
-			Logger.log(Logger.WARNING, Logger.plugins, 
+			logger.warn( 
 					"MathPlugin: Powerset function over a collection of more than " + MAX_SIZE + " elements.");
 		elements = new ArrayList<Element>(base);
 	}
@@ -152,7 +155,7 @@ public class PowerSetElement extends Element implements Enumerable, Collection<E
 
 	public int size() {
 		if (elements.size() > MAX_SIZE) {
-			Logger.log(Logger.WARNING, Logger.plugins, 
+			logger.warn(
 					"MathPlugin: Cannot return the size of the Powerset function over a collection of more than " + MAX_SIZE + " elements.");
 			return Integer.MAX_VALUE;
 		} else 

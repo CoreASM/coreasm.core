@@ -38,13 +38,13 @@ import org.coreasm.engine.kernel.FunctionRuleTermParseMap;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adds functionality in handling function and rule elements
@@ -53,6 +53,8 @@ import org.coreasm.util.Tools;
  *
  */
 public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, InterpreterPlugin {
+
+	protected static final Logger logger = LoggerFactory.getLogger(KernelExtensionsPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 0, 0, "alpha");
 
@@ -253,7 +255,7 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 				} else { 
 					String msg = "Cannot apply arguments to a non-function value.";
 					capi.error(msg, pos, interpreter);
-					Logger.log(Logger.ERROR, Logger.plugins, msg);
+					logger.error(msg);
 				}
 			} 
 		} else
@@ -282,7 +284,7 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 			} else { 
 				String msg = "Cannot call a non-rule value.";
 				capi.error(msg, pos, interpreter);
-				Logger.log(Logger.ERROR, Logger.plugins, msg);
+				logger.error(msg);
 			}
 
 		return pos;

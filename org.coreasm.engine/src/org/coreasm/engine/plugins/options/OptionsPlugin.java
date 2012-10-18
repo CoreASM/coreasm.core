@@ -20,19 +20,18 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * This plug-in provides the means to set CoreASM engine properties. These
@@ -51,6 +50,8 @@ import org.coreasm.util.Logger;
  */
 public class OptionsPlugin extends Plugin implements ParserPlugin,
 		ExtensionPointPlugin {
+
+	protected static final Logger logger = LoggerFactory.getLogger(OptionsPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 0, 1, "");
 	
@@ -245,8 +246,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
             if (currentNode instanceof OptionNode) {
             	optionNode = (OptionNode)currentNode; 
             	capi.setProperty(optionNode.getOptionName(), optionNode.getOptionValue());
-                Logger.log(Logger.INFORMATION, Logger.global,
-                        "Option \"" + optionNode.getOptionName() + "\" is set to \"" + optionNode.getOptionValue() + "\".");
+                logger.debug("Option '{}' is set to '{}'.", optionNode.getOptionName(), optionNode.getOptionValue());
             }
             currentNode = currentNode.getNext();
         }
@@ -267,8 +267,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
                 
                 node = node.getNext();            
                 if (node == null) {
-                    Logger.log(Logger.INFORMATION, Logger.global,
-                            "No options are specified.");
+                    logger.debug("No options are specified.");
                     return;
                 }
             }        

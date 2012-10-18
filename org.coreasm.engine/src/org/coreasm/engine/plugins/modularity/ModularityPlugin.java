@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Token;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.GrammarRule;
@@ -40,9 +40,9 @@ import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugins.string.StringNode;
-import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides some basic modularity features to CoreASM.
@@ -53,6 +53,8 @@ import org.coreasm.util.Tools;
 
 public class ModularityPlugin extends Plugin implements ParserPlugin,
 		ExtensionPointPlugin {
+
+	protected static final Logger logger = LoggerFactory.getLogger(ModularityPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 1, 0, "alpha");
 	
@@ -176,7 +178,6 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 			}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 				@Override
 				public Node map(Object[] from) {
-										
 					int index = -1;
 					if (from[0]!=null && from[0] instanceof Token)
 						index = ((Token)from[0]).index();
@@ -238,12 +239,12 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 				while (fileName.startsWith("\"") && fileName.endsWith("\"")) 
 					fileName = fileName.substring(1, fileName.length()-1);
 				if (loadedModules.contains(fileName))
-					Logger.log(Logger.INFORMATION, Logger.plugins,
+					logger.info(
 							"ModularityPlugin: Skipping module '" + fileName + "' since it's already loaded.");
 				else 
 					try {
 						loadedModules.add(fileName);
-						Logger.log(Logger.INFORMATION, Logger.plugins, 
+						logger.info( 
 								"ModularityPlugin: Loading module '" + fileName + "'.");
 						List<SpecLine> newLines = injectModules(Specification.loadSpec(capi.getSpec(), fileName));
 						for (SpecLine newLine: newLines)
@@ -262,42 +263,30 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	
 	
 	/**
-	 * Node for include Statements.
-	 * This is necessary when using the parser without the engine,
-	 * so include's don't get replaced before parsing.
-	 * 
-	 * @param filenameToken The token of the node returned by the string parser
-	 * 			which parsers the filename. The constructor reads the filename
-	 * 			out of that string.
+	 * Node for include Statements. This is necessary when using the parser
+	 * without the engine, so include's don't get replaced before parsing. *
 	 * 
 	 * @author Markus
 	 */
-	public class IncludeNode
-	extends Node
-	{
+	public class IncludeNode extends Node {
 		private static final long serialVersionUID = 1L;
 
 		private String filename = null;
-		
-		public IncludeNode(ScannerInfo scannerInfo)
-		{
+
+		public IncludeNode(ScannerInfo scannerInfo) {
 			super(PLUGIN_NAME, "include", scannerInfo, "Include");
 		}
-				
-		public String getFilename()
-		{
+
+		public String getFilename() {
 			if (filename == null) {
-				
 				Node filenameNode = this.getChildNode("alpha");
 				String fname = filenameNode.unparse();
-				fname = fname.substring(1, fname.length()-1); // remove quotes
+				fname = fname.substring(1, fname.length() - 1); // remove quotes
 				this.filename = fname;
 			}
-			
+
 			return filename;
 		}
-		
-		
+
 	}
-	
 }

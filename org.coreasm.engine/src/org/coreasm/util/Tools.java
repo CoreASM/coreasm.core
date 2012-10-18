@@ -15,6 +15,10 @@
  
 package org.coreasm.util;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +33,8 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  *	Provides some general functionalities 
@@ -38,6 +44,8 @@ import org.coreasm.engine.parser.Parser;
  */
 public class Tools {
 	
+	private final static Logger logger = LoggerFactory.getLogger(Tools.class);
+
 	private static String eol = null;
 	
 	public static final int DEFAULT_STRING_LENGTH_LIMIT =   40;
@@ -400,5 +408,75 @@ public class Tools {
 				return i;
 		return -1;
 	}
+
+	/**
+	 * Detects and returns the root folder of the running application.
+	 */
+	public static String getRootFolder() {
+		return getRootFolder(null);
+	}
+
+
+	/**
+	 * Detects and returns the root folder of the running application.
+	 */
+	public static String getRootFolder(Class<?> mainClass) {
+		if (mainClass == null)
+			mainClass = Tools.class;
+		
+		final String baseErrorMsg = "Cannot locate root folder.";
+
+		final String classFile = mainClass.getName().replaceAll("\\.", "/") + ".class";
+		final URL classURL = ClassLoader.getSystemResource(classFile);
+
+		String fullPath = "";
+		String sampleClassFile = "/org/coreasm/util/Tools.class";
+		if (classURL == null) {
+			Tools tempObject = new Tools();
+			fullPath = tempObject.getClass().getResource(sampleClassFile).toString();
+//			logger.warn("{} The application may be running in an OSGi container.", baseErrorMsg);
+//			return ".";
+		} else {
+			fullPath = classURL.toString();
+		}
+		
+		
+		try {
+			fullPath = URLDecoder.decode(fullPath, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			logger.warn("{} UTF-8 encoding is not supported.", baseErrorMsg);
+			return ".";
+		}
+		
+		if (fullPath.indexOf("file:") > -1) {
+			fullPath = fullPath.replaceFirst("file:", "").replaceFirst(classFile, "");
+			fullPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+		} 
+		if (fullPath.indexOf("jar:") > -1) {
+			fullPath = fullPath.replaceFirst("jar:", "").replaceFirst("!" + classFile, "");
+			fullPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+		}
+		if (fullPath.indexOf("bundleresource:") > -1) {
+			fullPath = fullPath.substring(0, fullPath.indexOf(sampleClassFile));
+		}
+		
+		// replace the java separator with the 
+		fullPath = fullPath.replace('/', File.separatorChar);
+		
+		// remove leading backslash
+		if (fullPath.startsWith("\\")){
+			fullPath = fullPath.substring(1);
+		}
+		
+		// remove the final 'bin'
+		final int binIndex = fullPath.indexOf(File.separator + "bin");
+		if (binIndex == fullPath.length() - 4)
+			fullPath = fullPath.substring(0, binIndex);
+		
+		logger.debug("Root folder is detected at {}.", fullPath);
+		
+		return fullPath;
+	}
+
 }
 
