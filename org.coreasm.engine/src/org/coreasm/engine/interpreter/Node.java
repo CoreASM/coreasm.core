@@ -29,7 +29,7 @@ import org.coreasm.util.Tools;
 /** 
  * Root class of nodes in the parse tree. 
  *   
- * @author  Roozbeh Farahbod
+ * @author  Roozbeh Farahbod, Marcel Dausend
  * 
  */
 public class Node implements Serializable {
@@ -563,6 +563,49 @@ public class Node implements Serializable {
 			return CharacterPosition.NO_POSITION;
 		else
 			return scannerInfo.getPos(parser.getPositionMap());
+	}
+	
+	/**
+	 * This method removes the node (and its subtree) from its tree and returns
+	 * its previous sibling node, so that one can use this information for
+	 * exchanging nodes.
+	 * 
+	 * @return null if the node to be deleted is first child, else return its
+	 *         previous sibling
+	 * @author Marcel Dausend
+	 */
+	public Node removeFromTree(){
+		Node previousSiblingNode = null;
+		if(this.getParent()!=null){
+			 previousSiblingNode = this.getParent().removeNodeFromChildList(this);
+			this.setParent(null);
+			}
+		else return this;
+		return previousSiblingNode;
+	}
+	
+	/**
+	 * Removes this node from the list of children of its parent.
+	 * 
+	 * @param node
+	 *            which should be removed from the childlist of this
+	 * @return null if the node to be deleted is first child, else return its
+	 *         previous sibling
+	 * @author Marcel Dausend
+	 */
+	private Node removeNodeFromChildList(Node child){
+		Node currentChild = this.getFirstCSTNode();
+		if(currentChild==child)
+			this.children.remove(child);
+		else
+			while(currentChild.getNextCSTNode()!=null) {
+				if(currentChild.getNextCSTNode()==child)
+				{
+					this.children.remove(child);
+					return currentChild;
+				}else currentChild = currentChild.getNextCSTNode();
+			}
+			return null;
 	}
 	
 	/**

@@ -20,11 +20,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Properties;
+import java.net.URLDecoder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.engine.EngineProperties;
 
 /** 
  *	Provides global services for CoreASM engine and its components.
@@ -34,13 +33,11 @@ import org.slf4j.LoggerFactory;
  */
 public class CoreASMGlobal {
 	
-	protected static final Logger logger = LoggerFactory.getLogger(CoreASMGlobal.class);
-
 	/** The binary folder of CoreASM */
 	private static final String BIN_FOLDER = "/bin";
 	
-	/** The config folder of CoreASM */
-	private static final String CONFIG_FOLDER = "/config";
+	/** The data folder of CoreASM */
+	private static final String DATA_FOLDER = "/data";
 	
 	/** The kernel configuration file. */
 	private static final String KERNEL_CONF_FILE_NAME = "kernel.conf";
@@ -60,6 +57,25 @@ public class CoreASMGlobal {
 	private static Properties globalProperties = null;
 	
 	/**
+	 * Returns the root folder of the CoreASM package. It assumes that
+	 * the binary files are located in a <code>[CoreASM]/bin</code> folder,
+	 * and it returns the <code>[CoreASM]</code> part of the path. 
+	 */
+	public synchronized static String getRootFolder() {
+//		if (globalProperties != null)
+//			rootFolder = getProperty(ROOT_FOLDER_PROPERTY);
+		if (ROOT_FOLDER == null) {
+            
+            ROOT_FOLDER = System.getenv(COREASM_ROOT_ENV_VAR);
+            
+            if (ROOT_FOLDER == null) {
+                findRootFolder();
+            }
+		}
+		return ROOT_FOLDER;
+	}
+	
+	/**
 	 * Sets the root folder for the CoreASM engine.
 	 * 
 	 * @param rootFolder string pointing to the root folder
@@ -73,16 +89,16 @@ public class CoreASMGlobal {
 	 */
 	public synchronized static Properties getProperties() {
 		if (globalProperties == null) {
-			String rootFolder = Tools.getRootFolder();
+			String rootFolder = getRootFolder();
 			globalProperties = getDefaultProperties();
 			try {
-				FileInputStream stream = new FileInputStream(rootFolder + CONFIG_FOLDER + "/" + KERNEL_CONF_FILE_NAME);
+				FileInputStream stream = new FileInputStream(rootFolder + DATA_FOLDER + "/" + KERNEL_CONF_FILE_NAME);
 				globalProperties.load(stream);
 			} catch (FileNotFoundException e) {
-				logger.warn("Kernel configuration file not found. Saving defaults.");
+				Logger.log(Logger.WARNING, Logger.global, "Kernel configuration file not found. Saving defaults.");
 				saveGeneralProperties();
 			} catch (IOException e) {
-				logger.error("Cannot load kernel configuration file (" + e.getMessage() + ").");
+				Logger.log(Logger.ERROR, Logger.global, "Cannot load kernel configuration file (" + e.getMessage() + ").");
 			}
 		}
 		return globalProperties;
@@ -115,7 +131,7 @@ public class CoreASMGlobal {
 	 * Tries to find the value of root folder. It assumes that
 	 * the binary files are located in a <code>[CoreASM]/bin</code> folder. 
 	 */
-	private synchronized static void findsRootFolder() {
+	private synchronized static void findRootFolder() {
 		// Finding data folder
 		String sampleClassFile = "/org/coreasm/util/CoreASMGlobal.class";
 		CoreASMGlobal tempObject = new CoreASMGlobal();
@@ -128,7 +144,7 @@ public class CoreASMGlobal {
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			logger.error("UTF-8 Encoding not supported");
+			Logger.log(Logger.ERROR, Logger.global, "UTF-8 Encoding not supported");
 		}
 		
 		if (ROOT_FOLDER.indexOf("file:") > -1) {
@@ -145,7 +161,7 @@ public class CoreASMGlobal {
 			// ROOT_FOLDER = ROOT_FOLDER.substring(0, ROOT_FOLDER.lastIndexOf(BIN_FOLDER)+1);
 			/* new way */
 			ROOT_FOLDER = ROOT_FOLDER.substring(0, ROOT_FOLDER.lastIndexOf('/'));
-			logger.debug("Root folder is detected as {}.", ROOT_FOLDER);
+			Logger.log(Logger.INFORMATION, Logger.global, "Root folder is detected as " + ROOT_FOLDER);
 		}
 	}
 	
@@ -164,20 +180,20 @@ public class CoreASMGlobal {
 	 */
 	private static void saveGeneralProperties() {
 		try {
-			File configFolder = new File(Tools.getRootFolder() + CONFIG_FOLDER);
-			if (!configFolder.exists()) {
-				if (!configFolder.mkdirs()) {
-					logger.error("Cannot create 'data' folder. Saving kernel configuration is aborted.");
+			File dataFolder = new File(getRootFolder() + DATA_FOLDER);
+			if (!dataFolder.exists()) {
+				if (!dataFolder.mkdirs()) {
+					Logger.log(Logger.ERROR, Logger.global, "Cannot create 'data' folder. Saving kernel configuration is aborted.");
 					return;
 				}
 			}
-			FileOutputStream stream = new FileOutputStream(Tools.getRootFolder() + CONFIG_FOLDER + "/" + KERNEL_CONF_FILE_NAME);
+			FileOutputStream stream = new FileOutputStream(getRootFolder() + DATA_FOLDER + "/" + KERNEL_CONF_FILE_NAME);
 			globalProperties.store(stream, "CoreASM Kernel Properties");
 			stream.close();
 		} catch (FileNotFoundException e) {
-			logger.error("Cannot create kernel config file.");			
+			Logger.log(Logger.ERROR, Logger.global, "Cannot create kernel config file.");			
 		} catch (IOException e) {
-			logger.error("Cannot write to kernel config file.");			
+			Logger.log(Logger.ERROR, Logger.global, "Cannot write to kernel config file.");			
 		}
 	}
 }

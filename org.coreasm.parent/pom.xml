@@ -9,9 +9,59 @@
 
 	<modules>
 		<module>../org.coreasm.engine</module>
-		<module>../org.coreasm.3rdparty.org.codehaus.jparsec</module>
+		<!-- module>../org.coreasm.3rdparty.org.codehaus.jparsec</module> -->
 		<module>../org.coreasm.ui.carma</module>
 	</modules>
+
+	<licenses>
+		<license>
+			<name>CoreASM License</name>
+			<url>http://www.coreasm.org/afl-3.0.php</url>
+			<comments> The CoreASM project is licensed under the Academic Free License version 3.0. This includes: -CoreASM Engine (also read JParsec-license.txt) -Standard plugins of the engine -Carma (command line driver of the engine) -CoreASM Eclipse Plugin A copy of this license can be found here: http://www.opensource.org/licenses/afl-3.0.php http://www.coreasm.org/afl-3.0.php</comments>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Roozbeh Farahbod</name>
+			<url>http://roozbeh.ca</url>
+		</developer>
+		<developer>
+			<name>Vincenzo Gervasi</name>
+			<url>http://circe.di.unipi.it/~gervasi/main/</url>
+		</developer>
+		<developer>
+			<name>Piper Jackson</name>
+		</developer>
+		<developer>
+			<name>George Ma</name>
+		</developer>
+		<developer>
+			<name>Mashaal Memon</name>
+		</developer>
+		<developer>
+			<name>Marcel Dausend</name>
+			<url>http://www.uni-ulm.de/en/in/pm/staff/dausend.html</url>
+		</developer>
+		<developer>
+			<name>Markus Müller</name>
+		</developer>
+		<developer>
+			<name>Michael Stegmaier</name>
+		</developer>
+	</developers>
+	
+	<contributors>
+		<contributor>
+			<name>Uwe Glässer</name>
+			<url>http://www.cs.sfu.ca/~glaesser</url>
+		</contributor>
+	</contributors>
+	
+	<scm>
+		<url>
+			scm:git:https://github.com/roozbehf/coreasm.core.git
+		</url>
+	</scm>
 
 	<build>
 		<plugins>
@@ -46,6 +96,7 @@
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

@@ -19,8 +19,7 @@ import java.util.List;
 
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 /**
  * Node for application terms.
@@ -33,8 +32,6 @@ public class ApplicationTermNode extends ASTNode {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger logger = LoggerFactory.getLogger(ApplicationTermNode.class);
-	
 	private List<ASTNode> argsList = null;
 
 	public ApplicationTermNode(ApplicationTermNode node) {
@@ -73,7 +70,7 @@ public class ApplicationTermNode extends ASTNode {
 					if (n instanceof ASTNode)
 						argsList.add((ASTNode)n);
 					else
-						logger.warn("Bad argument node in a FunctionRuleTerm!");
+						Logger.log(Logger.WARNING, Logger.parser, "Bad argument node in a FunctionRuleTerm!");
 			}
 		}
 		return argsList;

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2005 Roozbeh Farahbod 
  * 
- * Last modified by $Author: rfarahbod $ on $Date: 2011-03-29 02:05:21 +0200 (Di, 29 Mär 2011) $.
+ * Last modified by $Author: rfarahbod $ on $Date: 2011-03-29 02:05:21 +0200 (Di, 29 Mrz 2011) $.
  *
  * Licensed under the Academic Free License version 3.0 
  *   http://www.opensource.org/licenses/afl-3.0.php
@@ -28,9 +28,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.RuleElement;
@@ -40,10 +41,8 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.odf.ODTImporter;
+import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper around a CoreASM specification.
@@ -57,8 +56,6 @@ public class Specification {
 	/* buffer size for loading specification from a file */
 	private static final int BUFFER_SIZE = 512 * 1024;
 
-	private static final Logger logger = LoggerFactory.getLogger(Specification.class);
-	
 	/** is the specification modified? */
 	public boolean isModified = false;
 	
@@ -115,7 +112,7 @@ public class Specification {
 		this.source = file;
 		this.engine = engine;
 		updateLines(loadSpec(file));
-		logger.debug("New specification created from {}", this.absolutePath);
+		Logger.log(Logger.INFORMATION, Logger.controlAPI, "New specification created from " + this.absolutePath);
 	}
 	
 	/* 
@@ -162,7 +159,7 @@ public class Specification {
 			updateLines(loadSpec(reader, "Specification"));
 		else
 			updateLines(loadSpec(reader, this.fileName));
-		logger.debug("New specification created.");
+		Logger.log(Logger.INFORMATION, Logger.controlAPI, "New specification created.");
 	}
 	
 	/** 
@@ -353,11 +350,11 @@ public class Specification {
 	public static ArrayList<SpecLine> loadSpec(File file) throws IOException {
 		String fname = file.getAbsolutePath();
 		
-		if (fname.toLowerCase().endsWith(".odt")) {
-			String coreasmSpec = ODTImporter.importODT(fname) + Tools.getEOL();
-			StringReader reader = new StringReader(coreasmSpec);
-			return loadSpec(reader, fname);
-		} else
+//		if (fname.toLowerCase().endsWith(".odt")) {
+//			String coreasmSpec = ODTImporter.importODT(fname) + Tools.getEOL();
+//			StringReader reader = new StringReader(coreasmSpec);
+//			return loadSpec(reader, fname);
+//		} else
 			return loadSpec(new InputStreamReader(getInputStream(file)), file.getName());
 	}
 
@@ -436,7 +433,7 @@ public class Specification {
 		try	{
 			result = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
 		} catch (FileNotFoundException e) {
-			logger.error("CoreASM specification file \"" + file.getAbsolutePath() + "\" cannot be found.");
+			Logger.parser.log(Logger.FATAL,"CoreASM specification file \"" + file.getAbsolutePath() + "\" cannot be found.");
 			throw e;
 		}		
 		return result;
@@ -454,7 +451,7 @@ public class Specification {
 		try	{
 			specFileReader.close();
 		} catch (IOException e){
-			logger.error("CoreASM specification could not be closed.");
+			Logger.parser.log(Logger.FATAL,"CoreASM specification could not be closed.");
 			throw e;
 		}
 	}
@@ -464,7 +461,7 @@ public class Specification {
 	 */
 	private Set<Plugin> getRequiredPlugins() {
 		if (engine == null) {
-			logger.error("The engine reference of the specification is null." +
+			Logger.log(Logger.ERROR, Logger.controlAPI, "The engine reference of the specification is null." +
 							" Cannot compute the set of required plugins.");
 			return Collections.emptySet();
 		}

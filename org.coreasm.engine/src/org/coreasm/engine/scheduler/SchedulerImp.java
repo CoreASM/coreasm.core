@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
@@ -36,8 +36,7 @@ import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.SchedulerPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.FJTaskRunnerGroup;
 
@@ -51,9 +50,7 @@ public class SchedulerImp implements Scheduler {
 	
 	/** Maximum number of agents selected in each round */
 	public static final int MAX_SELECTED_AGENTS = 10;
-
-	protected static final Logger logger = LoggerFactory.getLogger(SchedulerImp.class);
-
+	
 	private ControlAPI capi;
 	
 	private UpdateMultiset updateInstructions;
@@ -101,7 +98,8 @@ public class SchedulerImp implements Scheduler {
 		
 		agentContextMap = new AgentContextMap();
 		
-		logger.debug("Done preparing the initial state.");
+		Logger.log(Logger.INFORMATION, Logger.scheduler,
+				"Done preparing the initial state.");
 	}
 
 	@Deprecated
@@ -161,7 +159,7 @@ public class SchedulerImp implements Scheduler {
 							agentSet.add(agent);
 					} catch (InvalidLocationException e) {
 						capi.error("Cannot get the value of lcoation " + loc + ".");
-						logger.error("Cannot get the value of lcoation " + loc + ".");
+						Logger.log(Logger.ERROR, Logger.scheduler, "Cannot get the value of lcoation " + loc + ".");
 					}
                 }
             }
@@ -169,7 +167,7 @@ public class SchedulerImp implements Scheduler {
 		}
 		else {
 			String msg = "Value of \"Agents\" is not enumerable. Cannot determine the agent set.";
-			logger.error(msg);
+			Logger.log(Logger.FATAL,Logger.scheduler,msg);
 			throw new EngineError(msg);
 		}	
 		
@@ -184,7 +182,7 @@ public class SchedulerImp implements Scheduler {
 	public boolean selectAgents() {
 		if (agentsCombinationExists()) {
 			selectedAgentSet = schedule.next();
-			logger.debug("Selected Agent Set is '{}'.", selectedAgentSet);
+			Logger.log(Logger.INFORMATION,Logger.scheduler,"Selected Agent Set is:"+selectedAgentSet);
 			lastSelectedAgents = Collections.unmodifiableSet(selectedAgentSet);
 			return true;
 		} else {
@@ -251,9 +249,9 @@ public class SchedulerImp implements Scheduler {
 		if (batchSize == -1) {
 			numberOfCPUs = getNumberOfProcessorsToBeUsed();
 			batchSize = getThreadBatchSize();
-	        if (logger.isDebugEnabled()) {
-	        	logger.debug("Using " + numberOfCPUs + " thread(s) on " + Runtime.getRuntime().availableProcessors() + " processors.");
-	        	logger.debug("Using a batch size of " + batchSize + " agent(s) per thread.");
+	        if (Logger.verbosityLevel == Logger.INFORMATION) {
+	        	Logger.log(Logger.INFORMATION, Logger.scheduler, "Using " + numberOfCPUs + " thread(s) on " + Runtime.getRuntime().availableProcessors() + " processors.");
+	        	Logger.log(Logger.INFORMATION, Logger.scheduler, "Using a batch size of " + batchSize + " agent(s) per thread.");
 	        }
 		}
         final FJTaskRunnerGroup runnerGroup = new FJTaskRunnerGroup(numberOfCPUs);
@@ -272,8 +270,10 @@ public class SchedulerImp implements Scheduler {
 		UpdateMultiset updates = cpe.getResultantUpdateSet();
 		
 		if (updates == null) {
-			logger.error(cpe.getError().toString());
-			cpe.getError().printStackTrace();
+			Logger.log(Logger.FATAL, Logger.scheduler, cpe.getError().toString());
+			StackTraceElement[] trace = cpe.getError().getStackTrace();
+			for (StackTraceElement ste: trace)
+				Logger.log(Logger.FATAL, Logger.scheduler, ste.toString());
 			throw new EngineException(cpe.getError());
 //			capi.error(cpe.getError());
 		}
@@ -423,7 +423,7 @@ public class SchedulerImp implements Scheduler {
 			try { 
 				limit = Integer.valueOf(limitStr);
 			} catch (NumberFormatException e) {
-				logger.warn("Invalid value for \"" 
+				Logger.log(Logger.WARNING, Logger.scheduler, "Invalid value for \"" 
 						+ EngineProperties.MAX_PROCESSORS + "\" engine property (" + limitStr + ").");
 			}
 		}
@@ -440,7 +440,7 @@ public class SchedulerImp implements Scheduler {
 		try { 
 			size = Integer.valueOf(sizeStr);
 		} catch (NumberFormatException e) {
-			logger.warn("Invalid value for \"" 
+			Logger.log(Logger.WARNING, Logger.scheduler, "Invalid value for \"" 
 					+ EngineProperties.AGENT_EXECUTION_THREAD_BATCH_SIZE + "\" engine property (" + sizeStr + ").");
 		}
 		return size;

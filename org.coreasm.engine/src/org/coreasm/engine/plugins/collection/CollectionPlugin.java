@@ -33,13 +33,12 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The base plugin of all the collection plugins
@@ -50,8 +49,6 @@ import org.slf4j.LoggerFactory;
 
 public class CollectionPlugin extends Plugin 
 	implements ParserPlugin, InterpreterPlugin, VocabularyExtender {
-
-	protected static final Logger logger = LoggerFactory.getLogger(CollectionPlugin.class);
 
 	/** plugin name */
 	public static final String PLUGIN_NAME = CollectionPlugin.class.getSimpleName();

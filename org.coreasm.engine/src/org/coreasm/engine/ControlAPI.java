@@ -15,16 +15,18 @@
  
 package org.coreasm.engine;
 
+import java.util.List;
+import java.util.Set;
+
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
+import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.scheduler.Scheduler;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.ServiceRegistry;
-
-import java.util.Set;
+import org.coreasm.engine.scheduler.Scheduler;
 
 /**
  * Defines the interface of a CoreASM Engine to its both internal and external environments 
@@ -34,6 +36,24 @@ import java.util.Set;
  * 
  */
 public interface ControlAPI extends CoreASMEngine, ServiceRegistry {
+	
+	/**
+	 * Adds the specified interpreter listener to receive interpreter events.
+	 * @param listener the interpreter listener
+	 */
+	public void addInterpreterListener(InterpreterListener listener);
+	
+	/**
+	 * Removes the specified interpreter listener so that it no longer receives interpreter events.
+	 * @param listener the interpreter listener
+	 */
+	public void removeInterpreterListener(InterpreterListener listener);
+	
+	/**
+	 * Returns a list of all the registered interpreter listeners registered.
+	 * @return all registered <code>InterpreterListener</code>s.
+	 */
+	public List<InterpreterListener> getInterpreterListeners();
 	
 	/**
 	 * Returns the scheduler module of the engine.

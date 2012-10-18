@@ -24,10 +24,11 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
+import org.coreasm.engine.Specification;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -36,32 +37,32 @@ import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.MapFunction;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Signature;
+import org.coreasm.engine.absstorage.MapFunction;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
-import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParseMap;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.UndefinedIdentifierHandler;
 import org.coreasm.engine.plugin.VocabularyExtender;
+import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** 
  *	Plugin for function signatures and user defined universes.
@@ -71,8 +72,6 @@ import org.slf4j.LoggerFactory;
 public class SignaturePlugin extends Plugin 
 		implements ParserPlugin, VocabularyExtender, ExtensionPointPlugin, UndefinedIdentifierHandler {
   
-	protected static final Logger logger = LoggerFactory.getLogger(SignaturePlugin.class);
-
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 3, 1, "beta");
 	
 	public static final String PLUGIN_NAME = SignaturePlugin.class.getSimpleName();
@@ -296,7 +295,7 @@ public class SignaturePlugin extends Plugin
 						public Node map(Object... vals) {
 							ScannerInfo info = null;
 							if (vals[0] != null)
-								((Node)((Object[])vals[0])[0]).getScannerInfo();
+								info = ((Node)((Object[])vals[0])[0]).getScannerInfo();
 							else
 								info = ((Node)vals[1]).getScannerInfo();
 							Node node = new DerivedFunctionNode(info);
@@ -497,7 +496,7 @@ public class SignaturePlugin extends Plugin
 					}
 				}
 				else if (typeCheckingMode == CheckMode.cmWarn) {
-					logger.warn(message);
+					Logger.log(Logger.WARNING,Logger.plugins, "Warning: " + message);
 				}
 
         	} else {
@@ -533,7 +532,7 @@ public class SignaturePlugin extends Plugin
 	                            	}
 	                            }
 	                            else if (typeCheckingMode == CheckMode.cmWarn) {
-	                                logger.warn(message);
+	                                Logger.log(Logger.WARNING,Logger.plugins, "Warning: " + message);
 	                            }
 	                        }
 	                    }
@@ -574,7 +573,7 @@ public class SignaturePlugin extends Plugin
 	                    	}
 	                    }
 	                    else if (typeCheckingMode == CheckMode.cmWarn) {
-	                    	logger.warn(message);
+	                        Logger.log(Logger.WARNING,Logger.plugins, "Warning: " + message);
 	                    }
 	                }
 	            }
@@ -1034,7 +1033,7 @@ public class SignaturePlugin extends Plugin
 					return;
 				}
 				else if (idCheckingMode == CheckMode.cmWarn) {
-					logger.warn(msg);
+					Logger.log(Logger.WARNING,Logger.plugins, "Warning: " + msg);
 				}
             }
         }

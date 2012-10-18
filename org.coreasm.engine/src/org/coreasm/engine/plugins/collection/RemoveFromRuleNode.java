@@ -16,6 +16,7 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.util.Logger;
 
 /** 
  *	Wrapper class to help manipulate collection remove/from rule subtree.
@@ -87,7 +88,7 @@ public class RemoveFromRuleNode extends ASTNode {
 		// cannot add element to non-location.
 		if (loc == null)
 		{
-			CollectionPlugin.logger.warn("Performing collection-remove incremental update on non-location!");
+			Logger.parser.log(Logger.WARNING,"Performing collection-remove incremental update on non-location!");
 		}
 		
 		return loc;

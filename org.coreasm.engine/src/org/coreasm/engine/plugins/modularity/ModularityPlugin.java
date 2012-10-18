@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Token;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.GrammarRule;
@@ -40,9 +40,9 @@ import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
+import org.coreasm.engine.plugins.string.StringNode;
+import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provides some basic modularity features to CoreASM.
@@ -53,8 +53,6 @@ import org.slf4j.LoggerFactory;
 
 public class ModularityPlugin extends Plugin implements ParserPlugin,
 		ExtensionPointPlugin {
-
-	protected static final Logger logger = LoggerFactory.getLogger(ModularityPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 1, 0, "alpha");
 	
@@ -178,16 +176,22 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 			}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 				@Override
 				public Node map(Object[] from) {
+										
 					int index = -1;
 					if (from[0]!=null && from[0] instanceof Token)
 						index = ((Token)from[0]).index();
-					String filename = null;
-					if (from[1]!=null)
-						filename = from[1].toString();
-					return new IncludeNode(
-						filename,
-						new ScannerInfo(index)
-					);					
+
+					IncludeNode iNode = new IncludeNode(new ScannerInfo(index));
+					Node kwNode = new Node(
+							PLUGIN_NAME,
+							"include",
+							new ScannerInfo(index),
+							Node.KEYWORD_NODE
+						);
+					iNode.addChild(kwNode);
+					if (from[1]!=null && from[1] instanceof Node)
+						iNode.addChild("alpha", (Node)from[1]);
+					return iNode;
 				}
 			});
 			
@@ -234,12 +238,12 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 				while (fileName.startsWith("\"") && fileName.endsWith("\"")) 
 					fileName = fileName.substring(1, fileName.length()-1);
 				if (loadedModules.contains(fileName))
-					logger.info(
+					Logger.log(Logger.INFORMATION, Logger.plugins,
 							"ModularityPlugin: Skipping module '" + fileName + "' since it's already loaded.");
 				else 
 					try {
 						loadedModules.add(fileName);
-						logger.info( 
+						Logger.log(Logger.INFORMATION, Logger.plugins, 
 								"ModularityPlugin: Loading module '" + fileName + "'.");
 						List<SpecLine> newLines = injectModules(Specification.loadSpec(capi.getSpec(), fileName));
 						for (SpecLine newLine: newLines)
@@ -261,8 +265,10 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	 * Node for include Statements.
 	 * This is necessary when using the parser without the engine,
 	 * so include's don't get replaced before parsing.
-	 * This node behaves like a 'nosignature' header node, only a check
-	 * for the class will reveal the real nature of the node.
+	 * 
+	 * @param filenameToken The token of the node returned by the string parser
+	 * 			which parsers the filename. The constructor reads the filename
+	 * 			out of that string.
 	 * 
 	 * @author Markus
 	 */
@@ -271,24 +277,23 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	{
 		private static final long serialVersionUID = 1L;
 
-		String filename;
-
-		public IncludeNode(String filename, ScannerInfo scannerInfo)
+		private String filename = null;
+		
+		public IncludeNode(ScannerInfo scannerInfo)
 		{
-			super("Kernel", "nosignature", scannerInfo, Node.KEYWORD_NODE);
-			
-			int a = 2; // index right of first ' 
-			int b = filename.indexOf("'", a);
-			this.filename = filename.substring(a,b);
+			super(PLUGIN_NAME, "include", scannerInfo, "Include");
 		}
-		
-//		public String toString()
-//		{
-//			return super.toString() + " " + filename;
-//		}
-		
+				
 		public String getFilename()
 		{
+			if (filename == null) {
+				
+				Node filenameNode = this.getChildNode("alpha");
+				String fname = filenameNode.unparse();
+				fname = fname.substring(1, fname.length()-1); // remove quotes
+				this.filename = fname;
+			}
+			
 			return filename;
 		}
 		

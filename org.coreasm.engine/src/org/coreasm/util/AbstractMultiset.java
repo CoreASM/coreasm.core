@@ -15,11 +15,8 @@ package org.coreasm.util;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map.Entry;
 
 /** 
  * Abstract implementation of <code>Multiset</code> with <code>Map</code>s.
@@ -29,8 +26,6 @@ import org.slf4j.LoggerFactory;
  *  @see org.coreasm.util.Multiset
  */
 public abstract class AbstractMultiset<E> implements Multiset<E> {
-
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractMultiset.class);
 
 	/** main data structure */
 	protected Map<E,Integer> map;
@@ -206,7 +201,7 @@ public abstract class AbstractMultiset<E> implements Multiset<E> {
 	 * @see java.util.Collection#retainAll(java.util.Collection)
 	 */
 	public boolean retainAll(Collection<?> c) {
-		logger.warn("AbstractMultiset.retainAll(c) is not tested.");
+		Logger.log(Logger.WARNING, Logger.global, "AbstractMultiset.retainAll(c) is not tested.");
 		boolean pass = false;  // is this multiset object changed?
 		for (E e: map.keySet())
 			if (!c.contains(e)) {

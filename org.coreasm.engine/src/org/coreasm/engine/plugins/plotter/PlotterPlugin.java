@@ -21,8 +21,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
@@ -41,16 +41,15 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.engine.plugins.options.OptionsPlugin;
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.engine.plugins.string.StringPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 /** 
  * This is a sample CoreASM Plug-in to draw a number of function 
@@ -61,8 +60,6 @@ import org.slf4j.LoggerFactory;
  */
 public class PlotterPlugin extends Plugin implements 
 			ParserPlugin, InterpreterPlugin, ExtensionPointPlugin, VocabularyExtender {
-
-	protected static final Logger logger = LoggerFactory.getLogger(PlotterPlugin.class);
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 3, 1, "beta");
 
@@ -246,7 +243,7 @@ public class PlotterPlugin extends Plugin implements
 					pw.addFunction((FunctionElement)f, fname);
 					wSet.add(pw);
 				} else
-					logger.warn("Skipping a plot command.");
+					Logger.log(Logger.ERROR, Logger.plugins, "Skipping a plot command.");
 					// otherwise do nothing
 			}
 			

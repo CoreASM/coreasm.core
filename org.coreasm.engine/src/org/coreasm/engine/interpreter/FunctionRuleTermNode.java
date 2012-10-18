@@ -18,8 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.coreasm.engine.kernel.Kernel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 /** 
  * Wrapper around a <code>Node</code> object, to see the node as a 
@@ -31,8 +30,6 @@ import org.slf4j.LoggerFactory;
 public class FunctionRuleTermNode extends ASTNode {
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger logger = LoggerFactory.getLogger(FunctionRuleTermNode.class);
     
     private ASTNode actualNode = null;
 
@@ -82,7 +79,7 @@ public class FunctionRuleTermNode extends ASTNode {
 					if (n instanceof ASTNode)
 						argsList.add((ASTNode)n);
 					else
-						logger.warn("Bad argument node in a FunctionRuleTerm!");
+						Logger.log(Logger.WARNING, Logger.parser, "Bad argument node in a FunctionRuleTerm!");
 			}
 		}
 

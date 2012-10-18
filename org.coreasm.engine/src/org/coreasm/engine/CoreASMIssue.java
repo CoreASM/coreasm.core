@@ -86,7 +86,7 @@ public class CoreASMIssue extends Error {
 		StringBuffer buf = new StringBuffer();
 		if (message == null)
 			if (cause != null)
-				buf.append(cause.getMessage());
+				buf.append("Exception occured: " + (cause.getCause() != null ? cause.getCause() : cause));
 			else
 				buf.append("Something is not right.");
 		else

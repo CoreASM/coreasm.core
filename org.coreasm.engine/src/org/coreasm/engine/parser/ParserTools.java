@@ -39,7 +39,7 @@ public class ParserTools
 	private Terminals terminals_keyw = null;
 	
 	// TOKENIZER
-	private Parser<Object> tokenizer_keyw = null;
+	private Parser<?> tokenizer_keyw = null;
 	private Parser<Fragment> tokenizer_id = null;
 	private Parser<Object> tokenizer = null;
 	private Parser<Void> ignored = null;

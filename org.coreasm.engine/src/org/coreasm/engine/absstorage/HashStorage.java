@@ -20,11 +20,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.coreasm.util.Logger;
+import org.coreasm.util.Tools;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
@@ -33,9 +36,6 @@ import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** 
  *	This is an implementation of the <code>AbstractStorage</code> interface that
@@ -47,9 +47,6 @@ import org.slf4j.LoggerFactory;
 public class HashStorage implements AbstractStorage {
 
 	private static long lastStateId = 1000000;
-
-	private static final Logger logger = LoggerFactory.getLogger(HashStorage.class);
-	
 	
 	/** The state of the simulated machine. */
 	private State state = null;
@@ -168,7 +165,7 @@ public class HashStorage implements AbstractStorage {
 							} catch (UnmodifiableFunctionException e) {
 								// this should not happen
 								String msg = "Agents universe appears to be not modifiable!";
-								logger.error(msg);
+								Logger.log(Logger.FATAL, Logger.storage, msg);
 								throw new EngineError(msg);
 							}
 					} else
@@ -220,7 +217,7 @@ public class HashStorage implements AbstractStorage {
 			}
 		} catch (InvalidLocationException e) {
 			String msg = "Cannot get value of 'self'/'program' in HashStorage.getChosenProgram(...)."; 
-			logger.error(msg);
+			Logger.log(Logger.FATAL, Logger.storage, msg);
 			throw new EngineError(msg);
 		}
 	}
@@ -305,7 +302,8 @@ public class HashStorage implements AbstractStorage {
 	}
 
 	public void aggregateUpdates() {
-		logger.debug("Aggregating updates.");
+		Logger.log(Logger.INFORMATION, Logger.storage, 
+				"Aggregating updates.");
 		UpdateMultiset updateInsts = capi.getScheduler().getUpdateInstructions();
 		Collection<Update> tempUpdateSet = null;
 
@@ -325,6 +323,14 @@ public class HashStorage implements AbstractStorage {
 	 * @see AbstractStorage#compose(UpdateMultiset, UpdateMultiset)
 	 */
 	public UpdateMultiset compose(UpdateMultiset updateSet1, UpdateMultiset updateSet2) {
+		/*
+		Logger.log(Logger.ERROR, Logger.storage, "COMPOSE is not implemented yet!");
+		UpdateMultiset composed = new UpdateMultiset();
+		composed.addAll(updateSet1);
+		composed.addAll(updateSet2);
+		return composed;
+		*/
+
 		// instantiate engine composition API, and set update multiset
 		CompositionAPIImp compAPI = new CompositionAPIImp();
 		compAPI.setUpdateInstructions(updateSet1, updateSet2);
@@ -382,7 +388,7 @@ public class HashStorage implements AbstractStorage {
 		if (!isRegularUpdateSet) {
 			if (uSet instanceof UpdateMultiset) {
 				uSet = performAggregation((UpdateMultiset)uSet);
-				logger.debug("Consistency check is performing aggregation.");
+				Logger.log(Logger.INFORMATION, Logger.storage, "Consistency check is performing aggregation.");
 			} else
 				throw new EngineError("Consistency check expects an update multiset.");
 		}                
@@ -752,7 +758,7 @@ public class HashStorage implements AbstractStorage {
 						return ((FunctionElement)id).getValue(loc.args);
 					else {
 						String msg = "Reading from an out-function '" + loc + "' results in an undef value.";
-						logger.warn(msg);
+						Logger.log(Logger.WARNING, Logger.storage, msg);
 						capi.warning("Abstract Storage", msg);
 						return Element.UNDEF;
 					}

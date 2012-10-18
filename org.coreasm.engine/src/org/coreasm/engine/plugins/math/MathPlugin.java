@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
+import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -30,14 +31,13 @@ import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.engine.plugins.number.NumberElement;
-import org.coreasm.engine.registry.PluginInfo;
 
 /** 
  * This a standard Math plug-in for CoreASM.

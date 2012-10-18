@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.codehaus.jparsec.Token;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -28,13 +29,13 @@ import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
+import org.coreasm.util.Logger;
 import org.coreasm.util.PluginTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** 
  * Plugin for BlockRule construct:
@@ -52,8 +53,6 @@ import org.slf4j.LoggerFactory;
 public class BlockRulePlugin extends Plugin 
 		implements InterpreterPlugin, ParserPlugin {
  
-	private static final Logger logger = LoggerFactory.getLogger(BlockRulePlugin.class);
-	
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 0, 1, "");
 	
 	public static final String PLUGIN_NAME = BlockRulePlugin.class.getSimpleName();
@@ -88,7 +87,7 @@ public class BlockRulePlugin extends Plugin
             while (currentRule != null) {
             	// TODO A decision needs to be made on the following pattern
             	//      Do we want to have this pattern in other plugins as well?
-            	if (!PluginTools.hasUpdates(interpreter, currentRule, capi, logger)) {
+            	if (!PluginTools.hasUpdates(interpreter, currentRule, capi, Logger.plugins)) {
         			return pos;
             	} else {
             		updates.addAll(currentRule.getUpdates());

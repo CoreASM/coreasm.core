@@ -24,8 +24,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
@@ -33,12 +33,12 @@ import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.PluginAggregationAPI;
-import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.absstorage.PluginCompositionAPI;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
+import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
@@ -47,6 +47,8 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.ParseMap2;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InterpreterPlugin;
@@ -55,8 +57,7 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.engine.plugins.string.StringElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 /** 
  * A plugin that provides Input/Output services to a CoreASM specification.
@@ -67,8 +68,6 @@ import org.slf4j.LoggerFactory;
 public class IOPlugin extends Plugin implements 
 		ParserPlugin, InterpreterPlugin, VocabularyExtender, ExtensionPointPlugin, Aggregator {
 
-	private static final Logger logger = LoggerFactory.getLogger(IOPlugin.class);
-	
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 3, 1, "");
 
 	public static final String PLUGIN_NAME = IOPlugin.class.getSimpleName();
@@ -338,7 +337,7 @@ public class IOPlugin extends Plugin implements
 				capi.getStorage().setValue(OUTPUT_FUNC_LOC, new StringElement(""));
 			} catch (InvalidLocationException e) {
 				// Should not happen
-				logger.error("Output function is not available.");
+				Logger.log(Logger.FATAL, Logger.plugins, "Output function is not available.");
 			}
 		} 
 		

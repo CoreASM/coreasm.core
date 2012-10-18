@@ -17,6 +17,7 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.util.Logger;
 
 /** 
  *	Wrapper class to help manipulate collection add/to rule subtree.
@@ -85,8 +86,9 @@ public class AddToRuleNode extends ASTNode {
 	{
 		Location loc = getToNode().getLocation();
 		
-		if (loc == null) {
-			CollectionPlugin.logger.warn("Performing collection-add incremental update on non-location!");
+		if (loc == null)
+		{
+			Logger.parser.log(Logger.WARNING,"Performing collection-add incremental update on non-location!");
 		}
 		
 		return loc;

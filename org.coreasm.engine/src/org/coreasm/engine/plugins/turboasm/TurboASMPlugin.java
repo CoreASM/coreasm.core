@@ -39,23 +39,24 @@ import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
-import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.ParserTools.ArrayParseMap;
+import org.coreasm.engine.parser.ParseMap;
+import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.coreasm.util.Logger;
 
 /** 
  * This plugin provides the following TurboASM rules:
@@ -72,9 +73,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 														VocabularyExtender {
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 9, 1, "beta");
-
-	protected static final Logger logger = LoggerFactory.getLogger(TurboASMPlugin.class);
-
+	
 	public static final String PLUGIN_NAME = TurboASMPlugin.class.getSimpleName();
 
 	/* work copies of a tree */
@@ -115,7 +114,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 				return new HashMap<ASTNode, UpdateMultiset>();
 			}
 		};
-		logger.debug("TurboASM is loaded!");
+		Logger.log(Logger.INFORMATION, Logger.parser, "TurboASM is loaded!");
 	}
 
 	/*
