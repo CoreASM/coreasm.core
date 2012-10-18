@@ -9,7 +9,6 @@
 
 	<modules>
 		<module>../org.coreasm.engine</module>
-		<!-- module>../org.coreasm.3rdparty.org.codehaus.jparsec</module> -->
 		<module>../org.coreasm.ui.carma</module>
 	</modules>
 
