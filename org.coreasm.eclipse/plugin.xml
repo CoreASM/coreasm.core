@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.coreasm.eclipse.editors.Activator">
+      </startup>
+   </extension>
+   <!-- Eigener Editor Anfang -->
+   <extension
+   		point="org.eclipse.ui.editors">
+   	  <editor
+   	  		class="org.coreasm.eclipse.editors.ASMEditor"
+   	  		contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+   	  		default="false"
+   	  		extensions="casm,coreasm"
+   	  		icon="icons/icon16x16.gif"
+   	  		id="org.coreasm.eclipse.ASMEditor"
+   	  		name="CoreASMEditor">
+   	  </editor>
+   </extension>
+   <extension
+   		id="org.coreasm.eclipse.markers.ErrorMarker"
+   		point="org.eclipse.core.resources.markers"
+  		name="CoreASM Error" >
+        <super type="org.eclipse.core.resources.problemmarker"/>
+	    <persistent value="true" />
+		<attribute name="errordata" />
+   </extension>
+   <extension
+   		id="org.coreasm.eclipse.markers.SimpleErrorMarker"
+   		point="org.eclipse.core.resources.markers"
+  		name="CoreASM Simple Error" >
+        <super type="org.eclipse.core.resources.problemmarker"/>
+	    <persistent value="true" />
+	    <attribute name="title" />
+	    <attribute name="class" />
+	    <attribute name="id" />
+   </extension>
+   <extension
+   		id="org.coreasm.eclipse.markers.SyntaxErrorMarker"
+   		point="org.eclipse.core.resources.markers"
+  		name="CoreASM Syntax Error" >
+        <super type="org.eclipse.core.resources.problemmarker"/>
+	    <persistent value="true" />
+	    <attribute name="encountered" />
+	    <attribute name="expected" />
+   </extension>
+   <extension
+   		id="org.coreasm.eclipse.markers.PluginMarker"
+   		point="org.eclipse.core.resources.markers"
+  		name="CoreASM Plugin Marker" >
+		<super type="org.eclipse.core.resources.marker"/>
+	    <persistent value="true" />
+	    <attribute name="plugins" />
+   </extension>
+   <extension
+   		id="org.coreasm.eclipse.markers.IncludeMarker"
+   		point="org.eclipse.core.resources.markers"
+  		name="CoreASM Include Marker" >
+		<super type="org.eclipse.core.resources.marker"/>
+	    <persistent value="true" />
+	    <attribute name="includes" />
+   </extension>
+   <!-- Eigener Editor Ende -->
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="org.coreasm.eclipse.actionSet"
+            label="CoreASM Action Set"
+            visible="true">
+         <menu
+               icon="icons/CoreASM-Logo.png"
+               id="org.coreasm.eclipse.mainmenu"
+               label="Core&amp;ASM">
+            <separator
+                  name="CoreASMGroup">
+            </separator>
+         </menu>
+         <action
+               allowLabelUpdate="true"
+               class="org.coreasm.eclipse.actions.StopEngineAction"
+               icon="icons/stopEngine16.gif"
+               id="org.coreasm.eclipse.stopEngineAction"
+               label="Stop Engine"
+               menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
+               state="true"
+               style="push"
+               toolbarPath="CoreASMGroup"
+               tooltip="Stop CoreASM Engine">
+         </action>
+         <action
+               allowLabelUpdate="true"
+               class="org.coreasm.eclipse.actions.PauseEngineAction"
+               icon="icons/logo-16x-pauseEngine.gif"
+               id="org.coreasm.eclipse.pauseEngineAction"
+               label="Pause Engine"
+               menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
+               state="true"
+               style="push"
+               toolbarPath="CoreASMGroup"
+               tooltip="Pause CoreASM Engine">
+         </action>
+         <action
+               allowLabelUpdate="true"
+               class="org.coreasm.eclipse.actions.ResumeEngineAction"
+               icon="icons/logo-16x-resumeEngine.gif"
+               id="org.coreasm.eclipse.resumeEngineAction"
+               label="Resume Engine"
+               menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
+               state="true"
+               style="push"
+               toolbarPath="CoreASMGroup"
+               tooltip="Resume CoreASM Engine">
+         </action>
+         <action
+               allowLabelUpdate="true"
+               class="org.coreasm.eclipse.actions.CoreASMHelpAction"
+               icon="icons/logo-16x-helpCoreASM.gif"
+               id="org.coreasm.eclipse.helpAction"
+               label="CoreASM Help"
+               menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
+               state="true"
+               style="push"
+               toolbarPath="CoreASMGroup"
+               tooltip="CoreASM Help">
+         </action>
+         <action
+               allowLabelUpdate="true"
+               class="org.coreasm.eclipse.actions.CoreASMAboutAction"
+               icon="icons/icon16.gif"
+               id="org.coreasm.eclipse.aboutAction"
+               label="About CoreASM"
+               menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
+               state="true"
+               style="push"
+               toolbarPath="CoreASMGroup"
+               tooltip="About CoreASM">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="org.coreasm.eclipse.wizard"
+            name="CoreASM">
+      </category>
+      <wizard
+            category="org.coreasm.eclipse.wizard"
+            class="org.coreasm.eclipse.wizards.ASMNewWizard"
+            icon="icons/icon16x16.gif"
+            id="org.coreasm.eclipse.newFileWizard"
+            name="CoreASM Specification">
+      </wizard>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="CoreASM"
+            class="org.coreasm.eclipse.preferences.ASMPreferencePage"
+            id="org.coreasm.eclipse.ASMPreferencePage">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.coreasm.eclipse.editors.ASMEditor"
+            class="org.coreasm.eclipse.debug.ui.ASMBreakpointAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
+         </adapter>
+      </factory>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.coreasm.eclipse.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            objectClass="org.eclipse.core.resources.IFile"
+            name="CoreASM Page"
+            nameFilter="*.casm|*.coreasm"
+            class="org.coreasm.eclipse.properties.ASMPropertyPage"
+            id="org.coreasm.eclipse.properties.samplePropertyPage">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="CoreASM"
+            id="org.coreasm.eclipse.CoreASM">
+      </category>
+      <view
+            name="CoreASM View"
+            icon="icons/sample.gif"
+            category="org.coreasm.eclipse.CoreASM"
+            class="org.coreasm.eclipse.views.ASMView"
+            id="org.coreasm.eclipse.views.ASMView">
+      </view>
+      <view
+            name="CoreASM AST Tree View"
+            icon="icons/CoreASM-Logo.png"
+            category="org.coreasm.eclipse.CoreASM"
+            class="org.coreasm.eclipse.editors.views.ASMAstTreeView"
+            id="org.coreasm.eclipse.views.ASMAstTreeView">
+      </view>
+      <view
+            category="org.coreasm.eclipse.CoreASM"
+            class="org.coreasm.eclipse.debug.ui.views.ASMUpdateView"
+            icon="icons/CoreASM-Logo.png"
+            id="org.coreasm.eclipse.views.ASMUpdateView"
+            name="CoreASM Update View">
+      </view>
+      <view
+            category="org.coreasm.eclipse.CoreASM"
+            class="org.coreasm.eclipse.debug.ui.views.ASMCompareView"
+            icon="icons/CoreASM-Logo.png"
+            id="org.coreasm.eclipse.views.ASMCompareView"
+            name="CoreASM Compare View">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.TaskList"
+               relationship="right"
+               id="org.coreasm.eclipse.views.ASMView">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.debug.ui.DebugPerspective">
+         <view
+               id="org.coreasm.eclipse.views.ASMUpdateView"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline">
+         </view>
+         <view
+               id="org.coreasm.eclipse.views.ASMCompareView"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.coreasm.eclipse.launch.LaunchDelegate"
+            id="org.coreasm.eclipse.launchConfigurationType"
+            modes="run,debug"
+            name="ASM Specification"
+            public="true"
+            sourceLocatorId="org.coreasm.eclipse.debug.sourceLookupDirector"
+            sourcePathComputerId="org.coreasm.eclipse.debug.sourcePathComputer">
+         <fileExtension
+               default="true"
+               extension="*.casm">
+         </fileExtension>
+         <fileExtension
+               default="false"
+               extension="*.coreasm">
+         </fileExtension>
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            class="org.coreasm.eclipse.debug.core.model.ASMLineBreakpoint"
+            id="org.coreasm.eclipse.debug.lineBreakpoint"
+            markerType="asm.markerType.lineBreakpoint">
+      </breakpoint>
+      <breakpoint
+            class="org.coreasm.eclipse.debug.core.model.ASMWatchpoint"
+            id="org.coreasm.eclipse.debug.watchpoint"
+            markerType="asm.markerType.watchpoint">
+      </breakpoint>
+      <breakpoint
+            class="org.coreasm.eclipse.debug.core.model.ASMMethodBreakpoint"
+            id="org.coreasm.eclipse.debug.methodBreakpoint"
+            markerType="asm.markerType.methodBreakpoint">
+      </breakpoint>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.coreasm.eclipse.launchConfigurationType"
+            icon="icons/logo-16x.gif"
+            id="org.coreasm.eclipse.launchConfigurationTypeImage"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.coreasm.eclipse.launch.LaunchConfigurationTabGroup"
+            id="org.coreasm.eclipse.launchConfigurationTabGroup"
+            type="org.coreasm.eclipse.launchConfigurationType"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.coreasm.eclipse.launch.LaunchShortcut"
+            icon="icons/icon16.gif"
+            id="org.coreasm.eclipse.shortcut"
+            label="CoreASM specification"
+            modes="run">
+         <contextualLaunch>
+           <contextLabel
+                  label="CoreASM Specification"
+                  mode="run"/>
+           <enablement>
+             <with variable="selection">
+               <count value="1"/>
+               <iterate>
+                 <test property="org.eclipse.debug.ui.matchesPattern" value="*.casm|*.coreasm"/>
+               </iterate>
+             </with>
+           </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="org.coreasm.eclipse.debug.ui.popupMenus"
+            targetID="org.coreasm.eclipse.ASMEditor.RulerContext">
+         <action
+               class="org.eclipse.debug.ui.actions.RulerEnableDisableBreakpointActionDelegate"
+               id="org.coreasm.eclipse.ASMEditor.rulerContextMenu.enableDisableBreakpointAction"
+               label="Enable/Disable Breakpoint"
+               menubarPath="debug">
+         </action>
+         <action
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               id="org.coreasm.eclipse.ASMEditor.rulerContextMenu.toggleBreakpointAction"
+               menubarPath="debug"
+               label="Toggle Breakpoint">
+         </action>
+      </viewerContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.coreasm.eclipse.debug.ui.editorActions"
+            targetID="org.coreasm.eclipse.ASMEditor">
+         <action
+               actionID="RulerDoubleClick"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               id="org.coreasm.eclipse.ASMEditor.toggleBreakpointAction"
+               label="Toggle Breakpoint"
+               style="push">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+            class="org.coreasm.eclipse.debug.core.launching.ASMSourceLookupDirector"
+            id="org.coreasm.eclipse.debug.sourceLookupDirector"
+            name="ASM Source Lookup Director">
+      </sourceLocator>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourcePathComputers">
+      <sourcePathComputer
+            class="org.coreasm.eclipse.debug.core.launching.ASMSourcePathComputerDelegate"
+            id="org.coreasm.eclipse.debug.sourcePathComputer">
+      </sourcePathComputer>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.debugModelPresentations">
+      <debugModelPresentation
+            class="org.coreasm.eclipse.debug.ui.ASMModelPresentation"
+            id="org.coreasm.eclipse.debug">
+      </debugModelPresentation>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.watchExpressionDelegates">
+      <watchExpressionDelegate
+            debugModel="org.coreasm.eclipse.debug"
+            delegateClass="org.coreasm.eclipse.debug.ui.WatchExpressionDelegate">
+      </watchExpressionDelegate>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.debugModelContextBindings">
+      <modelContextBinding
+            contextId="org.coreasm.eclipse.debugging"
+            debugModelId="org.coreasm.eclipse.debug">
+      </modelContextBinding>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.contextViewBindings">
+      <contextViewBinding
+            autoClose="false"
+            autoOpen="true"
+            contextId="org.coreasm.eclipse.debugging"
+            viewId="org.coreasm.eclipse.views.ASMUpdateView">
+      </contextViewBinding>
+      <contextViewBinding
+            autoClose="false"
+            autoOpen="true"
+            contextId="org.coreasm.eclipse.debugging"
+            viewId="org.coreasm.eclipse.views.ASMCompareView">
+      </contextViewBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            description="CoreASM debugging"
+            id="org.coreasm.eclipse.debugging"
+            name="CoreASM debugging"
+            parentId="org.eclipse.debug.ui.debugging">
+      </context>
+   </extension>
+   <extension
+         id="asm.markerType.lineBreakpoint"
+         name="ASM Line Breakpoint Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.lineBreakpointMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="asm.markerType.watchpoint"
+         name="ASM Watchpoint Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="asm.markerType.lineBreakpoint">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="asm.markerType.methodBreakpoint"
+         name="ASM Method Breakpoint Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="asm.markerType.lineBreakpoint">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+</plugin>

@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CoreASM Eclipse Plugin
+Bundle-SymbolicName: org.coreasm.eclipse;singleton:=true
+Bundle-Version: 0.6.8.beta_with_debugger
+Bundle-Activator: org.coreasm.eclipse.CoreASMPlugin
+Bundle-Vendor: coreasm.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.debug.ui,
+ org.eclipse.jface.text,
+ org.eclipse.ui.console,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.ui.dialogs,
+ org.eclipse.ui.forms,
+ org.eclipse.ui.views.contentoutline
+Bundle-ClassPath: .,
+ lib/concurrent.jar,
+ lib/jparsec-2.0.jar
+
