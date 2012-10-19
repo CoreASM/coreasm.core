@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Tools {
 	
+	private static final String CONF_COREASM_ENGINE_ROOT_FOLDER = "org.coreasm.engine.rootFolder";
+
 	private final static Logger logger = LoggerFactory.getLogger(Tools.class);
 
 	private static String eol = null;
@@ -409,13 +411,28 @@ public class Tools {
 		return -1;
 	}
 
+	// TODO later move all these to a configuration class
+	
 	/**
 	 * Detects and returns the root folder of the running application.
 	 */
 	public static String getRootFolder() {
-		return getRootFolder(null);
+		String rootFolder = System.getProperty(CONF_COREASM_ENGINE_ROOT_FOLDER);
+		if (rootFolder == null) {
+			rootFolder = getRootFolder(null);
+			System.setProperty(CONF_COREASM_ENGINE_ROOT_FOLDER, rootFolder);
+		}
+		return rootFolder;
 	}
 
+	/**
+	 * Sets the root folder of the CoreASM engine
+	 * 
+	 * @param rootFolder the full path to the root folder
+	 */
+	public static void setRootFolder(String rootFolder) {
+		System.setProperty(CONF_COREASM_ENGINE_ROOT_FOLDER, rootFolder);
+	}
 
 	/**
 	 * Detects and returns the root folder of the running application.
@@ -434,8 +451,10 @@ public class Tools {
 		if (classURL == null) {
 			Tools tempObject = new Tools();
 			fullPath = tempObject.getClass().getResource(sampleClassFile).toString();
-//			logger.warn("{} The application may be running in an OSGi container.", baseErrorMsg);
-//			return ".";
+			logger.warn("{} The application may be running in an OSGi container.", baseErrorMsg);
+			File file = new File(".");
+			logger.warn("Root folder is assumed to be {}.", file.getAbsolutePath());
+			return ".";
 		} else {
 			fullPath = classURL.toString();
 		}

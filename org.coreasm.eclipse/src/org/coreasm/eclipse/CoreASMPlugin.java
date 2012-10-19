@@ -1,18 +1,31 @@
 package org.coreasm.eclipse;
 
 
+import java.net.URI;
+import java.net.URL;
+
 import org.coreasm.eclipse.preferences.PreferenceConstants;
+import org.coreasm.util.Tools;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The activator class controls the plug-in life cycle
  */
 public class CoreASMPlugin extends AbstractUIPlugin {
 
+	public static final String PLUGINS_FOLDER_NAME = "plugins";
+
+	Logger logger = LoggerFactory.getLogger(CoreASMPlugin.class);
+	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.coreasm.eclipse";
 	
@@ -34,8 +47,44 @@ public class CoreASMPlugin extends AbstractUIPlugin {
 	 */
 	public CoreASMPlugin() {
 		plugin = this;
+		
+		Tools.setRootFolder(findRootFolder());
 	}
 
+	// TODO clean up the following two methods 
+	//      with the better solution for root folder
+	
+	/**
+	 * Tries to locate the root folder of the bundle within eclipse. 
+	 * It assumes that the resources in the plugin bundle are accessible through a file URI.
+	 * 
+	 * TODO this is a quick hack and may not work when the plugin is compiled 
+	 *      into a JAR. better solutions exist and will be added at a later time. :) 
+	 *      -- Roozbeh
+	 * @return the root folder of the plugin
+	 */
+	private String findRootFolder() {
+		final URI pluginsFolderURI = locateFile(PLUGIN_ID, PLUGINS_FOLDER_NAME);
+		if (pluginsFolderURI == null) {
+			logger.error("Could not locate the Eclipse plugin folder.");
+			return ".";
+		}
+		String pluginsFolder = pluginsFolderURI.getPath();
+		pluginsFolder = pluginsFolder.substring(0, pluginsFolder.lastIndexOf(PLUGINS_FOLDER_NAME));
+		logger.info("CoreASM Eclipse root folder is detected at '{}'.", pluginsFolder);
+		return pluginsFolder;
+	}
+	
+	private static URI locateFile(String bundle, String fullPath) {
+		try {
+			URL url = FileLocator.find(Platform.getBundle(bundle), new Path(fullPath), null);
+			if (url != null)
+				return FileLocator.resolve(url).toURI();
+		} catch (Exception e) {
+		}
+		return null;
+	}
+	
 	/**
 	 * This method is called upon plug-in activation
 	 */
