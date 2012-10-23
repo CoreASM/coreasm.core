@@ -35,11 +35,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.xerces.internal.xni.XNIException;
-
-//import com.sun.org.apache.xerces.internal.parsers.DOMParser;
-//import com.sun.org.apache.xerces.internal.xni.XNIException;
-
 public class ODTImporter {
 
 	private static final String CONTENTSENTRYNAME = "content.xml";
@@ -66,9 +61,6 @@ public class ODTImporter {
 				buffer=importODT(s);
 			} catch (FileNotFoundException e) {
 				System.err.println("Could not find file '"+s+"' -- file ignored.");
-			} catch (XNIException e) {
-				System.err.println("XNI error in '"+s+"' -- file ignored. Details follow:");
-				e.printStackTrace();
 			} catch (IOException e) {
 				System.err.println("General I/O error in '"+s+"' -- file ignored. Details follow:");
 				e.printStackTrace();
@@ -98,7 +90,7 @@ public class ODTImporter {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static String importODT(String fileName) throws FileNotFoundException, IOException, XNIException {
+	public static String importODT(String fileName) throws FileNotFoundException, IOException {
 		StringBuffer buffer=new StringBuffer(16*1024);
 		ZipInputStream zis=new ZipInputStream(new FileInputStream(fileName));
 		ZipEntry ze;
@@ -111,7 +103,7 @@ public class ODTImporter {
 		return buffer.toString().replace('\u201c', '"').replace('\u201d','"');
 	}
 
-	private static void process(InputStream is, StringBuffer buffer) throws XNIException, IOException {
+	private static void process(InputStream is, StringBuffer buffer) throws IOException {
 		boolean inblock=true;
 		Document doc=parseXml(is);
 		
