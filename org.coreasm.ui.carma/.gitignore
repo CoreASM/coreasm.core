@@ -1,5 +1,6 @@
 /bin
 /target
-/.classpath
-/.settings
-/.DS_Store
+.classpath
+.settings
+.DS_Store
+*.class
