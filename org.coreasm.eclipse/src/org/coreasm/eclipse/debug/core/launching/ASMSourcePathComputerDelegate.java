@@ -6,8 +6,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourcePathComputerDelegate;
@@ -27,7 +27,7 @@ public class ASMSourcePathComputerDelegate implements ISourcePathComputerDelegat
 		String path = configuration.getAttribute(ICoreASMConfigConstants.PROJECT, (String)null);
 		ISourceContainer sourceContainer = null;
 		if (path != null) {
-			path += Path.SEPARATOR + configuration.getAttribute(ICoreASMConfigConstants.SPEC, "");
+			path += IPath.SEPARATOR + configuration.getAttribute(ICoreASMConfigConstants.SPEC, "");
 			IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
 			if (resource != null) {
 				IContainer container;

@@ -156,7 +156,6 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 		printAgents=false;
 	}
 	
-	// public gemacht
 	public void setConfig(ILaunchConfiguration config) {
 		try {
 			Logger.verbosityLevel=config.getAttribute(ICoreASMConfigConstants.VERBOSITY,Logger.ERROR);

@@ -51,13 +51,19 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 					}
 				}
 			}
-			DebugPlugin.getDefault().getBreakpointManager().addBreakpoint(new ASMLineBreakpoint(resource, lineNumber + 1));
+			
+			for (ASTNode node : getASTNodesFromSelection(part, selection)) {
+				if (ASTNode.RULE_CLASS.equals(node.getGrammarClass())) {
+					DebugPlugin.getDefault().getBreakpointManager().addBreakpoint(new ASMLineBreakpoint(resource, lineNumber + 1));
+					break;
+				}
+			}
 		}
 	}
 
 	@Override
 	public boolean canToggleLineBreakpoints(IWorkbenchPart part, ISelection selection) {
-		return getEditor(part) != null && !canToggleWatchpoints(part, selection) && !canToggleMethodBreakpoints(part, selection) && !getASTNodesFromSelection(part, selection).isEmpty();
+		return getEditor(part) != null && !canToggleWatchpoints(part, selection) && !canToggleMethodBreakpoints(part, selection);
 	}
 
 	@Override
@@ -124,7 +130,7 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 				node = node.getFirst();
 				if (node instanceof FunctionNode || node instanceof UniverseNode) {
 					for (ASTNode child : node.getAbstractChildNodes()) {
-						if (child.getGrammarRule().equals(Kernel.GR_ID))
+						if (Kernel.GR_ID.equals(child.getGrammarRule()))
 							return child.getToken();
 					}
 				}

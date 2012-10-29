@@ -52,7 +52,7 @@ public class ASMModelPresentation extends LabelProvider implements IDebugModelPr
 				return ((ASMThread)element).getName() + (((ASMThread)element).isSuspended() ? " (Suspended)" : " (Running)");
 			else if (element instanceof ASMStackFrame) {
 				int step = ((ASMStackFrame)element).getStep();
-				return ((ASMStackFrame)element).getName() + " line: " + ((ASMStackFrame)element).getLineNumber() + " STEP " + (step < 0 ? -step - 1 + "*" : step) + " " +  ((ASMStackFrame)element).getLastSelectedAgents();
+				return ((ASMStackFrame)element).getName() + ":" + ((ASMStackFrame)element).getRuleName() + " line: " + ((ASMStackFrame)element).getLineNumber() + " STEP " + (step < 0 ? -step - 1 + "*" : step) + " " +  ((ASMStackFrame)element).getLastSelectedAgents();
 			}
 			else if (element instanceof ASMWatchpoint)
 				return ((ASMWatchpoint)element).getMarker().getResource().getName() + (((ASMWatchpoint)element).isAccess() && ((ASMWatchpoint)element).isModification() ? " [access and modification]" : (((ASMWatchpoint)element).isAccess() ? "[access]" : ((ASMWatchpoint)element).isModification() ? "[modification]" : "")) + " - " + ((ASMWatchpoint)element).getFuctionName();

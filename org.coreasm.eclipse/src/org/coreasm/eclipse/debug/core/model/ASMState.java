@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
@@ -13,6 +14,7 @@ import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.State;
 import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.plugins.set.SetElement;
 import org.coreasm.engine.plugins.set.SetPlugin;
 
@@ -28,6 +30,7 @@ public class ASMState {
 	private Map<String, ASMFunctionElement> universes = new HashMap<String, ASMFunctionElement>();
 	private Set<Update> updates;
 	private Set<Element> agents = new HashSet<Element>();
+	private Stack<CallStackElement> callStack = new Stack<CallStackElement>();
 	private String sourceName;
 	private int lineNumber;
 	
@@ -40,11 +43,12 @@ public class ASMState {
 			universes.put(entry.getKey(), new ASMFunctionElement(entry.getKey(), entry.getValue()));
 		this.updates = state.updates;
 		this.agents.addAll(state.agents);
+		this.callStack.addAll(state.callStack);
 		this.sourceName = state.sourceName;
 		this.lineNumber = state.lineNumber;
 	}
 	
-	public ASMState(int step, Set<? extends Element> lastSelectedAgents, State state, Set<Update> updates, Set<? extends Element> agents, String sourceName, int lineNumber) {
+	public ASMState(int step, Set<? extends Element> lastSelectedAgents, State state, Set<Update> updates, Set<? extends Element> agents, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		this.step = step;
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
 		for (Entry<String, FunctionElement> entry : state.getFunctions().entrySet())
@@ -53,13 +57,16 @@ public class ASMState {
 			universes.put(entry.getKey(), new ASMFunctionElement(entry.getKey(), entry.getValue()));
 		this.updates = updates;
 		this.agents.addAll(agents);
+		this.callStack.addAll(callStack);
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
 	}
 	
-	public void updateState(Set<? extends Element> lastSelectedAgents, Set<Update> updates, String sourceName, int lineNumber) {
+	public void updateState(Set<? extends Element> lastSelectedAgents, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
+		this.lastSelectedAgents = new HashSet<Element>();
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
 		this.updates = updates;
+		this.callStack = callStack;
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
 		for (Update update : updates) {
@@ -132,6 +139,10 @@ public class ASMState {
 	
 	public Set<Element> getAgents() {
 		return agents;
+	}
+	
+	public Stack<CallStackElement> getCallStack() {
+		return callStack;
 	}
 
 	public String getSourceName() {

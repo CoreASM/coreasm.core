@@ -3,6 +3,7 @@ package org.coreasm.eclipse.launch;
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -87,19 +88,7 @@ public class SourceTab extends AbstractLaunchConfigurationTab implements
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(ICoreASMConfigConstants.PROJECT,"");
-		configuration.setAttribute(ICoreASMConfigConstants.SPEC,"");
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_EMPTYUPDATES,false);
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_ERRORS,true);
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_FAILEDUPDATES,true);
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_STABLEUPDATES,false);
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_EMPTYACTIVEAGENTS, true);
-		configuration.setAttribute(ICoreASMConfigConstants.STOPON_STEPSLIMIT,true);
-		configuration.setAttribute(ICoreASMConfigConstants.MAXSTEPS,10);
-		configuration.setAttribute(ICoreASMConfigConstants.VERBOSITY,1);
-		configuration.setAttribute(ICoreASMConfigConstants.DUMPSTATE,false);
-		configuration.setAttribute(ICoreASMConfigConstants.DUMPUPDATES,false);
-		configuration.setAttribute(ICoreASMConfigConstants.DUMPFINAL,false);
+		LaunchCommon.setDefaults(configuration);
 	}
 
 	/* (non-Javadoc)
@@ -173,14 +162,25 @@ public class SourceTab extends AbstractLaunchConfigurationTab implements
 	 */
 	public boolean isValid(ILaunchConfiguration launchConfig) {
 		setErrorMessage(null);
-		if (comp.getProject().getText().length()==0) {
+		if (comp.getProject().getText().isEmpty()) {
 			setErrorMessage("You must choose a project.");
 			return false;
 		}
-		if (comp.getSpec().getText().length()==0) {
+		if (comp.getSpec().getText().isEmpty()) {
 			setErrorMessage("You must choose a specification (." 
 					+ CoreASMPlugin.COREASM_FILE_EXT_1 + " or ."
 					+ CoreASMPlugin.COREASM_FILE_EXT_2 + ") file.");
+			return false;
+		}
+		IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(comp.getProject().getText());
+		if (!(resource instanceof IProject)) {
+			setErrorMessage("'" + comp.getProject().getText() + "' is no project");
+			return false;
+		}
+		IProject project = (IProject)resource;
+		resource = project.findMember(comp.getSpec().getText());
+		if (resource == null) {
+			setErrorMessage("Cannot find specification '" + comp.getSpec().getText() + "' inside project '" + project.getName() + "'");
 			return false;
 		}
 		return super.isValid(launchConfig);
@@ -206,9 +206,9 @@ public class SourceTab extends AbstractLaunchConfigurationTab implements
 				"Select new file container");
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
-			if (result.length == 1) {
-				comp.getProject().setText(((Path) result[0]).toString());
-			}
+			IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember((Path)result[0]);
+			IProject project = resource.getProject();
+			comp.getProject().setText(project.getFullPath().toString());
 		}
 	}
 

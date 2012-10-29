@@ -54,7 +54,7 @@ public class ASMThread extends ASMDebugElement implements IThread {
 
 	@Override
 	public boolean canStepReturn() {
-		return isSuspended() && EngineDebugger.getRunningInstance().isSteppingInto();
+		return isSuspended();
 	}
 
 	@Override
