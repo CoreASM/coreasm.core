@@ -311,11 +311,11 @@
             icon="icons/icon16.gif"
             id="org.coreasm.eclipse.shortcut"
             label="CoreASM specification"
-            modes="run">
+            modes="run,debug">
          <contextualLaunch>
            <contextLabel
                   label="CoreASM Specification"
-                  mode="run"/>
+                  mode="run,debug"/>
            <enablement>
              <with variable="selection">
                <count value="1"/>

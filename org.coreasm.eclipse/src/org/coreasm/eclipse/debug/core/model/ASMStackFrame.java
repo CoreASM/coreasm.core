@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.UniverseElement;
@@ -37,12 +38,13 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		
 		variables.add(new ASMVariable(this, "Step", new ASMValue(this, "" + (getStep() < 0 ? -getStep() - 1 + "*" : getStep())), false));
 		variables.add(new ASMVariable(this, "Last Selected Agents", new ASMValue(this, getLastSelectedAgents().toString()), false));
+		variables.add(new ASMVariable(this, "Callstack", new ASMValue(this, state.getCallStack().toString()), false));
 		
 		for (Entry<String, ASMFunctionElement> function : state.getFunctions().entrySet()) {
 			String functionName = function.getKey();
 			ASMFunctionElement functionElement = function.getValue();
 			
-			if (functionElement.isModifiable() && !"functionElement".equals(functionName) && !"ruleElement".equals(functionName)) {
+			if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
 				for (Location location : functionElement.getLocations(functionName)) {
 					boolean valueChanged = false;
 					for (Update update : updates) {
@@ -51,7 +53,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 							break;
 						}
 					}
-					if ("universeElement".equals(functionName))
+					if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
 						backgrounds.add(new ASMVariable(this, location.toString(), new ASMValue(this, "true"), valueChanged));
 					else
 						variables.add(new ASMVariable(this, location.toString(), new ASMValue(this, functionElement.getValue(location.args).denotation()), valueChanged));
@@ -257,6 +259,16 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 */
 	public String getLastSelectedAgents() {
 		return state.getLastSelectedAgents().toString();
+	}
+	
+	/**
+	 * Returns the name of the current rule of the state assigned to this stack frame.
+	 * @return the name of the current rule of the state assigned to this stack frame
+	 */
+	public String getRuleName() {
+		if (state.getCallStack().isEmpty())
+			return "";
+		return state.getCallStack().peek().toString();
 	}
 	
 	/**
