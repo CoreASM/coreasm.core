@@ -16,23 +16,19 @@
 package org.coreasm.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import org.coreasm.engine.Specification;
-import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.ElementList;
-import org.coreasm.engine.absstorage.Update;
-import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.interpreter.InterpreterException;
-import org.coreasm.engine.interpreter.ScannerInfo;
-import org.coreasm.engine.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -301,41 +297,6 @@ public class Tools {
 
 
 	/**
-	 * Creates a context info for the given collection of updates, appending it to the given StringBuffer.
-	 *  
-	 * @param indent indentation
-	 * @param updates the collection of updates
-	 * @param parser a link to the parser 
-	 * @param spec a link to the specification
-	 */
-	public static String getContextInfo(String indent, Collection<Update> updates, Parser parser, Specification spec) {
-		StringBuffer result = new StringBuffer();
-		if (updates != null && updates.size() > 0) {
-			for (Update u: updates) {
-				result.append(getContextInfo(result, indent, u, parser, spec));
-			}
-		}
-		
-		return result.toString();
-	}
-
-	/**
-	 * Creates a context info for the given update, appending it to the given StringBuffer.
-	 *  
-	 * @param indent indentation
-	 * @param update the update
-	 * @param parser a link to the parser 
-	 * @param spec a link to the specification
-	 */
-	public static String getContextInfo(String indent, Update update, Parser parser, Specification spec) {
-		StringBuffer result = new StringBuffer();
-		if (update != null) {
-			getContextInfo(result, indent, update, parser, spec);
-		}
-		return result.toString();
-	}
-	
-	/**
 	 * A wrapper for the String tokenizer of the standard Java library.
 	 * 
 	 * @param input the string of values separated by the delimiter
@@ -348,49 +309,6 @@ public class Tools {
 		while (tokenizer.hasMoreTokens())
 			result.add(tokenizer.nextToken(delim));
 		return result;
-	}
-
-	/*
-	 * Creates a context info for the given update, appending it to the given StringBuffer.
-	 *  
-	 * @param buffer StringBuffer instance
-	 * @param indent indentation
-	 * @param update the update
-	 * @param parser a link to the parser 
-	 * @param spec a link to the specification
-	 */
-	private static String getContextInfo(StringBuffer buffer, String indent, Update update, Parser parser, Specification spec) {
-		buffer.append(indent + "  - " + update);
-    	if (update.sources != null) {
-    		buffer.append(" produced by the following " + ((update.sources.size()>1)?"lines":"line") + ":" + Tools.getEOL());
-    		for (ScannerInfo info: update.sources) {
-    			buffer.append(indent + "      - " + info.getContext(parser, spec));
-    		}
-    	}
-    	buffer.append(Tools.getEOL());
-		
-		return buffer.toString();
-	}
-
-	/**
-	 * Given a list of nodes, returns the list of values of those nodes.
-	 * 
-	 * @throws InterpreterException if a node in the list does not have a value
-	 */
-	public static ElementList getValueList(List<ASTNode> nodes) throws InterpreterException {
-		if (nodes.size() == 0)
-			return ElementList.NO_ARGUMENT;
-		
-		ArrayList<Element> vList = new ArrayList<Element>();
-		Element value = null;
-		for (ASTNode n: nodes) {
-			value = n.getValue();
-			if (value == null) 
-				throw new InterpreterException("Expecting expression as argument.");
-			vList.add(n.getValue());
-		}
-		// avoiding to have too many empty lists
-		return ElementList.create(vList);
 	}
 
 	/**
@@ -495,6 +413,184 @@ public class Tools {
 		logger.debug("Root folder is detected at {}.", fullPath);
 		
 		return fullPath;
+	}
+	
+	/**
+	 * @return a time stamp of the format "yy.MM.dd - HH:mm" for the given date.
+	 * 
+	 * @param date the base date
+	 */
+	public static String getTimeStamp(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yy.MM.dd - HH:mm");
+		return formatter.format(date);
+	}
+
+	/**
+	 * @return a time stamp for the current time and date.
+	 * 
+	 * @see #getTimeStamp(Date)
+	 */
+	public static String getTimeStamp() {
+		return getTimeStamp(new Date());
+	}
+
+	/**
+	 * Adds a sequence of the given character to the beginning of the given
+	 * string until it reaches the given length.
+	 * 
+	 * @param src
+	 *            source string
+	 * @param filler
+	 *            filler character
+	 * @param fixedLen
+	 *            desired length of the resulting string
+	 * @return the extended string
+	 */
+	public static String extendStr(String src, char filler, int fixedLen) {
+		String result = src;
+		while (result.length() < fixedLen) {
+			result = filler + result;
+		}
+		return result;
+	}
+
+	/**
+	 * Given a base directory and a path to a file, it concatenates the two
+	 * parts and takes care of missing file separators.
+	 * 
+	 * @param baseDir
+	 *            base directory
+	 * @param fileName
+	 *            file name
+	 * @return the absolute path to the file
+	 */
+	public static String concatFileName(String baseDir, String fileName) {
+		// cleanup
+		baseDir = baseDir.trim();
+		fileName = fileName.trim();
+
+		if (baseDir.lastIndexOf(File.separator) != baseDir.length() - 1) {
+			baseDir = baseDir + File.separator;
+		}
+
+		String concat = baseDir + fileName;
+
+		return concat;
+	}
+
+	/**
+	 * Given a base directory and a path to a file, it creates a full path to
+	 * the file. If the base directory is not absolute, it adds the application
+	 * root directory It also takes care of missing file separators.
+	 * 
+	 * @param baseDir
+	 *            base directory
+	 * @param fileName
+	 *            file name
+	 * @param rootFolder
+	 *            root folder of the application
+	 * @return the absolute path to the file
+	 */
+	public static String toFullPath(String baseDir, String fileName, String rootFolder) {
+		String result = concatFileName(baseDir, fileName);
+
+		File file = new File(result);
+		if (!file.isAbsolute()) {
+			result = concatFileName(rootFolder, result);
+		}
+
+		return result;
+	}
+
+	/**
+	 * @return true if the given filename has is an absolute path.
+	 * 
+	 * @param fileName a file name
+	 */
+	public static boolean isAbsolutePath(String fileName) {
+		final File file = new File(fileName);
+		return file.isAbsolute();
+	}
+
+	/**
+	 * @return <code>true</code> if the given file exists.
+	 * 
+	 * @param fileName
+	 *            a file name
+	 */
+	public static boolean fileExists(String fileName) {
+		final File file = new File(fileName);
+		return file.exists();
+	}
+
+	/**
+	 * Looks for the given file and returns an input stream view of the file if
+	 * it is found. If the file name is not an absolute path, it looks for the
+	 * file in the following order:
+	 * <ol>
+	 * <li>the container directory,</li>
+	 * <li>current folder,</li>
+	 * <li>the container directory in classpath,</li>
+	 * <li>and finally the classpath.</li>
+	 * </ol>
+	 * where classpath is determined by the given class loader.
+	 * 
+	 * @param classLoader the class loader
+	 * @param rootDir the application root directory 
+	 * @param container the container folder where the file is expected to be
+	 * @param fileName the name of the file
+	 * 
+	 * @return the input stream
+	 * 
+	 * @throws FileNotFoundException if the file is not found
+	 */
+	public static InputStream findConfigFileAsInputStream(
+			ClassLoader classLoader, String rootDir, String container, String fileName)
+			throws FileNotFoundException {
+
+		String pathToFile = fileName;
+
+		// 0. Is the file name an absolute path?
+		if (isAbsolutePath(pathToFile)) {
+			return new FileInputStream(pathToFile);
+		}
+
+		// 1. Try the container directory, if it exists
+		pathToFile = concatFileName(rootDir,
+				((container == null || container.length() == 0) ? fileName
+						: (Tools.concatFileName(container, fileName))));
+		if (Tools.fileExists(pathToFile)) {
+			return new FileInputStream(pathToFile);
+		}
+
+		// 2. Try the root directory
+		pathToFile = Tools.concatFileName(rootDir, fileName);
+		if (Tools.fileExists(pathToFile)) {
+			return new FileInputStream(pathToFile);
+		}
+
+		// 3.1 Convert all File.separators (like '\') to slashes. Otherwise the
+		// resource may not be found in the classpath.
+		fileName = fileName.replace(File.separatorChar, '/');
+
+		// 3.2 Try the container directory in the classpath
+		pathToFile = (container == null || container.length() == 0) ? fileName : (container + "/" + fileName);
+
+		InputStream inStream = classLoader.getResourceAsStream(pathToFile);
+		if (inStream == null) {
+			if (container != null && container.length() > 0) {
+
+				// 4. Try the root directory in the classpath
+				pathToFile = fileName;
+				inStream = classLoader.getResourceAsStream(pathToFile);
+			}
+		}
+
+		if (inStream != null) {
+			return inStream;
+		} else {
+			throw new FileNotFoundException();
+		}
 	}
 
 }

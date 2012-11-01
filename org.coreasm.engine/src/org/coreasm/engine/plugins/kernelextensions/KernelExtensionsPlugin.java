@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
@@ -42,7 +43,6 @@ import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,7 +232,7 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 					final ASTNode toBeEvaluated = getUnevaluatedNode(args);
 					if (toBeEvaluated == null) {
 						// if all nodes are evaluated...
-						ElementList vList = Tools.getValueList(args);
+						ElementList vList = EngineTools.getValueList(args);
 						
 						//look for the function in the state
 						Element value = null;

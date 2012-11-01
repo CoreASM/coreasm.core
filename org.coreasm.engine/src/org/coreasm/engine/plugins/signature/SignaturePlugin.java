@@ -27,6 +27,7 @@ import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
+import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
@@ -589,7 +590,7 @@ public class SignaturePlugin extends Plugin
     private String getContextInfo(Update u) {
     	StringBuffer result = new StringBuffer();
     	if (u.sources != null) {
-    		result.append(Tools.getEOL() + Tools.getContextInfo("", u, capi.getParser(), capi.getSpec()));
+    		result.append(Tools.getEOL() + EngineTools.getContextInfo("", u, capi.getParser(), capi.getSpec()));
 //    		org.coreasm.engine.parser.Parser parser = capi.getParser();
 //    		Specification spec = capi.getSpec();
 //    		result.append(Tools.getEOL() + "Check the following " + ((u.sources.size()>1)?"lines":"line") + " of the specification:" + Tools.getEOL());

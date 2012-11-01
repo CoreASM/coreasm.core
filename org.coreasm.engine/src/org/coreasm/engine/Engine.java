@@ -937,7 +937,7 @@ public class Engine implements ControlAPI {
 		String reason = "";
 		if (storage.getLastInconsistentUpdate() != null) {
 			reason = "Incosistent updates: " + Tools.getEOL()
-					+ Tools.getContextInfo("", storage.getLastInconsistentUpdate(), getParser(), getSpec());
+					+ EngineTools.getContextInfo("", storage.getLastInconsistentUpdate(), getParser(), getSpec());
 		}
 		EngineEvent event = new StepFailedEvent(reason);
 		for (EngineObserver observer : observers) {

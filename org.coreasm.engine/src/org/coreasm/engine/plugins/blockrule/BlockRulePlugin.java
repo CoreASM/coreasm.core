@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -32,7 +33,6 @@ import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.PluginTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +88,7 @@ public class BlockRulePlugin extends Plugin
             while (currentRule != null) {
             	// TODO A decision needs to be made on the following pattern
             	//      Do we want to have this pattern in other plugins as well?
-            	if (!PluginTools.hasUpdates(interpreter, currentRule, capi, logger)) {
+            	if (!EngineTools.hasUpdates(interpreter, currentRule, capi, logger)) {
         			return pos;
             	} else {
             		updates.addAll(currentRule.getUpdates());

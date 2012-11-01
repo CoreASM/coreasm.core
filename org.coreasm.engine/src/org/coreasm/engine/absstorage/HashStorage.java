@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
+import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.Plugin;
@@ -358,11 +359,11 @@ public class HashStorage implements AbstractStorage {
 			
 			if (aggAPI.getFailedInstructions().size() > 0) {
 				msg = msg + "\nFailed instructions: " + Tools.getEOL()
-						+ Tools.getContextInfo("", aggAPI.getFailedInstructions(), capi.getParser(), capi.getSpec());
+						+ EngineTools.getContextInfo("", aggAPI.getFailedInstructions(), capi.getParser(), capi.getSpec());
 			}
 			if (aggAPI.getUnprocessedInstructions().size() > 0) {
 				msg = msg + "\nUnprocessed instructions: " + Tools.getEOL()
-						+ Tools.getContextInfo("", aggAPI.getUnprocessedInstructions(), capi.getParser(), capi.getSpec());
+						+ EngineTools.getContextInfo("", aggAPI.getUnprocessedInstructions(), capi.getParser(), capi.getSpec());
 			}
 			throw new EngineError(msg);
 		}
