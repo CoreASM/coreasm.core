@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
+import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
@@ -362,7 +363,7 @@ public class InterpreterImp implements Interpreter {
 							final ASTNode toBeEvaluated = getUnevaluatedNode(args);
 							if (toBeEvaluated == null) {
 								// if all nodes are evaluated...
-								final ElementList vList = Tools.getValueList(args);
+								final ElementList vList = EngineTools.getValueList(args);
 								final Location l = new Location(x, vList, f.isModifiable());
 								try {
 									pos.setNode(l, null, storage.getValue(l));
@@ -380,7 +381,7 @@ public class InterpreterImp implements Interpreter {
 								final ASTNode toBeEvaluated = getUnevaluatedNode(args);
 								if (toBeEvaluated == null) {
 									// if all nodes are evaluated...
-									ElementList vList = Tools.getValueList(args);
+									ElementList vList = EngineTools.getValueList(args);
 									handleUndefinedIdentifier(pos, x, vList);
 								} else
 									pos = toBeEvaluated;

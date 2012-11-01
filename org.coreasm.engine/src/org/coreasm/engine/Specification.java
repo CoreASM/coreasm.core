@@ -40,8 +40,8 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.odf.ODTImporter;
 import org.coreasm.util.Tools;
+import org.coreasm.util.odf.ODTImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

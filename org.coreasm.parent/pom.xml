@@ -8,6 +8,8 @@
 	<name>CoreASM Parent Project</name>
 
 	<modules>
+		<module>../org.coreasm.util</module>
+		<module>../org.coreasm.config</module>
 		<module>../org.coreasm.engine</module>
 		<module>../org.coreasm.ui.carma</module>
 	</modules>

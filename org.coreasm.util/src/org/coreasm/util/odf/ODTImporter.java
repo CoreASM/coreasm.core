@@ -12,7 +12,7 @@
  *
  */
  
-package org.coreasm.odf;
+package org.coreasm.util.odf;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
