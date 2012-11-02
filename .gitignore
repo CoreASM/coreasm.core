@@ -1,7 +1,4 @@
 /bin
 /target
-.classpath
-.settings
 .DS_Store
-.project
 *.class
