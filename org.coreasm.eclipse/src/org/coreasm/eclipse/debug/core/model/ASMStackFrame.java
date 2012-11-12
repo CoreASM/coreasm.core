@@ -33,7 +33,6 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		this.state = state;
 		Set<Update> updates = state.getUpdates();
 		ArrayList<IVariable> variables = new ArrayList<IVariable>();
-		ArrayList<IVariable> universeVariables = new ArrayList<IVariable>();
 		ArrayList<IVariable> backgrounds = new ArrayList<IVariable>();
 		
 		variables.add(new ASMVariable(this, "Step", new ASMValue(this, "" + (getStep() < 0 ? -getStep() - 1 + "*" : getStep())), false));
@@ -62,14 +61,17 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		}
 		for (Entry<String, ASMFunctionElement> universe : state.getUniverses().entrySet()) {
 			if (universe.getValue().getFunctionElement() instanceof UniverseElement) {
+				ArrayList<IVariable> universeVariables = new ArrayList<IVariable>();
 				String universeName = universe.getKey();
-				UniverseElement universeElement = (UniverseElement)universe.getValue().getFunctionElement();
+				ASMFunctionElement universeElement = universe.getValue();
 				
+				boolean containingValueChanged = false;
 				for (Location location : universeElement.getLocations(universeName)) {
 					boolean valueChanged = false;
 					for (Update update : updates) {
 						if (update.loc.equals(location)) {
 							valueChanged = true;
+							containingValueChanged = true;
 							break;
 						}
 					}
@@ -77,7 +79,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 				}
 				IVariable[] tmp = new IVariable[universeVariables.size()];
 				universeVariables.toArray(tmp);
-				variables.add(new ASMVariable(this, universeName, new ASMValue(this, tmp), false));
+				variables.add(new ASMVariable(this, universeName, new ASMValue(this, tmp), containingValueChanged));
 			}
 		}
 		IVariable[] tmp = new IVariable[backgrounds.size()];

@@ -87,12 +87,13 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	
 	@Override
 	public String toString() {
-		String string = super.toString() + " (";
-		for (Element agent : update.agents) {
-			if (!string.endsWith("("))
-				string += ", ";
-			string += agent.denotation();
-		}
-		return string + ")";
+//		String string = super.toString() + " (";
+//		for (Element agent : update.agents) {
+//			if (!string.endsWith("("))
+//				string += ", ";
+//			string += agent.denotation();
+//		}
+//		return string + ")";
+		return update.toString();
 	}
 }
