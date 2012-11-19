@@ -140,6 +140,7 @@ public class Engine implements ControlAPI {
 	/** Collection of registered observers */
 	private Collection<EngineObserver> observers;
 
+	/** List of interpreter listeners */
 	private LinkedList<InterpreterListener> interpreterListeners;
 
 	/** Remaining steps of the current run */
@@ -179,7 +180,6 @@ public class Engine implements ControlAPI {
 		storage = new HashStorage(this);
 		scheduler = new SchedulerImp(this);
 		parser = new JParsecParser(this);
-		interpreterListeners = new LinkedList<InterpreterListener>();
 		interpreter = new InterpreterImp(this);
 		engineThread = new EngineThread(name);
 
@@ -191,6 +191,7 @@ public class Engine implements ControlAPI {
 		operatorRules = new ArrayList<OperatorRule>();
 		engineMode = EngineMode.emIdle;
 		observers = new HashSet<EngineObserver>();
+		interpreterListeners = new LinkedList<InterpreterListener>();
 		modeEventCache = new HashMap<EngineMode, Map<EngineMode,EngineModeEvent>>();
 		specification = null;
 		warnings = new ArrayList<CoreASMWarning>();

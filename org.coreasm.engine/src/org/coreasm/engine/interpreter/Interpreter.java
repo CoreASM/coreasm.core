@@ -15,11 +15,11 @@
 package org.coreasm.engine.interpreter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.RuleElement;
-import org.coreasm.engine.interpreter.Node;
 
 /** 
  *	Defines the interface of the interpreter.
@@ -134,6 +134,12 @@ public interface Interpreter {
 	 * @param value value of the variable
 	 */
 	public void addEnv(String name, Element value);
+	
+	/**
+	 * Returns a copy of the environment variables.
+	 * @return a copy of the environment variables
+	 */
+	public Map<String, Stack<Element>> getEnvMap();
 	
 	/**
 	 * Returns the top-most value of the 

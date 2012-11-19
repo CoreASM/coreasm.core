@@ -132,7 +132,7 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 	
 	private TableViewerColumn createColumn(int step, final int index) {
 		TableViewerColumn column = new TableViewerColumn(viewer, SWT.NONE);
-		column.getColumn().setText("Step " + step);
+		column.getColumn().setText("Step " + (step < 0 ? -step - 1 + "*" : step));
 		column.getColumn().setWidth(100);
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override

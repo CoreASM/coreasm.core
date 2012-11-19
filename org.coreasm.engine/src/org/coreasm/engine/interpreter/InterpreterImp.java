@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.coreasm.engine.ControlAPI;
@@ -89,8 +90,6 @@ public class InterpreterImp implements Interpreter {
 	
 	private final Stack<CallStackElement> ruleCallStack = new Stack<CallStackElement>();
 
-	private List<InterpreterListener> listeners;
-
 	/**
 	 * Creates a new interpreter with a link to the given
 	 * ControlAPI module.
@@ -100,7 +99,6 @@ public class InterpreterImp implements Interpreter {
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
 		this.workCopy = new HashMap<ASTNode,ASTNode>();
-		this.listeners = capi.getInterpreterListeners();
 		interpreters.set(this);
 	}
 	
@@ -121,8 +119,7 @@ public class InterpreterImp implements Interpreter {
 		// As it is now on 28-Aug-2006.
 	
 		if (!pos.isEvaluated()) {
-			// notification for observers (i.e. debugger and plugins like
-			// AspectOrientedASM
+			// notification for observers (i.e. debugger)
 			notifyListenersBeforeNodeEvaluation(pos);
 			
 			final String pName = pos.getPluginName();
@@ -168,7 +165,7 @@ public class InterpreterImp implements Interpreter {
 	 * @param pos the node being evaluated
 	 */
 	private void notifyListenersAfterNodeEvaluation(ASTNode pos) {
-		for (InterpreterListener listener : listeners)
+		for (InterpreterListener listener : capi.getInterpreterListeners())
 			listener.afterNodeEvaluation(pos);
 	}
 
@@ -178,7 +175,7 @@ public class InterpreterImp implements Interpreter {
 	 * @param pos the node being evaluated
 	 */
 	private void notifyListenersBeforeNodeEvaluation(ASTNode pos) {
-		for (InterpreterListener listener : listeners)
+		for (InterpreterListener listener : capi.getInterpreterListeners())
 			listener.beforeNodeEvaluation(pos);
 	}
 
@@ -251,6 +248,17 @@ public class InterpreterImp implements Interpreter {
 	
 	public Element getSelf() {
 		return this.self;
+	}
+	
+	@Override
+	public Map<String, Stack<Element>> getEnvMap() {
+		Map<String, Stack<Element>> envMap = new HashMap<String, Stack<Element>>();
+		for (Entry<String, Stack<Element>> entry : this.envMap.entrySet()) {
+			Stack<Element> stack = new Stack<Element>();
+			stack.addAll(entry.getValue());
+			envMap.put(entry.getKey(), stack);
+		}
+		return envMap;
 	}
 
 	public Element getEnv(String token) {
@@ -816,6 +824,7 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
+		
 		ASTNode wCopy = workCopy.get(pos);
 		// If there is no work copy created for this rule call
 		if (wCopy == null) {
@@ -830,6 +839,7 @@ public class InterpreterImp implements Interpreter {
 			wCopy = copyTreeSub(rule.getBody(), rule.getParam(), args);
 			workCopy.put(pos, wCopy);
 			wCopy.setParent(pos);
+			notifyOnRuleCall(rule, args, pos, self);
 			return wCopy; // as new value of 'pos'
 		} else { // if there already is a work copy
 			pos.setNode(null, wCopy.getUpdates(), wCopy.getValue());
@@ -840,8 +850,33 @@ public class InterpreterImp implements Interpreter {
 			
 			workCopy.remove(pos);
 			ruleCallStack.pop();
+			notifyOnRuleExit(rule, args, pos, self);
 			return pos;
 		}
+	}
+	
+	/**
+	 * Notifies the listeners on rule call.
+	 * @param rule the rule that is being called
+	 * @param args the arguments being passed with the call
+	 * @param pos the node of the rule
+	 * @param agent the executing agent
+	 */
+	private void notifyOnRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
+		for (InterpreterListener listener : capi.getInterpreterListeners())
+			listener.onRuleExit(rule, args, pos, agent);
+	}
+	
+	/**
+	 * Notifies the listeners on rule exit.
+	 * @param rule the rule that is being exited
+	 * @param args the arguments that have been passed with the call
+	 * @param pos the node of the rule
+	 * @param agent the executing agent
+	 */
+	private void notifyOnRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
+		for (InterpreterListener listener : capi.getInterpreterListeners())
+			listener.onRuleCall(rule, args, pos, agent);
 	}
 
 	/**
@@ -1066,7 +1101,7 @@ public class InterpreterImp implements Interpreter {
 		// clearTree(pos);
 		// removing environment (temporary) values
 		envMap.clear();
-		notifyInitProgramExecution(self, storage.getChosenProgram(self));
+		notifyInitProgramExecution(self, (RuleElement)storage.getChosenProgram(self));
  	}
 
 	/**
@@ -1075,8 +1110,8 @@ public class InterpreterImp implements Interpreter {
 	 * @param agent the agent running the program
 	 * @param program the program that is being initialized
 	 */
-	private void notifyInitProgramExecution(Element agent, Element program) {
-		for (InterpreterListener listener : listeners)
+	private void notifyInitProgramExecution(Element agent, RuleElement program) {
+		for (InterpreterListener listener : capi.getInterpreterListeners())
 			listener.initProgramExecution(agent, program);
 	}
 

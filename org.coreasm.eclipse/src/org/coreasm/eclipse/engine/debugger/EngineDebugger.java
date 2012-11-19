@@ -1,6 +1,10 @@
 package org.coreasm.eclipse.engine.debugger;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -25,6 +29,7 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -33,7 +38,6 @@ import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
 import org.coreasm.engine.plugins.number.NumberElement;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
@@ -64,6 +68,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private int lineNumber;
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
+	private ASTNode prevPos;
+	private Map<ASTNode, String> ruleArgs;
 	private Set<Update> updates = new HashSet<Update>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
@@ -359,32 +365,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	}
 	
 	/**
-	 * This method is called whenever a rule is being evaluated.
-	 * @param ruleName rule that is being evaluated
-	 * @param ruleNode the node of the rule being evaluated
-	 */
-	private void onRuleEvaluation(String ruleName, ASTNode ruleNode) {
-		for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
-			try {
-				if (!breakpoint.isEnabled())
-					continue;
-				if (breakpoint instanceof ASMMethodBreakpoint && ((ASMMethodBreakpoint) breakpoint).getRuleName().equals(ruleName)) {
-					try {
-						sourceName = ((ASMLineBreakpoint)breakpoint).getSpecName();
-						lineNumber = ((ASMLineBreakpoint)breakpoint).getLineNumber();
-						onBreakpointHit(ruleNode);
-						break;
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			} catch (CoreException e) {
-			}
-		}
-	}
-	
-	/**
 	 * This method is called whenever a breakpoint is hit.
 	 * @param pos the node that the breakpoint was attached to
 	 */
@@ -403,16 +383,40 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	public void updateState() {
 		ASMState state = null;
 		Stack<CallStackElement> callStack = capi.getInterpreter().getInterpreterInstance().getCurrentCallStack();
+		Map<String, Stack<Element>> envMap = capi.getInterpreter().getInterpreterInstance().getEnvMap();
+		if (ruleArgs != null) {
+			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
+				if (arg.getKey().isEvaluated()) {
+					Stack<Element> stack = envMap.get(arg.getValue());
+					if (stack == null) {
+						stack = new Stack<Element>();
+						envMap.put(arg.getValue(), stack);
+					}
+					stack.push(arg.getKey().getValue());
+				}
+			}
+		}
 		if (stepSucceeded) {
 			if (!states.isEmpty() && capi.getStepCount() == states.peek().getStep())
 				return;
 			while (!states.isEmpty() && states.peek().getStep() < 0)
 				states.pop();
-			state = new ASMState(capi.getStepCount(), capi.getLastSelectedAgents(), capi.getState(), updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
+			state = new ASMState(capi.getStepCount(), capi.getLastSelectedAgents(), capi.getState(), envMap, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 		}
 		else {
 			if (!states.isEmpty() && states.peek().getStep() < 0) {
-				if (updates.isEmpty() && states.peek().getUpdates().isEmpty())
+				boolean diffEnvMap = false;
+				for (Entry<String, Stack<Element>> envVariable : envMap.entrySet()) {
+					Stack<Element> stack = states.peek().getEnvMap().get(envVariable.getKey());
+					if (stack == null || !stack.equals(envVariable.getValue()))
+						diffEnvMap = true;
+				}
+				for (Entry<String, Stack<Element>> envVariable : states.peek().getEnvMap().entrySet()) {
+					Stack<Element> stack = envMap.get(envVariable.getKey());
+					if (stack == null || !stack.equals(envVariable.getValue()))
+						diffEnvMap = true;
+				}
+				if (updates.isEmpty() && states.peek().getUpdates().isEmpty() && !diffEnvMap)
 					state = states.pop();
 				else
 					state = new ASMState(states.peek());
@@ -420,8 +424,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			Set<Element> agent = new HashSet<Element>();
 			agent.add(currentAgent);
 			if (state == null)
-				state = new ASMState(-capi.getStepCount() - 1, agent, capi.getState(), updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
-			state.updateState(agent, updates, callStack, sourceName, lineNumber);
+				state = new ASMState(-capi.getStepCount() - 1, agent, capi.getState(), envMap, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
+			state.updateState(agent, envMap, updates, callStack, sourceName, lineNumber);
 		}
 		states.add(state);
 		updates = new HashSet<Update>();
@@ -433,6 +437,11 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * @return whether pos has been visited before or not
 	 */
 	private boolean isUnvisited(ASTNode pos) {
+		if (prevPos != null && pos == prevPos.getParent() && prevPos.isEvaluated()) {
+			prevPos = pos;
+			return false;
+		}
+		prevPos = pos;
 		for (ASTNode child : pos.getAbstractChildNodes()) {
 			if (child.isEvaluated())
 				return false;
@@ -491,21 +500,19 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			
 			if (stepSucceeded) {
 				updateState();
-				waitForStep(pos);
+				if (isLineBreakpointHit())
+					onBreakpointHit(pos);
+				else
+					waitForStep(pos);
 				stepSucceeded = false;
 				return;
 			}
 			
-//			handle rule calls and watchpoints (access)
-			if (Kernel.GR_FUNCTION_RULE_TERM.equals(pos.getGrammarRule()) || pos instanceof MacroCallRuleNode) {
-				if (pos instanceof MacroCallRuleNode)
-					pos = pos.getFirst();
+//			handle watchpoints (access)
+			if (Kernel.GR_FUNCTION_RULE_TERM.equals(pos.getGrammarRule())) {
 				FunctionRuleTermNode frNode = (FunctionRuleTermNode) pos;
 				if (frNode.hasName()) {
-					String name = frNode.getName();
-					if (capi.getStorage().isRuleName(name))
-						onRuleEvaluation(name, pos);
-					else if (isWatchpointHit(frNode)) {
+					if (isWatchpointHit(frNode)) {
 						onBreakpointHit(frNode);
 						return;
 					}
@@ -543,6 +550,11 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		else if (pos == stepOverPos) {
 			shouldStepOver = false;
 			stepOverPos = null;
+		}
+		if (ruleArgs != null && ruleArgs.containsKey(pos)) {
+			String name = ruleArgs.get(pos);
+			ruleArgs.remove(pos);
+			ruleArgs.put(pos, name);
 		}
 		if (!pos.getUpdates().isEmpty()) {
 			String context = pos.getContext(capi.getParser(), capi.getSpec());
@@ -585,8 +597,52 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	}
 
 	@Override
-	public void initProgramExecution(Element agent, Element program) {
+	public void onRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
 		currentAgent = agent;
-		onRuleEvaluation(program.denotation().substring(1), null);
+		for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
+			try {
+				if (!breakpoint.isEnabled())
+					continue;
+				if (breakpoint instanceof ASMMethodBreakpoint && ((ASMMethodBreakpoint) breakpoint).getRuleName().equals(rule.getName())) {
+					try {
+						String context = pos.getContext(capi.getParser(), capi.getSpec());
+						String ruleSourceName = ASMDebugUtils.parseSourceName(context);
+						
+						if (!ruleSourceName.equals(((ASMLineBreakpoint)breakpoint).getSpecName()))
+							continue;
+						
+						sourceName = ruleSourceName;
+						lineNumber = ASMDebugUtils.parseLineNumber(context);
+						if (sourceName == null || lineNumber < 0) {
+							sourceName = ((ASMLineBreakpoint)breakpoint).getSpecName();
+							lineNumber = ((ASMLineBreakpoint)breakpoint).getLineNumber();
+						}
+						onBreakpointHit(pos);
+						break;
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} catch (CoreException e) {
+			}
+		}
+		ruleArgs = new HashMap<ASTNode, String>();
+		if (rule.getParam() != null) {
+			int i = 0;
+			for (String param : rule.getParam())
+				ruleArgs.put(args.get(i++), param);
+		}
+	}
+	
+	@Override
+	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
+		currentAgent = agent;
+		ruleArgs = null;
+	}
+	
+	@Override
+	public void initProgramExecution(Element agent, RuleElement program) {
+		onRuleCall(program, null, program.getDeclarationNode(), agent);
 	}
 }

@@ -1,6 +1,9 @@
 package org.coreasm.engine.interpreter;
 
+import java.util.List;
+
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.RuleElement;
 
 /**
  *
@@ -25,5 +28,13 @@ public interface InterpreterListener {
     /**
      * Invoked on initiating the execution of <code>program</code> by <code>agent</code>.
      */
-    public void initProgramExecution(Element agent, Element program);
+    public void initProgramExecution(Element agent, RuleElement program);
+    /**
+     * Invoked on rule call.
+     */
+    public void onRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent);
+    /**
+     * Invoked on rule exit.
+     */
+    public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent);
 }

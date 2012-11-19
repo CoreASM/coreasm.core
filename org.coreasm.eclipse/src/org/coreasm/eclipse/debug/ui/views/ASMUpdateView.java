@@ -240,6 +240,10 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 						}
 					}
 				}
+				else {
+					elements = new Object[0];
+					refresh();
+				}
 			}
 		}
 	}
