@@ -12,6 +12,8 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
+import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.eclipse.core.resources.IResource;
@@ -99,7 +101,9 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 		
 		if (editor != null) {
 			IResource resource = (IResource)editor.getEditorInput().getAdapter(IResource.class);
-			String functionName = getFunctionName(part, selection);
+			String[] function = getFunctionInfo(part, selection);
+			String functionName = function[0];
+			String functionType = function[1];
 			int lineNumber = ((ITextSelection)selection).getStartLine();
 			IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug");
 			
@@ -111,16 +115,16 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 					}
 				}
 			}
-			DebugPlugin.getDefault().getBreakpointManager().addBreakpoint(new ASMWatchpoint(resource, lineNumber + 1, functionName, true, true));
+			DebugPlugin.getDefault().getBreakpointManager().addBreakpoint(new ASMWatchpoint(resource, lineNumber + 1, functionName, functionType));
 		}
 	}
 
 	@Override
 	public boolean canToggleWatchpoints(IWorkbenchPart part, ISelection selection) {
-		return getFunctionName(part, selection) != null;
+		return getFunctionInfo(part, selection) != null;
 	}
 	
-	private String getFunctionName(IWorkbenchPart part, ISelection selection) {
+	private String[] getFunctionInfo(IWorkbenchPart part, ISelection selection) {
 		List<ASTNode> nodes = getASTNodesFromSelection(part, selection);
 		
 		if (!nodes.isEmpty()) {
@@ -128,12 +132,14 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 			
 			if (node != null) {
 				node = node.getFirst();
-				if (node instanceof FunctionNode || node instanceof UniverseNode) {
-					for (ASTNode child : node.getAbstractChildNodes()) {
-						if (Kernel.GR_ID.equals(child.getGrammarRule()))
-							return child.getToken();
-					}
-				}
+				if (node instanceof FunctionNode)
+					return new String[] { ((FunctionNode)node).getName(), node.getGrammarRule() };
+				if (node instanceof UniverseNode)
+					return new String[] { ((UniverseNode)node).getName(), node.getGrammarRule() };
+				if (node instanceof DerivedFunctionNode)
+					return new String[] { ((DerivedFunctionNode)node).getNameSignatureNode().getFirst().getToken(), node.getGrammarRule() };
+				if (node instanceof EnumerationNode)
+					return new String[] { ((EnumerationNode)node).getName(), node.getGrammarRule() };
 			}
 		}
 		return null;

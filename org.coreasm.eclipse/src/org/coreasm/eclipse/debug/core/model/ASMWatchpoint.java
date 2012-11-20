@@ -19,7 +19,7 @@ public class ASMWatchpoint extends ASMLineBreakpoint implements IWatchpoint {
 	public ASMWatchpoint() {
 	}
 	
-	public ASMWatchpoint(final IResource resource, final int lineNumber, final String functionName, final boolean access, final boolean modification) throws DebugException {
+	public ASMWatchpoint(final IResource resource, final int lineNumber, final String functionName, final String functionType) throws DebugException {
 		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 			
 			@Override
@@ -31,8 +31,9 @@ public class ASMWatchpoint extends ASMLineBreakpoint implements IWatchpoint {
 				marker.setAttribute(IBreakpoint.ID, getModelIdentifier());
 				marker.setAttribute(IMarker.MESSAGE, "Watchpoint: " + resource.getName() + " [line: " + lineNumber + "]");
 				marker.setAttribute("FUNCTION_NAME", functionName);
-				setAccess(access);
-				setModification(modification);
+				marker.setAttribute("FUNCTION_TYPE", functionType);
+				setAccess(supportsAccess());
+				setModification(supportsModification());
 			}
 		};
 		run(getMarkerRule(resource), runnable);
@@ -65,7 +66,7 @@ public class ASMWatchpoint extends ASMLineBreakpoint implements IWatchpoint {
 
 	@Override
 	public boolean supportsModification() {
-		return true;
+		return !"EnumerationDefinition".equals(getFunctionType()) && !"DerivedFunctionDeclaration".equals(getFunctionType());
 	}
 
 	/**
@@ -74,5 +75,13 @@ public class ASMWatchpoint extends ASMLineBreakpoint implements IWatchpoint {
 	 */
 	public String getFuctionName() {
 		return getMarker().getAttribute("FUNCTION_NAME", (String)null);
+	}
+	
+	/**
+	 * Returns the type of the function assigned to this watchpoint.
+	 * @return the type of the function assigned to this watchpoint
+	 */
+	public String getFunctionType() {
+		return getMarker().getAttribute("FUNCTION_TYPE", (String)null);
 	}
 }
