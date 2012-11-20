@@ -26,7 +26,7 @@ public class ASMDebugUtils {
 	
 	private static int indexOfCasmFilename(String context) {
 		int index;
-		if (context.contains(".coreasm"))
+		if (context.contains(".coreasm") && context.indexOf(".coreasm") != context.indexOf(".coreasm."))
 			index = context.substring(0, context.indexOf(".coreasm")).lastIndexOf(' ') + 1;
 		else if (context.contains(".casm"))
 			index = context.substring(0, context.indexOf(".casm")).lastIndexOf(' ') + 1;

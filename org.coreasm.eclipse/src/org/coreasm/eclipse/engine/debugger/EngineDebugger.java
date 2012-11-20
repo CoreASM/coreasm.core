@@ -311,6 +311,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				shouldStepReturn = false;
 				stepSucceeded = true;
 			}
+			else if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepFailed || ((EngineModeEvent)event).getNewMode() == EngineMode.emError)
+				onBreakpointHit(null);
 		}
 		else
 			super.update(event);

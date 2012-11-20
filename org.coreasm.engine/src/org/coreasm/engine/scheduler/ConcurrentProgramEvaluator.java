@@ -176,6 +176,10 @@ public class ConcurrentProgramEvaluator extends FJTask {
 			inter.executeTree();	
 		while (!(inter.isExecutionComplete() || capi.hasErrorOccurred()));
 		
+		// if rootNode hasn't been evaluated after inter.isExecutionComplete() returned true, the AST has been corrupted
+		if (!rootNode.isEvaluated() && !capi.hasErrorOccurred()) 
+			throw new EngineException("AST of " + agent.denotation() + program.denotation() + " has been corrupted.");
+		
 		// if an error occurred in the engine, just return an empty multiset
 		if (capi.hasErrorOccurred()) 
 			result = new UpdateMultiset();
