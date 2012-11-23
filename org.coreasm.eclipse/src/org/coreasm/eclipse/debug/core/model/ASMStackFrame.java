@@ -248,6 +248,14 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 			return false;
 		return true;
 	}
+	
+	/**
+	 * Returns the state of the state assigned to this stack frame.
+	 * @return the state of the state assigned to this stack frame
+	 */
+	public ASMState getState() {
+		return state;
+	}
 
 	/**
 	 * Returns the step of the state assigned to this stack frame.

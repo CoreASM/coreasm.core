@@ -18,6 +18,7 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.plugins.set.SetElement;
 import org.coreasm.engine.plugins.set.SetPlugin;
+import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
 
 /**
@@ -79,7 +80,7 @@ public class ASMState {
 		for (Update update : updates) {
 			ASMFunctionElement function = getFunction(update.loc.name);
 			if (function == null) {
-				if (pos != null && pos.getParent() instanceof SeqRuleNode) {
+				if (pos != null && Update.UPDATE_ACTION.equals(update.action) && (pos.getParent() instanceof SeqRuleNode || pos.getParent() instanceof ReturnRuleNode)) {
 					Stack<Element> stack = envMap.get(update.loc.name);
 					if (stack == null) {
 						stack = new Stack<Element>();
@@ -132,6 +133,11 @@ public class ASMState {
 		Element value = null;
 		
 		value = getFunction(loc.name).getValue(loc.args);
+		if (value == null) {
+			FunctionElement functionElement = getFunction(loc.name).getFunctionElement();
+			if (functionElement.isReadable())
+				value = functionElement.getValue(loc.args);
+		}
 		if (value == null)
 			value = Element.UNDEF;
 		

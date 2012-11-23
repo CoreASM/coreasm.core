@@ -6,6 +6,7 @@ import org.coreasm.eclipse.debug.core.model.ASMDebugTarget;
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMThread;
 import org.coreasm.eclipse.debug.core.model.ASMValue;
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IValue;
@@ -43,6 +44,14 @@ public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 				value = variables[0].getValue();
 			else if (variables.length > 0)
 				value = new ASMValue(frame, variables);
+			if (value == null) {
+				EngineDebugger debugger = EngineDebugger.getRunningInstance();
+				if (debugger != null) {
+					String expressionValue = debugger.evaluateExpression(expression, frame.getState());
+					if (expressionValue != null)
+						value = new ASMValue(frame, expressionValue);
+				}
+			}
 		} catch (DebugException e) {
 			exception = e;
 		}
