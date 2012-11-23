@@ -14,9 +14,11 @@ import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.State;
 import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.plugins.set.SetElement;
 import org.coreasm.engine.plugins.set.SetPlugin;
+import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
 
 /**
  * Wrapper class for ASM states. It is needed for the history functionality.
@@ -65,7 +67,7 @@ public class ASMState {
 		this.lineNumber = lineNumber;
 	}
 	
-	public void updateState(Set<? extends Element> lastSelectedAgents, Map<String, Stack<Element>> envMap, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
+	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Stack<Element>> envMap, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		this.lastSelectedAgents = new HashSet<Element>();
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
 		this.envMap = envMap;
@@ -76,9 +78,17 @@ public class ASMState {
 		
 		for (Update update : updates) {
 			ASMFunctionElement function = getFunction(update.loc.name);
-			if (function == null)
-				continue;
-			if (SetPlugin.SETADD_ACTION.equals(update.action)) {
+			if (function == null) {
+				if (pos != null && pos.getParent() instanceof SeqRuleNode) {
+					Stack<Element> stack = envMap.get(update.loc.name);
+					if (stack == null) {
+						stack = new Stack<Element>();
+						envMap.put(update.loc.name, stack);
+					}
+					stack.push(update.value);
+				}
+			}
+			else if (SetPlugin.SETADD_ACTION.equals(update.action)) {
 				HashSet<Element> resultantSet = new HashSet<Element>();
 				Enumerable existingSet = (Enumerable)function.getValue(update.loc.args);
 				if (existingSet != null) {

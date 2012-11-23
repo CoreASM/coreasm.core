@@ -101,7 +101,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	
 	@Override
 	public synchronized void pause() {
-		updateState();
+		updateState(null);
 		super.pause();
 	}
 	
@@ -375,14 +375,15 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		shouldStepInto = false;
 		shouldStepOver = false;
 		shouldStepReturn = false;
-		updateState();
+		updateState(pos);
 		waitForStep(pos);
 	}
 	
 	/**
 	 * Updates/Creates the current state.
+	 * @param pos Current position of the state
 	 */
-	public void updateState() {
+	public void updateState(ASTNode pos) {
 		ASMState state = null;
 		Stack<CallStackElement> callStack = capi.getInterpreter().getInterpreterInstance().getCurrentCallStack();
 		Map<String, Stack<Element>> envMap = capi.getInterpreter().getInterpreterInstance().getEnvMap();
@@ -427,7 +428,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			agent.add(currentAgent);
 			if (state == null)
 				state = new ASMState(-capi.getStepCount() - 1, agent, capi.getState(), envMap, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
-			state.updateState(agent, envMap, updates, callStack, sourceName, lineNumber);
+			state.updateState(pos, agent, envMap, updates, callStack, sourceName, lineNumber);
 		}
 		states.add(state);
 		updates = new HashSet<Update>();
@@ -501,7 +502,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				return;
 			
 			if (stepSucceeded) {
-				updateState();
+				updateState(pos);
 				if (isLineBreakpointHit())
 					onBreakpointHit(pos);
 				else
@@ -535,7 +536,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				|| pos instanceof SeqBlockRuleNode && pos.getFirstASTNode() != pos.getFirstCSTNode()) { // OR if pos is keyword 'seqblock' (first CSTNode will be the keyword)
 					if (!shouldStepOver && !shouldStepReturn) {
 						if (shouldStep)
-							updateState();
+							updateState(pos);
 						waitForStep(pos);
 					}
 				}
@@ -594,8 +595,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 			prevWatchpoint = null;
+			updates.addAll(pos.getUpdates());
 		}
-		updates.addAll(pos.getUpdates());
 	}
 
 	@Override
