@@ -8,6 +8,7 @@ import java.util.Stack;
 
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.absstorage.AbstractStorage;
+import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.UniverseElement;
@@ -46,7 +47,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		
 		for (Entry<String, Stack<Element>> envVariable : state.getEnvMap().entrySet()) {
 			if (!envVariable.getValue().isEmpty())
-				variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue().peek().toString()), false));
+				variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue().peek()), false));
 		}
 		
 		for (Entry<String, ASMFunctionElement> function : state.getFunctions().entrySet()) {
@@ -56,9 +57,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 			if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
 				for (Location location : functionElement.getLocations(functionName)) {
 					if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
-						backgrounds.add(new ASMVariable(this, location.toString(), new ASMValue(this, "true"), updateLocations.contains(location)));
+						backgrounds.add(new ASMVariable(this, location.toString(), new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
 					else
-						variables.add(new ASMVariable(this, location.toString(), new ASMValue(this, functionElement.getValue(location.args).denotation()), updateLocations.contains(location)));
+						variables.add(new ASMVariable(this, location.toString(), new ASMValue(this, functionElement.getValue(location.args)), updateLocations.contains(location)));
 				}
 			}
 		}
@@ -73,7 +74,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 				for (Location location : universeElement.getLocations(universeName)) {
 					if (updateLocations.contains(location))
 						containingValueChanged = true;
-					universeVariables.add(new ASMVariable(this, location.toString(), new ASMValue(this, universeElement.getValue(location.args).denotation()), updateLocations.contains(location)));
+					universeVariables.add(new ASMVariable(this, location.toString(), new ASMValue(this, universeElement.getValue(location.args)), updateLocations.contains(location)));
 				}
 				IVariable[] tmp = new IVariable[universeVariables.size()];
 				universeVariables.toArray(tmp);

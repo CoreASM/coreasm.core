@@ -27,6 +27,7 @@ import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
  *
  */
 public class ASMState {
+	private ASTNode pos;
 	private int step;
 	private Set<Element> lastSelectedAgents = new HashSet<Element>();
 	private Map<String, ASMFunctionElement> functions = new HashMap<String, ASMFunctionElement>();
@@ -69,6 +70,7 @@ public class ASMState {
 	}
 	
 	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Stack<Element>> envMap, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
+		this.pos = pos;
 		this.lastSelectedAgents = new HashSet<Element>();
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
 		this.envMap = envMap;
@@ -84,7 +86,7 @@ public class ASMState {
 					Stack<Element> stack = envMap.get(update.loc.name);
 					if (stack == null) {
 						stack = new Stack<Element>();
-						envMap.put(update.loc.name, stack);
+						envMap.put(update.loc.toString(), stack);
 					}
 					stack.push(update.value);
 				}
@@ -116,6 +118,10 @@ public class ASMState {
 	
 	public int getStep() {
 		return step;
+	}
+	
+	public ASTNode getPosition() {
+		return pos;
 	}
 	
 	public Set<Element> getLastSelectedAgents() {

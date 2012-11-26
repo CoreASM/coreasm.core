@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.debug.core.model;
 
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.absstorage.BooleanBackgroundElement;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
@@ -82,7 +83,7 @@ public class ASMVariable extends ASMDebugElement implements IVariable {
 	@Override
 	public String toString() {
 		try {
-			if ("Boolean".equals(value.getReferenceTypeName()))
+			if (BooleanBackgroundElement.BOOLEAN_BACKGROUND_NAME.equals(value.getReferenceTypeName()))
 				return name.substring(name.indexOf('(') + 1, name.indexOf(')'));
 			return value.getValueString();
 		} catch (DebugException e) {

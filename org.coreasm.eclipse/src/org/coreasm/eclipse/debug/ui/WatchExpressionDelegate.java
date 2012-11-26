@@ -2,11 +2,13 @@ package org.coreasm.eclipse.debug.ui;
 
 import java.util.ArrayList;
 
+import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.eclipse.debug.core.model.ASMDebugTarget;
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMThread;
 import org.coreasm.eclipse.debug.core.model.ASMValue;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.interpreter.InterpreterException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IValue;
@@ -18,6 +20,7 @@ import org.eclipse.debug.core.model.IWatchExpressionResult;
 public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 	private IValue value = null;
 	private DebugException exception = null;
+	private String error = null;
 
 	@Override
 	public void evaluateExpression(final String expression, IDebugElement context, IWatchExpressionListener listener) {
@@ -54,6 +57,10 @@ public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 			}
 		} catch (DebugException e) {
 			exception = e;
+		} catch (ParserException e) {
+			error = e.toString();
+		} catch (InterpreterException e) {
+			error = e.toString();
 		}
 		listener.watchEvaluationFinished(new IWatchExpressionResult() {
 			
@@ -79,8 +86,11 @@ public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 			
 			@Override
 			public String[] getErrorMessages() {
-				if (value == null)
+				if (value == null) {
+					if (error != null)
+						return new String[] { error };
 					return new String[] { expression + " cannot be resolved to a function" };
+				}
 				return null;
 			}
 		});

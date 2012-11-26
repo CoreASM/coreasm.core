@@ -29,12 +29,14 @@ import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineModeEvent;
 import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineTools;
+import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.NameElement;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
@@ -45,7 +47,9 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.engine.kernel.EnclosedTermNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
 import org.coreasm.engine.parser.OperatorRegistry;
 import org.coreasm.engine.parser.ParserTools;
@@ -215,17 +219,12 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		return null;
 	}
 	
-	public String evaluateExpression(String expression, ASMState state) {
+	public String evaluateExpression(String expression, ASMState state) throws ParserException, InterpreterException {
 		ParserTools parserTools = ParserTools.getInstance(capi);
 		Parser<Node> functionRuleTermparser = ((ParserPlugin)capi.getPlugin("Kernel")).getParser("Term");
 		Parser<Node> parser = functionRuleTermparser.from(parserTools.getTokenizer(), parserTools.getIgnored());
 		
-		ASTNode pos = null;
-		try {
-			pos = (ASTNode)parser.parse(expression);
-		} catch (ParserException e) {
-			return null;
-		}
+		ASTNode pos = (ASTNode)parser.parse(expression);
 		do {
 			if (!pos.isEvaluated()) {
 				final String pluginName = pos.getPluginName();
@@ -233,13 +232,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 					Plugin plugin = capi.getPlugin(pluginName);
 					if (!(plugin instanceof InterpreterPlugin))
 						break;
-					try {
-						pos = ((InterpreterPlugin)plugin).interpret(capi.getInterpreter().getInterpreterInstance(), pos);
-					} catch (InterpreterException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						break;
-					}
+					pos = ((InterpreterPlugin)plugin).interpret(capi.getInterpreter().getInterpreterInstance(), pos);
 				}
 				else {
 					final String token = pos.getToken();
@@ -284,15 +277,9 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 									}
 								}
 								if (unevaluatedArg == null) {
-									try {
-										final ElementList valueList = EngineTools.getValueList(args);
-										final Location l = new Location(frNode.getName(), valueList, f.isModifiable());
-										pos.setNode(l, null, state.getValue(l));
-									} catch (InterpreterException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-										break;
-									}
+									final ElementList valueList = EngineTools.getValueList(args);
+									final Location l = new Location(frNode.getName(), valueList, f.isModifiable());
+									pos.setNode(l, null, state.getValue(l));
 								}
 								else
 									pos = unevaluatedArg;
@@ -315,14 +302,9 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 								Element result = null;
 								for (String operatorProviderName : operatorProviderNames) {
 									OperatorProvider operatorProvider = (OperatorProvider)capi.getPlugin(operatorProviderName);
-									try {
-										result = operatorProvider.interpretOperatorNode(capi.getInterpreter().getInterpreterInstance(), pos);
-										if (result != null && !result.equals(Element.UNDEF))
-											break;
-									} catch (InterpreterException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
+									result = operatorProvider.interpretOperatorNode(capi.getInterpreter().getInterpreterInstance(), pos);
+									if (result != null && !result.equals(Element.UNDEF))
+										break;
 								}
 								if (result == null)
 									break;
@@ -330,6 +312,45 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 							}
 							else
 								pos = unevaluatedOperand;
+						}
+						else if (ASTNode.EXPRESSION_CLASS.equals(pos.getGrammarClass())) {
+							if (Kernel.GR_RULEELEMENT_TERM.equals(pos.getGrammarRule())) {
+								final RuleElement ruleElement = capi.getStorage().getRule(pos.getFirst().getToken());
+								if (ruleElement != null)
+									pos.setNode(null, null, ruleElement);
+								else
+									pos.setNode(null, null, Element.UNDEF);
+							}
+							else if (pos instanceof RuleOrFuncElementNode) {
+								final RuleOrFuncElementNode node = (RuleOrFuncElementNode)pos;
+								final String name = node.getElementName();
+								
+								Element element = capi.getStorage().getRule(name);
+								if (element == null)
+									element = capi.getStorage().getFunction(name);
+								if (element != null) {
+									if (element instanceof FunctionElement) {
+										if (((FunctionElement)element).isModifiable())
+											pos.setNode(new Location(AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(name))), null, element);
+										else
+											pos.setNode(null, null, element);
+									}
+									else if (element instanceof RuleElement) {
+										if (((FunctionElement)element).isModifiable())
+											pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(name))), null, element);
+									}
+									else
+										pos.setNode(null, null, element);
+								}
+								else
+									pos.setNode(null, null, Element.UNDEF);
+							}
+							else if (pos instanceof EnclosedTermNode) {
+								if (pos.getFirst().isEvaluated())
+									pos.setNode(null, null, pos.getFirst().getValue());
+								else
+									pos = pos.getFirst();
+							}
 						}
 						else
 							break;
@@ -341,7 +362,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		} while (pos.getParent() != null || !pos.isEvaluated());
 		
 		if (pos.isEvaluated())
-			return pos.getValue().denotation();
+			return pos.getValue().toString();
 		
 		return null;
 	}
@@ -444,6 +465,14 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 						capi.getState().setValue(update.loc, Element.UNDEF);
 				}
 			}
+			ASTNode pos = stateToDropTo.getPosition();
+			if (pos == null) {
+				pos = capi.getInterpreter().getInterpreterInstance().getPosition();
+				while (pos.getParent() != null)
+					pos = pos.getParent();
+			}
+			capi.getInterpreter().getInterpreterInstance().clearTree(pos);
+			capi.getInterpreter().getInterpreterInstance().setPosition(pos);
 			debugTarget.fireChangeEvent(DebugEvent.CONTENT);
 		} catch (InvalidLocationException e) {
 		}

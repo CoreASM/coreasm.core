@@ -2,7 +2,7 @@ package org.coreasm.eclipse.debug.core.model;
 
 import java.util.Arrays;
 
-import org.coreasm.engine.absstorage.BooleanElement;
+import org.coreasm.engine.absstorage.Element;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
@@ -13,12 +13,18 @@ import org.eclipse.debug.core.model.IVariable;
  *
  */
 public class ASMValue extends ASMDebugElement implements IValue {
-	private String value;
+	private Element value;
+	private String valueString;
 	private IVariable[] variables;
 
-	public ASMValue(ASMStackFrame frame, String value) {
-		super((ASMDebugTarget) frame.getDebugTarget());
+	public ASMValue(ASMStackFrame frame, Element value) {
+		this(frame, value.toString());
 		this.value = value;
+	}
+	
+	public ASMValue(ASMStackFrame frame, String valueString) {
+		super((ASMDebugTarget) frame.getDebugTarget());
+		this.valueString = valueString;
 	}
 	
 	public ASMValue(ASMStackFrame frame, IVariable[] variables) {
@@ -29,17 +35,8 @@ public class ASMValue extends ASMDebugElement implements IValue {
 	@Override
 	public String getReferenceTypeName() throws DebugException {
 		if (variables == null) {
-			try {
-				Double.parseDouble(value);
-				return "Number";
-			} catch (NumberFormatException e) {
-				if (BooleanElement.TRUE_NAME.equals(value) || BooleanElement.FALSE_NAME.equals(value))
-					return "Boolean";
-				else if (value.startsWith("\"") && value.endsWith("\""))
-					return "String";
-				else if (!value.isEmpty() && Character.isLetterOrDigit(value.charAt(0)))
-					return "Enumeration";
-			}
+			if (value != null)
+				return value.getBackground();
 		}
 		else {
 			if (variables.length > 0)
@@ -53,7 +50,7 @@ public class ASMValue extends ASMDebugElement implements IValue {
 
 	@Override
 	public String getValueString() throws DebugException {
-		return value;
+		return valueString;
 	}
 
 	@Override
