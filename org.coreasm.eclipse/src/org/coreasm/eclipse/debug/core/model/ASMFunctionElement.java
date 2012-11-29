@@ -9,31 +9,26 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 
 /**
  * Wrapper class for ASM function elements. It is needed for the history functionality.
  * @author Michael Stegmaier
  *
  */
-public class ASMFunctionElement {
+public class ASMFunctionElement extends FunctionElement {
 	private String name;
 	private FunctionElement functionElement;
 	private Set<Location> locations = new HashSet<Location>();
 	private HashMap<ElementList, Element> values = new HashMap<ElementList, Element>();
 	
-	public ASMFunctionElement(Location location) {
-		locations.add(location);
-	}
-	
-	public ASMFunctionElement(String name, ASMFunctionElement functionElement) {
-		this.name = name;
-		this.functionElement = functionElement.getFunctionElement();
-		this.locations.addAll(functionElement.getLocations(name));
-		for (Location location : locations)
-			this.values.put(location.args, functionElement.getValue(location.args));
+	public ASMFunctionElement(ASMFunctionElement functionElement) {
+		this(functionElement.name, functionElement.functionElement);
 	}
 	
 	public ASMFunctionElement(String name, FunctionElement functionElement) {
+		setFClass(functionElement.getFClass());
+		setSignature(functionElement.getSignature());
 		this.name = name;
 		this.functionElement = functionElement;
 		this.locations.addAll(functionElement.getLocations(name));
@@ -41,25 +36,42 @@ public class ASMFunctionElement {
 			this.values.put(location.args, functionElement.getValue(location.args));
 	}
 	
-	public FunctionElement getFunctionElement() {
-		return functionElement;
+	@Override
+	public String getBackground() {
+		return functionElement.getBackground();
 	}
 	
-	public boolean isModifiable() {
-		return functionElement == null || functionElement.isModifiable();
+	@Override
+	public Element getValue(List<? extends Element> args) {
+		if (!functionElement.isReadable())
+			return null;
+		
+		Element value = values.get(args);
+		if (value == null)
+			value = functionElement.getValue(args);
+		return value;
 	}
 	
+	@Override
+	public Set<? extends Element> getRange() {
+		return functionElement.getRange();
+	}
+	
+	@Override
+	public void setValue(List<? extends Element> args, Element value) throws UnmodifiableFunctionException {
+		super.setValue(args, value);
+		if (name != null && !locations.contains(args))
+			locations.add(new Location(name, args));
+		values.put((ElementList) args, value);
+	}
+	
+	@Override
 	public Set<Location> getLocations(String name) {
 		return locations;
 	}
 	
-	public Element getValue(List<? extends Element> args) {
-		return values.get(args);
-	}
-	
-	public void setValue(List<? extends Element> args, Element value) {
-		if (name != null && !locations.contains(args))
-			locations.add(new Location(name, args));
-		values.put((ElementList) args, value);
+	@Override
+	public String toString() {
+		return functionElement.toString();
 	}
 }

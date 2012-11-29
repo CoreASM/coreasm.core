@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.absstorage.AbstractStorage;
+import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDropToFrame;
@@ -28,9 +28,9 @@ import org.eclipse.debug.core.model.IVariable;
 public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDropToFrame {
 	private ASMThread thread;
 	private IVariable[] variables;
-	private ASMState state;
+	private ASMStorage state;
 
-	public ASMStackFrame(ASMThread thread, ASMState state) {
+	public ASMStackFrame(ASMThread thread, ASMStorage state) {
 		super((ASMDebugTarget) thread.getDebugTarget());
 		this.thread = thread;
 		this.state = state;
@@ -45,14 +45,12 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		variables.add(new ASMVariable(this, "Last Selected Agents", new ASMValue(this, getLastSelectedAgents().toString()), false));
 		variables.add(new ASMVariable(this, "Callstack", new ASMValue(this, state.getCallStack().toString()), false));
 		
-		for (Entry<String, Stack<Element>> envVariable : state.getEnvMap().entrySet()) {
-			if (!envVariable.getValue().isEmpty())
-				variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue().peek()), false));
-		}
+		for (Entry<String, Element> envVariable : state.getEnvVars().entrySet())
+			variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue()), false));
 		
-		for (Entry<String, ASMFunctionElement> function : state.getFunctions().entrySet()) {
+		for (Entry<String, FunctionElement> function : state.getFunctions().entrySet()) {
 			String functionName = function.getKey();
-			ASMFunctionElement functionElement = function.getValue();
+			FunctionElement functionElement = function.getValue();
 			
 			if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
 				for (Location location : functionElement.getLocations(functionName)) {
@@ -64,11 +62,11 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 			}
 		}
 		
-		for (Entry<String, ASMFunctionElement> universe : state.getUniverses().entrySet()) {
-			if (universe.getValue().getFunctionElement() instanceof UniverseElement) {
+		for (Entry<String, AbstractUniverse> universe : state.getUniverses().entrySet()) {
+			if (universe.getValue().isModifiable()) {
 				ArrayList<IVariable> universeVariables = new ArrayList<IVariable>();
 				String universeName = universe.getKey();
-				ASMFunctionElement universeElement = universe.getValue();
+				FunctionElement universeElement = universe.getValue();
 				
 				boolean containingValueChanged = false;
 				for (Location location : universeElement.getLocations(universeName)) {
@@ -254,7 +252,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * Returns the state of the state assigned to this stack frame.
 	 * @return the state of the state assigned to this stack frame
 	 */
-	public ASMState getState() {
+	public ASMStorage getState() {
 		return state;
 	}
 

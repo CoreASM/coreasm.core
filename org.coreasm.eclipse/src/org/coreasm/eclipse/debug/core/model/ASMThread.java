@@ -97,7 +97,7 @@ public class ASMThread extends ASMDebugElement implements IThread {
 	@Override
 	public IStackFrame[] getStackFrames() throws DebugException {
 		if (isSuspended()) {
-			ASMState[] states = EngineDebugger.getRunningInstance().getStates();
+			ASMStorage[] states = EngineDebugger.getRunningInstance().getStates();
 			IStackFrame[] frames = new IStackFrame[states.length];
 			for (int i = 0; i < states.length; i++)
 				frames[states.length - i - 1] = new ASMStackFrame(this, states[i]);

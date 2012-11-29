@@ -60,6 +60,8 @@ public class ASMValue extends ASMDebugElement implements IValue {
 
 	@Override
 	public IVariable[] getVariables() throws DebugException {
+		if (variables == null)
+			return new IVariable[0];
 		return variables;
 	}
 

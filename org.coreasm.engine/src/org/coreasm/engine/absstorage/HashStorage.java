@@ -16,6 +16,7 @@ package org.coreasm.engine.absstorage;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,6 +107,18 @@ public class HashStorage implements AbstractStorage {
 		
 		// instead of that, we have
 		state = new HashState();
+	}
+	
+	/**
+	 * Returns the currently stacked updates.
+	 * @return the currently stacked updates
+	 */
+	public Map<Location, Element> getStackedUpdates() {
+		Stack<Map<Location, Element>> updateStack = getUpdateStack();
+		if (updateStack.isEmpty())
+			return Collections.emptyMap();
+		
+		return new HashMap<Location,Element>(updateStack.peek());
 	}
 	
 	private Stack<Map<Location, Element>> getUpdateStack() {

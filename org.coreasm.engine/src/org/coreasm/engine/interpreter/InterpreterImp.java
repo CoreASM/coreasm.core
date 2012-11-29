@@ -251,14 +251,14 @@ public class InterpreterImp implements Interpreter {
 	}
 	
 	@Override
-	public Map<String, Stack<Element>> getEnvMap() {
-		Map<String, Stack<Element>> envMap = new HashMap<String, Stack<Element>>();
-		for (Entry<String, Stack<Element>> entry : this.envMap.entrySet()) {
-			Stack<Element> stack = new Stack<Element>();
-			stack.addAll(entry.getValue());
-			envMap.put(entry.getKey(), stack);
+	public Map<String, Element> getEnvVars() {
+		Map<String, Element> envVars = new HashMap<String, Element>();
+		for (Entry<String, Stack<Element>> envVar : this.envMap.entrySet()) {
+			Stack<Element> stack = envVar.getValue();
+			if (!stack.isEmpty())
+				envVars.put(envVar.getKey(), stack.peek());
 		}
-		return envMap;
+		return envVars;
 	}
 
 	public Element getEnv(String token) {

@@ -1,6 +1,5 @@
 package org.coreasm.eclipse.engine.debugger;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,10 +12,9 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.debug.core.model.ASMDebugTarget;
-import org.coreasm.eclipse.debug.core.model.ASMFunctionElement;
 import org.coreasm.eclipse.debug.core.model.ASMLineBreakpoint;
 import org.coreasm.eclipse.debug.core.model.ASMMethodBreakpoint;
-import org.coreasm.eclipse.debug.core.model.ASMState;
+import org.coreasm.eclipse.debug.core.model.ASMStorage;
 import org.coreasm.eclipse.debug.core.model.ASMWatchpoint;
 import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.eclipse.debug.util.ASMDebugUtils;
@@ -28,15 +26,11 @@ import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineModeEvent;
 import org.coreasm.engine.EngineModeObserver;
-import org.coreasm.engine.EngineTools;
-import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.NameElement;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
@@ -47,18 +41,11 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
-import org.coreasm.engine.kernel.EnclosedTermNode;
 import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
-import org.coreasm.engine.parser.OperatorRegistry;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.plugin.InterpreterPlugin;
-import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
-import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.number.NumberElement;
-import org.coreasm.engine.plugins.signature.DerivedFunctionElement;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.engine.plugins.turboasm.SeqBlockRuleNode;
@@ -79,8 +66,8 @@ import org.eclipse.debug.core.model.IBreakpoint;
 public class EngineDebugger extends EngineDriver implements EngineModeObserver, InterpreterListener {
 	
 	private ControlAPI capi = (ControlAPI)engine;
-	private OperatorRegistry operatorRegistry;
-	private Stack<ASMState> states = new Stack<ASMState>();
+	private WatchExpressionAPI wapi = new WatchExpressionAPI(capi);
+	private Stack<ASMStorage> states = new Stack<ASMStorage>();
 	private ASMDebugTarget debugTarget;
 	private String sourceName;
 	private String specPath;
@@ -180,8 +167,12 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		}
 	}
 	
-	public ASMState[] getStates() {
-		ASMState[] states = new ASMState[this.states.size()];
+	/**
+	 * Returns the stack of states.
+	 * @return the stack of states
+	 */
+	public ASMStorage[] getStates() {
+		ASMStorage[] states = new ASMStorage[this.states.size()];
 		this.states.toArray(states);
 		return states;
 	}
@@ -219,152 +210,12 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		return null;
 	}
 	
-	public String evaluateExpression(String expression, ASMState state) throws ParserException, InterpreterException {
+	public Element evaluateExpression(String expression, ASMStorage storage) throws ParserException, InterpreterException {
 		ParserTools parserTools = ParserTools.getInstance(capi);
-		Parser<Node> functionRuleTermparser = ((ParserPlugin)capi.getPlugin("Kernel")).getParser("Term");
-		Parser<Node> parser = functionRuleTermparser.from(parserTools.getTokenizer(), parserTools.getIgnored());
+		Parser<Node> termParser = ((ParserPlugin)capi.getPlugin("Kernel")).getParser("Term");
+		Parser<Node> parser = termParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
 		
-		ASTNode pos = (ASTNode)parser.parse(expression);
-		do {
-			if (!pos.isEvaluated()) {
-				final String pluginName = pos.getPluginName();
-				if (pluginName != null && !Kernel.PLUGIN_NAME.equals(pluginName)) {
-					Plugin plugin = capi.getPlugin(pluginName);
-					if (!(plugin instanceof InterpreterPlugin))
-						break;
-					pos = ((InterpreterPlugin)plugin).interpret(capi.getInterpreter().getInterpreterInstance(), pos);
-				}
-				else {
-					final String token = pos.getToken();
-					if (token != null) {
-						if (token.equals(Kernel.KW_TRUE))
-							pos.setNode(null, null, BooleanElement.TRUE);
-						else if (token.equals(Kernel.KW_FALSE)) 
-							pos.setNode(null, null, BooleanElement.FALSE);
-						else if (token.equals(Kernel.KW_UNDEF)) 
-							pos.setNode(null, null, Element.UNDEF);
-						else if (token.equals(Kernel.KW_SELF))
-							pos.setNode(null, null, currentAgent);
-					}
-					if (!pos.isEvaluated()) {
-						if (pos instanceof FunctionRuleTermNode) {
-							FunctionRuleTermNode frNode = (FunctionRuleTermNode)pos;
-							if (!frNode.hasName())
-								break;
-							final ASMFunctionElement f = state.getFunction(frNode.getName());
-							
-							// TODO: Handle DerivedFunctionElements
-							if (f != null && f.getFunctionElement() instanceof DerivedFunctionElement)
-								break;
-							if (!frNode.hasArguments()) {
-								Stack<Element> stack = state.getEnvMap().get(frNode.getName());
-								if (stack != null && !stack.isEmpty())
-									pos.setNode(null, null, stack.peek());
-								else if (f != null) {
-									final Location l = new Location(frNode.getName(), ElementList.NO_ARGUMENT, f.isModifiable());
-									pos.setNode(l, null, state.getValue(l));
-								}
-								else
-									break;
-							}
-							else if (f != null) {
-								final List<ASTNode> args = frNode.getArguments();
-								ASTNode unevaluatedArg = null;
-								for (ASTNode arg : args) {
-									if (!arg.isEvaluated()) {
-										unevaluatedArg = arg;
-										break;
-									}
-								}
-								if (unevaluatedArg == null) {
-									final ElementList valueList = EngineTools.getValueList(args);
-									final Location l = new Location(frNode.getName(), valueList, f.isModifiable());
-									pos.setNode(l, null, state.getValue(l));
-								}
-								else
-									pos = unevaluatedArg;
-							}
-							else
-								break;
-						}
-						else if (ASTNode.UNARY_OPERATOR_CLASS.equals(pos.getGrammarClass())
-							  || ASTNode.BINARY_OPERATOR_CLASS.equals(pos.getGrammarClass())
-							  || ASTNode.TERNARY_OPERATOR_CLASS.equals(pos.getGrammarClass())
-							  || ASTNode.INDEX_OPERATOR_CLASS.equals(pos.getGrammarClass())) {
-							ASTNode unevaluatedOperand = pos.getFirst();
-							while (unevaluatedOperand != null && unevaluatedOperand.isEvaluated())
-								unevaluatedOperand = unevaluatedOperand.getNext();
-							
-							if (unevaluatedOperand == null) {
-								if (operatorRegistry == null)
-									operatorRegistry = OperatorRegistry.getInstance(capi);
-								Collection<String> operatorProviderNames = operatorRegistry.getOperatorContributors(token, pos.getGrammarClass());
-								Element result = null;
-								for (String operatorProviderName : operatorProviderNames) {
-									OperatorProvider operatorProvider = (OperatorProvider)capi.getPlugin(operatorProviderName);
-									result = operatorProvider.interpretOperatorNode(capi.getInterpreter().getInterpreterInstance(), pos);
-									if (result != null && !result.equals(Element.UNDEF))
-										break;
-								}
-								if (result == null)
-									break;
-								pos.setNode(null, null, result);
-							}
-							else
-								pos = unevaluatedOperand;
-						}
-						else if (ASTNode.EXPRESSION_CLASS.equals(pos.getGrammarClass())) {
-							if (Kernel.GR_RULEELEMENT_TERM.equals(pos.getGrammarRule())) {
-								final RuleElement ruleElement = capi.getStorage().getRule(pos.getFirst().getToken());
-								if (ruleElement != null)
-									pos.setNode(null, null, ruleElement);
-								else
-									pos.setNode(null, null, Element.UNDEF);
-							}
-							else if (pos instanceof RuleOrFuncElementNode) {
-								final RuleOrFuncElementNode node = (RuleOrFuncElementNode)pos;
-								final String name = node.getElementName();
-								
-								Element element = capi.getStorage().getRule(name);
-								if (element == null)
-									element = capi.getStorage().getFunction(name);
-								if (element != null) {
-									if (element instanceof FunctionElement) {
-										if (((FunctionElement)element).isModifiable())
-											pos.setNode(new Location(AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(name))), null, element);
-										else
-											pos.setNode(null, null, element);
-									}
-									else if (element instanceof RuleElement) {
-										if (((FunctionElement)element).isModifiable())
-											pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(name))), null, element);
-									}
-									else
-										pos.setNode(null, null, element);
-								}
-								else
-									pos.setNode(null, null, Element.UNDEF);
-							}
-							else if (pos instanceof EnclosedTermNode) {
-								if (pos.getFirst().isEvaluated())
-									pos.setNode(null, null, pos.getFirst().getValue());
-								else
-									pos = pos.getFirst();
-							}
-						}
-						else
-							break;
-					}
-				}
-			}
-			else if (pos.getParent() != null)
-				pos = pos.getParent();
-		} while (pos.getParent() != null || !pos.isEvaluated());
-		
-		if (pos.isEvaluated())
-			return pos.getValue().toString();
-		
-		return null;
+		return wapi.evaluateExpression((ASTNode)parser.parse(expression), currentAgent, storage);
 	}
 	
 	/**
@@ -453,9 +304,9 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * Restores the given state
 	 * @param stateToDropTo State to drop to
 	 */
-	public void dropToState(ASMState stateToDropTo) {
+	public void dropToState(ASMStorage stateToDropTo) {
 		try {
-			for (ASMState state = states.peek(); !stateToDropTo.equals(states.peek()); state = states.pop()) {
+			for (ASMStorage state = states.peek(); !stateToDropTo.equals(states.peek()); state = states.pop()) {
 				if (state.getStep() < 0)
 					continue;
 				for (Update update : state.getUpdates()) {
@@ -560,19 +411,13 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * @param pos Current position of the state
 	 */
 	public void updateState(ASTNode pos) {
-		ASMState state = null;
+		ASMStorage state = null;
 		Stack<CallStackElement> callStack = capi.getInterpreter().getInterpreterInstance().getCurrentCallStack();
-		Map<String, Stack<Element>> envMap = capi.getInterpreter().getInterpreterInstance().getEnvMap();
+		Map<String, Element> envVars = capi.getInterpreter().getInterpreterInstance().getEnvVars();
 		if (ruleArgs != null) {
 			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
-				if (arg.getKey().isEvaluated()) {
-					Stack<Element> stack = envMap.get(arg.getValue());
-					if (stack == null) {
-						stack = new Stack<Element>();
-						envMap.put(arg.getValue(), stack);
-					}
-					stack.push(arg.getKey().getValue());
-				}
+				if (arg.getKey().isEvaluated())
+					envVars.put(arg.getValue(), arg.getKey().getValue());
 			}
 		}
 		if (stepSucceeded) {
@@ -580,31 +425,20 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				return;
 			while (!states.isEmpty() && states.peek().getStep() < 0)
 				states.pop();
-			state = new ASMState(capi.getStepCount(), capi.getLastSelectedAgents(), capi.getState(), envMap, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
+			state = new ASMStorage(wapi, capi.getStorage(), capi.getStepCount(), capi.getLastSelectedAgents(), envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 		}
 		else {
 			if (!states.isEmpty() && states.peek().getStep() < 0) {
-				boolean diffEnvMap = false;
-				for (Entry<String, Stack<Element>> envVariable : envMap.entrySet()) {
-					Stack<Element> stack = states.peek().getEnvMap().get(envVariable.getKey());
-					if (stack == null || !stack.equals(envVariable.getValue()))
-						diffEnvMap = true;
-				}
-				for (Entry<String, Stack<Element>> envVariable : states.peek().getEnvMap().entrySet()) {
-					Stack<Element> stack = envMap.get(envVariable.getKey());
-					if (stack == null || !stack.equals(envVariable.getValue()))
-						diffEnvMap = true;
-				}
-				if (updates.isEmpty() && states.peek().getUpdates().isEmpty() && !diffEnvMap)
+				if (updates.isEmpty() && states.peek().getUpdates().isEmpty() && envVars.equals(states.peek().getEnvVars()))
 					state = states.pop();
 				else
-					state = new ASMState(states.peek());
+					state = new ASMStorage(states.peek());
 			}
 			Set<Element> agent = new HashSet<Element>();
 			agent.add(currentAgent);
 			if (state == null)
-				state = new ASMState(-capi.getStepCount() - 1, agent, capi.getState(), envMap, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
-			state.updateState(pos, agent, envMap, updates, callStack, sourceName, lineNumber);
+				state = new ASMStorage(wapi, capi.getStorage(), -capi.getStepCount() - 1, agent, envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
+			state.updateState(pos, agent, envVars, updates, callStack, sourceName, lineNumber);
 		}
 		states.add(state);
 		updates = new HashSet<Update>();

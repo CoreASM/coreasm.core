@@ -136,10 +136,10 @@ public interface Interpreter {
 	public void addEnv(String name, Element value);
 	
 	/**
-	 * Returns a copy of the environment variables.
-	 * @return a copy of the environment variables
+	 * Returns a copy of the current environment variables.
+	 * @return a copy of the current environment variables
 	 */
-	public Map<String, Stack<Element>> getEnvMap();
+	public Map<String, Element> getEnvVars();
 	
 	/**
 	 * Returns the top-most value of the 
