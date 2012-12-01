@@ -22,10 +22,6 @@ public class ASMFunctionElement extends FunctionElement {
 	private Set<Location> locations = new HashSet<Location>();
 	private HashMap<ElementList, Element> values = new HashMap<ElementList, Element>();
 	
-	public ASMFunctionElement(ASMFunctionElement functionElement) {
-		this(functionElement.name, functionElement.functionElement);
-	}
-	
 	public ASMFunctionElement(String name, FunctionElement functionElement) {
 		setFClass(functionElement.getFClass());
 		setSignature(functionElement.getSignature());

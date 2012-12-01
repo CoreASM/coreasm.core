@@ -67,7 +67,7 @@ public class ASMValue extends ASMDebugElement implements IValue {
 
 	@Override
 	public boolean hasVariables() throws DebugException {
-		return variables != null;
+		return variables != null && variables.length > 0;
 	}
 
 }

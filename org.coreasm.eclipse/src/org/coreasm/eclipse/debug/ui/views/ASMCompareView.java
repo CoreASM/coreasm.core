@@ -13,8 +13,6 @@ import org.eclipse.debug.ui.contexts.IDebugContextListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -40,7 +38,7 @@ import org.eclipse.ui.part.ViewPart;
 public class ASMCompareView extends ViewPart implements IDebugContextListener {
 	private TableViewer viewer;
 	private Action showDifferencesOnlyAction;
-	private Action doubleClickAction;
+//	private Action doubleClickAction;
 	private ASMCompareViewElement[] compareViewElements;
 	private Object[] elements;
 	private ArrayList<TableViewerColumn> columns = new ArrayList<TableViewerColumn>();
@@ -107,7 +105,7 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 		DebugUITools.getDebugContextManager().getContextService(getSite().getWorkbenchWindow()).addDebugContextListener(this);
 		createNameColumn();
 		makeActions();
-		hookDoubleClickAction();
+//		hookDoubleClickAction();
 		hookLocalPullDown();
 	}
 	
@@ -183,13 +181,13 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 		showDifferencesOnlyAction.setChecked(false);
 	}
 
-	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				doubleClickAction.run();
-			}
-		});
-	}
+//	private void hookDoubleClickAction() {
+//		viewer.addDoubleClickListener(new IDoubleClickListener() {
+//			public void doubleClick(DoubleClickEvent event) {
+//				doubleClickAction.run();
+//			}
+//		});
+//	}
 	
 	public void setFocus() {
 		viewer.getControl().setFocus();

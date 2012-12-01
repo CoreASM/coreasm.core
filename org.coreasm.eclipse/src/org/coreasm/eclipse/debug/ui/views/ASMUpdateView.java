@@ -111,7 +111,7 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
-		viewer.setSorter(new NameSorter());
+//		viewer.setSorter(new NameSorter());
 		DebugUITools.getDebugContextManager().getContextService(getSite().getWorkbenchWindow()).addDebugContextListener(this);
 		makeActions();
 		hookDoubleClickAction();

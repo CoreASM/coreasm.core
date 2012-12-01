@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IValue;
@@ -77,8 +78,8 @@ public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 					if (debugger != null)
 						value = new ASMValue(frame, debugger.evaluateExpression(expression, frame.getState()));
 				}
-			} catch (Exception e) {
-				error = e.getClass().getSimpleName() + ": " + e.getLocalizedMessage();
+			} catch (Throwable t) {
+				error = t.getClass().getSimpleName() + ": " + t.getLocalizedMessage();
 			} 
 			listener.watchEvaluationFinished(new IWatchExpressionResult() {
 				
@@ -112,6 +113,7 @@ public class WatchExpressionDelegate implements IWatchExpressionDelegate {
 					return null;
 				}
 			});
+			((ASMDebugTarget)frame.getDebugTarget()).fireSuspendEvent(DebugEvent.EVALUATION_IMPLICIT);
 			return Status.OK_STATUS;
 		}
 		

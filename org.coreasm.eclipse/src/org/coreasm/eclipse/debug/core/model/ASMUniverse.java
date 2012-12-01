@@ -8,6 +8,7 @@ import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.UniverseElement;
@@ -59,12 +60,21 @@ public class ASMUniverse extends AbstractUniverse {
 	
 	@Override
 	public void setValue(List<? extends Element> args, Element value) throws UnmodifiableFunctionException {
-		functionElement.setValue(args, value);
+		super.setValue(args, value);
+		if (args.size() == 1 && value instanceof BooleanElement) {
+			if (((BooleanElement)value).getValue())
+				elements.add(args.get(0));
+			else
+				elements.remove(args.get(0));
+		}
 	}
 	
 	@Override
 	public Set<Location> getLocations(String name) {
-		return functionElement.getLocations(name);
+		Set<Location> locations = new HashSet<Location>();
+		for (Element element : elements)
+			locations.add(new Location(name, ElementList.create(element)));
+		return locations;
 	}
 	
 	@Override

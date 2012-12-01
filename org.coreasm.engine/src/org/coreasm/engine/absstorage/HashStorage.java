@@ -118,7 +118,11 @@ public class HashStorage implements AbstractStorage {
 		if (updateStack.isEmpty())
 			return Collections.emptyMap();
 		
-		return new HashMap<Location,Element>(updateStack.peek());
+		Map<Location, Element> stackedUpdates = new HashMap<Location,Element>();
+		for (Map<Location, Element> stackedUpdate : updateStack)
+			stackedUpdates.putAll(stackedUpdate);
+		
+		return stackedUpdates;
 	}
 	
 	private Stack<Map<Location, Element>> getUpdateStack() {
@@ -136,9 +140,7 @@ public class HashStorage implements AbstractStorage {
 	public void initAbstractStorage() {
 		clearState();
 		
-		for (Plugin p: capi.getPlugins()) 
-			if (p instanceof Aggregator)
-				aggregatorPlugins.add((Aggregator)p);
+		initAggregatorPluginCache();
 		
         capi.getScheduler().setStepCount(0);
 		try {
@@ -155,6 +157,12 @@ public class HashStorage implements AbstractStorage {
 		} catch (NameConflictException e) {
 			throw new CoreASMError(e.getMessage());
 		}
+	}
+	
+	protected void initAggregatorPluginCache() {
+		for (Plugin p: capi.getPlugins()) 
+			if (p instanceof Aggregator)
+				aggregatorPlugins.add((Aggregator)p);
 	}
 
 	private void loadVocabularyExtender(VocabularyExtender ve) throws NameConflictException {

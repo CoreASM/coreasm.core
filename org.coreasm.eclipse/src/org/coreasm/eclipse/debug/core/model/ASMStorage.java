@@ -10,7 +10,6 @@ import org.coreasm.eclipse.engine.debugger.WatchExpressionAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.HashStorage;
 import org.coreasm.engine.absstorage.Location;
@@ -20,8 +19,6 @@ import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
-import org.coreasm.engine.plugins.set.SetElement;
-import org.coreasm.engine.plugins.set.SetPlugin;
 
 /**
  * Wrapper class for ASM storages. It is needed for the history functionality.
@@ -70,6 +67,7 @@ public class ASMStorage extends HashStorage {
 		this.callStack.addAll(callStack);
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
+		initAggregatorPluginCache();
 	}
 	
 	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
@@ -83,41 +81,13 @@ public class ASMStorage extends HashStorage {
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
 		
-		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet())
-			envVars.put(stackedUpdate.getKey().toString(), stackedUpdate.getValue());
-		
-		for (Update update : updates) {
-			FunctionElement function = getFunction(update.loc.name);
+		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet()) {
+			FunctionElement function = getFunction(stackedUpdate.getKey().name);
 			if (function == null)
-				continue;
-			else if (SetPlugin.SETADD_ACTION.equals(update.action)) {
-				HashSet<Element> resultantSet = new HashSet<Element>();
-				Enumerable existingSet = (Enumerable)function.getValue(update.loc.args);
-				if (existingSet != null) {
-					for (Element e : existingSet.enumerate()) {
-						if (!updates.contains(new Update(update.loc, e, SetPlugin.SETREMOVE_ACTION, (Element)null, null)))
-							resultantSet.add(e);
-					}
-				}
-				resultantSet.add(update.value);
+				envVars.put(stackedUpdate.getKey().toString(), stackedUpdate.getValue());
+			else {
 				try {
-					function.setValue(update.loc.args, new SetElement(resultantSet));
-				} catch (UnmodifiableFunctionException e) {
-				}
-			}
-			else if (SetPlugin.SETREMOVE_ACTION.equals(update.action)) {
-				HashSet<Element> resultantSet = new HashSet<Element>();
-				Enumerable existingSet = (Enumerable)function.getValue(update.loc.args);
-				if (existingSet != null)
-					resultantSet.addAll(existingSet.enumerate());
-				resultantSet.remove(update.value);
-				try {
-					function.setValue(update.loc.args, new SetElement(resultantSet));
-				} catch (UnmodifiableFunctionException e) {
-				}
-			} else {
-				try {
-					function.setValue(update.loc.args, update.value);
+					function.setValue(stackedUpdate.getKey().args, stackedUpdate.getValue());
 				} catch (UnmodifiableFunctionException e) {
 				}
 			}

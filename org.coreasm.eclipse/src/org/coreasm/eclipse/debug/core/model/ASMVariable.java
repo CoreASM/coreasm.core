@@ -2,6 +2,7 @@ package org.coreasm.eclipse.debug.core.model;
 
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.absstorage.BooleanBackgroundElement;
+import org.coreasm.engine.absstorage.FunctionElement;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
@@ -13,9 +14,15 @@ import org.eclipse.debug.core.model.IVariable;
  */
 public class ASMVariable extends ASMDebugElement implements IVariable {
 	private ASMStackFrame frame;
+	private FunctionElement function;
 	private String name;
 	private IValue value;
 	private boolean valueChanged;
+	
+	public ASMVariable(ASMStackFrame frame, String name, FunctionElement function, IValue value, boolean valueChanged) {
+		this(frame, name, value, valueChanged);
+		this.function = function;
+	}
 
 	public ASMVariable(ASMStackFrame frame, String name, IValue value, boolean valueChanged) {
 		super((ASMDebugTarget) frame.getDebugTarget());
@@ -72,6 +79,12 @@ public class ASMVariable extends ASMDebugElement implements IVariable {
 
 	@Override
 	public String getReferenceTypeName() throws DebugException {
+		if (function != null) {
+			if (function.getSignature() != null)
+				return function.getSignature().toString();
+			else
+				return function.getBackground();
+		}
 		return value.getReferenceTypeName();
 	}
 

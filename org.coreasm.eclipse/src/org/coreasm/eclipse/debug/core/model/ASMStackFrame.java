@@ -55,9 +55,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 			if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
 				for (Location location : functionElement.getLocations(functionName)) {
 					if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
-						backgrounds.add(new ASMVariable(this, location.toString(), new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
+						backgrounds.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
 					else
-						variables.add(new ASMVariable(this, location.toString(), new ASMValue(this, functionElement.getValue(location.args)), updateLocations.contains(location)));
+						variables.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, functionElement.getValue(location.args)), updateLocations.contains(location)));
 				}
 			}
 		}
@@ -72,11 +72,11 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 				for (Location location : universeElement.getLocations(universeName)) {
 					if (updateLocations.contains(location))
 						containingValueChanged = true;
-					universeVariables.add(new ASMVariable(this, location.toString(), new ASMValue(this, universeElement.getValue(location.args)), updateLocations.contains(location)));
+					universeVariables.add(new ASMVariable(this, location.toString(), universeElement, new ASMValue(this, universeElement.getValue(location.args)), updateLocations.contains(location)));
 				}
 				IVariable[] tmp = new IVariable[universeVariables.size()];
 				universeVariables.toArray(tmp);
-				variables.add(new ASMVariable(this, universeName, new ASMValue(this, tmp), containingValueChanged));
+				variables.add(new ASMVariable(this, universeName, universeElement, new ASMValue(this, tmp), containingValueChanged));
 			}
 		}
 		IVariable[] tmp = new IVariable[backgrounds.size()];

@@ -37,7 +37,6 @@ import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.ServiceProvider;
 import org.coreasm.engine.plugin.ServiceRequest;
 import org.coreasm.engine.scheduler.Scheduler;
-import org.coreasm.engine.scheduler.SchedulerImp;
 
 public class WatchExpressionAPI implements ControlAPI {
 	private ASMStorage storage;
@@ -51,7 +50,6 @@ public class WatchExpressionAPI implements ControlAPI {
 	
 	public Element evaluateExpression(ASTNode expression, Element agent, ASMStorage storage) throws InterpreterException {
 		this.storage = storage;
-		storage.initAbstractStorage();
 		copyOprRegFromCapi();
 		
 		Interpreter interpreter = new InterpreterImp(this);
@@ -349,25 +347,23 @@ public class WatchExpressionAPI implements ControlAPI {
 
 	@Override
 	public void addInterpreterListener(InterpreterListener listener) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void removeInterpreterListener(InterpreterListener listener) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public List<InterpreterListener> getInterpreterListeners() {
-		// TODO Auto-generated method stub
 		return Collections.emptyList();
 	}
 
 	@Override
 	public Scheduler getScheduler() {
-		return new SchedulerImp(this);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
