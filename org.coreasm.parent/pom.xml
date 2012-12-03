@@ -12,6 +12,7 @@
 		<module>../org.coreasm.config</module>
 		<module>../org.coreasm.engine</module>
 		<module>../org.coreasm.ui.carma</module>
+		<module>../org.coreasm.eclipse</module>
 	</modules>
 
 	<licenses>
