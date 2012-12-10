@@ -27,7 +27,7 @@ import org.eclipse.jface.text.BadLocationException;
  * recognizer searches for a certain kind of errors. The ErrorManager executes
  * these ErrorRegognizers after each run of the parser.
  * 
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public class ErrorManager implements Observer
 {
@@ -46,23 +46,23 @@ public class ErrorManager implements Observer
 		this.listTreeParsers = new LinkedList<ITreeErrorRecognizer>();
 
 		// Creating and adding all available ErrorRecognizers.
-		addErrorParser(new InitErrorRecognizer());
-		addErrorParser(new RuleErrorRecognizer());
-		addErrorParser(new PluginErrorRecognizer(asmEditor.getParser()));
-		addErrorParser(new ModularityErrorRecognizer(asmEditor));
+		addErrorRecognizer(new InitErrorRecognizer());
+		addErrorRecognizer(new RuleErrorRecognizer());
+		addErrorRecognizer(new PluginErrorRecognizer(asmEditor.getParser()));
+		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
 	}
 	
 	/**
 	 * Adds an ErrorRegognizer to this ErrorManager, so the ErrorRecognizer will
 	 * be run after each run of the parser.
 	 */
-	public void addErrorParser(IErrorRecognizer errorParser)
+	public void addErrorRecognizer(IErrorRecognizer errorRecognizer)
 	{
-		if (errorParser instanceof ITextErrorRecognizer)
-			listTextParsers.add((ITextErrorRecognizer) errorParser);
+		if (errorRecognizer instanceof ITextErrorRecognizer)
+			listTextParsers.add((ITextErrorRecognizer) errorRecognizer);
 		
-		if (errorParser instanceof ITreeErrorRecognizer)
-			listTreeParsers.add((ITreeErrorRecognizer) errorParser);
+		if (errorRecognizer instanceof ITreeErrorRecognizer)
+			listTreeParsers.add((ITreeErrorRecognizer) errorRecognizer);
 	}
 	
 	/**
@@ -72,7 +72,7 @@ public class ErrorManager implements Observer
 	 * @return			A list with all errors which have been found.
 	 * @see				org.coreasm.eclipse.editors.errors.ITextErrorRecognizer
 	 */
-	public List<AbstractError> checkTextErrorParsers(ASMDocument document)
+	public List<AbstractError> checkTextErrorRecognizers(ASMDocument document)
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
 		for (ITextErrorRecognizer errorParser: listTextParsers)
@@ -87,7 +87,7 @@ public class ErrorManager implements Observer
 	 * @return			A list with all errors which have been found.
 	 * @see				org.coreasm.eclipse.editors.errors.ITreeErrorRecognizer
 	 */
-	public List<AbstractError> checkTreeErrorParsers(ASMDocument document)
+	public List<AbstractError> checkTreeErrorRecognizers(ASMDocument document)
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
 		for (ITreeErrorRecognizer errorParser: listTreeParsers)
@@ -103,11 +103,11 @@ public class ErrorManager implements Observer
 	 * @see				org.coreasm.eclipse.editors.errors.ITextErrorRecognizer
 	 * @see				org.coreasm.eclipse.editors.errors.ITreeErrorRecognizer
 	 */	
-	public List<AbstractError> checkAllErrorParsers(ASMDocument document) 
+	public List<AbstractError> checkAllErrorRecognizers(ASMDocument document) 
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
-		errors.addAll(checkTextErrorParsers(document));
-		errors.addAll(checkTreeErrorParsers(document));
+		errors.addAll(checkTextErrorRecognizers(document));
+		errors.addAll(checkTreeErrorRecognizers(document));
 		return errors;
 	}
 
@@ -136,11 +136,11 @@ public class ErrorManager implements Observer
 		asmEditor.removeMarkers(IMarker.PROBLEM);
 		
 		// always run TextErrorRecognizers
-		errors.addAll(checkTextErrorParsers(result.document));
+		errors.addAll(checkTextErrorRecognizers(result.document));
 		
 		// run TreeErrorRecognizers only if there was no syntax error
 		if (result.wasSuccessful == true)
-			errors.addAll(checkTreeErrorParsers(result.document));
+			errors.addAll(checkTreeErrorRecognizers(result.document));
 		
 		// create markers for all errors
 		for (AbstractError error: errors) {
