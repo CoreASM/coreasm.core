@@ -23,11 +23,13 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 /**
  * This class manages the retrieval of information from a marker which has
  * been hovered by the mouse cursor.
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public class ASMTextHover
 implements ITextHover, ITextHoverExtension, ITextHoverExtension2
 {
+
+	IInformationControlCreator icc = null;
 	
 	@Override
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
@@ -80,11 +82,14 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2
 	@Override
 	public IInformationControlCreator getHoverControlCreator() 
 	{
-	    return new IInformationControlCreator() {
-	        public IInformationControl createInformationControl(Shell parent) {
-	        	return new ASMInformationControl(parent);
-	        }
-	    };
+		if (icc == null)
+			icc = new IInformationControlCreator() {
+				public IInformationControl createInformationControl(Shell parent) {
+					return new ASMInformationControl(parent);
+				}
+			};
+
+			return icc;
 	}
 
 	
@@ -99,9 +104,5 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2
 	{
 		return null;
 	}
-
 	
-	
-
-
 }

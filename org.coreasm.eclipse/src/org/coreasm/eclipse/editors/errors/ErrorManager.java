@@ -72,7 +72,7 @@ public class ErrorManager implements Observer
 	 * @return			A list with all errors which have been found.
 	 * @see				org.coreasm.eclipse.editors.errors.ITextErrorRecognizer
 	 */
-	public List<AbstractError> checkTextErrorRecognizers(ASMDocument document)
+	public List<AbstractError> checkAllTextErrorRecognizers(ASMDocument document)
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
 		for (ITextErrorRecognizer errorParser: listTextParsers)
@@ -87,7 +87,7 @@ public class ErrorManager implements Observer
 	 * @return			A list with all errors which have been found.
 	 * @see				org.coreasm.eclipse.editors.errors.ITreeErrorRecognizer
 	 */
-	public List<AbstractError> checkTreeErrorRecognizers(ASMDocument document)
+	public List<AbstractError> checkAllTreeErrorRecognizers(ASMDocument document)
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
 		for (ITreeErrorRecognizer errorParser: listTreeParsers)
@@ -103,11 +103,11 @@ public class ErrorManager implements Observer
 	 * @see				org.coreasm.eclipse.editors.errors.ITextErrorRecognizer
 	 * @see				org.coreasm.eclipse.editors.errors.ITreeErrorRecognizer
 	 */	
-	public List<AbstractError> checkAllErrorRecognizers(ASMDocument document) 
+	public List<AbstractError> checkAllErrorRecognizer(ASMDocument document) 
 	{
 		List<AbstractError> errors = new LinkedList<AbstractError>();
-		errors.addAll(checkTextErrorRecognizers(document));
-		errors.addAll(checkTreeErrorRecognizers(document));
+		errors.addAll(checkAllTextErrorRecognizers(document));
+		errors.addAll(checkAllTreeErrorRecognizers(document));
 		return errors;
 	}
 
@@ -136,11 +136,11 @@ public class ErrorManager implements Observer
 		asmEditor.removeMarkers(IMarker.PROBLEM);
 		
 		// always run TextErrorRecognizers
-		errors.addAll(checkTextErrorRecognizers(result.document));
+		errors.addAll(checkAllTextErrorRecognizers(result.document));
 		
 		// run TreeErrorRecognizers only if there was no syntax error
 		if (result.wasSuccessful == true)
-			errors.addAll(checkTreeErrorRecognizers(result.document));
+			errors.addAll(checkAllTreeErrorRecognizers(result.document));
 		
 		// create markers for all errors
 		for (AbstractError error: errors) {

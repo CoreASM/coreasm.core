@@ -248,7 +248,7 @@ implements IDocumentListener
 	{
 		Map map = new HashMap();
 		MarkerUtilities.setLineNumber(map, error.getLine());
-		MarkerUtilities.setMessage(map, error.getDescription());
+		MarkerUtilities.setMessage(map, error.getDescription().replace('\n', ' '));
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
 		map.put(IMarker.SEVERITY, severity);
 		map.put(IMarker.CHAR_START, error.getPosition());

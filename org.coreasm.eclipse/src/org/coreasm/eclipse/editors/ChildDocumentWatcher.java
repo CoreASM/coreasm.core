@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.CoreException;
  * Additionally each instance of this class is bound to the Workspace through the
  * IResourceChangeListener, so it gets notified for each change to the Workspace.
  * If one of this changes is one of the child documents, a reparse is scheduled.
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public class ChildDocumentWatcher
 implements Observer, IResourceChangeListener, IResourceDeltaVisitor
@@ -38,7 +38,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	ASMParser parser;
 	List<String> childdocs;
 	boolean parsingNeeded = false;
-	
+
 	//TODO: merge list and map
 	Map<String,String> pathmap;
 
@@ -59,7 +59,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 			return;
 		ParsingResult result = (ParsingResult) arg;
 
-		// Read all include nodes from the syntax tree and 
+		// Read all include nodes from the syntax tree and
 		// store their filenames.
 		Node rootnode = result.document.getRootnode();
 		if (rootnode != null) {
@@ -70,10 +70,10 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 					childdocs.add(((IncludeNode) node).getFilename());
 			}
 		}
-		
+
 		// create (invisible) include marker
 		editor.createIncludeMark(new HashSet<String>(childdocs));
-		
+
 		// Update pathmap
 		pathmap.clear();
 		IFile inputfile = editor.getInputFile();
