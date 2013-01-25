@@ -414,12 +414,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		ASMStorage state = null;
 		Stack<CallStackElement> callStack = capi.getInterpreter().getInterpreterInstance().getCurrentCallStack();
 		Map<String, Element> envVars = capi.getInterpreter().getInterpreterInstance().getEnvVars();
-		if (ruleArgs != null) {
-			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
-				if (arg.getKey().isEvaluated())
-					envVars.put(arg.getValue(), arg.getKey().getValue());
-			}
-		}
 		if (stepSucceeded) {
 			if (!states.isEmpty() && capi.getStepCount() == states.peek().getStep())
 				return;
@@ -439,6 +433,17 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			if (state == null)
 				state = new ASMStorage(wapi, capi.getStorage(), -capi.getStepCount() - 1, agent, envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 			state.updateState(pos, agent, envVars, updates, callStack, sourceName, lineNumber);
+		}
+		if (ruleArgs != null) {
+			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
+				ASTNode node = (ASTNode)arg.getKey().cloneTree();
+				try {
+					wapi.evaluateExpression(node, currentAgent, state);
+				} catch (InterpreterException e) {
+				}
+				if (node.isEvaluated())
+					envVars.put(arg.getValue(), node.getValue());
+			}
 		}
 		states.add(state);
 		updates = new HashSet<Update>();
@@ -563,11 +568,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		else if (pos == stepOverPos) {
 			shouldStepOver = false;
 			stepOverPos = null;
-		}
-		if (ruleArgs != null && ruleArgs.containsKey(pos)) {
-			String name = ruleArgs.get(pos);
-			ruleArgs.remove(pos);
-			ruleArgs.put(pos, name);
 		}
 		if (!pos.getUpdates().isEmpty()) {
 			String context = pos.getContext(capi.getParser(), capi.getSpec());
