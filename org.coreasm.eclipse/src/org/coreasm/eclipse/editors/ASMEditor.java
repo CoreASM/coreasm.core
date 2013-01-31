@@ -12,6 +12,7 @@ import org.coreasm.eclipse.editors.errors.SyntaxError;
 import org.coreasm.eclipse.editors.errors.UndefinedError;
 import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
 import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
+import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.coreasm.eclipse.tools.ColorManager;
 import org.coreasm.util.Logger;
@@ -64,6 +65,7 @@ implements IDocumentListener
 	public static final String MARKER_TYPE_ERROR = "org.coreasm.eclipse.markers.ErrorMarker";
 	public static final String MARKER_TYPE_PLUGINS = "org.coreasm.eclipse.markers.PluginMarker";
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
+	public static final String MARKER_TYPE_WARNING = "asm.markerType.warning";
 	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
@@ -210,7 +212,6 @@ implements IDocumentListener
 			}
 		});
 	}
-	
 	
 	/**
 	 * Creates an error mark for a SimpleError.
@@ -359,6 +360,29 @@ implements IDocumentListener
 		map.put(IMarker.CHAR_END, 1);		
 		try {
 			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_INCLUDE);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void createWarningMark(AbstractWarning warning) {
+		IDocument document = getInputDocument();
+		int line = 0;
+		try {
+			line = document.getLineOfOffset(warning.getPosition());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		MarkerUtilities.setLineNumber(map, line);
+		MarkerUtilities.setMessage(map, warning.getDescription());
+		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
+		map.put(IMarker.CHAR_START, warning.getPosition());
+		map.put(IMarker.CHAR_END, warning.getPosition()+warning.getLength());
+		map.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+		try {
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_WARNING);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

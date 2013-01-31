@@ -13,6 +13,9 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
+import org.coreasm.eclipse.editors.warnings.AbstractWarning;
+import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
 
@@ -34,6 +37,7 @@ public class ErrorManager implements Observer
 	private ASMEditor asmEditor;	// the editor this instance belongs to
 	private List<ITextErrorRecognizer> listTextParsers;
 	private List<ITreeErrorRecognizer> listTreeParsers;
+	private List<IWarningRecognizer> warningRecognizers;
 	
 	/**
 	 * Generates a new ErrorManager and adds all available ErrorRecognizers to itself.
@@ -44,12 +48,14 @@ public class ErrorManager implements Observer
 		this.asmEditor = asmEditor;
 		this.listTextParsers = new LinkedList<ITextErrorRecognizer>();
 		this.listTreeParsers = new LinkedList<ITreeErrorRecognizer>();
+		this.warningRecognizers = new LinkedList<IWarningRecognizer>();
 
 		// Creating and adding all available ErrorRecognizers.
 		addErrorRecognizer(new InitErrorRecognizer());
 		addErrorRecognizer(new RuleErrorRecognizer());
 		addErrorRecognizer(new PluginErrorRecognizer(asmEditor.getParser()));
 		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
+		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer());
 	}
 	
 	/**
@@ -63,6 +69,14 @@ public class ErrorManager implements Observer
 		
 		if (errorRecognizer instanceof ITreeErrorRecognizer)
 			listTreeParsers.add((ITreeErrorRecognizer) errorRecognizer);
+	}
+	
+	/**
+	 * Adds a WarningRecognizer to this ErrorManager.
+	 * @param warningRecognizer
+	 */
+	public void addWarningRecognizer(IWarningRecognizer warningRecognizer) {
+		warningRecognizers.add(warningRecognizer);
 	}
 	
 	/**
@@ -110,6 +124,18 @@ public class ErrorManager implements Observer
 		errors.addAll(checkAllTreeErrorRecognizers(document));
 		return errors;
 	}
+	
+	/**
+	 * Execute all WarningRecognizers.
+	 * @param document document to be checked
+	 * @return list of warnings that have been found
+	 */
+	public List<AbstractWarning> checkAllWarnings(ASMDocument document) {
+		List<AbstractWarning> warnings = new LinkedList<AbstractWarning>();
+		for (IWarningRecognizer warningRecognizer : warningRecognizers)
+			warnings.addAll(warningRecognizer.checkForWarnings(document));
+		return warnings;
+	}
 
 	/**
 	 * This is the method of the Observer interface which is called after each
@@ -146,6 +172,11 @@ public class ErrorManager implements Observer
 		for (AbstractError error: errors) {
 			if (error instanceof SimpleError)
 				asmEditor.createSimpleMark((SimpleError) error, IMarker.SEVERITY_ERROR);
+		}
+		
+		if (result.wasSuccessful) {
+			for (AbstractWarning warning : checkAllWarnings(result.document))
+				asmEditor.createWarningMark(warning);
 		}
 
 		// if there was a syntax error: create error object

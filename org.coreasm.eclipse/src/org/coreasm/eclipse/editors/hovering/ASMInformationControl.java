@@ -2,6 +2,7 @@ package org.coreasm.eclipse.editors.hovering;
 
 import java.util.Map;
 
+import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.errors.SyntaxError;
@@ -18,7 +19,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -90,28 +93,56 @@ implements IInformationControlExtension2
 	@Override
 	public void setInput(Object input) 
 	{
-		if ( ! (input instanceof Map<?,?>) )
-			return;
-		
-		Map<String,Object> map = (Map<String, Object>) input;
-		IDocument document = (IDocument) map.get("document");
-		Marker marker = (Marker) map.get("marker");
-		int startOffset = 0;
-		int stopOffset = 0;
-		try {
-			startOffset = (Integer) marker.getAttribute(IMarker.CHAR_START);
-			stopOffset = (Integer) marker.getAttribute(IMarker.CHAR_END);
-		} catch (CoreException e1) {
-			e1.printStackTrace();
+		if ((input instanceof Map<?,?>)) {
+			Map<String,Object> map = (Map<String, Object>) input;
+			IDocument document = (IDocument) map.get("document");
+			IMarker marker = (IMarker) map.get("marker");
+			int startOffset = 0;
+			int stopOffset = 0;
+			try {
+				startOffset = (Integer) marker.getAttribute(IMarker.CHAR_START);
+				stopOffset = (Integer) marker.getAttribute(IMarker.CHAR_END);
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+			
+			try {
+				if (ASMEditor.MARKER_TYPE_WARNING.equals(marker.getType())) {
+					cBody = new StringHoverComposite(getShell(), 0);
+					cBody.setLayout(new RowLayout());
+					Label label = new Label(cBody, 0);
+					label.setText(marker.getAttribute(IMarker.MESSAGE, ""));
+					cBody.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+					
+					getShell().getChildren()[0].dispose();
+					getShell().layout(true,true);
+					getShell().pack(true);
+				}
+				else {
+					// Retrieve the error object out of the marker
+					AbstractError error = AbstractError.decode(marker.getAttribute("errordata", ""));
+					error.setDocument(document);
+					setContents(error);
+				}
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			getShell().layout(true, true);
+			getShell().pack();
 		}
-		
-		// Retrieve the error object out of the marker
-		AbstractError error = AbstractError.decode(marker.getAttribute("errordata", ""));
-		error.setDocument(document);
-		setContents(error);
-		
-		getShell().layout(true, true);
-		getShell().pack();
+		else if (input instanceof String) {
+			cBody = new StringHoverComposite(getShell(), 0);
+			cBody.setLayout(new RowLayout());
+			Label label = new Label(cBody, 0);
+			label.setText((String)input);
+			cBody.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+			
+			getShell().getChildren()[0].dispose();
+			getShell().layout(true,true);
+			getShell().pack(true);
+		}
 	}
 	
 

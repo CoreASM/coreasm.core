@@ -3,8 +3,15 @@ package org.coreasm.eclipse.editors.hovering;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Stack;
 
+import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Node;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
@@ -17,6 +24,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension2;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -33,10 +41,10 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2
 	
 	@Override
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-		// We don't need a region, we don't need to read any text because
-		// all relevant data is stored with the error object which is set
-		// as an attribute to the marker.
-		return new Region(offset, 1);
+		Point selection = textViewer.getSelectedRange();
+		if (selection.x <= offset && offset < selection.x + selection.y)
+			return new Region(selection.x, selection.y);
+		return new Region(offset, 0);
 	}
 
 	/**
@@ -58,25 +66,59 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2
 		IAnnotationModel model = null;
 		if (textViewer instanceof ISourceViewer)
 			model= ((ISourceViewer)textViewer).getAnnotationModel();
-		if (model == null)
-			return null;
-		
-		Iterator it;
-		if (model instanceof IAnnotationModelExtension2)
-			it = ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), hoverRegion.getLength(), true, true);
-		else
-			it = model.getAnnotationIterator();
-
-		while (it.hasNext()) {
-			Annotation a = (Annotation) it.next();
-			if (a instanceof MarkerAnnotation) {
-				MarkerAnnotation ma = (MarkerAnnotation) a;
-				IMarker m = ma.getMarker();
-				hoverInfoMap.put("marker", m);
-				return hoverInfoMap;
+		if (model != null) {
+			Iterator it;
+			if (model instanceof IAnnotationModelExtension2)
+				it = ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), hoverRegion.getLength(), true, true);
+			else
+				it = model.getAnnotationIterator();
+	
+			while (it.hasNext()) {
+				Annotation a = (Annotation) it.next();
+				if (a instanceof MarkerAnnotation) {
+					MarkerAnnotation ma = (MarkerAnnotation) a;
+					IMarker m = ma.getMarker();
+					hoverInfoMap.put("marker", m);
+					return hoverInfoMap;
+				}
 			}
 		}
+		try {
+			Node node = getNodeForRegion(textViewer.getDocument(), hoverRegion.getOffset(), hoverRegion.getLength());
+			if (node instanceof ASTNode) {
+				return node.toString();
+			}
+			return null;
+		} catch (BadLocationException e) {
+		}
 		return null;
+	}
+	
+	private Node getNodeForRegion(IDocument doc, int offset, int length) throws BadLocationException {
+		ASMDocument asmDoc = (ASMDocument)doc;
+		Stack<Node> queue = new Stack<Node>();
+		Node node = null;
+		Node rootNode = asmDoc.getRootnode();
+		
+		if (rootNode != null)
+			queue.add(rootNode);
+		int minDist = -1;
+		while (!queue.isEmpty()) {
+			Node n = queue.pop();
+			int off = n.getScannerInfo().charPosition;
+			if (doc.getLineOfOffset(off) == doc.getLineOfOffset(offset))
+			{
+				int dist = offset - off;
+				
+				if (minDist < 0 || dist < minDist) {
+					node = n;
+					minDist = dist;
+				}
+			}
+			for (Node child : n.getChildNodes())
+				queue.add(queue.size(), child);
+		}
+		return node;
 	}
 	
 	@Override

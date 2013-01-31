@@ -453,4 +453,15 @@
             value="true">
       </persistent>
    </extension>
+   <extension
+         id="asm.markerType.warning"
+         name="ASM Warning Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
 </plugin>
