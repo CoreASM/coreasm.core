@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Shell;
  * on the type of the error. Because the type of the error is only available
  * when setting the contents of the hover window, the body compisite cannot 
  * be created earlier.
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  *
  */
 public class ASMInformationControl
@@ -125,7 +125,8 @@ implements IInformationControlExtension2
 					setContents(error);
 				}
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			

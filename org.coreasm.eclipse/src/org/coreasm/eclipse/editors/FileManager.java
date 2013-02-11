@@ -26,7 +26,7 @@ import org.eclipse.ui.part.FileEditorInput;
 /**
  * This class provides static helper method for providing information about files
  * within the Workspace
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  *
  */
 public class FileManager 

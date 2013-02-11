@@ -14,7 +14,7 @@ import org.eclipse.jface.text.IDocument;
  * 
  * This class does not manage what attributes are available, this is the task
  * of its subclasses.
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public abstract class AbstractError 
 {
@@ -184,33 +184,39 @@ public abstract class AbstractError
 	 * Decodes a String, which have been created by encode(), back into an
 	 * instance of the correct subclass of AbstractError (subclass is chosen
 	 * by the error type attribute).
+	 * @throws Exception 
 	 */
-	public static AbstractError decode(String encoded)
+	public static AbstractError decode(String encoded) throws Exception
 	{
-		Map<String, String> attributes = new HashMap<String,String>();
-		String[] pairs = encoded.split(SEPERATOR_ATTR);
-		for (String pair: pairs) {
-			String[] kv = pair.split(SEPERATOR_VAL);
-			attributes.put(kv[0], kv[1]);
-		}
-		
-		ErrorType type = ErrorType.valueOf(attributes.get(AbstractError.TYPE));
-		AbstractError error;
-		switch (type) {
-		case SIMPLE:
-			error = new SimpleError(attributes);
-			break;
-		case SYNTAX_ERROR:
-			error = new SyntaxError(attributes);
-			break;
-		case UNDEFINED:
-			error = new UndefinedError(attributes);
-			break;
-		default:
-			error = null;
-		}
-		
-		return error;
-	}
+		try {
+			Map<String, String> attributes = new HashMap<String,String>();
+			String[] pairs = encoded.split(SEPERATOR_ATTR);
+			for (String pair: pairs) {
+				String[] kv = pair.split(SEPERATOR_VAL);
+					attributes.put(kv[0], kv[1]);
+			}
+			
+			ErrorType type = ErrorType.valueOf(attributes.get(AbstractError.TYPE));
+			AbstractError error;
+			switch (type) {
+			case SIMPLE:
+				error = new SimpleError(attributes);
+				break;
+			case SYNTAX_ERROR:
+				error = new SyntaxError(attributes);
+				break;
+			case UNDEFINED:
+				error = new UndefinedError(attributes);
+				break;
+			default:
+				error = null;
+			}
+			
+			return error;
 	
+		}catch(Exception e) {
+			//@warning there maybe unhandled error types which will cause an exception during decoding
+			throw new Exception("Exception in AbstractError.decode("+encoded+") with message\n"+e.getMessage());
+		}
+	}
 }

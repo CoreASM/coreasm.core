@@ -29,7 +29,7 @@ import org.eclipse.jface.text.ITypedRegion;
  * <li>Has the plugin unresolved dependencies?</li>
  * <li>If the statement part of an multiline comment?</li> 
  * </ul>
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public class PluginErrorRecognizer 
 implements ITextErrorRecognizer
@@ -45,7 +45,9 @@ implements ITextErrorRecognizer
 	// PATTERN_RAW: recognizes any of: use plugin
 	// PATTERN_CODE_OK: recognizes lines which contain only a use and whitespaces
 	// PATTERN_COMMENT_OK: recognizes lines with an commented use statement: // use plugin
-	private static final String PATTERN_RAW = "use[\\s&&[^\\n]]+(\\w+)";
+	private static final String PATTERN_RAW = "^[\\s\\t]*use[\\s&&[^\\n]]+(\\w+)";
+	//@note inserted^[\\s\\t] to prevent to parse use statements inside comments
+	//@warning every use statement must be the first statement of its row
 	private static final String PATTERN_CODE_OK = "\\s*" + PATTERN_RAW + "\\s*";
 	private static final String PATTERN_COMMENT_OK = "\\s*//.*";
 	private static final String PATTERN_LINE = PATTERN_RAW + "[^\\n]*\\n";
@@ -343,7 +345,7 @@ implements ITextErrorRecognizer
 	
 	/**
 	 * Helper class for storing use statements with their relevant data
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	private class UseStatement
 	{
