@@ -34,56 +34,6 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		super((ASMDebugTarget) thread.getDebugTarget());
 		this.thread = thread;
 		this.state = state;
-		Set<Location> updateLocations = new HashSet<Location>();
-		ArrayList<IVariable> variables = new ArrayList<IVariable>();
-		ArrayList<IVariable> backgrounds = new ArrayList<IVariable>();
-		
-		for (Update update : state.getUpdates())
-			updateLocations.add(update.loc);
-		
-		variables.add(new ASMVariable(this, "Step", new ASMValue(this, "" + (getStep() < 0 ? -getStep() - 1 + "*" : getStep())), false));
-		variables.add(new ASMVariable(this, "Last Selected Agents", new ASMValue(this, getLastSelectedAgents().toString()), false));
-		variables.add(new ASMVariable(this, "Callstack", new ASMValue(this, state.getCallStack().toString()), false));
-		
-		for (Entry<String, Element> envVariable : state.getEnvVars().entrySet())
-			variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue()), false));
-		
-		for (Entry<String, FunctionElement> function : state.getFunctions().entrySet()) {
-			String functionName = function.getKey();
-			FunctionElement functionElement = function.getValue();
-			
-			if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
-				for (Location location : functionElement.getLocations(functionName)) {
-					if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
-						backgrounds.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
-					else
-						variables.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, functionElement.getValue(location.args)), updateLocations.contains(location)));
-				}
-			}
-		}
-		
-		for (Entry<String, AbstractUniverse> universe : state.getUniverses().entrySet()) {
-			if (universe.getValue().isModifiable()) {
-				ArrayList<IVariable> universeVariables = new ArrayList<IVariable>();
-				String universeName = universe.getKey();
-				FunctionElement universeElement = universe.getValue();
-				
-				boolean containingValueChanged = false;
-				for (Location location : universeElement.getLocations(universeName)) {
-					if (updateLocations.contains(location))
-						containingValueChanged = true;
-					universeVariables.add(new ASMVariable(this, location.toString(), universeElement, new ASMValue(this, universeElement.getValue(location.args)), updateLocations.contains(location)));
-				}
-				IVariable[] tmp = new IVariable[universeVariables.size()];
-				universeVariables.toArray(tmp);
-				variables.add(new ASMVariable(this, universeName, universeElement, new ASMValue(this, tmp), containingValueChanged));
-			}
-		}
-		IVariable[] tmp = new IVariable[backgrounds.size()];
-		backgrounds.toArray(tmp);
-		variables.add(new ASMVariable(this, "Backgrounds", new ASMValue(this, tmp), false));
-		this.variables = new IVariable[variables.size()];
-		variables.toArray(this.variables);
 	}
 
 	@Override
@@ -185,12 +135,59 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 
 	@Override
 	public IVariable[] getVariables() throws DebugException {
-		return variables;
+		if (this.variables == null) {
+			Set<Location> updateLocations = new HashSet<Location>();
+			ArrayList<IVariable> variables = new ArrayList<IVariable>();
+			ArrayList<IVariable> backgrounds = new ArrayList<IVariable>();
+			
+			for (Update update : state.getUpdates())
+				updateLocations.add(update.loc);
+			
+			variables.add(new ASMVariable(this, "Step", new ASMValue(this, "" + (getStep() < 0 ? -getStep() - 1 + "*" : getStep())), false));
+			variables.add(new ASMVariable(this, "Last Selected Agents", new ASMValue(this, getLastSelectedAgents().toString()), false));
+			variables.add(new ASMVariable(this, "Callstack", new ASMValue(this, state.getCallStack().toString()), false));
+			
+			for (Entry<String, Element> envVariable : state.getEnvVars().entrySet())
+				variables.add(new ASMVariable(this, envVariable.getKey(), new ASMValue(this, envVariable.getValue()), false));
+			
+			for (Entry<String, FunctionElement> function : state.getFunctions().entrySet()) {
+				String functionName = function.getKey();
+				FunctionElement functionElement = function.getValue();
+				
+				if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
+					for (Location location : functionElement.getLocations(functionName)) {
+						if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
+							backgrounds.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
+						else
+							variables.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, functionElement.getValue(location.args)), updateLocations.contains(location)));
+					}
+				}
+			}
+			
+			for (Entry<String, AbstractUniverse> universe : state.getUniverses().entrySet()) {
+				if (universe.getValue().isModifiable()) {
+					ArrayList<IVariable> universeVariables = new ArrayList<IVariable>();
+					String universeName = universe.getKey();
+					FunctionElement universeElement = universe.getValue();
+					
+					boolean containingValueChanged = false;
+					for (Location location : universeElement.getLocations(universeName)) {
+						if (updateLocations.contains(location))
+							containingValueChanged = true;
+						universeVariables.add(new ASMVariable(this, location.toString(), universeElement, new ASMValue(this, universeElement.getValue(location.args)), updateLocations.contains(location)));
+					}
+					variables.add(new ASMVariable(this, universeName, universeElement, new ASMValue(this, universeVariables.toArray(new IVariable[universeVariables.size()])), containingValueChanged));
+				}
+			}
+			variables.add(new ASMVariable(this, "Backgrounds", new ASMValue(this, backgrounds.toArray(new IVariable[backgrounds.size()])), false));
+			this.variables = variables.toArray(new IVariable[variables.size()]);
+		}
+		return this.variables;
 	}
 
 	@Override
 	public boolean hasVariables() throws DebugException {
-		return variables.length > 0;
+		return variables != null && variables.length > 0;
 	}
 
 	@Override

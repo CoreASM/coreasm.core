@@ -12,10 +12,12 @@ import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
+import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.signature.EnumerationNode;
@@ -43,11 +45,18 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 							if (frNode.hasName()) {
 								if (!frNode.hasArguments()) {
-									if (!isEnvironmentFunction(frNode) && !isFunctionName(frNode, functionNames))
+									if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames))
 										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getScannerInfo().charPosition));
 								}
-								else if (!isFunctionName(frNode, functionNames))
+								else if (!isFunctionName(frNode.getName(), functionNames))
 									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getScannerInfo().charPosition));
+							}
+						}
+						else if (ASTNode.EXPRESSION_CLASS.equals(node.getGrammarClass())) {
+							if (node instanceof RuleOrFuncElementNode) {
+								RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
+								if (!isFunctionName(ruleOrFuncElementNode.getElementName(), functionNames))
+									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), node.getScannerInfo().charPosition));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());
@@ -59,7 +68,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return warnings;
 	}
 	
-	private boolean isEnvironmentFunction(FunctionRuleTermNode frNode) {
+	private boolean isEnvironmentVariable(FunctionRuleTermNode frNode) {
 		if (isParam(frNode))
 			return true;
 		if (isInLetVariableMap(frNode))
@@ -71,6 +80,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		if (isChooseVariable(frNode))
 			return true;
 		if (isExtendRuleVariable(frNode))
+			return true;
+		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
 		if (isReturnRuleExpression(frNode))
 			return true;
@@ -90,17 +101,17 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private ASTNode getParentRuleNode(ASTNode node) {
-		ASTNode parentRuleNode = node;
+		ASTNode parentRuleNode = node.getParent();
 		while (parentRuleNode != null && !Kernel.GR_RULEDECLARATION.equals(parentRuleNode.getGrammarRule()) && !"DerivedFunctionDeclaration".equals(parentRuleNode.getGrammarRule()))
 			parentRuleNode = parentRuleNode.getParent();
 		return parentRuleNode;
 	}
 	
 	private boolean isInLetVariableMap(FunctionRuleTermNode frNode) {
-		final LetRuleNode letRuleNode = getParentLetRuleNode(frNode);
-		if (letRuleNode != null) {
+		for (LetRuleNode letRuleNode = getParentLetRuleNode(frNode); letRuleNode != null; letRuleNode = getParentLetRuleNode(letRuleNode)) {
 			try {
-				return letRuleNode.getVariableMap().containsKey(frNode.getName());
+				if (letRuleNode.getVariableMap().containsKey(frNode.getName()))
+					return true;
 			} catch (Exception e) {
 			}
 		}
@@ -108,8 +119,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 
 	private LetRuleNode getParentLetRuleNode(ASTNode node) {
-		ASTNode letRuleNode = node;
-		while (letRuleNode != null && !(letRuleNode instanceof LetRuleNode) && !Kernel.GR_RULEDECLARATION.equals(letRuleNode.getGrammarRule()))
+		ASTNode letRuleNode = node.getParent();
+		while (letRuleNode != null && !(letRuleNode instanceof LetRuleNode))
 			letRuleNode = letRuleNode.getParent();
 		if (letRuleNode instanceof LetRuleNode)
 			return (LetRuleNode)letRuleNode;
@@ -117,15 +128,16 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private boolean isLocalFunction(FunctionRuleTermNode frNode) {
-		final LocalRuleNode localRuleNode = getParentLocalRuleNode(frNode);
-		if (localRuleNode != null)
-			return localRuleNode.getFunctionNames().contains(frNode.getName());
+		for (LocalRuleNode localRuleNode = getParentLocalRuleNode(frNode); localRuleNode != null; localRuleNode = getParentLocalRuleNode(localRuleNode)) {
+			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
+				return true;
+		}
 		return false;
 	}
 	
 	private LocalRuleNode getParentLocalRuleNode(ASTNode node) {
-		ASTNode localRuleNode = node;
-		while (localRuleNode != null && !(localRuleNode instanceof LocalRuleNode) && !Kernel.GR_RULEDECLARATION.equals(localRuleNode.getGrammarRule()))
+		ASTNode localRuleNode = node.getParent();
+		while (localRuleNode != null && !(localRuleNode instanceof LocalRuleNode))
 			localRuleNode = localRuleNode.getParent();
 		if (localRuleNode instanceof LocalRuleNode)
 			return (LocalRuleNode)localRuleNode;
@@ -133,15 +145,16 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private boolean isForallVariable(FunctionRuleTermNode frNode) {
-		final ForallRuleNode forallRuleNode = getParentForallRuleNode(frNode);
-		if (forallRuleNode != null)
-			return forallRuleNode.getVariable().getToken().equals(frNode.getName());
+		for (ForallRuleNode forallRuleNode = getParentForallRuleNode(frNode); forallRuleNode != null; forallRuleNode = getParentForallRuleNode(forallRuleNode)) {
+			if (forallRuleNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
 		return false;
 	}
 	
 	private ForallRuleNode getParentForallRuleNode(ASTNode node) {
-		ASTNode forallRuleNode = node;
-		while (forallRuleNode != null && !(forallRuleNode instanceof ForallRuleNode) && !Kernel.GR_RULEDECLARATION.equals(forallRuleNode.getGrammarRule()))
+		ASTNode forallRuleNode = node.getParent();
+		while (forallRuleNode != null && !(forallRuleNode instanceof ForallRuleNode))
 			forallRuleNode = forallRuleNode.getParent();
 		if (forallRuleNode instanceof ForallRuleNode)
 			return (ForallRuleNode)forallRuleNode;
@@ -149,15 +162,16 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private boolean isChooseVariable(FunctionRuleTermNode frNode) {
-		final ChooseRuleNode chooseRuleNode = getParentChooseRuleNode(frNode);
-		if (chooseRuleNode != null)
-			return chooseRuleNode.getVariable().getToken().equals(frNode.getName());
+		for (ChooseRuleNode chooseRuleNode = getParentChooseRuleNode(frNode); chooseRuleNode != null; chooseRuleNode = getParentChooseRuleNode(chooseRuleNode)) {
+			if (chooseRuleNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
 		return false;
 	}
 	
 	private ChooseRuleNode getParentChooseRuleNode(ASTNode node) {
-		ASTNode chooseRuleNode = node;
-		while (chooseRuleNode != null && !(chooseRuleNode instanceof ChooseRuleNode) && !Kernel.GR_RULEDECLARATION.equals(chooseRuleNode.getGrammarRule()))
+		ASTNode chooseRuleNode = node.getParent();
+		while (chooseRuleNode != null && !(chooseRuleNode instanceof ChooseRuleNode))
 			chooseRuleNode = chooseRuleNode.getParent();
 		if (chooseRuleNode instanceof ChooseRuleNode)
 			return (ChooseRuleNode)chooseRuleNode;
@@ -165,41 +179,60 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private boolean isExtendRuleVariable(FunctionRuleTermNode frNode) {
-		final ExtendRuleNode extendRuleNode = getParentExtendRuleNode(frNode);
-		if (extendRuleNode != null)
-			return extendRuleNode.getIdNode().getToken().equals(frNode.getName());
+		for (ExtendRuleNode extendRuleNode = getParentExtendRuleNode(frNode); extendRuleNode != null; extendRuleNode = getParentExtendRuleNode(extendRuleNode)) {
+			if (extendRuleNode.getIdNode().getToken().equals(frNode.getName()))
+				return true;
+		}
 		return false;
 	}
 	
 	private ExtendRuleNode getParentExtendRuleNode(ASTNode node) {
-		ASTNode extendRuleNode = node;
-		while (extendRuleNode != null && !(extendRuleNode instanceof ExtendRuleNode) && !Kernel.GR_RULEDECLARATION.equals(extendRuleNode.getGrammarRule()))
+		ASTNode extendRuleNode = node.getParent();
+		while (extendRuleNode != null && !(extendRuleNode instanceof ExtendRuleNode))
 			extendRuleNode = extendRuleNode.getParent();
 		if (extendRuleNode instanceof ExtendRuleNode)
 			return (ExtendRuleNode)extendRuleNode;
 		return null;
 	}
 	
+	private boolean isSetComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+		for (SetCompNode setCompNode = getParentSetCompNode(frNode); setCompNode != null; setCompNode = getParentSetCompNode(setCompNode)) {
+			if (setCompNode.getConstrainerVar().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private SetCompNode getParentSetCompNode(ASTNode node) {
+		ASTNode setCompNode = node.getParent();
+		while (setCompNode != null && !(setCompNode instanceof SetCompNode))
+			setCompNode = setCompNode.getParent();
+		if (setCompNode instanceof SetCompNode)
+			return (SetCompNode)setCompNode;
+		return null;
+	}
+	
 	private boolean isReturnRuleExpression(FunctionRuleTermNode frNode) {
-		final ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode);
-		if (returnRuleNode != null)
-			return returnRuleNode.getExpressionNode().getFirst().getToken().equals(frNode.getName());
+		for (ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode); returnRuleNode != null; returnRuleNode = getParentReturnRuleNode(returnRuleNode)) {
+			if (returnRuleNode.getExpressionNode().getFirst().getToken().equals(frNode.getName()))
+				return true;
+		}
 		return false;
 	}
 	
 	private ReturnRuleNode getParentReturnRuleNode(ASTNode node) {
-		ASTNode returnRuleNode = node;
-		while (returnRuleNode != null && !(returnRuleNode instanceof ReturnRuleNode) && !Kernel.GR_RULEDECLARATION.equals(returnRuleNode.getGrammarRule()))
+		ASTNode returnRuleNode = node.getParent();
+		while (returnRuleNode != null && !(returnRuleNode instanceof ReturnRuleNode))
 			returnRuleNode = returnRuleNode.getParent();
 		if (returnRuleNode instanceof ReturnRuleNode)
 			return (ReturnRuleNode)returnRuleNode;
 		return null;
 	}
 	
-	private boolean isFunctionName(FunctionRuleTermNode frNode, Set<String> functionNames) {
-		if (getPluginFunctionNames().contains(frNode.getName()))
+	private boolean isFunctionName(String functionName, Set<String> functionNames) {
+		if (getPluginFunctionNames().contains(functionName))
 			return true;
-		return functionNames.contains(frNode.getName());
+		return functionNames.contains(functionName);
 	}
 	
 	private Set<String> getPluginFunctionNames() {

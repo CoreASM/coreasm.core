@@ -182,20 +182,20 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 	
 	private List<ASTNode> getASTNodesOnLine(IDocument doc, int line) throws BadLocationException {
 		ASMDocument asmDoc = (ASMDocument)doc;
-		Stack<ASTNode> queue = new Stack<ASTNode>();
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		List<ASTNode> nodes = new LinkedList<ASTNode>();
 		ASTNode rootNode = (ASTNode)asmDoc.getRootnode();
 		
 		if (rootNode != null)
-			queue.add(rootNode);
-		while (!queue.isEmpty()) {
-			ASTNode node = queue.pop();
+			fringe.add(rootNode);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
 			int offset = node.getScannerInfo().charPosition;
 			
 			if (doc.getLineOfOffset(offset) == line)
 				nodes.add(node);
 			for (ASTNode child : node.getAbstractChildNodes())
-				queue.add(queue.size(), child);
+				fringe.add(fringe.size(), child);
 		}
 		return nodes;
 	}

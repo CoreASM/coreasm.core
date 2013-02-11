@@ -12,6 +12,7 @@ import org.eclipse.debug.core.model.IThread;
  *
  */
 public class ASMThread extends ASMDebugElement implements IThread {
+	private IStackFrame[] stackFrames;
 
 	public ASMThread(ASMDebugTarget debugTarget) {
 		super(debugTarget);
@@ -99,8 +100,18 @@ public class ASMThread extends ASMDebugElement implements IThread {
 		if (isSuspended()) {
 			ASMStorage[] states = EngineDebugger.getRunningInstance().getStates();
 			IStackFrame[] frames = new IStackFrame[states.length];
-			for (int i = 0; i < states.length; i++)
-				frames[states.length - i - 1] = new ASMStackFrame(this, states[i]);
+			
+			if (stackFrames == null) {
+				for (int i = 0; i < states.length; i++)
+					frames[states.length - i - 1] = new ASMStackFrame(this, states[i]);
+			}
+			else {
+				for (int i = 0; i < stackFrames.length; i++)
+					frames[i + states.length - stackFrames.length] = stackFrames[i];
+				frames[0] = new ASMStackFrame(this, states[states.length - 1]);
+			}
+			stackFrames = frames;
+			
 			return frames;
 		}
 		return new IStackFrame[0];
