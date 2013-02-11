@@ -17,6 +17,7 @@ import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
+import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
@@ -75,7 +76,9 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			return true;
 		if (isLocalFunction(frNode))
 			return true;
-		if (isForallVariable(frNode))
+		if (isForallRuleVariable(frNode))
+			return true;
+		if (isForallExpVariable(frNode))
 			return true;
 		if (isChooseVariable(frNode))
 			return true;
@@ -144,7 +147,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return null;
 	}
 	
-	private boolean isForallVariable(FunctionRuleTermNode frNode) {
+	private boolean isForallRuleVariable(FunctionRuleTermNode frNode) {
 		for (ForallRuleNode forallRuleNode = getParentForallRuleNode(frNode); forallRuleNode != null; forallRuleNode = getParentForallRuleNode(forallRuleNode)) {
 			if (forallRuleNode.getVariable().getToken().equals(frNode.getName()))
 				return true;
@@ -158,6 +161,23 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			forallRuleNode = forallRuleNode.getParent();
 		if (forallRuleNode instanceof ForallRuleNode)
 			return (ForallRuleNode)forallRuleNode;
+		return null;
+	}
+	
+	private boolean isForallExpVariable(FunctionRuleTermNode frNode) {
+		for (ForallExpNode ForallExpNode = getParentForallExpNode(frNode); ForallExpNode != null; ForallExpNode = getParentForallExpNode(ForallExpNode)) {
+			if (ForallExpNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ForallExpNode getParentForallExpNode(ASTNode node) {
+		ASTNode ForallExpNode = node.getParent();
+		while (ForallExpNode != null && !(ForallExpNode instanceof ForallExpNode))
+			ForallExpNode = ForallExpNode.getParent();
+		if (ForallExpNode instanceof ForallExpNode)
+			return (ForallExpNode)ForallExpNode;
 		return null;
 	}
 	
