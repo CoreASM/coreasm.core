@@ -17,10 +17,10 @@ import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
  *
  */
 public class ASMFunctionElement extends FunctionElement {
-	private String name;
-	private FunctionElement functionElement;
-	private Set<Location> locations = new HashSet<Location>();
-	private HashMap<ElementList, Element> values = new HashMap<ElementList, Element>();
+	private final String name;
+	private final FunctionElement functionElement;
+	private final Set<Location> locations = new HashSet<Location>();
+	private final HashMap<ElementList, Element> values = new HashMap<ElementList, Element>();
 	
 	public ASMFunctionElement(String name, FunctionElement functionElement) {
 		setFClass(functionElement.getFClass());

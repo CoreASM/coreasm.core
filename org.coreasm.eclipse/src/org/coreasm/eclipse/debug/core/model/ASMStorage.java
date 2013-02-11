@@ -10,6 +10,7 @@ import org.coreasm.eclipse.engine.debugger.WatchExpressionAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.HashStorage;
 import org.coreasm.engine.absstorage.Location;
@@ -51,13 +52,19 @@ public class ASMStorage extends HashStorage {
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
 		for (Entry<String, FunctionElement> entry : storage.getFunctions().entrySet()) {
 			try {
-				addFunction(entry.getKey(), new ASMFunctionElement(entry.getKey(), entry.getValue()));
+				if (entry.getValue() instanceof Enumerable)
+					addFunction(entry.getKey(), new ASMEnumerableFunctionElement(entry.getKey(), entry.getValue()));
+				else
+					addFunction(entry.getKey(), new ASMFunctionElement(entry.getKey(), entry.getValue()));
 			} catch (NameConflictException e) {
 			}
 		}
 		for (Entry<String, AbstractUniverse> entry : storage.getUniverses().entrySet()) {
 			try {
-				addUniverse(entry.getKey(), new ASMUniverse(entry.getKey(), entry.getValue()));
+				if (entry.getValue() instanceof Enumerable)
+					addUniverse(entry.getKey(), new ASMEnumerableUniverse(entry.getKey(), entry.getValue()));
+				else
+					addUniverse(entry.getKey(), new ASMUniverse(entry.getKey(), entry.getValue()));
 			} catch (NameConflictException e) {
 			}
 		}

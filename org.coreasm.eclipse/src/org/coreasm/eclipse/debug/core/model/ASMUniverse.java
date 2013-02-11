@@ -14,10 +14,15 @@ import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 
+/**
+ * Wrapper class for ASM universe elements. It is needed for the history functionality.
+ * @author Michael Stegmaier
+ *
+ */
 public class ASMUniverse extends AbstractUniverse {
 	private final AbstractUniverse abstractUniverse;
 	private final ASMFunctionElement functionElement;
-	private final Set<Element> elements = new HashSet<Element>();
+	protected final Set<Element> elements = new HashSet<Element>();
 
 	public ASMUniverse(String name, AbstractUniverse abstractUniverse) {
 		setFClass(abstractUniverse.getFClass());

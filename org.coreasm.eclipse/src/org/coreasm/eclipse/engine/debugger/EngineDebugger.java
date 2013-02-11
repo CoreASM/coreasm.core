@@ -473,6 +473,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * @return whether frNode hits a breakpoint
 	 */
 	private boolean isWatchpointHit(FunctionRuleTermNode frNode) {
+		if (!DebugPlugin.getDefault().getBreakpointManager().isEnabled())
+			return false;
 		ASTNode parent = frNode.getParent();
 		if (!(parent instanceof UpdateRuleNode) || frNode != parent.getFirst()) {
 			for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
@@ -493,6 +495,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	}
 	
 	private boolean isLineBreakpointHit() {
+		if (!DebugPlugin.getDefault().getBreakpointManager().isEnabled())
+			return false;
 		for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
 			try {
 				if (!breakpoint.isEnabled() || breakpoint instanceof ASMMethodBreakpoint)
@@ -578,30 +582,32 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			
 //			handle watchpoints (modification)
 			boolean breakpointHit = false;
-			for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
-				try {
-					if (!breakpoint.isEnabled() || breakpoint == prevWatchpoint)
-						continue;
-					for (Update update : pos.getUpdates()) {
-						String updateContext = getUpdateContext(update);
-						String updateSourceName = ASMDebugUtils.parseSourceName(updateContext);
-						int updateLineNumber = ASMDebugUtils.parseLineNumber(updateContext);
-						
-						if (!sourceName.equals(updateSourceName) || lineNumber != updateLineNumber)
+			if (DebugPlugin.getDefault().getBreakpointManager().isEnabled()) {
+				for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
+					try {
+						if (!breakpoint.isEnabled() || breakpoint == prevWatchpoint)
 							continue;
-						
-						if (breakpoint instanceof ASMWatchpoint && ((ASMWatchpoint)breakpoint).isModification() && ((ASMWatchpoint)breakpoint).getFuctionName().equals(update.loc.name)) {
-							breakpointHit = true;
+						for (Update update : pos.getUpdates()) {
+							String updateContext = getUpdateContext(update);
+							String updateSourceName = ASMDebugUtils.parseSourceName(updateContext);
+							int updateLineNumber = ASMDebugUtils.parseLineNumber(updateContext);
+							
+							if (!sourceName.equals(updateSourceName) || lineNumber != updateLineNumber)
+								continue;
+							
+							if (breakpoint instanceof ASMWatchpoint && ((ASMWatchpoint)breakpoint).isModification() && ((ASMWatchpoint)breakpoint).getFuctionName().equals(update.loc.name)) {
+								breakpointHit = true;
+								break;
+							}
+						}
+						if (breakpointHit) {
+							onBreakpointHit(pos);
 							break;
 						}
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					if (breakpointHit) {
-						onBreakpointHit(pos);
-						break;
-					}
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 			prevWatchpoint = null;
@@ -612,32 +618,34 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	@Override
 	public void onRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
 		currentAgent = agent;
-		for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
-			try {
-				if (!breakpoint.isEnabled())
-					continue;
-				if (breakpoint instanceof ASMMethodBreakpoint && ((ASMMethodBreakpoint) breakpoint).getRuleName().equals(rule.getName())) {
-					try {
-						String context = pos.getContext(capi.getParser(), capi.getSpec());
-						String ruleSourceName = ASMDebugUtils.parseSourceName(context);
-						
-						if (!ruleSourceName.equals(((ASMLineBreakpoint)breakpoint).getSpecName()))
-							continue;
-						
-						sourceName = ruleSourceName;
-						lineNumber = ASMDebugUtils.parseLineNumber(context);
-						if (sourceName == null || lineNumber < 0) {
-							sourceName = ((ASMLineBreakpoint)breakpoint).getSpecName();
-							lineNumber = ((ASMLineBreakpoint)breakpoint).getLineNumber();
+		if (DebugPlugin.getDefault().getBreakpointManager().isEnabled()) {
+			for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
+				try {
+					if (!breakpoint.isEnabled())
+						continue;
+					if (breakpoint instanceof ASMMethodBreakpoint && ((ASMMethodBreakpoint) breakpoint).getRuleName().equals(rule.getName())) {
+						try {
+							String context = pos.getContext(capi.getParser(), capi.getSpec());
+							String ruleSourceName = ASMDebugUtils.parseSourceName(context);
+							
+							if (!ruleSourceName.equals(((ASMLineBreakpoint)breakpoint).getSpecName()))
+								continue;
+							
+							sourceName = ruleSourceName;
+							lineNumber = ASMDebugUtils.parseLineNumber(context);
+							if (sourceName == null || lineNumber < 0) {
+								sourceName = ((ASMLineBreakpoint)breakpoint).getSpecName();
+								lineNumber = ((ASMLineBreakpoint)breakpoint).getLineNumber();
+							}
+							onBreakpointHit(pos);
+							break;
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-						onBreakpointHit(pos);
-						break;
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
+				} catch (CoreException e) {
 				}
-			} catch (CoreException e) {
 			}
 		}
 		ruleArgs = new HashMap<ASTNode, String>();

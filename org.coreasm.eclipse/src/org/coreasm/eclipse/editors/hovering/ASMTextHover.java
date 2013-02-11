@@ -15,6 +15,7 @@ import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
@@ -202,10 +203,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		if (EngineDebugger.getRunningInstance() != null) {
 			try {
 				Element value = EngineDebugger.getRunningInstance().evaluateExpression(expression, selectedState);
-				if (value instanceof AbstractUniverse) {
-					AbstractUniverse universe = (AbstractUniverse)value;
-					return universe.getLocations(expression).toString();
-				}
+				if (value instanceof Enumerable && value.toString().isEmpty())
+					return ((Enumerable)value).enumerate().toString();
 				return value.toString();
 			} catch (Exception e) {
 			}
@@ -548,6 +547,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 
 	@Override
 	public void debugContextChanged(DebugContextEvent event) {
+		selectedState = null;
 		ISelection context = event.getContext();
 		if (context instanceof IStructuredSelection) {
 			Object element = ((IStructuredSelection)context).getFirstElement();
