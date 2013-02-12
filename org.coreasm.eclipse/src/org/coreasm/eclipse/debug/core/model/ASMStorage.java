@@ -91,7 +91,7 @@ public class ASMStorage extends HashStorage {
 		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet()) {
 			FunctionElement function = getFunction(stackedUpdate.getKey().name);
 			if (function == null)
-				envVars.put(stackedUpdate.getKey().toString(), stackedUpdate.getValue());
+				envVars.put(stackedUpdate.getKey().name, stackedUpdate.getValue());
 			else {
 				try {
 					function.setValue(stackedUpdate.getKey().args, stackedUpdate.getValue());
