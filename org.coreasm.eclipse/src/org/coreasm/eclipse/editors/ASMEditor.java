@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -66,6 +67,7 @@ implements IDocumentListener
 	public static final String MARKER_TYPE_PLUGINS = "org.coreasm.eclipse.markers.PluginMarker";
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
 	public static final String MARKER_TYPE_WARNING = "asm.markerType.warning";
+	public static final String MARKER_TYPE_DECLARATIONS = "asm.markerType.declarations";
 	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
@@ -102,6 +104,7 @@ implements IDocumentListener
 		childDocWatcher = new ChildDocumentWatcher(this);
 		parser.addObserver(errorManager);
 		parser.addObserver(childDocWatcher);
+		parser.addObserver(new ASTWatcher(this));
 		
 		
 		// bind the childDocWatcher as ResourceChangeListener to the Workspace
@@ -333,7 +336,7 @@ implements IDocumentListener
 	 * This is done by a marker so an ASMEditor can check the includes modules for
 	 * other specifications without loading those specifications.
 	 */
-	public void createIncludeMark(Set<String> includes)
+	public void createIncludeMark(Set<IPath> includes)
 	{
 		// Delete the old plugin marker, if there is one
 		try {
@@ -348,7 +351,7 @@ implements IDocumentListener
 		
 		// Build a string with the names of all includes
 		StringBuilder strIncludes = new StringBuilder();
-		for (String p: includes)
+		for (IPath p: includes)
 			strIncludes.append(p).append(AbstractError.SEPERATOR_VAL);
 		if (strIncludes.length() > 0)
 			strIncludes.deleteCharAt(strIncludes.length()-1);
@@ -365,11 +368,28 @@ implements IDocumentListener
 		}
 	}
 	
+	public void createDeclarationsMark(String declarations) {
+		try {
+			getInputFile().deleteMarkers(MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		MarkerUtilities.setCharStart(map, 0);
+		MarkerUtilities.setCharEnd(map, 1);
+		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
+		map.put("declarations", declarations);
+		try {
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_DECLARATIONS);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void createWarningMark(AbstractWarning warning) {
-		IDocument document = getInputDocument();
 		int line = 0;
 		try {
-			line = document.getLineOfOffset(warning.getPosition());
+			line = getInputDocument().getLineOfOffset(warning.getPosition());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -377,9 +397,9 @@ implements IDocumentListener
 		Map<String, Object> map = new HashMap<String, Object>();
 		MarkerUtilities.setLineNumber(map, line);
 		MarkerUtilities.setMessage(map, warning.getDescription());
+		MarkerUtilities.setCharStart(map, warning.getPosition());
+		MarkerUtilities.setCharEnd(map, warning.getPosition()+warning.getLength());
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
-		map.put(IMarker.CHAR_START, warning.getPosition());
-		map.put(IMarker.CHAR_END, warning.getPosition()+warning.getLength());
 		map.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 		try {
 			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_WARNING);

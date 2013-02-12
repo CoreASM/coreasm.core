@@ -10,20 +10,23 @@ import java.util.Stack;
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMStorage;
 import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.Specification.FunctionInfo;
-import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
+import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -33,7 +36,11 @@ import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
@@ -291,6 +298,43 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				}
 			}
 		}
+		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
+			if (node instanceof IncludeNode) {
+				IncludeNode includeNode = (IncludeNode)node;
+				IFile file = FileManager.getActiveProject().getFile(includeNode.getFilename());
+				if (file != null) {
+					try {
+						IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
+						if (declarationMarker.length > 0) {
+							String declarations = declarationMarker[0].getAttribute("declarations", "");
+							if (!declarations.isEmpty()) {
+								for (String declaration : declarations.split("\u25c9")) {
+									String fName = null;
+									String type = declaration.trim().substring(0, declaration.indexOf(':'));
+									fName = declaration.substring(type.length() + 2);
+									if ("Universe".equals(type) || "Enumeration".equals(type))
+										fName = fName.substring(0, fName.indexOf('=')).trim();
+									else if ("Derived Function".equals(type) || "Enumeration member".equals(type) || "Rule".equals(type)) {
+										int indexOfNewline = fName.indexOf('\n');
+										if (indexOfNewline >= 0)
+											fName = fName.substring(0, indexOfNewline);
+										int indexOfBracket = fName.indexOf('(');
+										if (indexOfBracket >= 0)
+											fName = fName.substring(0, indexOfBracket);
+									}
+									else if ("Function".equals(type))
+										fName = fName.substring(0, fName.indexOf(':'));
+									if (functionName.equals(fName))
+										return includeNode.getFilename() + "\n\n" + declaration;
+								}
+							}
+						}
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 		return null;
 	}
 	
@@ -313,6 +357,11 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				else if (line.contains("/*")) {
 					if (line.length() > 4)
 						comment = line.replace("/*", "").trim() + "\n" + comment;
+					blockComment = false;
+				}
+				else if (line.contains("/*") && line.contains("*/")) {
+					if (line.length() > 5)
+						comment = line.replace("/*", "").replace("*/", "").trim() + "\n" + comment;
 					blockComment = false;
 				}
 				else if (blockComment)
