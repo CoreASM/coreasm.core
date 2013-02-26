@@ -464,4 +464,18 @@
             value="true">
       </persistent>
    </extension>
+   <extension
+         id="asm.markerType.declarations"
+         name="ASM Declarations Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+      <attribute
+            name="declarations">
+      </attribute>
+   </extension>
 </plugin>
