@@ -30,7 +30,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	private ASMEditor editor;
 	private ASMParser parser;
 	private Set<IPath> childdocs;
-	private boolean parsingNeeded = false;
+	private boolean shouldReparse = false;
 
 	public ChildDocumentWatcher(ASMEditor editor)
 	{
@@ -50,7 +50,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 			childdocs.clear();
 			for (Node node: AstTools.findChildrenWithToken((ASTNode)rootnode, "include")) {
 				if (node instanceof IncludeNode)
-					childdocs.add(new Path(((IncludeNode)node).getFilename()));
+					childdocs.add(new Path(((IncludeNode)node).getFilename()).makeAbsolute());
 			}
 		}
 
@@ -59,22 +59,22 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		parsingNeeded = false;
+		shouldReparse = false;
 		try {
 			event.getDelta().accept(this);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		if (parsingNeeded)
+		if (shouldReparse)
 			parser.getJob().schedule(ASMEditor.REPARSE_DELAY);
 	}
 
 	@Override
 	public boolean visit(IResourceDelta delta) throws CoreException {
 		if (delta.getResource() instanceof IFile) {
-			IPath path = delta.getProjectRelativePath();
+			IPath path = delta.getProjectRelativePath().makeAbsolute();
 			if (childdocs.contains(path))
-				parsingNeeded = true;
+				shouldReparse = true;
 		}
 		return true;
 	}

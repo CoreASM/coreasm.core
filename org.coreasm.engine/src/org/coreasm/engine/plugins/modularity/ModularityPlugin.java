@@ -14,6 +14,7 @@
 
 package org.coreasm.engine.plugins.modularity;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +84,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	public void fireOnModeTransition(EngineMode source, EngineMode target) {
     	if (target == EngineMode.emParsingSpec) {
     		loadedModules = new HashSet<String>();
-    		final List<SpecLine> newSpec = injectModules(capi.getSpec().getLines());
+    		final List<SpecLine> newSpec = injectModules(capi.getSpec().getLines(), capi.getSpec().getFileDir());
     		capi.getSpec().updateLines(newSpec);
     		/*
     		System.out.println("** ModularityPlugin :  Specification is modified as follows:");
@@ -216,7 +217,8 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 		return parsers;
 	}
 
-	private List<SpecLine> injectModules(List<SpecLine> lines) {
+	private List<SpecLine> injectModules(List<SpecLine> lines, String relativePath) {
+		// CHANGE: Includes inside included specifications will be looked up relative to the including specification now
 		ArrayList<SpecLine> newSpec = new ArrayList<SpecLine>();
 		String useRegex;
 		Pattern usePattern;
@@ -238,6 +240,11 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 				// remove potential quotation marks
 				while (fileName.startsWith("\"") && fileName.endsWith("\"")) 
 					fileName = fileName.substring(1, fileName.length()-1);
+				// CHANGE: make sure that filenames have the same format to ensure that equal paths match, not only equal include statements
+				try {
+					fileName = (new File(relativePath + File.separator + fileName)).getCanonicalPath();
+				} catch (IOException e) {
+				}
 				if (loadedModules.contains(fileName))
 					logger.info(
 							"ModularityPlugin: Skipping module '" + fileName + "' since it's already loaded.");
@@ -246,7 +253,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 						loadedModules.add(fileName);
 						logger.info( 
 								"ModularityPlugin: Loading module '" + fileName + "'.");
-						List<SpecLine> newLines = injectModules(Specification.loadSpec(capi.getSpec(), fileName));
+						List<SpecLine> newLines = injectModules(Specification.loadSpec(fileName), fileName.substring(0, fileName.lastIndexOf(File.separator)));
 						for (SpecLine newLine: newLines)
 							newSpec.add(newLine);
 					} catch (IOException e) {

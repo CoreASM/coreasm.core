@@ -15,12 +15,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.ui.IEditorPart;
 
 /**
  * Checks an ASMDocument for the correct usage of "include" statements.
@@ -44,7 +42,6 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 	private static final String CHILD_ERROR = "ChildError";
 	private static final String MISSING_PLUGINS = "MissingPlugins";
 	private static final String OUT_OF_PROJECT = "OutOfProject";
-	private static final String NESTED_PATH_ERROR = "NestedPathError";
 	
 	// PATTERN_RAW: recognizes any of: include "filename"
 	// PATTERN_CODE_OK: recognizes lines which contains only an include and whitespaces
@@ -130,15 +127,6 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 					int length = include.filename.length();
 					AbstractError error = new SimpleError(title, message, pos, length, CLASSNAME, FILE_NOT_FOUND);
 					errors.add(error);
-				} else if (checkNestedInlcudes(include)) {
-					String title = "Nested modules with different paths";
-					String message = "The CoreASM engine requires all modules which include other modules\nto be in the same folder as the root specification.";
-					// Mark filename
-					int pos = include.position + include.source.indexOf("\"") + 1;
-					int length = include.filename.length();
-					AbstractError error = new SimpleError(title, message, pos, length, CLASSNAME, NESTED_PATH_ERROR);
-					errors.add(error);
-					
 				} else {
 					IFile file = FileManager.getFile(include.filenameProj, parentEditor.getInputFile().getProject());
 					IMarker[] markers = null;
@@ -330,43 +318,6 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 		}
 		
 	}
-	
-	/**
-	 * Helper method for checking if the there are nested included modules in
-	 * different folders.
-	 * 
-	 * @return	true, if the specified included module is located in another
-	 * 			folder than this module and is including other modules as well.
-	 */
-	private boolean checkNestedInlcudes(IncludeStatement include)
-	{
-		// get file and path objects for the included file
-		IFile includedFile = FileManager.getFile(include.filenameProj, FileManager.getActiveProject());
-		IPath includedPath = includedFile.getProjectRelativePath().removeLastSegments(1);
-		
-		// get file and path objects for the including file
-		IFile thisFile = parentEditor.getInputFile();
-		IPath thisPath = thisFile.getProjectRelativePath().removeLastSegments(1);
-		
-		// check if both paths are equal
-		if (includedPath.equals(thisPath))
-			return false;
-		
-		// if both paths are not equal: check if the included file has includes
-		IMarker[] markers = null;
-		try {
-			markers = includedFile.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, true, IResource.DEPTH_ZERO);
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (markers == null || markers.length == 0)
-			return false;
-		else
-			return true;
-	}
-	
-	
 	
 	/**
 	 * Delivers a list of QuickFixes depending on the given error type.

@@ -1,6 +1,5 @@
 package org.coreasm.eclipse.editors.warnings;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Stack;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.SlimEngine;
+import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
@@ -35,10 +35,9 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 
 public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer {
-	private static final boolean IGNORE_CORE_MODULES = true;
-	
 	private final ASMEditor parentEditor;
 	private Set<String> pluginFunctionNames = null;
 
@@ -52,12 +51,10 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		Set<String> functionNames = getFunctionNames(document);
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		
-		if (IGNORE_CORE_MODULES && "CoreModule".equals(((ASTNode)document.getRootnode()).getGrammarRule()))
-			return Collections.emptyList();
-		
 		for (ASTNode declarationNode = ((ASTNode)document.getRootnode()).getFirst(); declarationNode != null; declarationNode = declarationNode.getNext()) {
 			if (ASTNode.DECLARATION_CLASS.equals(declarationNode.getGrammarClass())) {
-				if (Kernel.GR_RULEDECLARATION.equals(declarationNode.getGrammarRule())) {
+				if (Kernel.GR_RULEDECLARATION.equals(declarationNode.getGrammarRule())
+				|| "Signature".equals(declarationNode.getGrammarRule()) && declarationNode.getFirst() instanceof DerivedFunctionNode) {
 					fringe.add(declarationNode);
 					while (!fringe.isEmpty()) {
 						ASTNode node = fringe.pop();
@@ -313,43 +310,51 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 
 		}
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
-			if (node instanceof IncludeNode) {
-				IncludeNode includeNode = (IncludeNode)node;
-				IProject project = parentEditor.getInputFile().getProject();
-				IFile file = project.getFile(includeNode.getFilename());
-				if (file != null) {
-					try {
-						IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
-						if (declarationMarker.length > 0) {
-							String declarations = declarationMarker[0].getAttribute("declarations", "");
-							if (!declarations.isEmpty()) {
-								for (String declaration : declarations.split("\u25c9")) {
-									String functionName = null;
-									String type = declaration.trim().substring(0, declaration.indexOf(':'));
-									functionName = declaration.substring(type.length() + 2);
-									if ("Universe".equals(type) || "Enumeration".equals(type))
-										functionName = functionName.substring(0, functionName.indexOf('=')).trim();
-									else if ("Derived Function".equals(type) || "Enumeration member".equals(type) || "Rule".equals(type)) {
-										int indexOfNewline = functionName.indexOf('\n');
-										if (indexOfNewline >= 0)
-											functionName = functionName.substring(0, indexOfNewline);
-										int indexOfBracket = functionName.indexOf('(');
-										if (indexOfBracket >= 0)
-											functionName = functionName.substring(0, indexOfBracket);
-									}
-									else if ("Function".equals(type))
-										functionName = functionName.substring(0, functionName.indexOf(':'));
-									if (functionName != null)
-										functionNames.add(functionName);
-								}
-							}
-						}
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			if (node instanceof IncludeNode)
+				functionNames.addAll(getIncludedDeclarations(parentEditor.getInputFile().getProject(), ((IncludeNode)node).getFilename()));
 		}
 		return functionNames;
+	}
+	
+	private Set<String> getIncludedDeclarations(IProject project, String filename) {
+		Set<String> declarations = new HashSet<String>();
+		IFile file = project.getFile((new Path(filename)).makeAbsolute());
+		if (file != null) {
+			try {
+				IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
+				if (declarationMarker.length > 0) {
+					String declarationsFromMarker = declarationMarker[0].getAttribute("declarations", "");
+					if (!declarationsFromMarker.isEmpty()) {
+						for (String declaration : declarationsFromMarker.split("\u25c9")) {
+							String functionName = null;
+							String type = declaration.trim().substring(0, declaration.indexOf(':'));
+							functionName = declaration.substring(type.length() + 2);
+							if ("Universe".equals(type) || "Enumeration".equals(type))
+								functionName = functionName.substring(0, functionName.indexOf('=')).trim();
+							else if ("Derived Function".equals(type) || "Enumeration member".equals(type) || "Rule".equals(type)) {
+								int indexOfNewline = functionName.indexOf('\n');
+								if (indexOfNewline >= 0)
+									functionName = functionName.substring(0, indexOfNewline);
+								int indexOfBracket = functionName.indexOf('(');
+								if (indexOfBracket >= 0)
+									functionName = functionName.substring(0, indexOfBracket);
+							}
+							else if ("Function".equals(type))
+								functionName = functionName.substring(0, functionName.indexOf(':'));
+							if (functionName != null)
+								declarations.add(functionName);
+						}
+					}
+				}
+				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
+				if (includeMarker.length > 0) {
+					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL))
+						declarations.addAll(getIncludedDeclarations(project, include));
+				}
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return declarations;
 	}
 }
