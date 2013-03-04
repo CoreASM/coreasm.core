@@ -1,0 +1,209 @@
+/* 
+ * Vending Machine sample CoreASM spec (based on an AsmL Spec)
+ * 
+ * Mona Vajihollahi
+ * Created on Aug. 31, 2006
+ *
+ * Revised by Roozbeh Farahbod, July 2007
+ */
+
+CoreASM VendingMachine
+
+use StandardPlugins
+use MathPlugin
+
+enum PRODUCT = {Soda, Candy, Chips, Sandwich}
+enum MESSAGE = {NoChangeAvailable,NoProductAvailable,NotEnoughMoney,Enjoy}
+enum MODE = {Idle, ProcessingSale, PurchaseCompleted, PurchaseFailed}
+
+//keeps the price of each product
+function controlled price: PRODUCT -> NUMBER
+//keeps the stock of each product
+function controlled stock: PRODUCT -> NUMBER
+//The price list for the items in the machine
+function controlled menue:  -> SET 
+
+//list of available coins
+function controlled coins: -> SET
+//the available coins in the machine
+function controlled reserve: NUMBER -> NUMBER
+
+//The total amount of money entered
+function controlled credit: -> NUMBER
+//the product selected by the user
+function controlled selectedProduct: -> PRODUCT
+
+//output messages
+function controlled display: -> MESSAGE
+//the mode of the agent
+function controlled mode: -> MODE
+
+
+init InitRule
+
+rule InitRule = 
+	let coinValues = {5, 10, 25, 50, 100} in
+	par 
+		coins := coinValues
+		forall c in coinValues do
+			reserve(c) := 5
+	
+		forall p in PRODUCT do
+			stock(p) := 5
+		
+		seqblock 
+			par 	
+				price(Soda) := 70
+				price(Candy):= 30
+				price(Sandwich) := 220
+				price(Chips) := 120
+				menue := {}
+			endpar
+			forall p in PRODUCT	do
+				add (p + ": " + price(p)) to menue
+		endseqblock
+		
+		mode := Idle		
+		program(self) := @Main
+	endpar
+
+
+// The main program of the machine
+rule Main = 
+	par 
+		if mode = Idle then 
+			GetInput
+
+		if mode = ProcessingSale then 
+			RunVendingMachine
+	
+		if mode = PurchaseCompleted then 
+			par
+				mode := Idle
+				credit := 0
+				print display + "!"
+				print "Thank you! Purchase was successful."
+			endpar	
+
+		if mode = PurchaseFailed then 
+			par
+				mode := Idle
+				print display + "!"
+				print "Sorry, Purchase Failed! Your money is returned: " + credit + " cents"
+				credit := 0
+			endpar	
+	endpar				
+
+
+// Gets the input from the user
+rule GetInput = 
+	seqblock
+		print ""
+		selectedProduct := toProduct(input("Enter you selection now\n" + menue))
+		if (selectedProduct != undef) then par
+			credit := toNumber(input("How much money did you enter?"))
+			mode := ProcessingSale	
+		endpar 
+		else
+			print "No valid input!"
+	endseqblock
+
+
+// The vending process
+rule RunVendingMachine = 
+	seqblock 
+		ready <- SaleReady	
+		if ready then 
+			par
+				DispenseProduct
+				SettleAccount
+ 				ReleaseChange
+				mode := PurchaseCompleted
+			endpar
+		else 
+			mode := PurchaseFailed
+	endseqblock
+
+
+// Checks to see if the sale can be performed
+rule SaleReady = 
+	if stock(selectedProduct) > 0 then //not EmptyStock
+		let returnChange = credit - price(selectedProduct) in //the change required to be returned
+			if (returnChange >= 0) then //enough cash
+				seqblock
+					enoughChange <- DetermineChange(returnChange)  
+					if  enoughChange then   //enough change
+						par 
+							result := true
+							display := Enjoy
+						endpar	
+					else
+						par 
+							result := false
+							display := NoChangeAvailable
+						endpar	 
+				endseqblock
+			else 
+				par 
+					display := NotEnoughMoney
+					result := false
+				endpar	
+	else 
+		par 
+			display := NoProductAvailable			
+			result := false
+		endpar	
+
+
+rule DetermineChange(amount) = 
+	seqblock
+		temp := coins
+		leftover := amount
+ 
+		while (|temp| > 0)
+			let c = Largest(temp) in
+				let n = min(leftover div c, reserve(c)) in
+					par
+						leftover := leftover - (c * n)
+						change(c) := n
+						remove c from temp
+					endpar
+
+		result := (leftover = 0)	
+	endseqblock
+				
+
+rule ReleaseChange =
+	seqblock
+		print "Your change is:"
+		forall c in coins do
+			if (change(c) > 0)  then
+				print change(c) + " of " + c + " cents coin" 
+	endseqblock
+
+
+rule Largest(set) = 
+	return largest in
+		choose x in set with (forall y in temp holds x >= y) do
+			largest := x
+
+			
+rule DispenseProduct =
+	par 
+		print "Please take your " + selectedProduct + "!"
+		stock(selectedProduct) := stock(selectedProduct) - 1 
+	endpar
+	
+rule SettleAccount = 
+	forall c in coins do 
+		if (change(c) > 0) then //some of this coin is used as return change !!! credit can be added later
+			reserve(c) := reserve(c) - change(c) 
+	
+/**
+  * converts a name to a product
+  */
+rule toProduct(s) = 
+	return product in 
+		choose x in PRODUCT with toString(x) = s do
+			product := x
+		

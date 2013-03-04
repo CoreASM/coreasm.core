@@ -1,0 +1,146 @@
+/**
+ * Daemon Game
+ * A CoreASM Specification based on Turner's daemon game 
+ * presented in the ASM Book.
+ *
+ * Roozbeh Farahbod, Sep 2006
+ *
+ */
+
+CoreASM DaemonGame
+
+use  StandardPlugins
+
+enum USER = {user1, user2}
+enum COMMAND = {newGame, probe, endGame, showResult}
+universe PLAY
+function score: PLAY -> NUMBER
+function userInput: USER -> COMMAND
+function playInput: PLAY -> COMMAND
+function userPlays: USER -> SET
+function playId: PLAY -> NUMBER
+function lastPlayId: -> NUMBER
+
+init InitRule
+
+/**
+ * This rule initializes the state
+ */
+rule InitRule = 
+	par
+		lastPlayId := 0
+		envMode := 0
+		extend Agents with daemon do
+			program(daemon) := @DaemonGame
+		Agents(self) := false
+		forall u in USER do userPlays(u) := {}
+	endpar
+ 
+/**
+ * This is the main Daemon Game program
+ */
+rule DaemonGame = 
+	seq
+		GetEnvironmentInput
+	next par
+		forall usr in USER do NewGame(usr)
+		forall p in PLAY do 
+			par
+				Probe(p)
+				Result(p)
+				EndGame(p)
+			endpar
+	endpar
+
+/**
+ * This rule simulates inputs from the environment
+ */
+rule GetEnvironmentInput =
+	seq par
+		// cleaning up
+		forall ou in USER do userInput(ou) := undef
+		forall op in PLAY do playInput(op) := undef
+	endpar
+	next 
+		choose u in USER do
+			if (|userPlays(u)| < 1) then par
+				// if user has no game, create one
+				userInput(u) := newGame
+			endpar
+			else
+				choose p in userPlays(u) do
+					choose c in {probe, showResult} do
+						playInput(p) := c
+						
+/* New Game */	
+rule NewGame(user) = 
+	if (userInput(user) = newGame) and (user memberof USER) then
+		extend PLAY with p do
+			Initialize(p, user)
+
+/* Initialize Play */
+rule Initialize(play, user) =
+	par
+		score(play) := 0
+		add play to	userPlays(user)
+		playId(play) := lastPlayId
+		lastPlayId := lastPlayId + 1
+		SendMessage(user, play, "New Game")
+	endpar
+
+/* End Game */
+rule EndGame(play) =
+	if playInput(play) = endGame then
+		Delete(play)
+		
+/* Delete Play */
+rule Delete(play) =
+	let u = userOfPlay in
+		par
+			remove play from userPlays(u)
+			SendMessage(u, play, "Game Deleted")
+			// cleaning up
+			score(play) := undef
+			playId(play) := undef
+			// removing play from PLAY
+			PLAY(play) := false
+		endpar
+	
+/* Probe Play */
+rule Probe(play) =
+	if playInput(play) = probe then
+		if winning then
+			par
+				score(play) := score(play) + 1
+				SendMessage(userOfPlay(play), play, "win")
+			endpar
+		else
+			par
+				score(play) := score(play) - 1
+				SendMessage(userOfPlay(play), play, "loose")
+			endpar
+	
+/* Show Results */
+rule Result(play) =
+	if playInput(play) = showResult then
+		SendMessage(userOfPlay(play), play, "score: " + score(play))
+	
+/* Send Message to User */
+rule SendMessage(user, play, msg) =
+	if playId(play) = undef then
+		print "(" + user + ") ->  " + msg
+	else
+		print "(" + user + ", game #" + playId(play) + ") ->  " + msg
+	
+/* Random Bump */
+rule winning = 
+	return value in 
+		choose x in BOOLEAN do
+			value := x
+
+/* Play Owner Lookup */
+rule userOfPlay(play) =
+	return uofp in
+		choose u in USER with (play memberof userPlays(u)) do
+			uofp := u
+

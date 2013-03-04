@@ -1,0 +1,140 @@
+// George Ma
+// Dining Philosphers sample CoreASM spec.
+// Created on August 16, 2006
+//
+// Revised by Roozbeh Farahbod
+// $Revision$, $Date$
+
+CoreASM DiningPhilosophers
+
+use StandardPlugins
+use OptionsPlugin
+use MathPlugin
+
+enum CHOPSTICK = {c1, c2, c3, c4, c5}
+
+function controlled eating : Agents -> BOOLEAN
+function controlled chopOwner: CHOPSTICK -> Agents
+function controlled hungry : Agents -> BOOLEAN
+
+//option Signature.NoUndefinedId on 
+
+derived CanPickBothChopsticks =	(chopOwner(leftChop(self)) = undef) and (chopOwner(rightChop(self)) = undef)
+
+init initRule
+
+
+// main program of every philosopher
+rule Philosopher =
+   par
+      if hungry(self) and (not eating(self)) then
+         if CanPickBothChopsticks then 
+			StartEating 
+         else 
+            print name(self) + " is hungry but can't eat."
+      
+      if (not hungry(self)) and eating(self) then
+         StopEating
+      
+      hungry(self) := flip
+   endpar
+  
+  
+// starts eating
+rule StartEating =
+   par
+      chopOwner(leftChop(self)) := self
+      chopOwner(rightChop(self)) := self
+      eating(self) := true
+      print name(self) + " starts eating."
+   endpar
+
+
+// stops eating
+rule StopEating =
+   par
+      chopOwner(leftChop(self)) := undef
+      chopOwner(rightChop(self)) := undef
+      eating(self) := false
+      print name(self) + " stops eating."
+   endpar
+
+
+
+// return a random BOOLEAN
+rule flip = 
+	return b in
+		choose c in BOOLEAN do
+			b := c
+ 
+ // Initializes the table!
+rule initRule =
+   par
+		/* setup philosophers around table with chopsticks in between
+		   no philosopher is eating initially
+		   philosophers are hungry at random */
+		import p1 do
+			par
+				Agents(p1) := true
+				program(p1) := @Philosopher
+				leftChop(p1) := c1
+				rightChop(p1) := c5
+				eating(p1) := false
+				hungry(p1) := flip
+				name(p1) := "Albert"
+			endpar
+			
+		import p2 do
+			par
+				program(p2) := @Philosopher
+				Agents(p2) := true
+				leftChop(p2) := c2
+				rightChop(p2) := c1
+				eating(p2) := false
+				hungry(p2) := flip
+				name(p2) := "Herbert"
+			endpar
+		
+		import p3 do
+			par
+				program(p3) := @Philosopher
+				Agents(p3) := true
+				leftChop(p3) := c3
+				rightChop(p3) := c2
+				eating(p3) := false
+				hungry(p3) := flip
+				name(p3) := "Fredrich"
+			endpar
+		
+		import p4 do
+			par
+				program(p4) := @Philosopher
+				Agents(p4) := true
+				leftChop(p4) := c4
+				rightChop(p4) := c3
+				eating(p4) := false
+				hungry(p4) := flip
+				name(p4) := "Sina"
+			endpar
+			
+		import p5 do
+			par
+				program(p5) := @Philosopher
+				Agents(p5) := true
+				leftChop(p5) := c5
+				rightChop(p5) := c4
+				eating(p5) := false
+				hungry(p5) := flip
+				name(p5) := "Juan"
+			endpar
+		
+		/* all chopsticks are intially free */
+		forall c in CHOPSTICK do
+			chopOwner(c) := undef
+
+		print "TABLE:  c1  Herbert  c2  Fredrich  c3  Sina  c4  Juan  c5  Albert  c1\n" 
+
+		Agents(self) := false
+ 	endpar
+
+ 

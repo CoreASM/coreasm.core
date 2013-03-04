@@ -1,0 +1,68 @@
+/* 
+ * Examples of using functions defined on lists, maps, and sets
+ */
+ 
+CoreASM ListsAndMaps
+
+use Standard
+use Math
+
+derived foo(a) = 
+	return powers in
+		seq
+			powers := {}
+		next
+			forall p in a do 
+				add bar(p) to powers 
+
+derived bar(a) = pow(2, a)
+
+derived folder(a, b) = a + " " + b
+
+derived isHeadNatural(a) = isNaturalNumber(head(a))
+
+function f: NUMBER * NUMBER -> NUMBER 
+
+init TestAll
+
+rule TestAll =
+	seqblock
+	    // the 'map' function
+		let l = [ {1, 2, 3}, {10, 20, 30} ] in
+			print "map(" + l + ", @foo) is " + map(l, @foo)
+		
+	    // the 'map' function
+		let m = {1->2, "a"->"b", 3->"d", 1.5->2} in
+			print "mapping the map " + m + " through 'reverse' gives us " + map(m, @reverse)
+		
+	    // the 'filter' function
+		let l = ["a", 1.5, 2, 3.4, 5] in
+			print "Natural numbers in " + l + " are " + filter(l, @isNaturalNumber) 
+
+	    // the 'filter' function
+		let m = {1->2, "a"->"b", 3->"d", 1.5->5} in
+			print "filtering the map " + m + " gives us " + filter(m, @isHeadNatural)
+
+	    // the 'fold' function
+		let l = ["a", "b", "c"] in
+			print "fold( " + l + " , concat, \" it goes \") is: \"" + fold(l, @folder, "it goes ") + "\""
+		
+		let l = cons(1, ["m"]) in
+			print l + " is [" + head(l) + " | " + tail(l) + "]  and nth([m, 1], 2) = " + nth(l, 2) 
+
+		let l = ["a", "b", "a", "d", "e", "f", "g"] in
+		seqblock
+		    print "If l = " + l + ", we have:"
+			print "  take(l, 3) : " + take(l, 3)
+			print "  drop(l, 5) : " + drop(l, 5)
+			print "  size(l) : " + size(l)
+			print "  last(l) : " + last(l)
+			print "  reverse(l) : " + reverse(l)
+			print "  indexes(2, l) : " + indexes("a", l)
+		endseqblock
+		
+		// terminate after one step
+		program(self) := undef
+	
+	endseqblock
+	

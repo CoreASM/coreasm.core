@@ -1,0 +1,83 @@
+ 
+ CoreASM Eclipse Plugin Help
+ ============================
+
+ To Create a New Project
+ -----------------------
+
+ 1. From the Eclipse menu choose:
+    File -> New -> Project.. 
+ 2. Choose General -> Project from the New Project dialog. Click Next.
+ 3. Give the project a name. Click Finish.
+ 
+ 
+ To Create a New CoreASM Specification
+ ------------------------------------- 
+ 
+ Method 1:
+ 
+ 1. From the Eclipse menu choose:
+ 	File -> New -> Other...
+ 2. In the New dialog choose the CoreASM -> CoreASM Specification. Click Next
+ 3. Choose the project container for the specification.
+ 4. Enter the name of the new CoreASM specification file.
+ 	* The file must have the extension .casm or .coreasm
+ 5. Click Finish
+ 
+ Method 2:
+ 
+ 1. File the Eclipse menu choose:
+    File -> New -> File
+ 2. In the new file dialog choose a project container for the new file and
+    enter a name for the new file. Again, The file must have the extension .casm 
+    or .coreasm.
+ 3. Click Finish
+ 
+ 
+ To Run a CoreASM Specification
+ ------------------------------
+ 
+ Method 1:
+
+ A CoreASM Launch Configuration must first be created.
+ 
+ 1. From the Eclipse menu choose:
+    Run -> Run...
+ 2. In the Run dialog, choose the ASM Specification launch configuration group 
+    and create a new ASM launch configuration (Right Click -> New, or click 
+    the New launch configuration button on the tool bar).
+ 3. Enter a name for the launch configuration.
+ 4. Enter the project and specification file to be run. This can be done via the
+    browse buttons.
+ 5. Configure the Termination Conditions and Output Verbosity options as desired.
+ 6. Click Apply.
+ 7. Click Run to run the specification.
+ 
+ Once the configuration has been launched once, it can be run again through the
+ Run Button/Drop down menu in the main Eclipse toolbar.
+ 
+ Method 2: 
+
+ Shortcut method for running a specification with default configuration:
+ 
+ 1. In the Eclipse window, right click on a CoreASM specification file.
+ 2. In the context menu choose:
+    Run as -> CoreASM Specification
+
+
+ Control the Execution of the CoreASM Engine 
+ -------------------------------------------
+ 
+ While the engine is running, you can click on the "Stop CoreASM Engine" button to 
+ stop the run. To pause a running engine, click on the "Pause CoreASM Engine"
+ button. If you pause the engine, the run can be resumed by clicking on the 
+ "Resume CoreASM Engine" button.
+ 
+ 
+ 
+ Thanks for using CoreASM.
+
+ CoreASM Development Team
+ January 2008
+ 
+ 

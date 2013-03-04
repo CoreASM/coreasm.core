@@ -1,0 +1,27 @@
+CoreASM TestPlotter
+
+use StandardPlugins
+use PlotterPlugin
+
+init R1
+
+rule R1 = 
+   par
+      forall x in [-100 .. 100] do
+         choose y in [-(x * x) .. (x * x)] do
+         	choose z in [-(x * x) .. (x * x)] do
+				 par
+		            f(x) := y
+					g(x) := z
+			        h(x) := x * x * x / (x + 0.5) 
+				 endpar
+	  extend PLOTWINDOW with pw do
+	  par
+	      plot @f in pw
+		  plot @g in pw
+          plot @h in pw
+          plot @g
+      endpar
+      Agents(self) := false
+   endpar
+
