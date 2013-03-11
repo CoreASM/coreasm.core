@@ -1,10 +1,12 @@
 package org.coreasm.eclipse.editors.hovering;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
@@ -301,7 +303,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		}
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode) {
-				String includedFunctionDeclaration = getIncludedFunctionDeclaration(((IncludeNode)node).getFilename(), functionName);
+				String includedFunctionDeclaration = getIncludedFunctionDeclaration(((IncludeNode)node).getFilename(), functionName, new HashSet<IFile>());
 				if (includedFunctionDeclaration != null)
 					return includedFunctionDeclaration;
 			}
@@ -309,8 +311,11 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		return null;
 	}
 	
-	private String getIncludedFunctionDeclaration(String filename, String functionName) {
+	private String getIncludedFunctionDeclaration(String filename, String functionName, Set<IFile> includedFiles) {
 		IFile file = FileManager.getActiveProject().getFile((new Path(filename)).makeAbsolute());
+		if (includedFiles.contains(file))
+			return null;
+		includedFiles.add(file);
 		if (file != null) {
 			try {
 				IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
@@ -323,7 +328,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 							fName = declaration.substring(type.length() + 2);
 							if ("Universe".equals(type) || "Enumeration".equals(type))
 								fName = fName.substring(0, fName.indexOf('=')).trim();
-							else if ("Derived Function".equals(type) || "Enumeration member".equals(type) || "Rule".equals(type)) {
+							else if ("Derived Function".equals(type) || "Rule".equals(type)) {
 								int indexOfNewline = fName.indexOf('\n');
 								if (indexOfNewline >= 0)
 									fName = fName.substring(0, indexOfNewline);
@@ -331,6 +336,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 								if (indexOfBracket >= 0)
 									fName = fName.substring(0, indexOfBracket);
 							}
+							else if ("Enumeration member".equals(type))
+								fName = fName.substring(fName.indexOf('(') + 1, fName.indexOf(')'));
 							else if ("Function".equals(type))
 								fName = fName.substring(0, fName.indexOf(':'));
 							if (functionName.equals(fName))
@@ -341,7 +348,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
 				if (includeMarker.length > 0) {
 					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
-						String includedFunctionDeclaration = getIncludedFunctionDeclaration(include, functionName);
+						String includedFunctionDeclaration = getIncludedFunctionDeclaration(include, functionName, includedFiles);
 						if (includedFunctionDeclaration != null)
 							return includedFunctionDeclaration;
 					}

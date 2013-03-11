@@ -311,14 +311,17 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		}
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode)
-				functionNames.addAll(getIncludedDeclarations(parentEditor.getInputFile().getProject(), ((IncludeNode)node).getFilename()));
+				functionNames.addAll(getIncludedDeclarations(parentEditor.getInputFile().getProject(), ((IncludeNode)node).getFilename(), new HashSet<IFile>()));
 		}
 		return functionNames;
 	}
 	
-	private Set<String> getIncludedDeclarations(IProject project, String filename) {
+	private Set<String> getIncludedDeclarations(IProject project, String filename, Set<IFile> includedFiles) {
 		Set<String> declarations = new HashSet<String>();
 		IFile file = project.getFile((new Path(filename)).makeAbsolute());
+		if (includedFiles.contains(file))
+			return declarations;
+		includedFiles.add(file);
 		if (file != null) {
 			try {
 				IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
@@ -331,7 +334,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 							functionName = declaration.substring(type.length() + 2);
 							if ("Universe".equals(type) || "Enumeration".equals(type))
 								functionName = functionName.substring(0, functionName.indexOf('=')).trim();
-							else if ("Derived Function".equals(type) || "Enumeration member".equals(type) || "Rule".equals(type)) {
+							else if ("Derived Function".equals(type) || "Rule".equals(type)) {
 								int indexOfNewline = functionName.indexOf('\n');
 								if (indexOfNewline >= 0)
 									functionName = functionName.substring(0, indexOfNewline);
@@ -339,6 +342,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 								if (indexOfBracket >= 0)
 									functionName = functionName.substring(0, indexOfBracket);
 							}
+							else if ("Enumeration member".equals(type))
+								functionName = functionName.substring(functionName.indexOf('(') + 1, functionName.indexOf(')'));
 							else if ("Function".equals(type))
 								functionName = functionName.substring(0, functionName.indexOf(':'));
 							if (functionName != null)
@@ -349,7 +354,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
 				if (includeMarker.length > 0) {
 					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL))
-						declarations.addAll(getIncludedDeclarations(project, include));
+						declarations.addAll(getIncludedDeclarations(project, include, includedFiles));
 				}
 			} catch (CoreException e) {
 				e.printStackTrace();
