@@ -41,9 +41,10 @@ import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
@@ -65,6 +66,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
@@ -301,18 +303,23 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				}
 			}
 		}
-		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
-			if (node instanceof IncludeNode) {
-				String includedFunctionDeclaration = getIncludedFunctionDeclaration(((IncludeNode)node).getFilename(), functionName, new HashSet<IFile>());
-				if (includedFunctionDeclaration != null)
-					return includedFunctionDeclaration;
+		IEditorPart part = FileManager.getActiveEditor();
+		if (part instanceof ASMEditor) {
+			String path = ((ASMEditor)part).getInputFile().getProjectRelativePath().makeAbsolute().toString();
+			path = path.substring(0, path.lastIndexOf(IPath.SEPARATOR) + 1);
+			IProject project = FileManager.getActiveProject();
+			for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
+				if (node instanceof IncludeNode) {
+					String includedFunctionDeclaration = getIncludedFunctionDeclaration(project, project.getFile(path + ((IncludeNode)node).getFilename()), functionName, new HashSet<IFile>());
+					if (includedFunctionDeclaration != null)
+						return includedFunctionDeclaration;
+				}
 			}
 		}
 		return null;
 	}
 	
-	private String getIncludedFunctionDeclaration(String filename, String functionName, Set<IFile> includedFiles) {
-		IFile file = FileManager.getActiveProject().getFile((new Path(filename)).makeAbsolute());
+	private String getIncludedFunctionDeclaration(IProject project, IFile file, String functionName, Set<IFile> includedFiles) {
 		if (includedFiles.contains(file))
 			return null;
 		includedFiles.add(file);
@@ -348,7 +355,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
 				if (includeMarker.length > 0) {
 					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
-						String includedFunctionDeclaration = getIncludedFunctionDeclaration(include, functionName, includedFiles);
+						String includedFunctionDeclaration = getIncludedFunctionDeclaration(project, project.getFile(include), functionName, includedFiles);
 						if (includedFunctionDeclaration != null)
 							return includedFunctionDeclaration;
 					}

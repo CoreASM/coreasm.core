@@ -48,9 +48,11 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 		Node rootnode = result.document.getRootnode();
 		if (rootnode != null) {
 			childdocs.clear();
+			String path = editor.getInputFile().getProjectRelativePath().makeAbsolute().toString();
+			path = path.substring(0, path.lastIndexOf(IPath.SEPARATOR) + 1);
 			for (Node node: AstTools.findChildrenWithToken((ASTNode)rootnode, "include")) {
 				if (node instanceof IncludeNode)
-					childdocs.add(new Path(((IncludeNode)node).getFilename()).makeAbsolute());
+					childdocs.add(new Path(path + ((IncludeNode)node).getFilename()).makeAbsolute());
 			}
 		}
 

@@ -35,7 +35,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IPath;
 
 public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer {
 	private final ASMEditor parentEditor;
@@ -309,16 +309,18 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			}
 
 		}
+		String path = parentEditor.getInputFile().getProjectRelativePath().makeAbsolute().toString();
+		path = path.substring(0, path.lastIndexOf(IPath.SEPARATOR) + 1);
+		IProject project = parentEditor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode)
-				functionNames.addAll(getIncludedDeclarations(parentEditor.getInputFile().getProject(), ((IncludeNode)node).getFilename(), new HashSet<IFile>()));
+				functionNames.addAll(getIncludedDeclarations(project, project.getFile(path + ((IncludeNode)node).getFilename()), new HashSet<IFile>()));
 		}
 		return functionNames;
 	}
 	
-	private Set<String> getIncludedDeclarations(IProject project, String filename, Set<IFile> includedFiles) {
+	private Set<String> getIncludedDeclarations(IProject project, IFile file, Set<IFile> includedFiles) {
 		Set<String> declarations = new HashSet<String>();
-		IFile file = project.getFile((new Path(filename)).makeAbsolute());
 		if (includedFiles.contains(file))
 			return declarations;
 		includedFiles.add(file);
@@ -354,7 +356,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
 				if (includeMarker.length > 0) {
 					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL))
-						declarations.addAll(getIncludedDeclarations(project, include, includedFiles));
+						declarations.addAll(getIncludedDeclarations(project, project.getFile(include), includedFiles));
 				}
 			} catch (CoreException e) {
 				e.printStackTrace();
