@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.editors.errors;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -95,4 +96,25 @@ extends AbstractError
 		return expected;
 	}
 	
+	@Override
+	public List<AbstractQuickFix> getQuickFixes() {
+		List<AbstractQuickFix> fixes = new LinkedList<AbstractQuickFix>();
+		List<AbstractQuickFix> replaceFixes = new LinkedList<AbstractQuickFix>();
+		List<AbstractQuickFix> insertFixes = new LinkedList<AbstractQuickFix>();
+		
+		fixes.add(new AbstractQuickFix.QF_Replace("Delete", "", true));
+		
+		for (String e : getExpected()) {
+			// don't show fixes for EOF and terminal tokens.
+			if (!(e.equals("EOF") || e.equals("IDENTIFIER") || e.equals("DECIMAL") || e.equals("string literal"))) {
+				replaceFixes.add(new AbstractQuickFix.QF_Replace("Replace with '" + e + "'", e, true));
+				insertFixes.add(new AbstractQuickFix.QF_Replace("Insert '" + e + "'", e, false));
+			}
+		}
+		
+		fixes.addAll(replaceFixes);
+		fixes.addAll(insertFixes);
+		
+		return fixes;
+	}
 }

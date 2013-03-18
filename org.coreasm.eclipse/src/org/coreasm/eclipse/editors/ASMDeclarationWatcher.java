@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.editors;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
@@ -14,19 +15,25 @@ import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 
 /**
- * This class manages the markers for declarations.
+ * The <code>DeclarationWatcher</code> manages the markers for declarations.
  * @author Michael Stegmaier
  *
  */
-public class ASTWatcher implements Observer {
+public class ASMDeclarationWatcher implements Observer {
+	private static final String SEPERATOR = "\u25c9";
+	
 	private ASMEditor editor;
 	private ASMParser parser;
 	
-	public ASTWatcher(ASMEditor editor) {
+	public ASMDeclarationWatcher(ASMEditor editor) {
 		this.editor = editor;
 		this.parser = editor.getParser();
 	}
@@ -40,10 +47,34 @@ public class ASTWatcher implements Observer {
 			String declarations = "";
 			for (String declaration : getDeclarations(result.document)) {
 				if (!declarations.isEmpty())
-					declarations += '\u25c9';
+					declarations += SEPERATOR;
 				declarations += declaration;
 			}
 			editor.createDeclarationsMark(declarations);
+		}
+	}
+	
+	public static Set<String> getDeclarations(IFile file, boolean includedDeclarations) {
+		Set<String> declarations = new HashSet<String>();
+		collectDeclarations(file, includedDeclarations, declarations);
+		return declarations;
+	}
+	
+	private static void collectDeclarations(IFile file, boolean includedDeclarations, Set<String> declarations) {
+		try {
+			IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
+			if (declarationMarker.length > 0) {
+				String markerDeclarations = declarationMarker[0].getAttribute("declarations", "");
+				if (!markerDeclarations.isEmpty())
+					declarations.addAll(Arrays.asList(markerDeclarations.split(SEPERATOR)));
+			}
+			if (includedDeclarations) {
+				for (IFile includedFile : ASMIncludeWatcher.getIncludedFiles(file, true))
+					declarations.addAll(getDeclarations(includedFile, includedDeclarations));
+			}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

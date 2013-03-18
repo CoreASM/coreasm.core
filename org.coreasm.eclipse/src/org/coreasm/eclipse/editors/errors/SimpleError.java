@@ -1,5 +1,8 @@
 package org.coreasm.eclipse.editors.errors;
 
+import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,4 +72,27 @@ extends AbstractError
 		return get(AbstractError.ERROR_ID);
 	}
 	
+	@Override
+	public List<AbstractQuickFix> getQuickFixes() {
+		List<AbstractQuickFix> list = new LinkedList<AbstractQuickFix>();
+
+		try {
+			Class<?> errorParser = Class.forName(getClassname());
+			Method method = errorParser.getMethod("getQuickFixes", String.class);
+			Object o = method.invoke(null, getErrorID());
+			List<AbstractQuickFix> l = (List<AbstractQuickFix>) o;
+			// Sort out fixes which are not applicable for the given error
+			for (AbstractQuickFix fix: l)
+				if (fix.checkValidility(this) == true)
+					list.add(fix);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		for (AbstractQuickFix fix: list)
+			fix.initChoices(this);
+
+		return list;
+	}
 }

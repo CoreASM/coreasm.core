@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
+import org.coreasm.eclipse.editors.IconManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -19,6 +20,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 /**
  * Checks an ASMDocument for the correct usage of "include" statements.
@@ -131,7 +134,7 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 					IFile file = FileManager.getFile(include.filenameProj, parentEditor.getInputFile().getProject());
 					IMarker[] markers = null;
 					try {
-						markers = file.findMarkers(ASMEditor.MARKER_TYPE_ERROR, false, IResource.DEPTH_ZERO);
+						markers = file.findMarkers(ASMEditor.MARKER_TYPE_PROBLEM, false, IResource.DEPTH_ZERO);
 						if (markers.length > 0) {
 							String title = "Included file has errors";
 							String message = "The included file \"" + include.filename + "\" has errors";
@@ -409,6 +412,12 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 				FileManager.openEditor(filenameProj, FileManager.getActiveProject());
 			}
 		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError)
+				proposals.add(new QuickFixProposal(this, error, null));
+		}
 	}
 	
 	
@@ -439,6 +448,12 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 				FileManager.openEditor(filename, FileManager.getActiveProject());
 				
 			}
+		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError)
+				proposals.add(new QuickFixProposal(this, error, null));
 		}
 	}
 
@@ -487,6 +502,29 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 				
 			}
 		}
-
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError) {
+				SimpleError sError = (SimpleError) error;
+				
+				// Parse names of missing plugins out of hover message
+				int pos = sError.getDescription().indexOf(':') + 1;
+				String strList = sError.getDescription().substring(pos).trim();
+				String[] plugins = strList.split(", ");
+				
+				StringBuilder sb = new StringBuilder();
+				for (String pl: plugins) {
+					String _pl = pl;
+					if (pl.endsWith("Plugin"))
+						_pl = pl.substring(0,pl.length()-6);
+					else if (pl.endsWith("Plugins"))
+						_pl = pl.substring(0,pl.length()-7);
+					sb.append("use ").append(_pl).append("\n");
+				}
+				
+				proposals.add(new CompletionProposal(sb.toString(), error.getPosition(), 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
+			}
+		}
 	}
 }

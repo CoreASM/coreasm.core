@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.SlimEngine;
-import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
@@ -31,10 +31,7 @@ import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer {
@@ -48,7 +45,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	@Override
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
 		List<AbstractWarning> warnings = new LinkedList<AbstractWarning>();
-		Set<String> functionNames = getFunctionNames(document);
+		Set<String> functionNames = getDeclaredNames(document);
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		
 		for (ASTNode declarationNode = ((ASTNode)document.getRootnode()).getFirst(); declarationNode != null; declarationNode = declarationNode.getNext()) {
@@ -73,7 +70,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 							if (node instanceof RuleOrFuncElementNode) {
 								RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
 								if (!isFunctionName(ruleOrFuncElementNode.getElementName(), functionNames))
-									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), node.getScannerInfo().charPosition));
+									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), node.getScannerInfo().charPosition + 1));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());
@@ -284,84 +281,63 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return pluginFunctionNames;
 	}
 	
-	private Set<String> getFunctionNames(ASMDocument document) {
-		Set<String> functionNames = new HashSet<String>();
+	private Set<String> getDeclaredNames(ASMDocument document) {
+		Set<String> declaredNames = new HashSet<String>();
 		for (ASTNode node = ((ASTNode)document.getRootnode()).getFirst(); node != null; node = node.getNext()) {
 			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
 				if ("Signature".equals(node.getGrammarRule())) {
 					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
 						if (signature instanceof EnumerationNode) {
 							EnumerationNode enumerationNode = (EnumerationNode)signature;
-							functionNames.add(enumerationNode.getName());
+							declaredNames.add(enumerationNode.getName());
 							for (EnumerationElement member : enumerationNode.getMembers())
-								functionNames.add(member.getName());
+								declaredNames.add(member.getName());
 						}
 						else if (signature instanceof FunctionNode)
-							functionNames.add(((FunctionNode)signature).getName());
+							declaredNames.add(((FunctionNode)signature).getName());
 						else if (signature instanceof UniverseNode)
-							functionNames.add(((UniverseNode)signature).getName());
+							declaredNames.add(((UniverseNode)signature).getName());
 						else if (signature instanceof DerivedFunctionNode)
-							functionNames.add(((DerivedFunctionNode)signature).getNameSignatureNode().getFirst().getToken());
+							declaredNames.add(((DerivedFunctionNode)signature).getNameSignatureNode().getFirst().getToken());
 					}
 				}
 				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()))
-					functionNames.add(node.getFirst().getFirst().getToken());
+					declaredNames.add(node.getFirst().getFirst().getToken());
 			}
 
 		}
-		String path = parentEditor.getInputFile().getProjectRelativePath().makeAbsolute().toString();
-		path = path.substring(0, path.lastIndexOf(IPath.SEPARATOR) + 1);
+		String relativePath = parentEditor.getInputFile().getProjectRelativePath().removeLastSegments(1).toString();
 		IProject project = parentEditor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode)
-				functionNames.addAll(getIncludedDeclarations(project, project.getFile(path + ((IncludeNode)node).getFilename()), new HashSet<IFile>()));
+				declaredNames.addAll(getIncludedDeclaredNames(project.getFile(relativePath + IPath.SEPARATOR + ((IncludeNode)node).getFilename())));
 		}
-		return functionNames;
+		return declaredNames;
 	}
 	
-	private Set<String> getIncludedDeclarations(IProject project, IFile file, Set<IFile> includedFiles) {
-		Set<String> declarations = new HashSet<String>();
-		if (includedFiles.contains(file))
-			return declarations;
-		includedFiles.add(file);
-		if (file != null) {
-			try {
-				IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
-				if (declarationMarker.length > 0) {
-					String declarationsFromMarker = declarationMarker[0].getAttribute("declarations", "");
-					if (!declarationsFromMarker.isEmpty()) {
-						for (String declaration : declarationsFromMarker.split("\u25c9")) {
-							String functionName = null;
-							String type = declaration.trim().substring(0, declaration.indexOf(':'));
-							functionName = declaration.substring(type.length() + 2);
-							if ("Universe".equals(type) || "Enumeration".equals(type))
-								functionName = functionName.substring(0, functionName.indexOf('=')).trim();
-							else if ("Derived Function".equals(type) || "Rule".equals(type)) {
-								int indexOfNewline = functionName.indexOf('\n');
-								if (indexOfNewline >= 0)
-									functionName = functionName.substring(0, indexOfNewline);
-								int indexOfBracket = functionName.indexOf('(');
-								if (indexOfBracket >= 0)
-									functionName = functionName.substring(0, indexOfBracket);
-							}
-							else if ("Enumeration member".equals(type))
-								functionName = functionName.substring(functionName.indexOf('(') + 1, functionName.indexOf(')'));
-							else if ("Function".equals(type))
-								functionName = functionName.substring(0, functionName.indexOf(':'));
-							if (functionName != null)
-								declarations.add(functionName);
-						}
-					}
-				}
-				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
-				if (includeMarker.length > 0) {
-					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL))
-						declarations.addAll(getIncludedDeclarations(project, project.getFile(include), includedFiles));
-				}
-			} catch (CoreException e) {
-				e.printStackTrace();
+	private Set<String> getIncludedDeclaredNames(IFile file) {
+		Set<String> declaredNames = new HashSet<String>();
+		for (String declaration : ASMDeclarationWatcher.getDeclarations(file, true)) {
+			String functionName = null;
+			String type = declaration.trim().substring(0, declaration.indexOf(':'));
+			functionName = declaration.substring(type.length() + 2);
+			if ("Universe".equals(type) || "Enumeration".equals(type))
+				functionName = functionName.substring(0, functionName.indexOf('=')).trim();
+			else if ("Derived Function".equals(type) || "Rule".equals(type)) {
+				int indexOfNewline = functionName.indexOf('\n');
+				if (indexOfNewline >= 0)
+					functionName = functionName.substring(0, indexOfNewline);
+				int indexOfBracket = functionName.indexOf('(');
+				if (indexOfBracket >= 0)
+					functionName = functionName.substring(0, indexOfBracket);
 			}
+			else if ("Enumeration member".equals(type))
+				functionName = functionName.substring(functionName.indexOf('(') + 1, functionName.indexOf(')'));
+			else if ("Function".equals(type))
+				functionName = functionName.substring(0, functionName.indexOf(':'));
+			if (functionName != null)
+				declaredNames.add(functionName);
 		}
-		return declarations;
+		return declaredNames;
 	}
 }

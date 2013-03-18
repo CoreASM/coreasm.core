@@ -3,7 +3,14 @@ package org.coreasm.eclipse.editors.errors;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.coreasm.eclipse.editors.IconManager;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 /**
  * This class is an abstract implementation of QuickFixes for an error.
@@ -64,7 +71,7 @@ public abstract class AbstractQuickFix
 		;
 	}
 
-
+	public abstract void collectProposals(AbstractError error, List<ICompletionProposal> proposals);
 
 	/**
 	 * General QuickFix for replacing the whole hover region with a given string
@@ -109,6 +116,14 @@ public abstract class AbstractQuickFix
 			}
 		}
 		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			int length = 0;
+			if (replace)
+				length = error.getLength();
+			proposals.add(new CompletionProposal(insert, error.getPosition(), length, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
+		}
+		
 		/**
 		 * Sets the text which is inserted or which should replace the present text.
 		 */
@@ -126,5 +141,45 @@ public abstract class AbstractQuickFix
 		}
 	}
 
+	public static class QuickFixProposal implements ICompletionProposal {
+		private AbstractQuickFix quickFix;
+		private AbstractError error;
+		private String choice;
+		
+		public QuickFixProposal(AbstractQuickFix quickFix, AbstractError error, String choice) {
+			this.quickFix = quickFix;
+			this.error = error;
+			this.choice = choice;
+		}
 
+		@Override
+		public void apply(IDocument document) {
+			quickFix.fix(error, choice);
+		}
+
+		@Override
+		public String getAdditionalProposalInfo() {
+			return null;
+		}
+
+		@Override
+		public IContextInformation getContextInformation() {
+			return null;
+		}
+
+		@Override
+		public String getDisplayString() {
+			return quickFix.prompt.replaceFirst("@", "'" + choice + "'");
+		}
+
+		@Override
+		public Image getImage() {
+			return IconManager.getIcon("/icons/editor/bullet.gif");
+		}
+
+		@Override
+		public Point getSelection(IDocument document) {
+			return null;
+		}
+	}
 }

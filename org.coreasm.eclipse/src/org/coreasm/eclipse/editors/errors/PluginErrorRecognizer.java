@@ -11,14 +11,20 @@ import java.util.regex.Pattern;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser;
+import org.coreasm.eclipse.editors.AstTools;
+import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 /**
  * Checks an ASMDocument for the correct usage of "use" statements.
@@ -418,6 +424,29 @@ implements ITextErrorRecognizer
 			}
 		}
 
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError) {
+				SimpleError sError = (SimpleError) error;
+				
+				// Parse names of missing plugins out of hover message
+				int pos = sError.getDescription().indexOf(':') + 1;
+				String strList = sError.getDescription().substring(pos).trim();
+				String[] plugins = strList.split(", ");
+				
+				StringBuilder sb = new StringBuilder();
+				for (String pl: plugins) {
+					String _pl = pl;
+					if (pl.endsWith("Plugin"))
+						_pl = pl.substring(0,pl.length()-6);
+					else if (pl.endsWith("Plugins"))
+						_pl = pl.substring(0,pl.length()-7);
+					sb.append("use ").append(_pl).append("\n");
+				}
+				
+				proposals.add(new CompletionProposal(sb.toString(), error.getPosition() - 4, 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
+			}
+		}
 	}
 
 	

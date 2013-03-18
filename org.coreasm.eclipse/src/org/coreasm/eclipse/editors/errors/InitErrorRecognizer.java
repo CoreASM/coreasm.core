@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.AstTools;
+import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 /**
  * Checks an ASMDocument for the correct usage of "init" statements.
@@ -185,6 +188,18 @@ implements ITreeErrorRecognizer
 				}
 			}
 		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError && error.getDocument() instanceof ASMDocument) {
+				ASMDocument doc = (ASMDocument) error.getDocument();
+				Node rootnode = doc.getRootnode();
+				Node firstRuleNode = AstTools.findFirstChildNode((ASTNode) rootnode, AstTools.GRAMMAR_RULE);
+				int begin = firstRuleNode.getScannerInfo().charPosition;
+				for (String choice : choices)
+					proposals.add(new CompletionProposal("init " + choice + "\n\n", begin, 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt + " '" + choice + "'", null, null));
+			}
+		}
 	}
 	
 	
@@ -262,6 +277,15 @@ implements ITreeErrorRecognizer
 				}
 			}
 		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError && error.getDocument() instanceof ASMDocument)
+			{
+				for (String choice : choices)
+					proposals.add(new QuickFixProposal(this, error, choice));
+			}
+		}
 	}
 	
 	
@@ -291,6 +315,12 @@ implements ITreeErrorRecognizer
 					e.printStackTrace();
 				}
 			}
+		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError)
+				proposals.add(new CompletionProposal("", error.getPosition() - 5, error.getLength(), 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
 		}
 	}
 	
@@ -330,6 +360,24 @@ implements ITreeErrorRecognizer
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
+			}
+		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError) {
+				SimpleError sError = (SimpleError) error;
+				ASMDocument document = (ASMDocument) sError.getDocument();
+				
+				// Read rule name from document
+				String rulename = document.get().substring(error.getPosition(), error.getPosition() + error.getLength());
+				
+				// The new rule should be inserted before the first existing rule
+				ASTNode firstRuleNode = AstTools.findFirstChildNode((ASTNode) document.getRootnode(), AstTools.GRAMMAR_RULE);
+				int offset = document.getLength();
+				if (firstRuleNode != null)
+					offset = firstRuleNode.getScannerInfo().charPosition;
+				proposals.add(new CompletionProposal("\n\nrule " + rulename + " =\n\tskip\n\n", offset, 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
 			}
 		}
 	}
@@ -391,6 +439,14 @@ implements ITreeErrorRecognizer
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
+			}
+		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError) {
+				for (String choice : choices)
+					proposals.add(new CompletionProposal(choice, error.getPosition(), error.getLength(), 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt + " with '" + choice + "'", null, null));
 			}
 		}
 	}

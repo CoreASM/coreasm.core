@@ -11,7 +11,6 @@ import org.codehaus.jparsec.error.ParseErrorDetails;
 import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
@@ -195,6 +194,9 @@ public class ErrorManager implements Observer
 					e1.printStackTrace();
 				}
 				String message = pe.getMessage();
+				int beginIndex = message.indexOf(':');
+				if (beginIndex > 0)
+					message = "Syntax Error: " + message.substring(beginIndex + 1).trim();
 				String encountered = perr.getEncountered().trim();
 				int length = getErrorLength(encountered, result.document.get(), index);
 				// build expected string

@@ -21,31 +21,12 @@
    	  </editor>
    </extension>
    <extension
-   		id="org.coreasm.eclipse.markers.ErrorMarker"
+   		id="org.coreasm.eclipse.markers.ProblemMarker"
    		point="org.eclipse.core.resources.markers"
-  		name="CoreASM Error" >
+  		name="CoreASM Problem" >
         <super type="org.eclipse.core.resources.problemmarker"/>
 	    <persistent value="true" />
-		<attribute name="errordata" />
-   </extension>
-   <extension
-   		id="org.coreasm.eclipse.markers.SimpleErrorMarker"
-   		point="org.eclipse.core.resources.markers"
-  		name="CoreASM Simple Error" >
-        <super type="org.eclipse.core.resources.problemmarker"/>
-	    <persistent value="true" />
-	    <attribute name="title" />
-	    <attribute name="class" />
-	    <attribute name="id" />
-   </extension>
-   <extension
-   		id="org.coreasm.eclipse.markers.SyntaxErrorMarker"
-   		point="org.eclipse.core.resources.markers"
-  		name="CoreASM Syntax Error" >
-        <super type="org.eclipse.core.resources.problemmarker"/>
-	    <persistent value="true" />
-	    <attribute name="encountered" />
-	    <attribute name="expected" />
+		<attribute name="data" />
    </extension>
    <extension
    		id="org.coreasm.eclipse.markers.PluginMarker"
@@ -358,6 +339,12 @@
                label="Toggle Breakpoint"
                style="push">
          </action>
+         <action
+               actionID="RulerClick"
+               class="org.coreasm.eclipse.editors.ASMRulerActionDelegate"
+               id="org.coreasm.eclipse.editors.ASMRulerActionDelegate"
+               label="Select Annotation">
+         </action>
       </editorContribution>
    </extension>
    <extension
@@ -454,17 +441,6 @@
       </persistent>
    </extension>
    <extension
-         id="asm.markerType.warning"
-         name="ASM Warning Marker"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
          id="asm.markerType.declarations"
          name="ASM Declarations Marker"
          point="org.eclipse.core.resources.markers">
@@ -477,5 +453,10 @@
       <attribute
             name="declarations">
       </attribute>
+   </extension>
+    <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="org.coreasm.eclipse.markers.ProblemMarker"
+         class="org.coreasm.eclipse.editors.quickfix.ASMMarkerResolutionGenerator"/>
    </extension>
 </plugin>

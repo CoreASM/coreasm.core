@@ -1,11 +1,9 @@
 package org.coreasm.eclipse.editors;
 
 
-import org.coreasm.eclipse.editors.hovering.ASMInformationControl;
-import org.coreasm.eclipse.editors.hovering.ASMTextHover;
+import org.coreasm.eclipse.editors.hover.ASMTextHover;
+import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.tools.ColorManager;
-import org.eclipse.jface.text.IInformationControl;
-import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
@@ -17,8 +15,7 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 /**
  * This class contains the configuration for the SourceViewer of the ASMEditor.
@@ -27,20 +24,18 @@ import org.eclipse.swt.widgets.Shell;
  * @see		org.eclipse.jface.text.source.SourceViewerConfiguration
  */
 public class ASMConfiguration
-extends SourceViewerConfiguration
+extends TextSourceViewerConfiguration
 {
-	//private ASMDocumentProvider documentProvider;
+	private ASMEditor editor;
 	private ColorManager colorManager;
 
 	// scanner objects for syntax highlighting
 	private CommentScanner commentScanner;
 	private KeywordScanner keywordScanner;
 	
-	// factory object for hover windows
-	private IInformationControlCreator fInformationControlCreator = null;
-	
-	public ASMConfiguration(ColorManager colorManager)
+	public ASMConfiguration(ASMEditor editor, ColorManager colorManager)
 	{
+		this.editor = editor;
 		this.colorManager = colorManager;
 	}
 	
@@ -114,20 +109,7 @@ extends SourceViewerConfiguration
 	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType)
 	{
-		return new ASMTextHover();
-	}
-	
-	@Override
-	public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer)
-	{
-		if (fInformationControlCreator == null) {
-			fInformationControlCreator = new IInformationControlCreator() {
-				public IInformationControl createInformationControl(Shell parent) {
-					return new ASMInformationControl(parent);
-				}
-			};
-		}
-		return fInformationControlCreator;
+		return new ASMTextHover(editor);
 	}
 	
 	@Override

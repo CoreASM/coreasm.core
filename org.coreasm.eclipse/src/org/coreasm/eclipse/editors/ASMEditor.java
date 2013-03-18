@@ -63,16 +63,15 @@ implements IDocumentListener
 	public static final String PARTITION_COMMENT = "__asm_comment";
 
 	// constant for marker types
-	public static final String MARKER_TYPE_ERROR = "org.coreasm.eclipse.markers.ErrorMarker";
+	public static final String MARKER_TYPE_PROBLEM = "org.coreasm.eclipse.markers.ProblemMarker";
 	public static final String MARKER_TYPE_PLUGINS = "org.coreasm.eclipse.markers.PluginMarker";
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
-	public static final String MARKER_TYPE_WARNING = "asm.markerType.warning";
 	public static final String MARKER_TYPE_DECLARATIONS = "asm.markerType.declarations";
 	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
 	private ErrorManager errorManager;
-	private ChildDocumentWatcher childDocWatcher;
+	private ASMIncludeWatcher childDocWatcher;
 	private AbstractContentPage outlinePage;
 	private IEditorInput input;
 	private ColorManager colorManager;
@@ -93,7 +92,7 @@ implements IDocumentListener
 		
 		colorManager = new ColorManager();
 		documentProvider = new ASMDocumentProvider(this);
-		setSourceViewerConfiguration(new ASMConfiguration(colorManager));
+		setSourceViewerConfiguration(new ASMConfiguration(this, colorManager));
 		setDocumentProvider(documentProvider);
 		
 				
@@ -101,10 +100,10 @@ implements IDocumentListener
 		// as observers to the parser.
 		parser = new ASMParser(this);
 		errorManager = new ErrorManager(this);
-		childDocWatcher = new ChildDocumentWatcher(this);
+		childDocWatcher = new ASMIncludeWatcher(this);
 		parser.addObserver(errorManager);
 		parser.addObserver(childDocWatcher);
-		parser.addObserver(new ASTWatcher(this));
+		parser.addObserver(new ASMDeclarationWatcher(this));
 		
 		
 		// bind the childDocWatcher as ResourceChangeListener to the Workspace
@@ -236,9 +235,9 @@ implements IDocumentListener
 		map.put(IMarker.CHAR_START, error.getPosition());
 		map.put(IMarker.CHAR_END, error.getPosition()+error.getLength());
 		map.put(IMarker.SEVERITY, severity);
-		map.put("errordata", error.encode());
+		map.put("data", error.encode());
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_ERROR);
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -257,10 +256,10 @@ implements IDocumentListener
 		map.put(IMarker.SEVERITY, severity);
 		map.put(IMarker.CHAR_START, error.getPosition());
 		map.put(IMarker.CHAR_END, error.getPosition()+error.getLength());
-		map.put("errordata", error.encode());
+		map.put("data", error.encode());
 		
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_ERROR);
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -287,10 +286,10 @@ implements IDocumentListener
 		map.put(IMarker.SEVERITY, severity);
 		map.put(IMarker.CHAR_START, position);
 		map.put(IMarker.CHAR_END, position+1);
-		map.put("errordata", error.encode());
+		map.put("data", error.encode());
 		
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_ERROR);
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -398,11 +397,11 @@ implements IDocumentListener
 		MarkerUtilities.setLineNumber(map, line);
 		MarkerUtilities.setMessage(map, warning.getDescription());
 		MarkerUtilities.setCharStart(map, warning.getPosition());
-		MarkerUtilities.setCharEnd(map, warning.getPosition()+warning.getLength());
+		MarkerUtilities.setCharEnd(map, warning.getPosition() + warning.getLength());
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
 		map.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_WARNING);
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -449,6 +448,8 @@ implements IDocumentListener
 	 */
 	public IFile getInputFile()
 	{
+		if (input == null)
+			return null;
 		IFileEditorInput ife = (IFileEditorInput) input;
 		IFile file = ife.getFile();
 		return file;

@@ -12,6 +12,7 @@ import org.coreasm.eclipse.editors.AstTools;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 /**
  * Checks an ASMDocument for the correct usage of rule declaration.
@@ -158,6 +159,12 @@ implements ITreeErrorRecognizer
 				}
 				
 			}
+		}
+		
+		@Override
+		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
+			if (error instanceof SimpleError)
+				proposals.add(new QuickFixProposal(this, error, null));
 		}
 	}
 
