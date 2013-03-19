@@ -198,6 +198,8 @@ public class StringPlugin extends Plugin
 			funcs.put(
 					StringLengthFunctionElement.STRLENGTH_FUNC_NAME,
 					new StringLengthFunctionElement());
+			funcs.put(StringMatchingFunction.STRING_MATCHES_FUNCTION_NAME, 
+					new StringMatchingFunction(capi));
 		}
 		return funcs;
 	}
