@@ -85,7 +85,7 @@ public class StringPlugin extends Plugin
 	private final String[] operators = {"+"};
 	
 	public StringPlugin() {
-		getFunctions();
+		//getFunctions();
 		getBackgrounds();
 	}
 

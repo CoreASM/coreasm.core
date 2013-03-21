@@ -67,7 +67,7 @@ public class StringMatchingFunction extends FunctionElement {
 						else ret = BooleanElement.FALSE;
 
 				}catch (PatternSyntaxException e) {
-					capi.error(new CoreASMError("regex used in expression - matching("+string+", "+ regex+") - is not conform to the syntax of Java regular expressions!"));
+					capi.error(new CoreASMError("regex used in expression - matches(\""+string+"\", \""+ regex+"\") - is not conform to the syntax of Java regular expressions!\nFor more help look here: http://www.regexplanet.com/advanced/java/",capi.getInterpreter().getInterpreterInstance().getPosition()));
 				}
 			}
 		}
