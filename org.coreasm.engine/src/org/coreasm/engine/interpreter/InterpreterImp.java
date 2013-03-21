@@ -79,7 +79,7 @@ public class InterpreterImp implements Interpreter {
 	private final Map<String,Stack<Element>> envMap;
 	
 	/** Work copy of a tree */
-	private final Map<ASTNode,ASTNode> workCopy;
+	private final Map<ASTNode,Stack<ASTNode>> workCopy;
 	
 	/** Link to the abstract storage module */
 	private final AbstractStorage storage;
@@ -95,10 +95,11 @@ public class InterpreterImp implements Interpreter {
 	 * ControlAPI module.
 	 */
 	public InterpreterImp(ControlAPI capi) {
+		((ch.qos.logback.classic.Logger)logger).setLevel(ch.qos.logback.classic.Level.ERROR);	// added this line to temporarily turn off the logger
 		this.capi = capi;
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
-		this.workCopy = new HashMap<ASTNode,ASTNode>();
+		this.workCopy = new HashMap<ASTNode,Stack<ASTNode>>();
 		interpreters.set(this);
 	}
 	
@@ -735,7 +736,10 @@ public class InterpreterImp implements Interpreter {
         UpdateMultiset updates = null;
         for (Plugin p: capi.getPlugins()) {
 		    if (p instanceof UndefinedIdentifierHandler) {
-                clearTree(pos);
+//		    	What is this line needed for?
+//		    	It's significantly slowing down rulecalls on rules containing a return rule.
+//		    	Especially recursive rulecalls are slowed down a lot. See fibonacci sample spec.
+//              clearTree(pos);
                 ((UndefinedIdentifierHandler) p).handleUndefinedIndentifier(this, pos, id, list);                
                 
                 if (pos.isEvaluated()) {
@@ -824,8 +828,16 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
-		
-		ASTNode wCopy = workCopy.get(pos);
+		// Using a stack of workcopies because copyTreeSub returns an equal copy of the rule body
+		Stack<ASTNode> wCopyStack = workCopy.get(pos);
+		if (wCopyStack == null) {
+			wCopyStack = new Stack<ASTNode>();
+			workCopy.put(pos, wCopyStack);
+		}
+		ASTNode wCopy = null;
+		// if the current pos is the parent of the workcopy on the top of the stack we have already evaluated the rulecall
+		if (!wCopyStack.isEmpty() && pos == wCopyStack.peek().getParent())
+			wCopy = wCopyStack.peek();
 		// If there is no work copy created for this rule call
 		if (wCopy == null) {
 			// checking the parameters and the arguments
@@ -837,18 +849,23 @@ public class InterpreterImp implements Interpreter {
 				return pos;
 			}
 			wCopy = copyTreeSub(rule.getBody(), rule.getParam(), args);
-			workCopy.put(pos, wCopy);
+			wCopyStack.push(wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, self);
 			return wCopy; // as new value of 'pos'
 		} else { // if there already is a work copy
-			pos.setNode(null, wCopy.getUpdates(), wCopy.getValue());
+			Element value = wCopy.getValue();
+			if (value == null)	// make sure that the value of the node will not be set to null
+				value = Element.UNDEF;
+			pos.setNode(null, wCopy.getUpdates(), value);
 		
 			// making it easier for the garbage collector 
 			// to throw this copy out! :)
 			wCopy.dipose();
 			
-			workCopy.remove(pos);
+			wCopyStack.pop();
+			if (wCopyStack.isEmpty())
+				workCopy.remove(pos);
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
 			return pos;
