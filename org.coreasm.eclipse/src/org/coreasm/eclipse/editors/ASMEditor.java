@@ -380,6 +380,32 @@ implements IDocumentListener
 		}
 	}
 	
+	public void createErrorMark(AbstractError error)
+	{
+		IDocument document = getInputDocument();
+		int line = 0;
+		try {
+			line = document.getLineOfOffset(error.getPosition());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		MarkerUtilities.setLineNumber(map, line);
+		MarkerUtilities.setMessage(map, error.get(AbstractError.DESCRIPTION));
+		MarkerUtilities.setCharStart(map, error.getPosition());
+		MarkerUtilities.setCharEnd(map, error.getPosition() + error.getLength());
+		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
+		map.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+		map.put("data", error.encode());
+		try {
+			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void createWarningMark(AbstractWarning warning) {
 		int line = 0;
 		try {

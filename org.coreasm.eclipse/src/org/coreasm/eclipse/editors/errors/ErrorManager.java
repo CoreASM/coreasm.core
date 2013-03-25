@@ -13,6 +13,7 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
+import org.coreasm.eclipse.editors.warnings.CoreASMWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
 import org.eclipse.core.resources.IMarker;
@@ -54,7 +55,9 @@ public class ErrorManager implements Observer
 		addErrorRecognizer(new RuleErrorRecognizer(asmEditor));
 		addErrorRecognizer(new PluginErrorRecognizer(asmEditor.getParser()));
 		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
+		addErrorRecognizer(new CoreASMErrorRecognizer(asmEditor));
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
+		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
 	}
 	
 	/**
@@ -171,6 +174,8 @@ public class ErrorManager implements Observer
 		for (AbstractError error: errors) {
 			if (error instanceof SimpleError)
 				asmEditor.createSimpleMark((SimpleError) error, IMarker.SEVERITY_ERROR);
+			else
+				asmEditor.createErrorMark(error);
 		}
 		
 		if (result.wasSuccessful) {

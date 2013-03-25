@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.Engine;
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.EngineObserver;
 import org.coreasm.engine.InconsistentUpdateSetException;
 import org.coreasm.engine.Specification;
@@ -30,6 +32,7 @@ import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.Parser;
+import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
@@ -56,6 +59,10 @@ public class SlimEngine implements ControlAPI {
 	private static ControlAPI fullEngine = null;
 	
 	private Set<Plugin> plugins;	// plugins which are available through this engine;
+	private Set<ExtensionPointPlugin> parsingSpecSrcModePlugins = new HashSet<ExtensionPointPlugin>();
+	
+	private List<CoreASMWarning> warnings = new ArrayList<CoreASMWarning>();
+	private List<CoreASMError> errors = new ArrayList<CoreASMError>();
 	
 	public SlimEngine(Set<String> plugins) {
 		super();
@@ -101,7 +108,23 @@ public class SlimEngine implements ControlAPI {
 			}
 			p2.setControlAPI(this);
 			this.plugins.add(p2);
+			if (p2 instanceof ExtensionPointPlugin) {
+				ExtensionPointPlugin extensionPointPlugin = (ExtensionPointPlugin)p2;
+				if (extensionPointPlugin.getSourceModes() != null && extensionPointPlugin.getSourceModes().containsKey(EngineMode.emParsingSpec))
+					parsingSpecSrcModePlugins.add(extensionPointPlugin);
+			}
 		}
+	}
+	
+	/**
+	 * Notify the engine that parsing the specification has finished.
+	 */
+	public void notifyEngine() {
+		for (ExtensionPointPlugin plugin : parsingSpecSrcModePlugins)
+			try {
+				plugin.fireOnModeTransition(EngineMode.emParsingSpec, EngineMode.emIdle);
+			} catch (EngineException e) {
+			}
 	}
 
 	/**
@@ -205,7 +228,96 @@ public class SlimEngine implements ControlAPI {
 		} else
 			return engine.getSpec();
 	}
+	
+	@Override
+	public List<CoreASMWarning> getWarnings() {
+		List<CoreASMWarning> warnings = new ArrayList<CoreASMWarning>(this.warnings);
+		this.warnings.clear();
+		return warnings;
+	}
 
+	@Override
+	public void warning(String src, String msg) {
+		warning(src, msg, null, null);
+	}
+
+	@Override
+	public void warning(String src, Throwable e) {
+		warning(src, e, null, null);
+	}
+
+	@Override
+	public void warning(String src, String msg, Node node,
+			Interpreter interpreter) {
+		CoreASMWarning warning; 
+		if (interpreter != null)
+			warning = new CoreASMWarning(src, msg, interpreter.getCurrentCallStack(), node);
+		else
+			warning = new CoreASMWarning(src, msg, node);
+		this.warning(warning);
+	}
+
+	@Override
+	public void warning(String src, Throwable e, Node node,
+			Interpreter interpreter) {
+		CoreASMWarning warning; 
+		if (interpreter != null)
+			warning = new CoreASMWarning(src, e, interpreter.getCurrentCallStack(), node);
+		else
+			warning = new CoreASMWarning(src, e, null, node);
+		this.warning(warning);
+	}
+
+	@Override
+	public void warning(CoreASMWarning w) {
+		warnings.add(w);
+	}
+	
+	@Override
+	public void error(String msg) {
+		error(msg, null, null);
+	}
+
+	@Override
+	public void error(Throwable e) {
+		error(e, null, null);
+	}
+
+	@Override
+	public void error(String msg, Node errorNode, Interpreter interpreter) {
+		CoreASMError error; 
+		if (interpreter != null)
+			error = new CoreASMError(msg, interpreter.getCurrentCallStack(), errorNode);
+		else
+			error = new CoreASMError(msg, errorNode);
+		this.error(error);
+	}
+
+	@Override
+	public void error(Throwable e, Node errorNode, Interpreter interpreter) {
+		CoreASMError error; 
+		if (interpreter != null)
+			error = new CoreASMError(e, interpreter.getCurrentCallStack(), errorNode);
+		else
+			error = new CoreASMError(e, null, errorNode);
+		this.error(error);
+	}
+
+	@Override
+	public void error(CoreASMError e) {
+		errors.add(e);
+	}
+
+	@Override
+	public boolean hasErrorOccurred() {
+		return !errors.isEmpty();
+	}
+	
+	public List<CoreASMError> getErrors() {
+		List<CoreASMError> errors = new ArrayList<CoreASMError>(this.errors);
+		this.errors.clear();
+		return errors;
+	}
 	
 	// ====================================================
 	// UNIMPLEMENTED METHODS:
@@ -490,12 +602,6 @@ public class SlimEngine implements ControlAPI {
 	}
 
 	@Override
-	public List<CoreASMWarning> getWarnings() {
-		throw new UnsupportedOperationException();
-		
-	}
-
-	@Override
 	public VersionInfo getVersionInfo() {
 		throw new UnsupportedOperationException();
 		
@@ -552,84 +658,21 @@ public class SlimEngine implements ControlAPI {
 	}
 
 	@Override
-	public void error(String msg) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void error(Throwable e) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void error(String msg, Node errorNode, Interpreter interpreter) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void error(Throwable e, Node errorNode, Interpreter interpreter) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void error(CoreASMError e) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void warning(String src, String msg) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void warning(String src, Throwable e) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void warning(String src, String msg, Node node,
-			Interpreter interpreter) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void warning(String src, Throwable e, Node node,
-			Interpreter interpreter) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public void warning(CoreASMWarning w) {
-		throw new UnsupportedOperationException();
-
-	}
-
-	@Override
-	public boolean hasErrorOccurred() {
+	public void addInterpreterListener(InterpreterListener listener) {
 		throw new UnsupportedOperationException();
 		
 	}
 
 	@Override
-	public void addInterpreterListener(InterpreterListener listener) {	
-	}
-
-	@Override
 	public void removeInterpreterListener(InterpreterListener listener) {
+		throw new UnsupportedOperationException();
+		
 	}
 
 	@Override
 	public List<InterpreterListener> getInterpreterListeners() {
-		return null;
+		throw new UnsupportedOperationException();
+		
 	}
 
 }

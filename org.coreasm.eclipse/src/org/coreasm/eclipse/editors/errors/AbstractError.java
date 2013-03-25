@@ -36,7 +36,7 @@ public abstract class AbstractError
 	public static final String SEPERATOR_VAL = new StringBuilder().append('\u25b7').toString();
 	
 	public static enum ErrorType {
-		UNDEFINED, SIMPLE, SYNTAX_ERROR 
+		UNDEFINED, SIMPLE, SYNTAX_ERROR, COREASM_ERROR 
 	}
 	
 	// ATTRIBUTE NAMES:

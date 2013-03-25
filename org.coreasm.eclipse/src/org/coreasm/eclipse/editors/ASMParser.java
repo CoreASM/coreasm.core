@@ -197,6 +197,7 @@ public class ASMParser extends Observable
 		parentEditor.createPluginMark(uses);
 		
 		// notify observers
+		((SlimEngine)slimengine).notifyEngine();
 		setChanged();
 		notifyObservers(result);
 
