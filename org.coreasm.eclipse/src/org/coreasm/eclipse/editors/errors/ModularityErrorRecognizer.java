@@ -22,6 +22,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
  * Checks an ASMDocument for the correct usage of "include" statements.
@@ -135,14 +136,17 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 					IMarker[] markers = null;
 					try {
 						markers = file.findMarkers(ASMEditor.MARKER_TYPE_PROBLEM, false, IResource.DEPTH_ZERO);
-						if (markers.length > 0) {
-							String title = "Included file has errors";
-							String message = "The included file \"" + include.filename + "\" has errors";
-							// Mark filename
-							int pos = include.position + include.source.indexOf("\"") + 1;
-							int length = include.filename.length();
-							AbstractError error = new SimpleError(title, message, pos, length, CLASSNAME, CHILD_ERROR);
-							errors.add(error);
+						for (IMarker marker : markers) {
+							if (MarkerUtilities.getSeverity(marker) == IMarker.SEVERITY_ERROR) {
+								String title = "Included file has errors";
+								String message = "The included file \"" + include.filename + "\" has errors";
+								// Mark filename
+								int pos = include.position + include.source.indexOf("\"") + 1;
+								int length = include.filename.length();
+								AbstractError error = new SimpleError(title, message, pos, length, CLASSNAME, CHILD_ERROR);
+								errors.add(error);
+								break;
+							}
 						}
 					} catch (CoreException e) {
 						e.printStackTrace();
@@ -444,9 +448,9 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 				int pos1 = sError.getDescription().indexOf('"') + 1;
 				int pos2 = sError.getDescription().indexOf('"', pos1);
 				String filename = sError.getDescription().substring(pos1, pos2);
+				ASMEditor editor = (ASMEditor)FileManager.getActiveEditor();
 				
-				FileManager.openEditor(filename, FileManager.getActiveProject());
-				
+				FileManager.openEditor(editor.getInputFile().getProjectRelativePath().removeLastSegments(1).append(filename).toString(), FileManager.getActiveProject());
 			}
 		}
 		

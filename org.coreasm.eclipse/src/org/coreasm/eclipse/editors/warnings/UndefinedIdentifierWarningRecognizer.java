@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.editors.warnings;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.SlimEngine;
@@ -15,12 +17,14 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
 import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
+import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -30,10 +34,14 @@ import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 
+/**
+ * This WarningRecognizer searches an ASM document for undefined identifiers.
+ * @author Michael Stegmaier
+ *
+ */
 public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer {
 	private final ASMEditor parentEditor;
 	private Set<String> pluginFunctionNames = null;
@@ -56,21 +64,23 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 					while (!fringe.isEmpty()) {
 						ASTNode node = fringe.pop();
 						if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode) {
+							if (node.getParent() instanceof MacroCallRuleNode)	// Undefined rules cause an error
+								break;
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 							if (frNode.hasName()) {
 								if (!frNode.hasArguments()) {
-									if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames))
-										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getScannerInfo().charPosition));
+									if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
+										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), Collections.<ASTNode>emptyList(), frNode.getScannerInfo().charPosition));
 								}
-								else if (!isFunctionName(frNode.getName(), functionNames))
-									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getScannerInfo().charPosition));
+								else if (!isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
+									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getArguments(), frNode.getScannerInfo().charPosition));
 							}
 						}
 						else if (ASTNode.EXPRESSION_CLASS.equals(node.getGrammarClass())) {
 							if (node instanceof RuleOrFuncElementNode) {
 								RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
 								if (!isFunctionName(ruleOrFuncElementNode.getElementName(), functionNames))
-									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), node.getScannerInfo().charPosition + 1));
+									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), Collections.<ASTNode>emptyList(), node.getScannerInfo().charPosition + 1));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());
@@ -87,11 +97,11 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			return true;
 		if (isInLetVariableMap(frNode))
 			return true;
-		if (isLocalFunction(frNode))
-			return true;
 		if (isForallRuleVariable(frNode))
 			return true;
 		if (isForallExpVariable(frNode))
+			return true;
+		if (isExistsExpVariable(frNode))
 			return true;
 		if (isChooseVariable(frNode))
 			return true;
@@ -99,7 +109,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			return true;
 		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
-		if (isReturnRuleExpression(frNode))
+		if (isImportRuleVariable(frNode))
 			return true;
 		return false;
 	}
@@ -148,6 +158,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
 				return true;
 		}
+		if (isReturnRuleExpression(frNode))
+			return true;
 		return false;
 	}
 	
@@ -178,19 +190,36 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	}
 	
 	private boolean isForallExpVariable(FunctionRuleTermNode frNode) {
-		for (ForallExpNode ForallExpNode = getParentForallExpNode(frNode); ForallExpNode != null; ForallExpNode = getParentForallExpNode(ForallExpNode)) {
-			if (ForallExpNode.getVariable().getToken().equals(frNode.getName()))
+		for (ForallExpNode forallExpNode = getParentForallExpNode(frNode); forallExpNode != null; forallExpNode = getParentForallExpNode(forallExpNode)) {
+			if (forallExpNode.getVariable().getToken().equals(frNode.getName()))
 				return true;
 		}
 		return false;
 	}
 	
 	private ForallExpNode getParentForallExpNode(ASTNode node) {
-		ASTNode ForallExpNode = node.getParent();
-		while (ForallExpNode != null && !(ForallExpNode instanceof ForallExpNode))
-			ForallExpNode = ForallExpNode.getParent();
-		if (ForallExpNode instanceof ForallExpNode)
-			return (ForallExpNode)ForallExpNode;
+		ASTNode forallExpNode = node.getParent();
+		while (forallExpNode != null && !(forallExpNode instanceof ForallExpNode))
+			forallExpNode = forallExpNode.getParent();
+		if (forallExpNode instanceof ForallExpNode)
+			return (ForallExpNode)forallExpNode;
+		return null;
+	}
+	
+	private boolean isExistsExpVariable(FunctionRuleTermNode frNode) {
+		for (ExistsExpNode existsExpNode = getParentExistsExpNode(frNode); existsExpNode != null; existsExpNode = getParentExistsExpNode(existsExpNode)) {
+			if (existsExpNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ExistsExpNode getParentExistsExpNode(ASTNode node) {
+		ASTNode existsExpNode = node.getParent();
+		while (existsExpNode != null && !(existsExpNode instanceof ExistsExpNode))
+			existsExpNode = existsExpNode.getParent();
+		if (existsExpNode instanceof ExistsExpNode)
+			return (ExistsExpNode)existsExpNode;
 		return null;
 	}
 	
@@ -262,6 +291,23 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return null;
 	}
 	
+	private boolean isImportRuleVariable(FunctionRuleTermNode frNode) {
+		for (ASTNode importRuleNode = getParentImportRuleNode(frNode); importRuleNode != null; importRuleNode = getParentImportRuleNode(importRuleNode)) {
+			if (importRuleNode.getFirst().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ASTNode getParentImportRuleNode(ASTNode node) {
+		ASTNode importRuleNode = node.getParent();
+		while (importRuleNode != null && !"ImportRule".equals(importRuleNode.getGrammarRule()))
+			importRuleNode = importRuleNode.getParent();
+		if (importRuleNode != null && "ImportRule".equals(importRuleNode.getGrammarRule()))
+			return importRuleNode;
+		return null;
+	}
+	
 	private boolean isFunctionName(String functionName, Set<String> functionNames) {
 		if (getPluginFunctionNames().contains(functionName))
 			return true;
@@ -295,8 +341,12 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 						}
 						else if (signature instanceof FunctionNode)
 							declaredNames.add(((FunctionNode)signature).getName());
-						else if (signature instanceof UniverseNode)
+						else if (signature instanceof UniverseNode) {
+							UniverseNode universeNode = (UniverseNode)signature;
 							declaredNames.add(((UniverseNode)signature).getName());
+							for (ASTNode member = universeNode.getFirst().getNext(); member != null; member = member.getNext())
+								declaredNames.add(member.getToken());
+						}
 						else if (signature instanceof DerivedFunctionNode)
 							declaredNames.add(((DerivedFunctionNode)signature).getNameSignatureNode().getFirst().getToken());
 					}
@@ -306,37 +356,13 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			}
 
 		}
-		String relativePath = parentEditor.getInputFile().getProjectRelativePath().removeLastSegments(1).toString();
+		IPath relativePath = parentEditor.getInputFile().getProjectRelativePath().removeLastSegments(1);
 		IProject project = parentEditor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
-			if (node instanceof IncludeNode)
-				declaredNames.addAll(getIncludedDeclaredNames(project.getFile(relativePath + IPath.SEPARATOR + ((IncludeNode)node).getFilename())));
-		}
-		return declaredNames;
-	}
-	
-	private Set<String> getIncludedDeclaredNames(IFile file) {
-		Set<String> declaredNames = new HashSet<String>();
-		for (String declaration : ASMDeclarationWatcher.getDeclarations(file, true)) {
-			String functionName = null;
-			String type = declaration.trim().substring(0, declaration.indexOf(':'));
-			functionName = declaration.substring(type.length() + 2);
-			if ("Universe".equals(type) || "Enumeration".equals(type))
-				functionName = functionName.substring(0, functionName.indexOf('=')).trim();
-			else if ("Derived Function".equals(type) || "Rule".equals(type)) {
-				int indexOfNewline = functionName.indexOf('\n');
-				if (indexOfNewline >= 0)
-					functionName = functionName.substring(0, indexOfNewline);
-				int indexOfBracket = functionName.indexOf('(');
-				if (indexOfBracket >= 0)
-					functionName = functionName.substring(0, indexOfBracket);
+			if (node instanceof IncludeNode) {
+				for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(project.getFile(relativePath.append(((IncludeNode)node).getFilename())), true))
+					declaredNames.add(declaration.getName());
 			}
-			else if ("Enumeration member".equals(type))
-				functionName = functionName.substring(functionName.indexOf('(') + 1, functionName.indexOf(')'));
-			else if ("Function".equals(type))
-				functionName = functionName.substring(0, functionName.indexOf(':'));
-			if (functionName != null)
-				declaredNames.add(functionName);
 		}
 		return declaredNames;
 	}

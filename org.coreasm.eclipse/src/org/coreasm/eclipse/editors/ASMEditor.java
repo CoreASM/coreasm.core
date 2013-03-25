@@ -56,7 +56,7 @@ implements IDocumentListener
 	
 	/** The default time in milliseconds before the parser will be delayed after
 	 * the last occurred edit. */
-	public final static int REPARSE_DELAY = 1000;
+	public final static int REPARSE_DELAY = 500;
 	
 	// constants for partition types
 	public static final String PARTITION_CODE = "__asm_default";
@@ -70,8 +70,7 @@ implements IDocumentListener
 	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
-	private ErrorManager errorManager;
-	private ASMIncludeWatcher childDocWatcher;
+	private ASMIncludeWatcher includeWatcher;
 	private AbstractContentPage outlinePage;
 	private IEditorInput input;
 	private ColorManager colorManager;
@@ -95,19 +94,15 @@ implements IDocumentListener
 		setSourceViewerConfiguration(new ASMConfiguration(this, colorManager));
 		setDocumentProvider(documentProvider);
 		
-				
-		// create parser, errorManager and childDocWatcher, and bind the latter two
-		// as observers to the parser.
+		includeWatcher = new ASMIncludeWatcher(this);
 		parser = new ASMParser(this);
-		errorManager = new ErrorManager(this);
-		childDocWatcher = new ASMIncludeWatcher(this);
-		parser.addObserver(errorManager);
-		parser.addObserver(childDocWatcher);
+		parser.addObserver(new ErrorManager(this));
+		parser.addObserver(includeWatcher);
 		parser.addObserver(new ASMDeclarationWatcher(this));
 		
 		
-		// bind the childDocWatcher as ResourceChangeListener to the Workspace
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(childDocWatcher, IResourceChangeEvent.POST_CHANGE);
+		// bind the includeWatcher as ResourceChangeListener to the Workspace
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(includeWatcher, IResourceChangeEvent.POST_CHANGE);
 
 		parser.getJob().pause();
 		parser.getJob().schedule();
@@ -147,7 +142,7 @@ implements IDocumentListener
 		super.dispose();
 		
 		// remove the childDocWatcher as WorkspaceListener
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(childDocWatcher);
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(includeWatcher);
 	}
 	
 	@Override
@@ -400,6 +395,7 @@ implements IDocumentListener
 		MarkerUtilities.setCharEnd(map, warning.getPosition() + warning.getLength());
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
 		map.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+		map.put("data", warning.getData());
 		try {
 			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
 		} catch (CoreException e) {

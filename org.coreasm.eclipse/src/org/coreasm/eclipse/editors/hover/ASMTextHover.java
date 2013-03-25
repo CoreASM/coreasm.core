@@ -13,6 +13,7 @@ import java.util.Stack;
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMStorage;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMIncludeWatcher;
@@ -32,13 +33,9 @@ import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
 import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
+import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
-import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
-import org.coreasm.engine.plugins.signature.EnumerationElement;
-import org.coreasm.engine.plugins.signature.EnumerationNode;
-import org.coreasm.engine.plugins.signature.FunctionNode;
-import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
@@ -93,6 +90,7 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 /**
+ * This annotation hover shows the description of the selected ASM annotation.
  * @author Michael Stegmaier
  */
 public class ASMTextHover
@@ -208,6 +206,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 							String value = getExpressionValue(textViewer.getDocument(), frNode.getName());
 							if (isEnvironmentVariable(frNode))
 								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : ""));
+							if (isLocalFunction(frNode))
+								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : ""));
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
 							if (pluginFunction != null)
 								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (value != null ? " = " + value : ""));
@@ -225,7 +225,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						String declaration = getDeclaration((ASMDocument)textViewer.getDocument(), ruleOrFuncElementNode.getElementName());
 						if (declaration == null)
 							return new HoverInfo(ruleOrFuncElementNode.toString());
-						return declaration;
+						return new HoverInfo(declaration);
 					}
 				}
 			}
@@ -283,89 +283,15 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	
 	private String getDeclaration(ASMDocument document, String functionName) {
-		for (ASTNode node = ((ASTNode)document.getRootnode()).getFirst(); node != null; node = node.getNext()) {
-			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
-				if ("Signature".equals(node.getGrammarRule())) {
-					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
-						if (signature instanceof EnumerationNode) {
-							EnumerationNode enumerationNode = (EnumerationNode)signature;
-							if (enumerationNode.getName().equals(functionName)) {
-								String declaration = "Enumeration: " + enumerationNode.getName() + " = { ";
-								for (EnumerationElement member : enumerationNode.getMembers()) {
-									if (!declaration.endsWith("{ "))
-										declaration += ", ";
-									declaration += member;
-								}
-								declaration += " }";
-								return declaration;
-							}
-							for (EnumerationElement member : enumerationNode.getMembers()) {
-								if (member.getName().equals(functionName))
-									return "Enumeration member: " + enumerationNode.getName() + "(" + member.getName() + ")";
-							}
-						}
-						else if (signature instanceof FunctionNode) {
-							FunctionNode fNode = (FunctionNode)signature;
-							if (fNode.getName().equals(functionName))
-								return "Function: " + fNode.getName() + ": " + fNode.getDomain() + " -> " + fNode.getRange();
-						}
-						else if (signature instanceof UniverseNode) {
-							UniverseNode universeNode = (UniverseNode)signature;
-							if (universeNode.getName().equals(functionName)) {
-								String declaration = "Universe: " + universeNode.getName();
-								if (EngineDebugger.getRunningInstance() == null) {
-									declaration += " = { ";
-									for (ASTNode member = universeNode.getFirst().getNext(); member != null; member = member.getNext()) {
-										if (!declaration.endsWith("{ "))
-											declaration += ", ";
-										declaration += member.getToken();
-									}
-									declaration += " }";
-								}
-								return declaration;
-							}
-						}
-						else if (signature instanceof DerivedFunctionNode) {
-							if (((DerivedFunctionNode)signature).getNameSignatureNode().getFirst().getToken().equals(functionName)) {
-								ASTNode idNode = ((DerivedFunctionNode)signature).getNameSignatureNode().getFirst();
-								String declaration = "Derived Function: " + idNode.getToken() + "(";
-								for (ASTNode param = idNode.getNext(); param != null; param = param.getNext()) {
-									if (!declaration.endsWith("("))
-										declaration += ", ";
-									declaration += param.getToken();
-								}
-								declaration = (declaration + ")").replace("()", "");
-								String comment = getComment(document, node.getScannerInfo().charPosition);
-								if (comment != null)
-									declaration += "\n\n" + comment;
-								return declaration;
-							}
-						}
-					}
-				}
-				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule())) {
-					if (node.getFirst().getFirst().getToken().equals(functionName)) {
-						ASTNode idNode = node.getFirst().getFirst();
-						String declaration = "Rule: " + idNode.getToken() + "(";
-						for (ASTNode param = idNode.getNext(); param != null; param = param.getNext()) {
-							if (!declaration.endsWith("("))
-								declaration += ", ";
-							declaration += param.getToken();
-						}
-						declaration = (declaration + ")").replace("()", "");
-						String comment = getComment(document, node.getScannerInfo().charPosition);
-						if (comment != null)
-							declaration += "\n\n" + comment;
-						return declaration;
-					}
-				}
-			}
+		for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(editor.getInputFile(), false)) {
+			if (declaration.getName().equals(functionName))
+				return declaration.toString();
 		}
-		String relativePath = editor.getInputFile().getProjectRelativePath().removeLastSegments(1).toString();
+		IPath relativePath = editor.getInputFile().getProjectRelativePath().removeLastSegments(1);
 		IProject project = editor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode) {
-				String includedFunctionDeclaration = getIncludedDeclaration(project, project.getFile(relativePath + IPath.SEPARATOR + ((IncludeNode)node).getFilename()), functionName, new HashSet<IFile>());
+				String includedFunctionDeclaration = getIncludedDeclaration(project, project.getFile(relativePath.append(((IncludeNode)node).getFilename())), functionName, new HashSet<IFile>());
 				if (includedFunctionDeclaration != null)
 					return includedFunctionDeclaration;
 			}
@@ -378,25 +304,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			return null;
 		includedFiles.add(file);
 		if (file != null) {
-			for (String declaration : ASMDeclarationWatcher.getDeclarations(file, false)) {
-				String fName = null;
-				String type = declaration.trim().substring(0, declaration.indexOf(':'));
-				fName = declaration.substring(type.length() + 2);
-				if ("Universe".equals(type) || "Enumeration".equals(type))
-					fName = fName.substring(0, fName.indexOf('=')).trim();
-				else if ("Derived Function".equals(type) || "Rule".equals(type)) {
-					int indexOfNewline = fName.indexOf('\n');
-					if (indexOfNewline >= 0)
-						fName = fName.substring(0, indexOfNewline);
-					int indexOfBracket = fName.indexOf('(');
-					if (indexOfBracket >= 0)
-						fName = fName.substring(0, indexOfBracket);
-				}
-				else if ("Enumeration member".equals(type))
-					fName = fName.substring(fName.indexOf('(') + 1, fName.indexOf(')'));
-				else if ("Function".equals(type))
-					fName = fName.substring(0, fName.indexOf(':'));
-				if (functionName.equals(fName))
+			for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(file, false)) {
+				if (declaration.getName().equals(functionName))
 					return file.getProjectRelativePath() + "\n\n" + declaration;
 			}
 			for (IFile include : ASMIncludeWatcher.getIncludedFiles(file, false)) {
@@ -408,53 +317,16 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		return null;
 	}
 	
-	private String getComment(IDocument document, int offset) {
-		try {
-			String comment = "";
-			String line;
-			int lineNumber = document.getLineOfOffset(offset);
-			boolean blockComment = false;
-			do {
-				lineNumber--;
-				line = document.get(document.getLineOffset(lineNumber), document.getLineLength(lineNumber));
-				if (line.startsWith("//"))
-					comment = line.substring(2).trim() + "\n" + comment;
-				else if (line.contains("*/")) {
-					if (line.length() > 3)
-						comment = line.replace("*/", "").trim() + "\n" + comment;
-					blockComment = true;
-				}
-				else if (line.contains("/*")) {
-					if (line.length() > 4)
-						comment = line.replace("/*", "").trim() + "\n" + comment;
-					blockComment = false;
-				}
-				else if (line.contains("/*") && line.contains("*/")) {
-					if (line.length() > 5)
-						comment = line.replace("/*", "").replace("*/", "").trim() + "\n" + comment;
-					blockComment = false;
-				}
-				else if (blockComment)
-					comment = line.replace("*", "").trim() + "\n" + comment;
-			} while (line.startsWith("//") || blockComment);
-			if (comment.isEmpty())
-				return null;
-			return comment;
-		} catch (BadLocationException e) {
-		}
-		return null;
-	}
-	
 	private boolean isEnvironmentVariable(FunctionRuleTermNode frNode) {
 		if (isParam(frNode))
 			return true;
 		if (isInLetVariableMap(frNode))
 			return true;
-		if (isLocalFunction(frNode))
-			return true;
 		if (isForallRuleVariable(frNode))
 			return true;
 		if (isForallExpVariable(frNode))
+			return true;
+		if (isExistsExpVariable(frNode))
 			return true;
 		if (isChooseVariable(frNode))
 			return true;
@@ -462,7 +334,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			return true;
 		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
-		if (isReturnRuleExpression(frNode))
+		if (isImportRuleVariable(frNode))
 			return true;
 		return false;
 	}
@@ -511,6 +383,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
 				return true;
 		}
+		if (isReturnRuleExpression(frNode))
+			return true;
 		return false;
 	}
 	
@@ -541,19 +415,36 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	
 	private boolean isForallExpVariable(FunctionRuleTermNode frNode) {
-		for (ForallExpNode ForallExpNode = getParentForallExpNode(frNode); ForallExpNode != null; ForallExpNode = getParentForallExpNode(ForallExpNode)) {
-			if (ForallExpNode.getVariable().getToken().equals(frNode.getName()))
+		for (ForallExpNode forallExpNode = getParentForallExpNode(frNode); forallExpNode != null; forallExpNode = getParentForallExpNode(forallExpNode)) {
+			if (forallExpNode.getVariable().getToken().equals(frNode.getName()))
 				return true;
 		}
 		return false;
 	}
 	
 	private ForallExpNode getParentForallExpNode(ASTNode node) {
-		ASTNode ForallExpNode = node.getParent();
-		while (ForallExpNode != null && !(ForallExpNode instanceof ForallExpNode))
-			ForallExpNode = ForallExpNode.getParent();
-		if (ForallExpNode instanceof ForallExpNode)
-			return (ForallExpNode)ForallExpNode;
+		ASTNode forallExpNode = node.getParent();
+		while (forallExpNode != null && !(forallExpNode instanceof ForallExpNode))
+			forallExpNode = forallExpNode.getParent();
+		if (forallExpNode instanceof ForallExpNode)
+			return (ForallExpNode)forallExpNode;
+		return null;
+	}
+	
+	private boolean isExistsExpVariable(FunctionRuleTermNode frNode) {
+		for (ExistsExpNode existsExpNode = getParentExistsExpNode(frNode); existsExpNode != null; existsExpNode = getParentExistsExpNode(existsExpNode)) {
+			if (existsExpNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ExistsExpNode getParentExistsExpNode(ASTNode node) {
+		ASTNode existsExpNode = node.getParent();
+		while (existsExpNode != null && !(existsExpNode instanceof ExistsExpNode))
+			existsExpNode = existsExpNode.getParent();
+		if (existsExpNode instanceof ExistsExpNode)
+			return (ExistsExpNode)existsExpNode;
 		return null;
 	}
 	
@@ -622,6 +513,23 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			returnRuleNode = returnRuleNode.getParent();
 		if (returnRuleNode instanceof ReturnRuleNode)
 			return (ReturnRuleNode)returnRuleNode;
+		return null;
+	}
+	
+	private boolean isImportRuleVariable(FunctionRuleTermNode frNode) {
+		for (ASTNode importRuleNode = getParentImportRuleNode(frNode); importRuleNode != null; importRuleNode = getParentImportRuleNode(importRuleNode)) {
+			if (importRuleNode.getFirst().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ASTNode getParentImportRuleNode(ASTNode node) {
+		ASTNode importRuleNode = node.getParent();
+		while (importRuleNode != null && !"ImportRule".equals(importRuleNode.getGrammarRule()))
+			importRuleNode = importRuleNode.getParent();
+		if (importRuleNode != null && "ImportRule".equals(importRuleNode.getGrammarRule()))
+			return importRuleNode;
 		return null;
 	}
 	
@@ -819,6 +727,12 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				((ICompletionProposalExtension)proposal).apply(info.viewer.getDocument(), (char)0, info.position.offset);
 			else
 				proposal.apply(info.viewer.getDocument());
+			
+			Point selection = proposal.getSelection(info.viewer.getDocument());
+			if (selection != null) {
+				info.viewer.setSelectedRange(selection.x, selection.y);
+				info.viewer.revealRange(selection.x, selection.y);
+			}
 		}
 	}
 }

@@ -19,7 +19,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 
 /**
  * The <code>IncludeWatcher</code> watches included specifications.
@@ -30,14 +29,12 @@ import org.eclipse.core.runtime.Path;
 public class ASMIncludeWatcher
 implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 {
-	private ASMEditor editor;
-	private ASMParser parser;
+	private final ASMEditor editor;
 	private boolean shouldReparse = false;
 
 	public ASMIncludeWatcher(ASMEditor editor)
 	{
 		this.editor = editor;
-		this.parser = editor.getParser();
 	}
 	
 	/**
@@ -59,16 +56,20 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	 * @param includedFiles the set to collect the included files into
 	 */
 	private static void collectIncludedFiles(IFile file, boolean transitive, Set<IFile> includedFiles) {
+		if (file == null)
+			return;
 		try {
 			IProject project = file.getProject();
-			IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
-			if (includeMarker.length > 0) {
-				for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
-					IFile includedFile = project.getFile(include);
-					if (!includedFiles.contains(includedFile)) {
-						includedFiles.add(includedFile);
-						if (transitive)
-							collectIncludedFiles(includedFile, transitive, includedFiles);
+			if (file.exists()) {
+				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
+				if (includeMarker.length > 0) {
+					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
+						IFile includedFile = project.getFile(include);
+						if (!includedFiles.contains(includedFile)) {
+							includedFiles.add(includedFile);
+							if (transitive)
+								collectIncludedFiles(includedFile, transitive, includedFiles);
+						}
 					}
 				}
 			}
@@ -80,17 +81,17 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 
 	@Override
 	public void update(Observable o, Object arg) {
-		if (o != parser || !(arg instanceof ParsingResult))
+		if (o != editor.getParser() || !(arg instanceof ParsingResult))
 			return;
 		ParsingResult result = (ParsingResult)arg;
 
 		Node rootNode = result.document.getRootnode();
 		if (rootNode != null) {
 			Set<IPath> includedFiles = new HashSet<IPath>();
-			String relativePath = editor.getInputFile().getProjectRelativePath().removeLastSegments(1).toString();
+			IPath relativePath = editor.getInputFile().getProjectRelativePath().removeLastSegments(1);
 			for (Node node = rootNode.getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 				if (node instanceof IncludeNode)
-					includedFiles.add(new Path(relativePath + (!relativePath.isEmpty() ? IPath.SEPARATOR : "") + ((IncludeNode)node).getFilename()));
+					includedFiles.add(relativePath.append(((IncludeNode)node).getFilename()));
 			}
 			editor.createIncludeMark(includedFiles);
 		}
@@ -105,7 +106,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 			e.printStackTrace();
 		}
 		if (shouldReparse)
-			parser.getJob().schedule(ASMEditor.REPARSE_DELAY);
+			editor.getParser().getJob().schedule(ASMEditor.REPARSE_DELAY);
 	}
 
 	@Override

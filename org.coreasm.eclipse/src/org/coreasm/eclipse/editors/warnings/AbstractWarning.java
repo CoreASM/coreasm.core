@@ -1,18 +1,29 @@
 package org.coreasm.eclipse.editors.warnings;
 
+/**
+ * An abstract implementation of a warning
+ * @author Michael Stegmaier
+ *
+ */
 public abstract class AbstractWarning {
-	private String description;
-	private int position;
-	private int length;
+	private final String description;
+	private final String data;
+	private final int position;
+	private final int length;
 	
-	public AbstractWarning(String description, int position, int length) {
+	public AbstractWarning(String description, String data, int position, int length) {
 		this.description = description;
+		this.data = data;
 		this.position = position;
 		this.length = length;
 	}
 	
 	public String getDescription() {
 		return description;
+	}
+	
+	public String getData() {
+		return data;
 	}
 	
 	public int getPosition() {

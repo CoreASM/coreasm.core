@@ -1,15 +1,25 @@
 package org.coreasm.eclipse.editors.quickfix;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.AbstractQuickFix;
+import org.coreasm.eclipse.editors.errors.RuleErrorRecognizer;
+import org.coreasm.eclipse.editors.errors.SimpleError;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -81,77 +91,99 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 	
 	public static void collectProposals(IMarker marker, List<ICompletionProposal> proposals) {
 		if (MarkerUtilities.getSeverity(marker) == IMarker.SEVERITY_WARNING) {
-			String message = MarkerUtilities.getMessage(marker);
+			String[] data = marker.getAttribute("data", "").split(" ");
 			int start = MarkerUtilities.getCharStart(marker);
 			int end = MarkerUtilities.getCharEnd(marker);
-			if (message.startsWith("Undefined identifier encountered:")) {
-				for (String declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
-					String functionName = null;
-					String type = declaration.trim().substring(0, declaration.indexOf(':'));
-					functionName = declaration.substring(type.length() + 2);
-					if ("Universe".equals(type) || "Enumeration".equals(type))
-						functionName = functionName.substring(0, functionName.indexOf('=')).trim();
-					else if ("Derived Function".equals(type) || "Rule".equals(type)) {
-						int indexOfNewline = functionName.indexOf('\n');
-						if (indexOfNewline >= 0)
-							functionName = functionName.substring(0, indexOfNewline);
-						int indexOfBracket = functionName.indexOf('(');
-						if (indexOfBracket >= 0)
-							functionName = functionName.substring(0, indexOfBracket);
-					}
-					else if ("Enumeration member".equals(type))
-						functionName = functionName.substring(functionName.indexOf('(') + 1, functionName.indexOf(')'));
-					else if ("Function".equals(type))
-						functionName = functionName.substring(0, functionName.indexOf(':'));
-					if (functionName != null) {
-						if (isSimilar(functionName, message.substring(message.indexOf(':') + 2)))
-							proposals.add(new CompletionProposal(functionName, start, end - start, 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + functionName + "'", null, null));
-					}
+			if ("UndefinedIdentifier".equals(data[0])) {
+				String undefinedIdentifier = data[1];
+				int arguments = Integer.parseInt(data[2]);
+				for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
+					if (isSimilar(undefinedIdentifier, declaration.getName()))
+						proposals.add(new CompletionProposal(declaration.getName(), start, end - start, 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
 				}
+				proposals.add(new MarkAsLocalProposal(undefinedIdentifier, start, IconManager.getIcon("/icons/editor/bullet.gif")));
+				if (arguments == 0)
+					proposals.add(new CreateFunctionProposal(undefinedIdentifier, Collections.<String>emptyList(), IconManager.getIcon("/icons/editor/bullet.gif")));
+				else
+					proposals.add(new CreateFunctionProposal(undefinedIdentifier, null, IconManager.getIcon("/icons/editor/bullet.gif")));
+				if (arguments <= 1)
+					proposals.add(new CreateUniverseProposal(undefinedIdentifier, IconManager.getIcon("/icons/editor/bullet.gif")));
 			}
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);
-			if (error != null) {
+			if (error instanceof SimpleError && RuleErrorRecognizer.NOT_A_RULE_NAME.equals(((SimpleError)error).getErrorID())) {
+				try {
+					String undefinedRule = error.getDocument().get(error.getPosition(), error.getLength());
+					for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
+						if (declaration instanceof RuleDeclaration) {
+							if (isSimilar(undefinedRule, declaration.getName()))
+								proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+						}
+					}
+					proposals.add(new CreateRuleProposal(undefinedRule, IconManager.getIcon("/icons/editor/bullet.gif")));
+				} catch (BadLocationException e) {
+				}
+			}
+			else if (error != null) {
 				for (AbstractQuickFix fix : error.getQuickFixes())
 					fix.collectProposals(error, proposals);
 			}
 		}
 	}
 	
+	/**
+	 * Returns whether two strings are similar.
+	 * @param string first string
+	 * @param anotherString another string
+	 * @return whether two strings are similar
+	 */
 	private static boolean isSimilar(String string, String anotherString) {
-		string = string.toLowerCase();
-		anotherString = anotherString.toLowerCase();
+		String shortString = string.toLowerCase();
+		String longString = anotherString.toLowerCase();
 		
-		int sum = 0;
-		int lengthString = string.length();
-		int lengthAnotherString = anotherString.length();
-		int minLength = lengthString;
-		int maxLength = lengthAnotherString;
-		int lengthDiff = maxLength - minLength;
+		if (shortString.length() > longString.length()) {
+			String tmp = longString;
+			longString = shortString;
+			shortString = tmp;
+		}
 		
-		if (minLength > maxLength) {
-			int tmp = minLength;
-			minLength = maxLength;
-			maxLength = tmp;
-			lengthDiff = -lengthDiff;
-		}
-		for (int i = 0; i < minLength; i++) {
-			if (string.charAt(i) != anotherString.charAt(i))
-				sum += 2;
-		}
-		if (minLength != maxLength) {
-			int sum2 = 0;
-			for (int i = 1; i <= minLength; i++) {
-				if (string.charAt(lengthString - i) != anotherString.charAt(lengthAnotherString - i))
-					sum2 += 2;
+		int lengthShortString = shortString.length();
+		int lengthLongString = longString.length();
+		int lengthDiff = lengthLongString - lengthShortString;
+		int min = lengthLongString;
+		
+		for (int i = 0; i <= lengthDiff; i++) {
+			int sum = lengthDiff;
+			for (int j = 0; j < lengthShortString; j++) {
+				if (longString.charAt(i + j) != shortString.charAt(j)) {
+					sum += 2;
+					if (sum >= min)
+						break;
+				}
 			}
-			if (sum2 < sum)
-				sum = sum2;
+			if (sum < min) {
+				min = sum;
+				if (min < lengthShortString)
+					return true;
+			}
 		}
-		sum += lengthDiff;
+		int sum = lengthDiff;
+		for (int i = 0; i < lengthShortString / 2; i++) {
+			if (longString.charAt(i) != shortString.charAt(i))
+				sum += 2;
+			if (longString.charAt(lengthLongString - i - 1) != shortString.charAt(lengthShortString - i - 1))
+				sum += 2;
+			if (sum >= min)
+				break;
+		}
+		if (sum < min) {
+			min = sum;
+			if (min < lengthShortString)
+				return true;
+		}
 		
-		return sum <= minLength;
+		return false;
 	}
 
 	@Override

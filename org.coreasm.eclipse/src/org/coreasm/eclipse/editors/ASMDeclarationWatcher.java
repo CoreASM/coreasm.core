@@ -1,10 +1,10 @@
 package org.coreasm.eclipse.editors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
@@ -23,54 +23,313 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 
 /**
- * The <code>DeclarationWatcher</code> manages the markers for declarations.
+ * The <code>ASMDeclarationWatcher</code> manages the markers for declarations.
  * @author Michael Stegmaier
  *
  */
 public class ASMDeclarationWatcher implements Observer {
-	private static final String SEPERATOR = "\u25c9";
+	private static final String DECLARATION_SEPERATOR = "\u25c9";
 	
-	private ASMEditor editor;
-	private ASMParser parser;
+	public static abstract class Declaration {
+		protected final String name;
+		
+		protected Declaration(String name) {
+			if (name == null)
+				throw new IllegalArgumentException("Name must not be null!");
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+		
+		public static Declaration decode(String declaration) {
+			String type = declaration.substring(0, declaration.indexOf(':'));
+			declaration = declaration.substring(type.length() + 2);
+			if ("Function".equals(type))
+				return new FunctionDeclaration(declaration);
+			else if ("Universe".equals(type))
+				return new UniverseDeclaration(declaration);
+			else if ("Enumeration".equals(type))
+				return new EnumerationDeclaration(declaration);
+			else if ("Derived Function".equals(type))
+				return new DerivedFunctionDeclaration(declaration);
+			else if ("Rule".equals(type))
+				return new RuleDeclaration(declaration);
+			return null;
+		}
+	}
+	public static class FunctionDeclaration extends Declaration {
+		private final String[] domain;
+		private final String range;
+		
+		private FunctionDeclaration(FunctionNode node) {
+			super(node.getName());
+			this.domain = node.getDomain().toArray(new String[node.getDomain().size()]);
+			this.range = node.getRange();
+		}
+		
+		private FunctionDeclaration(String declaration) {
+			super(declaration.substring(0, declaration.indexOf(':')));
+			int index = declaration.indexOf("->");
+			String declarationDomain = declaration.substring(name.length() + 3, index - 2);
+			domain = declarationDomain.split(", ");
+			range = declaration.substring(index + 3);
+		}
+		
+		public String[] getDomain() {
+			return domain;
+		}
+
+		public String getRange() {
+			return range;
+		}
+		
+		@Override
+		public String toString() {
+			return "Function: " + name + ": " + Arrays.toString(domain) + " -> " + range;
+		}
+	}
+	public static class UniverseDeclaration extends Declaration {
+		public static class Member extends Declaration {
+			private UniverseDeclaration parent;
+			
+			private Member(UniverseDeclaration parent, String name) {
+				super(name);
+				this.parent = parent;
+			}
+			
+			@Override
+			public String toString() {
+				return "Universe member: " + parent.getName() + "(" + name + ")";
+			}
+		}
+		private List<Member> members = new ArrayList<Member>();
+		
+		private UniverseDeclaration(UniverseNode node) {
+			super(node.getName());
+			for (ASTNode member = node.getFirst().getNext(); member != null; member = member.getNext())
+				members.add(new Member(this, member.getToken()));
+		}
+		
+		private UniverseDeclaration(String declaration) {
+			super(declaration.substring(0, declaration.indexOf('=') - 1));
+			int indexOfMembers = declaration.indexOf('{');
+			if (indexOfMembers > 0) {
+				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
+					members.add(new Member(this, member));
+			}
+		}
+		
+		public List<Member> getMembers() {
+			return members;
+		}
+
+		@Override
+		public String toString() {
+			String declaration = "Universe: " + name;
+			if (EngineDebugger.getRunningInstance() == null) {
+				declaration += " = { ";
+				for (Member member : members) {
+					if (!declaration.endsWith("{ "))
+						declaration += ", ";
+					declaration += member.getName();
+				}
+				declaration += " }";
+			}
+			return declaration;
+		}
+	}
+	public static class EnumerationDeclaration extends Declaration {
+		public static class Member extends Declaration {
+			private EnumerationDeclaration parent;
+			
+			private Member(EnumerationDeclaration parent, String name) {
+				super(name);
+				this.parent = parent;
+			}
+			
+			@Override
+			public String toString() {
+				return "Enumeration member: " + parent.getName() + "(" + name + ")";
+			}
+		}
+		private List<Member> members = new ArrayList<Member>();
+		
+		private EnumerationDeclaration(EnumerationNode node) {
+			super(node.getName());
+			for (EnumerationElement member : node.getMembers())
+				members.add(new Member(this, member.getName()));
+		}
+		
+		private EnumerationDeclaration(String declaration) {
+			super(declaration.substring(0, declaration.indexOf('=') - 1));
+			int indexOfMembers = declaration.indexOf('{');
+			if (indexOfMembers > 0) {
+				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
+					members.add(new Member(this, member));
+			}
+		}
+		
+		public List<Member> getMembers() {
+			return members;
+		}
+
+		@Override
+		public String toString() {
+			String declaration = "Enumeration: " + name + " = { ";
+			for (Member member : members) {
+				if (!declaration.endsWith("{ "))
+					declaration += ", ";
+				declaration += member.getName();
+			}
+			declaration += " }";
+			return declaration;
+		}
+	}
+	public static class DerivedFunctionDeclaration extends Declaration {
+		private List<String> params = new ArrayList<String>();
+		private String comment;
+		
+		private DerivedFunctionDeclaration(DerivedFunctionNode node, String comment) {
+			super(node.getNameSignatureNode().getFirst().getToken());
+			for (ASTNode param = node.getNameSignatureNode().getFirst().getNext(); param != null; param = param.getNext()) 
+				params.add(param.getToken());
+			this.comment = comment;
+		}
+		
+		private DerivedFunctionDeclaration(String declaration) {
+			super(findName(declaration));
+			declaration = declaration.substring(name.length());
+			if (declaration.startsWith("("))
+				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
+			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0)
+				comment = declaration.substring(indexOfNewLine + 2);
+		}
+		
+		private static String findName(String declaration) {
+			int indexOfNewline = declaration.indexOf('\n');
+			if (indexOfNewline >= 0)
+				declaration = declaration.substring(0, indexOfNewline);
+			int indexOfBracket = declaration.indexOf('(');
+			if (indexOfBracket >= 0)
+				declaration = declaration.substring(0, indexOfBracket);
+			return declaration;
+		}
+		
+		@Override
+		public String toString() {
+			String declaration = "Derived Function: " + name + "(";
+			for (String param : params) {
+				if (!declaration.endsWith("("))
+					declaration += ", ";
+				declaration += param;
+			}
+			declaration = (declaration + ")").replace("()", "");
+			if (comment != null)
+				declaration += "\n\n" + comment;
+			return declaration;
+		}
+	}
+	public static class RuleDeclaration extends Declaration {
+		private List<String> params = new ArrayList<String>();
+		private String comment;
+		
+		private RuleDeclaration(ASTNode node, String comment) {
+			super(node.getFirst().getFirst().getToken());
+			if (!Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()))
+				throw new IllegalArgumentException("Illegal GrammarRule: " + node.getGrammarRule());
+			for (ASTNode param = node.getFirst().getFirst().getNext(); param != null; param = param.getNext())
+				params.add(param.getToken());
+			this.comment = comment;
+		}
+		
+		private RuleDeclaration(String declaration) {
+			super(findName(declaration));
+			declaration = declaration.substring(name.length());
+			if (declaration.startsWith("("))
+				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
+			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0)
+				comment = declaration.substring(indexOfNewLine + 2);
+		}
+		
+		private static String findName(String declaration) {
+			int indexOfNewline = declaration.indexOf('\n');
+			if (indexOfNewline >= 0)
+				declaration = declaration.substring(0, indexOfNewline);
+			int indexOfBracket = declaration.indexOf('(');
+			if (indexOfBracket >= 0)
+				declaration = declaration.substring(0, indexOfBracket);
+			return declaration;
+		}
+		
+		@Override
+		public String toString() {
+			String declaration = "Rule: " + name + "(";
+			for (String param : params) {
+				if (!declaration.endsWith("("))
+					declaration += ", ";
+				declaration += param;
+			}
+			declaration = (declaration + ")").replace("()", "");
+			if (comment != null)
+				declaration += "\n\n" + comment;
+			return declaration;
+		}
+	}
+	
+	private final ASMEditor editor;
 	
 	public ASMDeclarationWatcher(ASMEditor editor) {
 		this.editor = editor;
-		this.parser = editor.getParser();
 	}
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		if (o != parser || !(arg instanceof ParsingResult))
+		if (o != editor.getParser() || !(arg instanceof ParsingResult))
 			return;
 		ParsingResult result = (ParsingResult)arg;
 		if (result.wasSuccessful) {
 			String declarations = "";
-			for (String declaration : getDeclarations(result.document)) {
+			for (Declaration declaration : getDeclarations(result.document)) {
+				if (declaration instanceof UniverseDeclaration.Member || declaration instanceof EnumerationDeclaration.Member)
+					continue;
 				if (!declarations.isEmpty())
-					declarations += SEPERATOR;
+					declarations += DECLARATION_SEPERATOR;
 				declarations += declaration;
 			}
 			editor.createDeclarationsMark(declarations);
 		}
 	}
 	
-	public static Set<String> getDeclarations(IFile file, boolean includedDeclarations) {
-		Set<String> declarations = new HashSet<String>();
+	public static List<Declaration> getDeclarations(IFile file, boolean includedDeclarations) {
+		List<Declaration> declarations = new ArrayList<Declaration>();
 		collectDeclarations(file, includedDeclarations, declarations);
 		return declarations;
 	}
 	
-	private static void collectDeclarations(IFile file, boolean includedDeclarations, Set<String> declarations) {
+	private static void collectDeclarations(IFile file, boolean includedDeclarations, List<Declaration> declarations) {
+		if (file == null)
+			return;
 		try {
-			IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
-			if (declarationMarker.length > 0) {
-				String markerDeclarations = declarationMarker[0].getAttribute("declarations", "");
-				if (!markerDeclarations.isEmpty())
-					declarations.addAll(Arrays.asList(markerDeclarations.split(SEPERATOR)));
-			}
-			if (includedDeclarations) {
-				for (IFile includedFile : ASMIncludeWatcher.getIncludedFiles(file, true))
-					declarations.addAll(getDeclarations(includedFile, includedDeclarations));
+			if (file.exists()) {
+				IMarker[] declarationMarker = file.findMarkers(ASMEditor.MARKER_TYPE_DECLARATIONS, false, IResource.DEPTH_ZERO);
+				if (declarationMarker.length > 0) {
+					String markerDeclarations = declarationMarker[0].getAttribute("declarations", "");
+					if (!markerDeclarations.isEmpty()) {
+						for (String declaration : markerDeclarations.split(DECLARATION_SEPERATOR)) {
+							Declaration decodedDeclaration = Declaration.decode(declaration);
+							if (decodedDeclaration != null)
+								declarations.add(decodedDeclaration);
+						}
+					}
+				}
+				if (includedDeclarations) {
+					for (IFile includedFile : ASMIncludeWatcher.getIncludedFiles(file, true))
+						collectDeclarations(includedFile, true, declarations);
+				}
 			}
 		} catch (CoreException e) {
 			// TODO Auto-generated catch block
@@ -78,107 +337,64 @@ public class ASMDeclarationWatcher implements Observer {
 		}
 	}
 
-	private Set<String> getDeclarations(ASMDocument document) {
-		HashSet<String> declarations = new HashSet<String>();
+	private List<Declaration> getDeclarations(ASMDocument document) {
+		List<Declaration> declarations = new ArrayList<Declaration>();
 		for (ASTNode node = ((ASTNode)document.getRootnode()).getFirst(); node != null; node = node.getNext()) {
 			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
 				if ("Signature".equals(node.getGrammarRule())) {
 					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
 						if (signature instanceof EnumerationNode) {
-							EnumerationNode enumerationNode = (EnumerationNode)signature;
-							String declaration = "Enumeration: " + enumerationNode.getName() + " = { ";
-							for (EnumerationElement member : enumerationNode.getMembers()) {
-								if (!declaration.endsWith("{ "))
-									declaration += ", ";
-								declaration += member;
-							}
-							declaration += " }";
-							declarations.add(declaration);
-							for (EnumerationElement member : enumerationNode.getMembers())
-								declarations.add("Enumeration member: " + enumerationNode.getName() + "(" + member.getName() + ")");
+							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature);
+							declarations.add(enumeration);
+							for (EnumerationDeclaration.Member member : enumeration.getMembers())
+								declarations.add(member);
 						}
-						else if (signature instanceof FunctionNode) {
-							FunctionNode fNode = (FunctionNode)signature;
-							declarations.add("Function: " + fNode.getName() + ": " + fNode.getDomain() + " -> " + fNode.getRange());
-						}
+						else if (signature instanceof FunctionNode)
+							declarations.add(new FunctionDeclaration((FunctionNode)signature));
 						else if (signature instanceof UniverseNode) {
-							UniverseNode universeNode = (UniverseNode)signature;
-							String declaration = "Universe: " + universeNode.getName();
-							if (EngineDebugger.getRunningInstance() == null) {
-								declaration += " = { ";
-								for (ASTNode member = universeNode.getFirst().getNext(); member != null; member = member.getNext()) {
-									if (!declaration.endsWith("{ "))
-										declaration += ", ";
-									declaration += member.getToken();
-								}
-								declaration += " }";
-							}
-							declarations.add(declaration);
+							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature);
+							declarations.add(universe);
+							for (UniverseDeclaration.Member member : universe.getMembers())
+								declarations.add(member);
 						}
-						else if (signature instanceof DerivedFunctionNode) {
-							ASTNode idNode = ((DerivedFunctionNode)signature).getNameSignatureNode().getFirst();
-							String declaration = "Derived Function: " + idNode.getToken() + "(";
-							for (ASTNode param = idNode.getNext(); param != null; param = param.getNext()) {
-								if (!declaration.endsWith("("))
-									declaration += ", ";
-								declaration += param.getToken();
-							}
-							declaration = (declaration + ")").replace("()", "");
-							String comment = getComment(document, node.getScannerInfo().charPosition);
-							if (comment != null)
-								declaration += "\n\n" + comment;
-							declarations.add(declaration);
-						}
+						else if (signature instanceof DerivedFunctionNode)
+							declarations.add(new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), parseComment(document, node)));
 					}
 				}
-				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule())) {
-					ASTNode idNode = node.getFirst().getFirst();
-					String declaration = "Rule: " + idNode.getToken() + "(";
-					for (ASTNode param = idNode.getNext(); param != null; param = param.getNext()) {
-						if (!declaration.endsWith("("))
-							declaration += ", ";
-						declaration += param.getToken();
-					}
-					declaration = (declaration + ")").replace("()", "");
-					String comment = getComment(document, node.getScannerInfo().charPosition);
-					if (comment != null)
-						declaration += "\n\n" + comment;
-					declarations.add(declaration);
-				}
+				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()))
+					declarations.add(new RuleDeclaration(node, parseComment(document, node)));
 			}
 		}
 		return declarations;
 	}
 	
-	private String getComment(IDocument document, int offset) {
+	private static String parseComment(IDocument document, ASTNode node) {
 		try {
 			String comment = "";
 			String line;
-			int lineNumber = document.getLineOfOffset(offset);
+			int lineNumber = document.getLineOfOffset(node.getScannerInfo().charPosition);
 			boolean blockComment = false;
 			do {
 				lineNumber--;
-				line = document.get(document.getLineOffset(lineNumber), document.getLineLength(lineNumber));
+				line = document.get(document.getLineOffset(lineNumber), document.getLineLength(lineNumber)).trim();
 				if (line.startsWith("//"))
 					comment = line.substring(2).trim() + "\n" + comment;
+				else if (line.contains("/*") && line.contains("*/")) {
+					comment = line.replace("/*", "").replace("*/", "").trim() + "\n" + comment;
+					blockComment = false;
+				}
 				else if (line.contains("*/")) {
-					if (line.length() > 3)
-						comment = line.replace("*/", "").trim() + "\n" + comment;
+					comment = line.replace("*/", "").trim() + "\n" + comment;
 					blockComment = true;
 				}
 				else if (line.contains("/*")) {
-					if (line.length() > 4)
-						comment = line.replace("/*", "").trim() + "\n" + comment;
-					blockComment = false;
-				}
-				else if (line.contains("/*") && line.contains("*/")) {
-					if (line.length() > 4)
-						comment = line.replace("/*", "").replace("*/", "").trim() + "\n" + comment;
+					comment = line.replace("/*", "").trim() + "\n" + comment;
 					blockComment = false;
 				}
 				else if (blockComment)
 					comment = line.replace("*", "").trim() + "\n" + comment;
 			} while (line.startsWith("//") || blockComment);
+			comment = comment.replace("*", "").trim();
 			if (comment.isEmpty())
 				return null;
 			return comment;
