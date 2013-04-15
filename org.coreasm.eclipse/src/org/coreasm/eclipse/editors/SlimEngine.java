@@ -17,7 +17,6 @@ import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.Engine;
-import org.coreasm.engine.EngineException;
 import org.coreasm.engine.EngineObserver;
 import org.coreasm.engine.InconsistentUpdateSetException;
 import org.coreasm.engine.Specification;
@@ -58,18 +57,21 @@ public class SlimEngine implements ControlAPI {
 
 	private static ControlAPI fullEngine = null;
 	
+	private Parser parser;
+	
 	private Set<Plugin> plugins;	// plugins which are available through this engine;
 	private Set<ExtensionPointPlugin> parsingSpecSrcModePlugins = new HashSet<ExtensionPointPlugin>();
 	
 	private List<CoreASMWarning> warnings = new ArrayList<CoreASMWarning>();
 	private List<CoreASMError> errors = new ArrayList<CoreASMError>();
 	
-	public SlimEngine(Set<String> plugins) {
+	public SlimEngine(Parser parser, Set<String> plugins) {
 		super();
 
 		if (fullEngine == null)
 			createFullEngine();
 		
+		this.parser = parser;
 		this.plugins = new HashSet<Plugin>();
 		Set<String> pluginnames = new HashSet<String>(plugins); 
 		Set<Plugin> tmpPlugins = new HashSet<Plugin>();
@@ -123,7 +125,8 @@ public class SlimEngine implements ControlAPI {
 		for (ExtensionPointPlugin plugin : parsingSpecSrcModePlugins)
 			try {
 				plugin.fireOnModeTransition(EngineMode.emParsingSpec, EngineMode.emIdle);
-			} catch (EngineException e) {
+			} catch (Throwable t) {
+				t.printStackTrace();
 			}
 	}
 
@@ -227,6 +230,11 @@ public class SlimEngine implements ControlAPI {
 			return null;
 		} else
 			return engine.getSpec();
+	}
+	
+	@Override
+	public Parser getParser() {
+		return parser;
 	}
 	
 	@Override
@@ -647,12 +655,6 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public Interpreter getInterpreter() {
-		throw new UnsupportedOperationException();
-		
-	}
-
-	@Override
-	public Parser getParser() {
 		throw new UnsupportedOperationException();
 		
 	}

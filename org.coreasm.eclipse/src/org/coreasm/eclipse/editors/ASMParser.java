@@ -12,10 +12,13 @@ import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.error.ParseErrorDetails;
 import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.Specification;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.parser.PositionMap;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -36,9 +39,9 @@ import org.eclipse.jface.text.IDocument;
  * are interested in the result of each parsing can be notified after each
  * run of the parser.
  * 
- * @author Markus Müller
+ * @author Markus Müller, Michael Stegmaier
  */
-public class ASMParser extends Observable
+public class ASMParser extends Observable implements org.coreasm.engine.parser.Parser
 {
 	private ASMEditor parentEditor;
 	private ASMDocumentProvider documentProvider;
@@ -92,7 +95,7 @@ public class ASMParser extends Observable
 		parsingJob.pause();
 		
 		// create a new slim engine with all the plugins which are (and can be) used.
-		slimengine = new SlimEngine(newPlugins);
+		slimengine = new SlimEngine(this, newPlugins);
 		ControlAPI engine = slimengine;
 		
 		// The parser is created through the Kernel object, as a "side effect"
@@ -197,7 +200,8 @@ public class ASMParser extends Observable
 		parentEditor.createPluginMark(uses);
 		
 		// notify observers
-		((SlimEngine)slimengine).notifyEngine();
+		if (result.wasSuccessful)
+			((SlimEngine)slimengine).notifyEngine();
 		setChanged();
 		notifyObservers(result);
 
@@ -421,9 +425,9 @@ public class ASMParser extends Observable
 		return currentIDs;
 	}
 	
-	public Node getRootNode()
+	public ASTNode getRootNode()
 	{
-		return rootnode;
+		return (ASTNode)rootnode;
 	}
 	
 	public ParsingJob getJob()
@@ -515,6 +519,38 @@ public class ASMParser extends Observable
 			return interrupted;
 		}
 
+	}
+
+
+	@Override
+	public void setSpecification(Specification specification) {
+		throw new UnsupportedOperationException();
+		
+	}
+
+	@Override
+	public void parseHeader() throws org.coreasm.engine.parser.ParserException {
+		throw new UnsupportedOperationException();
+		
+	}
+
+	@Override
+	public Set<String> getRequiredPlugins() {
+		throw new UnsupportedOperationException();
+		
+	}
+
+	@Override
+	public void parseSpecification()
+			throws org.coreasm.engine.parser.ParserException {
+		throw new UnsupportedOperationException();
+		
+	}
+
+	@Override
+	public PositionMap getPositionMap() {
+		throw new UnsupportedOperationException();
+		
 	}
 	
 }

@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.editors.errors;
 
 import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.eclipse.jface.text.BadLocationException;
@@ -17,7 +18,7 @@ public class CoreASMEclipseError extends AbstractError {
 		super(ErrorType.COREASM_ERROR);
 		set(AbstractError.DESCRIPTION, "CoreASM Error: " + error.message);
 		set(AbstractError.POSITION, calculatePosition(error, document));
-		set(AbstractError.LENGTH, calculateLength(error.node));
+		set(AbstractError.LENGTH, calculateLength(error.node, document));
 	}
 
 	private static int calculatePosition(CoreASMError error, IDocument document) {
@@ -34,9 +35,23 @@ public class CoreASMEclipseError extends AbstractError {
 		return 0;
 	}
 	
-	private static int calculateLength(Node node) {
-		if (node != null && node.getToken() != null)
-			return node.getToken().length();
+	private static int calculateLength(Node node, IDocument document) {
+		if (node instanceof FunctionRuleTermNode) {
+			FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+			if (frNode.hasName())
+				return frNode.getName().length();
+		}
+		if (node != null) {
+			if (node.getToken() != null)
+				return node.getToken().length();
+			Node lastChild = node.getFirstCSTNode();
+			for (Node child = lastChild; child != null; child = child.getNextCSTNode()) {
+				if (child.getToken() != null)
+					lastChild = child;
+			}
+			if (lastChild != null)
+				return lastChild.getScannerInfo().charPosition - node.getScannerInfo().charPosition + lastChild.getToken().length();
+		}
 		return 0;
 	}
 }

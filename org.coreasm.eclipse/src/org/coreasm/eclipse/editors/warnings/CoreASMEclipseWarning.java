@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.editors.warnings;
 
 import org.coreasm.engine.CoreASMWarning;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.eclipse.jface.text.BadLocationException;
@@ -32,8 +33,22 @@ public class CoreASMEclipseWarning extends AbstractWarning {
 	}
 	
 	private static int calculateLength(Node node) {
-		if (node != null && node.getToken() != null)
-			return node.getToken().length();
+		if (node instanceof FunctionRuleTermNode) {
+			FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+			if (frNode.hasName())
+				return frNode.getName().length();
+		}
+		if (node != null) {
+			if (node.getToken() != null)
+				return node.getToken().length();
+			Node lastChild = node.getFirstCSTNode();
+			for (Node child = lastChild; child != null; child = child.getNextCSTNode()) {
+				if (child.getToken() != null)
+					lastChild = child;
+			}
+			if (lastChild != null)
+				return lastChild.getScannerInfo().charPosition - node.getScannerInfo().charPosition + lastChild.getToken().length();
+		}
 		return 0;
 	}
 }
