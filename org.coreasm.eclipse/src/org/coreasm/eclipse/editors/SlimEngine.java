@@ -1,6 +1,5 @@
 package org.coreasm.eclipse.editors;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
@@ -212,7 +211,7 @@ public class SlimEngine implements ControlAPI {
 		strSpec.append("rule main = skip");
 		
 		// load all plugins
-		Specification spec = getSpec(strSpec.toString(), true, (Engine) fullEngine);
+		getSpec(strSpec.toString(), true, (Engine) fullEngine);
 	}
 	
 	// COPIED FROM EngineDriver
@@ -425,13 +424,7 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public Specification getSpec() {
-		//throw new UnsupportedOperationException();
-		try {
-			return new Specification(this, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+		throw new UnsupportedOperationException();
 		
 	}
 

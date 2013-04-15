@@ -13,6 +13,7 @@ import org.codehaus.jparsec.error.ParseErrorDetails;
 import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.Specification;
+import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
@@ -22,7 +23,6 @@ import org.coreasm.engine.parser.PositionMap;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.util.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -368,27 +368,12 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	private void collectIDs(Set<Plugin> plugins)
 	{
 		currentIDs.clear();
-		for (Plugin plugin: plugins)
-		{
-			if (plugin instanceof VocabularyExtender)
-			{
-				VocabularyExtender vePlugin = (VocabularyExtender) plugin;
-				
-				// Some plugins throw NullPointerExceptions from within the
-				// following functions, these are ignored 
-				try {
-					currentIDs.addAll(vePlugin.getBackgroundNames());
-				} catch (NullPointerException e) { ; }
-				
-				try {
-					currentIDs.addAll(vePlugin.getFunctionNames());
-				} catch (NullPointerException e) { ; }
-				
-				try {
-					currentIDs.addAll(vePlugin.getUniverseNames());
-				} catch (NullPointerException e) { ; }
-			}
-		}
+		for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedFunctions())
+			currentIDs.add(functionInfo.name);
+		for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedUniverses())
+			currentIDs.add(functionInfo.name);
+		for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedBackgrounds())
+			currentIDs.add(functionInfo.name);
 	}
 	
 	/**

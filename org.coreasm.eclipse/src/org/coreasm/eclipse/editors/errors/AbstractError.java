@@ -250,6 +250,9 @@ public abstract class AbstractError
 			case UNDEFINED:
 				error = new UndefinedError(attributes);
 				break;
+			case COREASM_ERROR:
+				error = new CoreASMEclipseError(attributes);
+				break;
 			default:
 				error = null;
 			}
