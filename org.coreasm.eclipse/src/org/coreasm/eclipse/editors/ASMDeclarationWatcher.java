@@ -113,7 +113,7 @@ public class ASMDeclarationWatcher implements Observer {
 		}
 		
 		private UniverseDeclaration(String declaration) {
-			super(declaration.substring(0, declaration.indexOf('=') - 1));
+			super(declaration.split("[ =]")[0]);//use split instead of declaration.substring(0, declaration.indexOf('=') - 1) to prevent String out of bounds exception if no "=" can be found
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
@@ -164,6 +164,7 @@ public class ASMDeclarationWatcher implements Observer {
 		
 		private EnumerationDeclaration(String declaration) {
 			super(declaration.substring(0, declaration.indexOf('=') - 1));
+			declaration.split("=");
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
