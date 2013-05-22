@@ -32,7 +32,7 @@ import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
-import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
+import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;

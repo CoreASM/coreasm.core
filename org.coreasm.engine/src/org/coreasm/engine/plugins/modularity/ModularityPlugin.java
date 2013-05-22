@@ -267,33 +267,4 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 		}
 		return newSpec;
 	}
-	
-	
-	/**
-	 * Node for include Statements. This is necessary when using the parser
-	 * without the engine, so include's don't get replaced before parsing. *
-	 * 
-	 * @author Markus
-	 */
-	public class IncludeNode extends Node {
-		private static final long serialVersionUID = 1L;
-
-		private String filename = null;
-
-		public IncludeNode(ScannerInfo scannerInfo) {
-			super(PLUGIN_NAME, "include", scannerInfo, "Include");
-		}
-
-		public String getFilename() {
-			if (filename == null) {
-				Node filenameNode = this.getChildNode("alpha");
-				String fname = filenameNode.unparse();
-				fname = fname.substring(1, fname.length() - 1); // remove quotes
-				this.filename = fname;
-			}
-
-			return filename;
-		}
-
-	}
 }

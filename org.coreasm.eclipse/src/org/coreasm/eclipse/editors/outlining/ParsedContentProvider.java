@@ -14,7 +14,7 @@ import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.NodeType;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
+import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
@@ -27,7 +27,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 /**
  * Content provider for ParsedOutlinePage
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public class ParsedContentProvider implements ITreeContentProvider 
 {
@@ -505,7 +505,7 @@ public class ParsedContentProvider implements ITreeContentProvider
 	
 	/**
 	 * Helper class which stores the lists with the outline nodes
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	private class ParsingResult
 	{

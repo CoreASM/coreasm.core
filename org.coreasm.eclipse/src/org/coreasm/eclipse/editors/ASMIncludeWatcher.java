@@ -8,7 +8,7 @@ import java.util.Set;
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.plugins.modularity.ModularityPlugin.IncludeNode;
+import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
