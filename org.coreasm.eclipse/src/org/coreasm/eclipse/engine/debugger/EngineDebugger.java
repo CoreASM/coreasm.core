@@ -249,6 +249,11 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	};
 	
 	@Override
+	protected void postExecutionCallback() {
+		states.clear();
+	}
+	
+	@Override
 	public synchronized void updateStatus(EngineDriverStatus status) {
 		EngineDriverStatus oldStatus = getStatus();
 		super.updateStatus(status);

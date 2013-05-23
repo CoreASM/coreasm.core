@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.coreasm.engine.absstorage.AbstractUniverse;
-import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 
@@ -21,15 +19,16 @@ import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
  */
 public class ASMUniverse extends AbstractUniverse {
 	private final AbstractUniverse abstractUniverse;
-	private final ASMFunctionElement functionElement;
 	protected final Set<Element> elements = new HashSet<Element>();
 
 	public ASMUniverse(String name, AbstractUniverse abstractUniverse) {
 		setFClass(abstractUniverse.getFClass());
+		setSignature(abstractUniverse.getSignature());
 		this.abstractUniverse = abstractUniverse;
-		functionElement = new ASMFunctionElement(name, abstractUniverse);
-		if (abstractUniverse instanceof UniverseElement)
-			elements.addAll(((UniverseElement)abstractUniverse).enumerate());
+		if (abstractUniverse.isModifiable()) {
+			if (abstractUniverse instanceof UniverseElement)
+				elements.addAll(((UniverseElement)abstractUniverse).enumerate());
+		}
 	}
 	
 	public boolean isUniverseElement() {
@@ -37,30 +36,20 @@ public class ASMUniverse extends AbstractUniverse {
 	}
 	
 	@Override
-	public Signature getSignature() {
-		return functionElement.getSignature();
-	}
-	
-	@Override
-	public void setSignature(Signature sig) {
-		functionElement.setSignature(sig);
-	}
-	
-	@Override
 	public String getBackground() {
-		return functionElement.getBackground();
+		return abstractUniverse.getBackground();
 	}
 	
 	@Override
 	protected Element getValue(Element e) {
-		if (abstractUniverse instanceof BackgroundElement)
+		if (!abstractUniverse.isModifiable())
 			return (abstractUniverse.member(e) ? BooleanElement.TRUE : BooleanElement.FALSE);
 		return (elements.contains(e) ? BooleanElement.TRUE : BooleanElement.FALSE);
 	}
 	
 	@Override
 	public Set<? extends Element> getRange() {
-		return functionElement.getRange();
+		return abstractUniverse.getRange();
 	}
 	
 	@Override
@@ -76,6 +65,8 @@ public class ASMUniverse extends AbstractUniverse {
 	
 	@Override
 	public Set<Location> getLocations(String name) {
+		if (!abstractUniverse.isModifiable())
+			return abstractUniverse.getLocations(name);
 		Set<Location> locations = new HashSet<Location>();
 		for (Element element : elements)
 			locations.add(new Location(name, ElementList.create(element)));
@@ -84,6 +75,6 @@ public class ASMUniverse extends AbstractUniverse {
 	
 	@Override
 	public String toString() {
-		return functionElement.toString();
+		return abstractUniverse.toString();
 	}
 }

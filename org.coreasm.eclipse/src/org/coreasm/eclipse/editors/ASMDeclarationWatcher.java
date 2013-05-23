@@ -7,7 +7,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -113,7 +112,7 @@ public class ASMDeclarationWatcher implements Observer {
 		}
 		
 		private UniverseDeclaration(String declaration) {
-			super(declaration.split("[ =]")[0]);//use split instead of declaration.substring(0, declaration.indexOf('=') - 1) to prevent String out of bounds exception if no "=" can be found
+			super(declaration.substring(0, declaration.indexOf('=') - 1));
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
@@ -128,15 +127,13 @@ public class ASMDeclarationWatcher implements Observer {
 		@Override
 		public String toString() {
 			String declaration = "Universe: " + name;
-			if (EngineDebugger.getRunningInstance() == null) {
-				declaration += " = { ";
-				for (Member member : members) {
-					if (!declaration.endsWith("{ "))
-						declaration += ", ";
-					declaration += member.getName();
-				}
-				declaration += " }";
+			declaration += " = { ";
+			for (Member member : members) {
+				if (!declaration.endsWith("{ "))
+					declaration += ", ";
+				declaration += member.getName();
 			}
+			declaration += " }";
 			return declaration;
 		}
 	}
@@ -164,7 +161,6 @@ public class ASMDeclarationWatcher implements Observer {
 		
 		private EnumerationDeclaration(String declaration) {
 			super(declaration.substring(0, declaration.indexOf('=') - 1));
-			declaration.split("=");
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))

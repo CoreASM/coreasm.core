@@ -20,6 +20,7 @@ import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
+import org.coreasm.engine.plugins.chooserule.PickExpNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
@@ -104,6 +105,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		if (isExistsExpVariable(frNode))
 			return true;
 		if (isChooseVariable(frNode))
+			return true;
+		if (isPickExpVariable(frNode))
 			return true;
 		if (isExtendRuleVariable(frNode))
 			return true;
@@ -237,6 +240,23 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			chooseRuleNode = chooseRuleNode.getParent();
 		if (chooseRuleNode instanceof ChooseRuleNode)
 			return (ChooseRuleNode)chooseRuleNode;
+		return null;
+	}
+	
+	private boolean isPickExpVariable(FunctionRuleTermNode frNode) {
+		for (PickExpNode pickExpNode = getParentPickExpNode(frNode); pickExpNode != null; pickExpNode = getParentPickExpNode(pickExpNode)) {
+			if (pickExpNode.getVariable().getToken().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private PickExpNode getParentPickExpNode(ASTNode node) {
+		ASTNode pickExpNode = node.getParent();
+		while (pickExpNode != null && !(pickExpNode instanceof PickExpNode))
+			pickExpNode = pickExpNode.getParent();
+		if (pickExpNode instanceof PickExpNode)
+			return (PickExpNode)pickExpNode;
 		return null;
 	}
 	

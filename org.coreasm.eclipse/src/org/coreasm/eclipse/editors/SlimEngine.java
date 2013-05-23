@@ -212,6 +212,7 @@ public class SlimEngine implements ControlAPI {
 		
 		// load all plugins
 		getSpec(strSpec.toString(), true, (Engine) fullEngine);
+		fullEngine.terminate();
 	}
 	
 	// COPIED FROM EngineDriver

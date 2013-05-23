@@ -27,9 +27,11 @@ public class ASMFunctionElement extends FunctionElement {
 		setSignature(functionElement.getSignature());
 		this.name = name;
 		this.functionElement = functionElement;
-		this.locations.addAll(functionElement.getLocations(name));
-		for (Location location : locations)
-			this.values.put(location.args, functionElement.getValue(location.args));
+		if (functionElement.isModifiable()) {
+			this.locations.addAll(functionElement.getLocations(name));
+			for (Location location : locations)
+				this.values.put(location.args, functionElement.getValue(location.args));
+		}
 	}
 	
 	@Override
@@ -41,6 +43,8 @@ public class ASMFunctionElement extends FunctionElement {
 	public Element getValue(List<? extends Element> args) {
 		if (!functionElement.isReadable())
 			return null;
+		if (!functionElement.isModifiable())
+			return functionElement.getValue(args);
 		
 		Element value = values.get(args);
 		if (value == null)
@@ -63,6 +67,8 @@ public class ASMFunctionElement extends FunctionElement {
 	
 	@Override
 	public Set<Location> getLocations(String name) {
+		if (!functionElement.isModifiable())
+			return functionElement.getLocations(name);
 		return locations;
 	}
 	
