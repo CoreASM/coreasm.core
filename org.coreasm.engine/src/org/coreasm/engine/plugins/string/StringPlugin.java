@@ -25,7 +25,6 @@ import java.util.Set;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Terminals;
 import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.Tokens.Fragment;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
@@ -38,7 +37,6 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;
 import org.coreasm.engine.plugin.InterpreterPlugin;
@@ -84,11 +82,6 @@ public class StringPlugin extends Plugin
 	private final String[] keywords = {};
 	private final String[] operators = {"+"};
 	
-	public StringPlugin() {
-		//getFunctions();
-		getBackgrounds();
-	}
-
 	public String[] getKeywords() {
 		return keywords;
 	}
@@ -148,7 +141,6 @@ public class StringPlugin extends Plugin
 		if (parsers == null) {
 			//org.coreasm.engine.parser.Parser parser = capi.getParser();
 			parsers = new HashMap<String, GrammarRule>();
-			ParserTools npTools = ParserTools.getInstance(capi);
 			
 			Parser<Node> stringParser = Terminals.StringLiteral.PARSER.token().map(
 					new org.codehaus.jparsec.functors.Map<Token,Node>() {
@@ -179,7 +171,8 @@ public class StringPlugin extends Plugin
 	 */
 	@Override
 	public void initialize() {
-		// Does nothing here
+		getFunctions();
+		getBackgrounds();
 	}
 
 	//--------------------------------

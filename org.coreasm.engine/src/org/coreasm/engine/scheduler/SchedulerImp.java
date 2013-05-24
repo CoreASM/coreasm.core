@@ -259,6 +259,7 @@ public class SchedulerImp implements Scheduler {
 		try {
 			runnerGroup.invoke(cpe);
 		} catch (InterruptedException e) {
+			runnerGroup.interruptAll();
 			throw new EngineException(
 					"Could not finish program evaluation due to "
 							+ "the following interrupted exception: " + e);

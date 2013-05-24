@@ -774,11 +774,14 @@ public class Engine implements ControlAPI {
 					break;
 				}
 		} while (jEntry != null);
-		if (found) {
-			return getPluginClassName(stream);
-		} else
+		String pluginClassName = null;
+		if (found)
+			pluginClassName = getPluginClassName(stream);
+		stream.close();
+		if (pluginClassName == null)
 			throw new EngineException("Invalid Plugin package (" + jarFile
 					+ "). Cannot find the identification file.");
+		return pluginClassName;
 	}
 
 	/**
@@ -1418,7 +1421,13 @@ public class Engine implements ControlAPI {
 							while (!commandQueue.isEmpty()) {
 								EngineCommand cmd = commandQueue.remove(0);
 								if (cmd != null) {
-									if (cmd.type == EngineCommand.CmdType.ecRecover) {
+									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
+										next(EngineMode.emTerminating);
+										lastError = null;
+										logger.debug("Engine terminated by user command.");
+										break;
+									}
+									else if (cmd.type == EngineCommand.CmdType.ecRecover) {
 										// Recover by going to the idle mode
 										next(EngineMode.emIdle);
 										lastError = null;
