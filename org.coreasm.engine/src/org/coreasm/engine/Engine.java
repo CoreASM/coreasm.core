@@ -1,9 +1,9 @@
 /*
- * Engine.java 	
+ * Engine.java
  *
- * Copyright (C) 2005-2012 Roozbeh Farahbod 
+ * Copyright (C) 2005-2012 Roozbeh Farahbod
  *
- * Licensed under the Academic Free License version 3.0 
+ * Licensed under the Academic Free License version 3.0
  *   http://www.opensource.org/licenses/afl-3.0.php
  *   http://www.coreasm.org/afl-3.0.php
  *
@@ -72,22 +72,22 @@ import org.slf4j.LoggerFactory;
 /**
  * This class provides the actual implementation of a CoreASM engine. It implements {@link ControlAPI} and has
  * four components: a {@link Parser}, a {@link Scheduler}, an {@link Interpreter}, and an {@link AbstractStorage}.
- * 
+ *
  * @author Roozbeh Farahbod
- * 
+ *
  */
 public class Engine implements ControlAPI {
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 5, 6, "beta");
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(Engine.class);
-	
+
 	private static final String PLUGIN_PROPERTIES_FILE_NAME = "CoreASMPlugin.properties";
 	private static final String PLUGIN_ID_FILE_NAME = "CoreASMPlugin.id";
 	private static final String PLUGIN_ID_PROPERTY_NAME = "mainclass";
 	private static final String PLUGIN_CLASSPATH_PROPERTY_NAME = "classpath";
 	private static final String PLUGIN_CLASSPATH_SEPARATOR = ":";
-	
+
 	/** Unique name of the engine. */
 	private final String name;
 
@@ -123,13 +123,13 @@ public class Engine implements ControlAPI {
 
 	/** A flag which is on while engine is busy */
 	private volatile boolean engineBusy = false;
-	
+
 	/** Cache of EngineMode events */
 	private Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
-	
+
 	/** CoreASM Plugin Service Registry */
 	private Map<String, Set<ServiceProvider>> serviceRegistry;
-	
+
 	/** User command queue */
 //	private Queue<EngineCommand> commandQueue;
 	private CommandQueue commandQueue;
@@ -148,26 +148,26 @@ public class Engine implements ControlAPI {
 
 	/** Last error occurred in the engine */
 	private volatile CoreASMError lastError = null;
-	
+
 	/** An optional class loader used to load plugins */
 	private ClassLoader classLoader = null;
-	
+
 	/* the latest loaded specification */
 	private Specification specification = null;
 
 	/* Last processed engine command */
 	private EngineCommand lastCommand = null;
-	
+
 	private boolean isStateInitialized = false;
 
 	private List<CoreASMWarning> warnings;
-	
+
 	/**
 	 * Constructs a new CoreASM engine with the specified properties. This is
 	 * mainly for future extensions.
-	 * 
+	 *
 	 * This method is <code>protected</code>.
-	 * 
+	 *
 	 * @param properties
 	 *            properties of the engine to be created.
 	 */
@@ -204,9 +204,9 @@ public class Engine implements ControlAPI {
 	/**
 	 * The default constructor to create a new CoreASM engine. This method calls
 	 * <code>Engine(null)</code>.
-	 * 
+	 *
 	 * This method is <code>protected</code>.
-	 * 
+	 *
 	 * @see #Engine(java.util.Properties)
 	 */
 	protected Engine() {
@@ -229,7 +229,7 @@ public class Engine implements ControlAPI {
 			loadCorePlugins();
 		}
 	}
-	
+
 	@Override
 	public void initialize() {
 		commandQueue
@@ -244,7 +244,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void recover() {
-		if (getEngineMode() == EngineMode.emError) 
+		if (getEngineMode() == EngineMode.emError)
 			commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecRecover,
 					null));
 	}
@@ -263,7 +263,7 @@ public class Engine implements ControlAPI {
 	@Override
 	public void loadSpecification(String name, Reader src) {
 		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
-				new NamedStringReader(name, src))); 
+				new NamedStringReader(name, src)));
 	}
 
 	@Override
@@ -280,7 +280,7 @@ public class Engine implements ControlAPI {
 	@Override
 	public void parseSpecification(String name, Reader src) {
 		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
-				new NamedStringReader(name, src))); 
+				new NamedStringReader(name, src)));
 	}
 
 	@Deprecated
@@ -315,14 +315,14 @@ public class Engine implements ControlAPI {
 	@Override
 	public void parseSpecificationHeader(String name, Reader src, boolean loadPlugins) {
 		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
-				new ParseCommandData(loadPlugins, new NamedStringReader(name, src)))); 
+				new ParseCommandData(loadPlugins, new NamedStringReader(name, src))));
 	}
 
 	@Override
 	public Specification getSpec() {
 		return specification;
 	}
-	
+
 	/*
 	public Specification getSpec() {
 		String[] text = {};
@@ -344,11 +344,11 @@ public class Engine implements ControlAPI {
 		}
 	}
 	*/
-	
+
 	/**
 	 * Returns the current state of the engine (after the last computation
 	 * step). The state is not cloned.
-	 * 
+	 *
 	 * @see ControlAPI#getState()
 	 */
 	@Override
@@ -358,7 +358,7 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * This method is not supported by this engine.
-	 * 
+	 *
 	 * @throws UnsupportedOperationException
 	 * @see ControlAPI#getPrevState(int)
 	 */
@@ -402,7 +402,7 @@ public class Engine implements ControlAPI {
 	 * Returns properties of the engine. The returned object is a (shallow)
 	 * clone of engine properties, so changing its structure will not change the
 	 * properties of the engine.
-	 * 
+	 *
 	 * @see ControlAPI#getProperties()
 	 */
 	@Override
@@ -413,7 +413,7 @@ public class Engine implements ControlAPI {
 	/**
 	 * Sets new properties for the engine based on the given properties. This
 	 * method uses a shallow clone of the given properties.
-	 * 
+	 *
 	 * @see ControlAPI#setProperties(Properties)
 	 */
 	@Override
@@ -452,7 +452,7 @@ public class Engine implements ControlAPI {
 		else
 			return false;
 	}
-	
+
 	@Override
 	public EngineMode getEngineMode() {
 		return engineMode;
@@ -498,7 +498,7 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * Returns a copy of the collection of observers in this engine.
-	 * 
+	 *
 	 * @see ControlAPI#getObservers()
 	 */
 	@Override
@@ -522,28 +522,28 @@ public class Engine implements ControlAPI {
 	 * Loads plugin catalog. This method looks for all available plugins, and
 	 * creates a map of plugin names to plugin objects. This method does NOT
 	 * initialize any plugin.
-	 * 
+	 *
 	 * @throws IOException
-	 * 
+	 *
 	 */
 	private void loadCatalog() throws IOException {
 		logger.debug(
 				"Loading plugin catalog...");
-		
+
 		String rootFolder = Tools.getRootFolder();
-		
+
 		// drop '/' from the end
-		if (rootFolder.charAt(rootFolder.length() - 1) == '/') 
+		if (rootFolder.charAt(rootFolder.length() - 1) == '/')
 			rootFolder = rootFolder.substring(0, rootFolder.length() - 1);
-		
+
 		// Looking into the default plugin folder
 		loadCatalog(rootFolder + "/plugins", true);
-		
+
 		// looking to the extended plugin folders
 		String pluginFolders = getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
 		if (pluginFolders != null) {
-			for (String folder: Tools.tokenize(pluginFolders, EngineProperties.PLGUIN_FOLDERS_DELIM)) 
-				if (folder.length() != 0) 
+			for (String folder: Tools.tokenize(pluginFolders, EngineProperties.PLUGIN_FOLDERS_DELIM))
+				if (folder.length() != 0)
 					loadCatalog(folder, false);
 		}
 	}
@@ -569,7 +569,7 @@ public class Engine implements ControlAPI {
 		}
 		for (int i = 0; i < folders.length; i++) {
 			String fullName = folder + "/"	+ folders[i];
-			
+
 			// ignore .svn and other hidden files/folders
 			if (folders[i].startsWith(".")) {
 				logger.warn("Ignoring {}", fullName);
@@ -578,13 +578,13 @@ public class Engine implements ControlAPI {
 			loadPluginClasses(fullName);
 		}
 	}
-	
+
 	/*
-	 * Loads a single plugin 
+	 * Loads a single plugin
 	 */
 	private void loadPluginClasses(String fileName) {
 		File file = new File(fileName);
-		
+
 		try {
 			// checking if the path points to a directory (folder)
 			if (file.isDirectory())
@@ -615,7 +615,7 @@ public class Engine implements ControlAPI {
 			// if there is a properties file
 			if (Tools.find(PLUGIN_PROPERTIES_FILE_NAME, contents) > -1) {
 				Properties properties = new Properties();
-				
+
 				// load the properties
 				try {
 					properties.load(
@@ -626,23 +626,23 @@ public class Engine implements ControlAPI {
 				} catch (IOException e) {
 					throw new EngineException("Cannot load plugin properties file.");
 				}
-				
+
 				// get the main class name
 				final String className = properties.getProperty(PLUGIN_ID_PROPERTY_NAME);
 				if (className == null | className.length() == 0)
 					throw new EngineException("Plugin class file name is invalid.");
-				
+
 				// get the classpath
 				final String classpath = properties.getProperty(PLUGIN_CLASSPATH_PROPERTY_NAME);
 				ArrayList<File> pathList = new ArrayList<File>();
-				for (String folder: Tools.tokenize(classpath, PLUGIN_CLASSPATH_SEPARATOR)) 
+				for (String folder: Tools.tokenize(classpath, PLUGIN_CLASSPATH_SEPARATOR))
 					if (folder.length() != 0)
 						pathList.add(new File(file.getAbsolutePath() + File.separator + folder));
-				
+
 				// load the plugin
 				loadPlugin(file.getName(), className, pathList.toArray(new File[]{}));
-				
-			} else 
+
+			} else
 				if (Tools.find(PLUGIN_ID_FILE_NAME, contents) > -1) {
 					String className = "";
 					try {
@@ -663,7 +663,7 @@ public class Engine implements ControlAPI {
 	private void loadPluginClassesFromZipFile(File file) throws EngineException {
 		throw new EngineException("Plugin ZIP files are not supported.");
 	}
-	
+
 	/*
 	 * Loads a plugin from a Jar file.
 	 */
@@ -678,20 +678,20 @@ public class Engine implements ControlAPI {
 		}
 		loadPlugin(file.getName(), className, file);
 	}
-	
-	
+
+
 	/*
 	 * Loads a single plugin class from the given list of resources.
 	 */
 	private void loadPlugin(String pName, String className, File... resources) throws EngineException {
 		URL[] urls = new URL[resources.length];
 		try {
-			for (int i=0; i < resources.length; i++) 
+			for (int i=0; i < resources.length; i++)
 				urls[i] = resources[i].toURI().toURL();
 		} catch (MalformedURLException e) {
 			throw new EngineException("Cannot locate plugin.");
 		}
-		
+
 		URLClassLoader loader = null;
 		if (this.classLoader == null)
 			loader = new URLClassLoader(urls);
@@ -710,7 +710,7 @@ public class Engine implements ControlAPI {
 				VersionInfo vreq = VersionInfo.valueOf(minVersion.value());
 				if (vreq != null && vreq.compareTo(this.VERSION_INFO) > 0) {
 					Logger.log(Logger.ERROR, Logger.controlAPI,
-							"Cannot load plugin '" + fullName + 
+							"Cannot load plugin '" + fullName +
 							"' as it is built for a more recent version" +
 							"of the engine (" + vreq + " and above). Skipping this plugin.");
 					continue;
@@ -731,11 +731,11 @@ public class Engine implements ControlAPI {
 			logger.error(
 						"Invalid plugin '{}'. This class does not extend the CoreASM Pluing class.", className);
 	}
-	
-	
+
+
 	/**
 	 * Reads full class name of a plugin from a text file.
-	 * 
+	 *
 	 * @param stream
 	 *            input stream of the text file (plugin identification file)
 	 * @return full class name
@@ -751,7 +751,7 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * Given a Jar file name, looks for the name of the plugin class.
-	 * 
+	 *
 	 * @param jarFile
 	 *            absolute path to the jar file
 	 * @return full class name of the plugin (e.g., "test.plugin.TestPlugin")
@@ -813,12 +813,12 @@ public class Engine implements ControlAPI {
 
 		// 1. get the list of plugins
 		final Collection<String> requiredPlugins = new ArrayList<String>(getSpecPlugins());
-		
+
 		// 2. sort plugins
 		for (String s : requiredPlugins) {
 			Plugin p = allPlugins.get(s);
 			if (p == null)
-				throw new EngineError("Cannot load plugin: " + s);	
+				throw new EngineError("Cannot load plugin: " + s);
 			sortedList.add(p);
 		}
 
@@ -826,31 +826,31 @@ public class Engine implements ControlAPI {
 			public int compare(Plugin o1, Plugin o2) {
 				Plugin p1 = (Plugin)o1;
 				Plugin p2 = (Plugin)o2;
-				
+
 				if (p1.getLoadPriority() < p2.getLoadPriority())
 					return -1;
-				else 
+				else
 					if (p1.getLoadPriority() > p2.getLoadPriority())
 						return 1;
 					else
 						return 0;
 			}
 		});
-		
+
 		// 3. load plugins
 		for (Plugin p : sortedList) {
 			if (checkPluginDependency(requiredPlugins, p))
 				loadPlugin(p);
-			else 
+			else
 				break;
 		}
 
 	}
 
 	/*
-	 * Gets the list of plugins that are requested to be loaded by the 
-	 * engine environment. 
-	 * 
+	 * Gets the list of plugins that are requested to be loaded by the
+	 * engine environment.
+	 *
 	 * @see EngineProperties.PLUGIN_LOAD_REQUEST
 	 */
 	private Collection<String> getRequestedPlugins() {
@@ -858,12 +858,12 @@ public class Engine implements ControlAPI {
 		String rpList = getProperty(EngineProperties.PLUGIN_LOAD_REQUEST_PROPERTY);
 		if (rpList != null) {
 			StringTokenizer tokenizer = new StringTokenizer(rpList, EngineProperties.PLUGIN_LOAD_REQUEST_DELIM);
-			while (tokenizer.hasMoreTokens()) 
+			while (tokenizer.hasMoreTokens())
 				result.add(tokenizer.nextToken());
 		}
 		return result;
 	}
-	
+
 	/*
 	 * Checks plugin dependency and set the engine in error mode
 	 * if dependency is not satisfied.
@@ -871,18 +871,18 @@ public class Engine implements ControlAPI {
 	private boolean checkPluginDependency(Collection<String> usedPlugins, Plugin p) {
 		// get all the dependency requirements
 		Map<String,VersionInfo> depends = p.getDependencies();
-		
+
 		if (depends != null) {
 			// for every plugin in the dependency list
 			for (String name : depends.keySet()) {
-				
+
 				// first check if it is listed in the used clause
 				if (usedPlugins.contains(name)) {
-					// second, see if its version info is equal or 
+					// second, see if its version info is equal or
 					// grater than what is required
 					if (allPlugins.get(name).getVersionInfo().compareTo(depends.get(name)) >= 0)
 						continue;
-					
+
 				}
 				error(new EngineException(
 							"Plugin Dependency Error: " + p.getName()
@@ -892,11 +892,11 @@ public class Engine implements ControlAPI {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Loads a specific plugin. This involves adding the plugin to the set of
 	 * loaded plugins and initializing it.
-	 * 
+	 *
 	 * @param p
 	 *            the <code>Plugin</code> object
 	 */
@@ -906,7 +906,7 @@ public class Engine implements ControlAPI {
 			return;
 
 		logger.debug( "initializing {}...",  p.getName());
-		
+
 		try {
 			// this plugin is associated with this engine
 			// instance
@@ -914,18 +914,18 @@ public class Engine implements ControlAPI {
 		} catch (InitializationFailedException e) {
 			logger.error( e.getMessage());
 			throw new EngineError(e.getMessage());
-		} 
+		}
 
 		// if plugin implements operators, get operator rules
 		if (p instanceof OperatorProvider)
 			operatorRules.addAll(((OperatorProvider) p).getOperatorRules());
-		
+
 		loadedPlugins.add(p);
 	}
 
 	/**
 	 * Notifies the environment of a successful step.
-	 * 
+	 *
 	 */
 	private void notifySuccess() {
 		// TODO no notification is sent
@@ -935,7 +935,7 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * Notifies the environment of a failed step.
-	 * 
+	 *
 	 */
 	private void notifyFailure() {
 		String reason = "";
@@ -952,31 +952,31 @@ public class Engine implements ControlAPI {
 	}
 
 	/**
-	 * Given a set of plugin names, expands the set of names 
-	 * to a new set that als contains all the enclosed plugins 
+	 * Given a set of plugin names, expands the set of names
+	 * to a new set that als contains all the enclosed plugins
 	 * of any package plugin.
-	 *  
+	 *
 	 * @param pluginNames Plugin names
 	 * @return new set of plugin names with package plugins expanded
 	 * to their enclosed plugins
 	 */
 	protected Set<String> expandPackagePlugins(Set<String> pluginNames) {
 		Set<String> newNames = new HashSet<String>(pluginNames);
-		
+
 		// unpack package plugins
 		for (String pName: pluginNames) {
 			Plugin plugin = allPlugins.get(pName);
-			if (plugin instanceof PackagePlugin) 
+			if (plugin instanceof PackagePlugin)
 				newNames.addAll(((PackagePlugin)plugin).getEnclosedPluginNames());
 		}
-		
+
 		return newNames;
 	}
-	
+
 	protected Set<String> getSpecPlugins() {
 		final Set<String> plugins = new HashSet<String>();
 		final Set<String> pNames = new HashSet<String>(parser.getRequiredPlugins());
-		
+
 		pNames.addAll(getRequestedPlugins());
 
 		// Adding kernel plugin names
@@ -985,15 +985,15 @@ public class Engine implements ControlAPI {
 
 		for (String pName: pNames) {
 			Plugin p = allPlugins.get(pName);
-			
-			// If cannot find the plugin, try adding "Plugins" or "Plugin" 
+
+			// If cannot find the plugin, try adding "Plugins" or "Plugin"
 			// to its name
 			if (p == null) {
 				p = allPlugins.get(pName + "Plugins");
 				if (p == null)
 					p = allPlugins.get(pName + "Plugin");
 			}
-			
+
 			if (p != null) {
 				plugins.add(p.getName());
 
@@ -1004,7 +1004,7 @@ public class Engine implements ControlAPI {
 			} else
 				plugins.add(pName);
 		}
-		
+
 		return plugins;
 	}
 
@@ -1020,10 +1020,10 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * This will return the global interpreter component of the engine.
-	 * It is highly recommended to use a thread-bound instance of 
-	 * the Interpreter class (see {@link Interpreter#getInterpreterInstance()})‌ and 
+	 * It is highly recommended to use a thread-bound instance of
+	 * the Interpreter class (see {@link Interpreter#getInterpreterInstance()})‌ and
 	 * not to use this global instance for any interpretation purposes.
-	 * 
+	 *
 	 * @see ControlAPI#getInterpreter()
 	 */
 	@Override
@@ -1058,7 +1058,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public synchronized void error(String msg, Node errorNode, Interpreter interpreter) {
-		CoreASMError error; 
+		CoreASMError error;
 		if (interpreter != null)
 			error = new CoreASMError(msg, interpreter.getCurrentCallStack(), errorNode);
 		else
@@ -1068,25 +1068,25 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public synchronized void error(Throwable e, Node errorNode, Interpreter interpreter) {
-		CoreASMError error; 
+		CoreASMError error;
 		if (interpreter != null)
 			error = new CoreASMError(e, interpreter.getCurrentCallStack(), errorNode);
 		else
 			error = new CoreASMError(e, null, errorNode);
 		this.error(error);
 	}
-	
+
 	@Override
 	public synchronized void error(CoreASMError e) {
 		// FIXME why can we get into this method more than once?!
-		
+
 		if (lastError != null)
 			return;
-		
+
 		lastError = e;
 
 		e.setContext(parser, specification);
-		
+
 		// Creating an error event and passing it
 		// to all the error observers
 		EngineErrorEvent event = new EngineErrorEvent(e);
@@ -1101,7 +1101,7 @@ public class Engine implements ControlAPI {
 
 		logger.error( e.showError(parser, specification));
 	}
-	
+
 	@Override
 	public void warning(String src, String msg) {
 		warning(src, msg, null, null);
@@ -1115,7 +1115,7 @@ public class Engine implements ControlAPI {
 	@Override
 	public void warning(String src, Throwable e, Node node,
 			Interpreter interpreter) {
-		CoreASMWarning warning; 
+		CoreASMWarning warning;
 		if (interpreter != null)
 			warning = new CoreASMWarning(src, e, interpreter.getCurrentCallStack(), node);
 		else
@@ -1126,7 +1126,7 @@ public class Engine implements ControlAPI {
 	@Override
 	public void warning(String src, String msg, Node node,
 			Interpreter interpreter) {
-		CoreASMWarning warning; 
+		CoreASMWarning warning;
 		if (interpreter != null)
 			warning = new CoreASMWarning(src, msg, interpreter.getCurrentCallStack(), node);
 		else
@@ -1148,7 +1148,7 @@ public class Engine implements ControlAPI {
 		}
 		logger.warn(w.showWarning(parser, specification));
 	}
-	
+
 
 	@Override
 	public List<CoreASMWarning> getWarnings() {
@@ -1160,13 +1160,13 @@ public class Engine implements ControlAPI {
 //		final EngineMode engineMode = getEngineMode();
 		return (lastError != null) || (engineMode == EngineMode.emError) ;
 	}
-	
+
 	@Override
 	@Deprecated
 	public void waitForIdleOrError() {
 		waitWhileBusy();
 	}
-	
+
 	@Override
 	public void waitWhileBusy() {
 		while (isBusy()) {
@@ -1187,7 +1187,7 @@ public class Engine implements ControlAPI {
 	/**
 	 * This is the execution thread of a CoreASM engine. This class implements
 	 * <code>Runnable</code>.
-	 * 
+	 *
 	 */
 	private class EngineThread extends Thread {
 
@@ -1209,11 +1209,11 @@ public class Engine implements ControlAPI {
 		 * the engine). Looping until the engine is terminated, this method
 		 * calls appropriate methods based on the current mode of the engine and
 		 * switches the mode appropriately.
-		 * 
+		 *
 		 * When the engine is in idle mode, it calls
 		 * <code>porcessNextCommand()</code> to respond to user commands. Mode
 		 * switching is performed by calling <code>next(newMode)</code>.
-		 * 
+		 *
 		 * @see Runnable#run()
 		 * @see #processNextCommand()
 		 * @see #next(EngineMode)
@@ -1221,11 +1221,11 @@ public class Engine implements ControlAPI {
 		public void run() {
 			try {
 				engineBusy = true;
-				
+
 				while (!terminating) {
 					try {
 						EngineMode engineMode = getEngineMode();
-						
+
 						// if an error is occurred and the engine is not
 						// in error mode, go to the error mode
 						if (lastError != null
@@ -1245,7 +1245,7 @@ public class Engine implements ControlAPI {
 						}
 
 						engineMode = getEngineMode();
-						
+
 						switch (engineMode) {
 
 						case emIdle:
@@ -1318,9 +1318,9 @@ public class Engine implements ControlAPI {
 							break;
 
 						case emStartingStep:
-							if (!isStateInitialized 
-									|| specification == null 
-									|| specification.getRootNode() == null) 
+							if (!isStateInitialized
+									|| specification == null
+									|| specification.getRootNode() == null)
 								throw new EngineError("Engine cannot make a step " +
 										"before the specification is properly loaded.");
 							warnings.clear();
@@ -1332,7 +1332,7 @@ public class Engine implements ControlAPI {
 						case emSelectingAgents:
 							if (scheduler.selectAgents())
 								next(EngineMode.emRunningAgents);
-							else 
+							else
 								next(EngineMode.emStepSucceeded);
 							break;
 
@@ -1344,7 +1344,7 @@ public class Engine implements ControlAPI {
 								next(EngineMode.emAggregation);
 							}
 							break;
-							
+
 							/*
 						case emChoosingAgents:
 							scheduler.chooseAgent();
@@ -1453,15 +1453,15 @@ public class Engine implements ControlAPI {
 						//   logger.error( ste.toString());
 					}
 				}
-				
+
 				// Terminating plugins
 				for (Plugin p: loadedPlugins)
 					p.terminate();
-				
+
 				// empty command queue
 				commandQueue.clear();
-				
-				
+
+
 			} catch (Error e) {
 				e.printStackTrace();
 			}
@@ -1471,7 +1471,7 @@ public class Engine implements ControlAPI {
 
 		/**
 		 * Switches the engine mode to a new mode.
-		 * 
+		 *
 		 * @param newMode
 		 *            new mode of the engine
 		 */
@@ -1491,7 +1491,7 @@ public class Engine implements ControlAPI {
 			for (EngineObserver o : observers)
 				if (o instanceof EngineModeObserver) {
 					if (event == null) {
-						// create the mode-change event 
+						// create the mode-change event
 						map = modeEventCache.get(oldMode);
 						if (map == null) {
 							map = new HashMap<EngineMode, EngineModeEvent>();
@@ -1517,19 +1517,19 @@ public class Engine implements ControlAPI {
 		 * otherwise it fetches another command from the command queue and
 		 * switches the engine mode based on that command. It uses
 		 * <code>next(EngineMode)</code> to change the engine mode.
-		 * 
+		 *
 		 * @see #next(EngineMode)
 		 */
 		private void processNextCommand() throws EngineException {
-			// This is here to avoid leaving the engine in 
-			// a state that is right before changing its 
+			// This is here to avoid leaving the engine in
+			// a state that is right before changing its
 			// state
 			boolean shouldRemoveFirstCommand = false;
 			synchronized (engineMode) {
 				EngineCommand cmd = null;
 				int rrc = 0;
 				String tempMsg = null;
-	
+
 				synchronized (this) {
 					rrc = remainingRunCount--;
 				}
@@ -1539,22 +1539,22 @@ public class Engine implements ControlAPI {
 					cmd = commandQueue.get(0);
 					shouldRemoveFirstCommand = true;
 				}
-	
+
 				if (cmd == null)
 					return;
 				else
 					lastCommand = cmd;
-	
+
 				switch (cmd.type) {
-	
+
 				case ecTerminate:
 					next(EngineMode.emTerminating);
 					break;
-	
+
 				case ecInit:
 					next(EngineMode.emInitKernel);
 					break;
-	
+
 				case ecLoadSpec:
 					tempMsg = "Loading specification file";
 				case ecOnlyParseSpec:
@@ -1562,7 +1562,7 @@ public class Engine implements ControlAPI {
 				case ecOnlyParseHeader:
 					tempMsg = "Parsing the header of the specification file";
 					ParseCommandData cmdData = null;
-					if (cmd.metaData instanceof ParseCommandData) 
+					if (cmd.metaData instanceof ParseCommandData)
 						cmdData = (ParseCommandData)cmd.metaData;
 					else {
 						cmdData = new ParseCommandData(true, cmd.metaData);
@@ -1592,11 +1592,11 @@ public class Engine implements ControlAPI {
 						} else
 							error("The specification passed to the engine is invalid.");
 					break;
-	
+
 				case ecStep:
 					next(EngineMode.emStartingStep);
 					break;
-	
+
 				case ecRun:
 					if (cmd.metaData instanceof Integer) {
 						int i = ((Integer) cmd.metaData).intValue();
@@ -1628,7 +1628,7 @@ public class Engine implements ControlAPI {
 	}
 
 	/**
-	 * @return customized class loader that is used 
+	 * @return customized class loader that is used
 	 * by the engine to load plugins. A <code>null</code>
 	 * indicates the default class loader.
 	 */
@@ -1638,9 +1638,9 @@ public class Engine implements ControlAPI {
 	}
 
 	/**
-	 * Sets a customized class loader for the engine 
-	 * (used in loading plugins. If this value is set 
-	 * to <code>null</code>, the engine will use the 
+	 * Sets a customized class loader for the engine
+	 * (used in loading plugins. If this value is set
+	 * to <code>null</code>, the engine will use the
 	 * default class loader.
 	 */
 	@Override
@@ -1656,12 +1656,12 @@ public class Engine implements ControlAPI {
 	@Override
 	public Map<String,VersionInfo> getPluginsVersionInfo() {
 		Map<String,VersionInfo> list = new HashMap<String,VersionInfo>();
-		
+
 		if (allPlugins != null) {
 			for (Plugin p: allPlugins.values())
 				list.put(p.getName(), p.getVersionInfo());
 		}
-		
+
 		return list;
 	}
 
@@ -1683,7 +1683,7 @@ public class Engine implements ControlAPI {
 	@Override
 	public Set<ServiceProvider> getServiceProviders(String type) {
 		Set<ServiceProvider> set = serviceRegistry.get(type);
-		if (set == null) 
+		if (set == null)
 			return Collections.emptySet();
 		return set;
 	}
@@ -1691,18 +1691,18 @@ public class Engine implements ControlAPI {
 	@Override
 	public void removeServiceProvider(String type, ServiceProvider provider) {
 		Set<ServiceProvider> set = serviceRegistry.get(type);
-		if (set != null) 
+		if (set != null)
 			set.remove(provider);
 	}
 
 	@Override
 	public Map<String, Object> serviceCall(ServiceRequest sr, boolean withResults) {
 		Set<ServiceProvider> set = serviceRegistry.get(sr.type);
-		
+
 		Map<String, Object> result = null;
 		if (withResults)
 			result = new HashMap<String, Object>();
-		
+
 		if (set != null && set.size() > 0) {
 			for (ServiceProvider sp: set) {
 				Object retres = sp.call(sr);
@@ -1733,15 +1733,15 @@ public class Engine implements ControlAPI {
  * Instances of this class represent various engine commands send to CoreASM
  * engine by its environment. This class is only instanciated internally by the
  * engine for its own records.
- * 
+ *
  * @author Roozbeh Farahbod
- * 
+ *
  */
 class EngineCommand {
 
 	/**
 	 * Possible engine command types.
-	 * 
+	 *
 	 * @author Roozbeh Farahbod
 	 */
 	public enum CmdType {
@@ -1770,7 +1770,7 @@ class EngineCommand {
 
 /**
  * An array list with synchronized methods.
- *   
+ *
  * @author Roozbeh Farahbod
  *
  */
@@ -1827,7 +1827,7 @@ class CommandQueue extends ArrayList<EngineCommand> {
 	public synchronized String toString() {
 		return super.toString();
 	}
-	
+
 }
 
 /*
@@ -1836,7 +1836,7 @@ class CommandQueue extends ArrayList<EngineCommand> {
 class ParseCommandData {
 	protected final boolean loadPlugins;
 	protected final Object specInfo;
-	
+
 	public ParseCommandData(boolean loadPlugins, Object specInfo) {
 		this.loadPlugins = loadPlugins;
 		this.specInfo = specInfo;
@@ -1850,11 +1850,11 @@ class NamedStringReader {
 
 	protected final String fileName;
 	protected final Reader reader;
-	
+
 	public NamedStringReader(String fileName, Reader src) {
 		this.fileName = fileName;
 		this.reader = src;
 	}
-	
+
 }
 
