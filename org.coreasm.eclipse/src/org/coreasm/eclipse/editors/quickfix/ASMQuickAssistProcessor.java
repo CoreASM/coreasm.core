@@ -17,6 +17,7 @@ import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.MoveToTopProposal;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -108,7 +109,10 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					proposals.add(new CreateFunctionProposal(undefinedIdentifier, null, IconManager.getIcon("/icons/editor/bullet.gif")));
 				if (arguments <= 1)
 					proposals.add(new CreateUniverseProposal(undefinedIdentifier, IconManager.getIcon("/icons/editor/bullet.gif")));
+				proposals.add(new CreateRuleProposal(undefinedIdentifier, arguments, IconManager.getIcon("/icons/editor/bullet.gif")));
 			}
+			else if ("ReturnUndef".equals(data[0]))
+				proposals.add(new MoveToTopProposal(Integer.parseInt(data[1]), IconManager.getIcon("/icons/editor/bullet.gif")));
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);
@@ -121,7 +125,7 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 								proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
 						}
 					}
-					proposals.add(new CreateRuleProposal(undefinedRule, IconManager.getIcon("/icons/editor/bullet.gif")));
+					proposals.add(new CreateRuleProposal(undefinedRule, 0, IconManager.getIcon("/icons/editor/bullet.gif")));
 				} catch (BadLocationException e) {
 				}
 			}

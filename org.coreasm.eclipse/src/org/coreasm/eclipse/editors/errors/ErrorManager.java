@@ -15,6 +15,7 @@ import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.ReturnRuleWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,6 +58,7 @@ public class ErrorManager implements Observer
 		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
 		addErrorRecognizer(new CoreASMErrorRecognizer(asmEditor));
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
+		addWarningRecognizer(new ReturnRuleWarningRecognizer());
 		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
 	}
 	
@@ -234,7 +236,7 @@ public class ErrorManager implements Observer
 	private int getErrorLength(String token, String strDoc, int index)
 	{
 		if (token.equals("EOF"))
-			return 1;
+			return 0;
 		if (strDoc.charAt(index)=='"' && strDoc.startsWith(token, index+1))
 			return token.length()+2;
 		return token.length();

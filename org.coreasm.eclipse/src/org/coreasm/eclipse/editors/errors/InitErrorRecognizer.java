@@ -108,9 +108,9 @@ implements ITreeErrorRecognizer
 		LinkedList<AbstractQuickFix> list = new LinkedList<AbstractQuickFix>();
 		
 		if (errorID.equals(UNKN_INIT)) {
+			list.add(new QF_UnknInit_Create());
 			list.add(new QF_UnknInit_Delete());			
 			list.add(new QF_UnknInit_Replace());
-			list.add(new QF_UnknInit_Create());
 		}
 		if (errorID.equals(NO_INIT)) {
 			list.add(new QF_NoInit_Add());

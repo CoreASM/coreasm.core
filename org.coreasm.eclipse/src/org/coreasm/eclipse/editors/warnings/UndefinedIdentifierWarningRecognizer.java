@@ -296,7 +296,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	
 	private boolean isReturnRuleExpression(FunctionRuleTermNode frNode) {
 		for (ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode); returnRuleNode != null; returnRuleNode = getParentReturnRuleNode(returnRuleNode)) {
-			if (returnRuleNode.getExpressionNode().getFirst().getToken().equals(frNode.getName()))
+			ASTNode expression = returnRuleNode.getExpressionNode();
+			if (expression instanceof FunctionRuleTermNode && ((FunctionRuleTermNode)expression).getName().equals(frNode.getName()))
 				return true;
 		}
 		return false;
