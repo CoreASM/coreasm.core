@@ -1,9 +1,17 @@
 package org.coreasm.eclipse.debug.util;
 
+import java.io.File;
 import java.util.HashMap;
 
 import org.coreasm.eclipse.debug.ui.views.ASMUpdateViewElement;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.Specification;
+import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.engine.parser.CharacterPosition;
+import org.coreasm.engine.parser.Parser;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -22,6 +30,76 @@ import org.eclipse.ui.ide.IDE;
  */
 public class ASMDebugUtils {
 	private ASMDebugUtils() {
+	}
+	
+	public static String getFileName(Update update, ControlAPI capi) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			CharacterPosition charPos = ((ScannerInfo)update.sources.toArray()[0]).getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				if (spec != null) {
+					String fileName = spec.getLine(charPos.line).fileName;
+					int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
+					if (lastIndexOfSeperator >= 0)
+						fileName = fileName.substring(lastIndexOfSeperator + 1);
+					return fileName;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static int getLineNumber(Update update, ControlAPI capi) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			CharacterPosition charPos = ((ScannerInfo)update.sources.toArray()[0]).getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				int line = charPos.line;
+				if (spec != null)
+					line = spec.getLine(charPos.line).line;
+				return line;
+			}
+		}
+		return -1;
+	}
+	
+	public static String getFileName(Node node, ControlAPI capi) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			CharacterPosition charPos = node.getCharPos(parser);
+			if (charPos == null && node != null && node.getScannerInfo() != null)
+				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				if (spec != null) {
+					String fileName = spec.getLine(charPos.line).fileName;
+					int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
+					if (lastIndexOfSeperator >= 0)
+						fileName = fileName.substring(lastIndexOfSeperator + 1);
+					return fileName;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static int getLineNumber(Node node, ControlAPI capi) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			CharacterPosition charPos = node.getCharPos(parser);
+			if (charPos == null && node != null && node.getScannerInfo() != null)
+				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				int line = charPos.line;
+				if (spec != null)
+					line = spec.getLine(charPos.line).line;
+				return line;
+			}
+		}
+		return -1;
 	}
 	
 	private static int indexOfCasmFilename(String context) {
@@ -54,6 +132,11 @@ public class ASMDebugUtils {
 			return -1;
 		
 		context = context.substring(beginIndex);
+		
+		beginIndex = context.lastIndexOf(File.separator);
+		
+		if (beginIndex >= 0)
+			context = context.substring(beginIndex + 1);
 		
 		return Integer.parseInt(context.substring(context.indexOf(":") + 1, context.indexOf(",")));
 	}

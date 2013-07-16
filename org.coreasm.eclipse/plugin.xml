@@ -29,6 +29,14 @@
 		<attribute name="data" />
    </extension>
    <extension
+         id="org.coreasm.eclipse.markers.RuntimeProblemMarker"
+         name="CoreASM Runtime Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+   </extension>
+   <extension
    		id="org.coreasm.eclipse.markers.PluginMarker"
    		point="org.eclipse.core.resources.markers"
   		name="CoreASM Plugin Marker" >

@@ -16,22 +16,22 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 public class MoveToTopProposal implements ICompletionProposal {
-	private final int returnRuleOffset;
+	private final int nodeOffset;
 	private final Image image;
 	private final IContextInformation contextInformation;
 	private final String additionalProposalInfo;
 	private Point selection;
 	
-	public MoveToTopProposal(int returnRuleOffset) {
-		this(returnRuleOffset, null, null, null);
+	public MoveToTopProposal(int nodeOffset) {
+		this(nodeOffset, null, null, null);
 	}
 	
-	public MoveToTopProposal(int returnRuleOffset, Image image) {
-		this(returnRuleOffset, image, null, null);
+	public MoveToTopProposal(int nodeOffset, Image image) {
+		this(nodeOffset, image, null, null);
 	}
 	
-	public MoveToTopProposal(int returnRuleOffset, Image image, IContextInformation contextInformation, String additionalProposalInfo) {
-		this.returnRuleOffset = returnRuleOffset;
+	public MoveToTopProposal(int nodeOffset, Image image, IContextInformation contextInformation, String additionalProposalInfo) {
+		this.nodeOffset = nodeOffset;
 		this.image = image;
 		this.contextInformation = contextInformation;
 		this.additionalProposalInfo = additionalProposalInfo;
@@ -41,7 +41,7 @@ public class MoveToTopProposal implements ICompletionProposal {
 	public void apply(IDocument document) {
 		if (!(document instanceof ASMDocument))
 			return;
-		ASTNode node = getNodeOfOffset((ASMDocument)document, returnRuleOffset);
+		ASTNode node = getNodeOfOffset((ASMDocument)document, nodeOffset);
 		try {
 			if (node instanceof ReturnRuleNode) {
 				ReturnRuleNode returnRuleNode = (ReturnRuleNode)node;

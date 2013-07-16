@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
@@ -12,7 +13,6 @@ import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.Update;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDropToFrame;
 import org.eclipse.debug.core.model.IRegisterGroup;
@@ -140,8 +140,8 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 			ArrayList<IVariable> variables = new ArrayList<IVariable>();
 			ArrayList<IVariable> backgrounds = new ArrayList<IVariable>();
 			
-			for (Update update : state.getUpdates())
-				updateLocations.add(update.loc);
+			for (ASMUpdate update : state.getUpdates())
+				updateLocations.add(update.getLocation());
 			
 			variables.add(new ASMVariable(this, "Step", new ASMValue(this, "" + (getStep() < 0 ? -getStep() - 1 + "*" : getStep())), false));
 			variables.add(new ASMVariable(this, "Last Selected Agents", new ASMValue(this, getLastSelectedAgents().toString()), false));
@@ -291,7 +291,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * Returns the updates of the state assigned to this stack frame.
 	 * @return the updates of the state assigned to this stack frame
 	 */
-	public Set<Update> getUpdates() {
+	public Set<ASMUpdate> getUpdates() {
 		return state.getUpdates();
 	}
 	

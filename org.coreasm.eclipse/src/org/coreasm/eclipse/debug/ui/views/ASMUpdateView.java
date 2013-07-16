@@ -193,7 +193,7 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 			Object element = ((IStructuredSelection)context).getFirstElement();
 			if (element instanceof ASMStackFrame) {
 				ASMStackFrame frame = (ASMStackFrame)element;
-				updates = ASMUpdate.wrapUpdateSet(frame.getUpdates());
+				updates = frame.getUpdates();
 				if (!updates.isEmpty()) {
 					agents = frame.getAgents();
 					if (!agents.contains(filterAgent))

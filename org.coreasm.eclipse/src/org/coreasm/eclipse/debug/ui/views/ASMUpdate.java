@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.coreasm.eclipse.debug.core.model.ASMWatchpoint;
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.Update;
@@ -22,8 +22,8 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	private Update update;
 	private boolean onBreakpoint;
 
-	private ASMUpdate(Update update) {
-		super(EngineDebugger.getRunningInstance().getUpdateContext(update));
+	private ASMUpdate(Update update, ControlAPI capi) {
+		super(update, capi);
 		
 		this.update = update;
 
@@ -50,15 +50,25 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	/**
 	 * Wraps a given set of the class Update into a set of the class ASMUpdate.
 	 * @param updates the set of updates to be wrapped
+	 * @param capi the ControlAPI
 	 * @return the wrapped update set
 	 */
-	public static Set<ASMUpdate> wrapUpdateSet(Set<Update> updates) {
+	public static Set<ASMUpdate> wrapUpdateSet(Set<Update> updates, ControlAPI capi) {
 		HashSet<ASMUpdate> asmUpdateSet = new HashSet<ASMUpdate>();
-		if (EngineDebugger.getRunningInstance() != null) {
-			for (Update update : updates)
-				asmUpdateSet.add(new ASMUpdate(update));
-		}
+		for (Update update : updates)
+			asmUpdateSet.add(new ASMUpdate(update, capi));
 		return asmUpdateSet;
+	}
+	
+	public static Set<ASMUpdate> wrapUpdateSet(ControlAPI capi) {
+		return wrapUpdateSet(capi.getUpdateSet(0), capi);
+	}
+	
+	public static Set<Update> unwrap(Set<ASMUpdate> asmUpdateSet) {
+		HashSet<Update> updates = new HashSet<Update>();
+		for (ASMUpdate asmUpdate : asmUpdateSet)
+			updates.add(asmUpdate.update);
+		return updates;
 	}
 	
 	/**

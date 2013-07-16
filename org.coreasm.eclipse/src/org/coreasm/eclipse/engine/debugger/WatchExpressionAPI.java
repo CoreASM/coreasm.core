@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.coreasm.eclipse.debug.core.model.ASMStorage;
+import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMWarning;
@@ -178,7 +179,7 @@ public class WatchExpressionAPI implements ControlAPI {
 	@Override
 	public Set<Update> getUpdateSet(int i) {
 		if (i == 0)
-			return storage.getUpdates();
+			return ASMUpdate.unwrap(storage.getUpdates());
 		else
 			return null;
 	}

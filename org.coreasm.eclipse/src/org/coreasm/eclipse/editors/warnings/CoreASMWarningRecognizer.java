@@ -23,7 +23,7 @@ public class CoreASMWarningRecognizer implements IWarningRecognizer {
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
 		List<AbstractWarning> warnings = new ArrayList<AbstractWarning>();
 		for (CoreASMWarning warning : parentEditor.getParser().getSlimEngine().getWarnings())
-			warnings.add(new CoreASMEclipseWarning(warning, document));
+			warnings.add(new CoreASMEclipseWarning(warning, null, document));
 		return warnings;
 	}
 

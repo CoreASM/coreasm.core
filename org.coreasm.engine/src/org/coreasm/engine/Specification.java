@@ -358,7 +358,7 @@ public class Specification {
 			StringReader reader = new StringReader(coreasmSpec);
 			return loadSpec(reader, fname);
 		} else
-			return loadSpec(new InputStreamReader(getInputStream(file)), file.getName());
+			return loadSpec(new InputStreamReader(getInputStream(file)), fname);
 	}
 
 	/**

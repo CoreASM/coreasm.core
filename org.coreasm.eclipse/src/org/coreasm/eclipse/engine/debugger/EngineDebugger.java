@@ -40,7 +40,6 @@ import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.UpdateRuleNode;
 import org.coreasm.engine.parser.ParserTools;
@@ -52,6 +51,7 @@ import org.coreasm.engine.plugins.turboasm.SeqBlockRuleNode;
 import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
@@ -77,7 +77,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
 	private Map<ASTNode, String> ruleArgs;
-	private Set<Update> updates = new HashSet<Update>();
+	private Set<ASMUpdate> updates = new HashSet<ASMUpdate>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
 	private volatile boolean shouldStep = false;
@@ -223,7 +223,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * @return the current updates as a set of ASMUpdate
 	 */
 	public Set<ASMUpdate> getUpdates() {
-		return ASMUpdate.wrapUpdateSet(capi.getUpdateSet(0));
+		return ASMUpdate.wrapUpdateSet(capi);
 	}
 	
 	/**
@@ -232,15 +232,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 */
 	public int getStep() {
 		return capi.getStepCount();
-	}
-	
-	/**
-	 * Returns the context of the given update.
-	 * @param update the update of which the context should be returned
-	 * @return the context of the given update
-	 */
-	public String getUpdateContext(Update update) {
-		return ((ScannerInfo)update.sources.toArray()[0]).getContext(capi.getParser(), capi.getSpec());
 	}
 	
 	@Override
@@ -314,11 +305,11 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			for (ASMStorage state = states.peek(); !stateToDropTo.equals(states.peek()); state = states.pop()) {
 				if (state.getStep() < 0)
 					continue;
-				for (Update update : state.getUpdates()) {
-					if (stateToDropTo.getFunction(update.loc.name) != null)
-						capi.getState().setValue(update.loc, stateToDropTo.getValue(update.loc));
+				for (ASMUpdate update : state.getUpdates()) {
+					if (stateToDropTo.getFunction(update.getLocation().name) != null)
+						capi.getState().setValue(update.getLocation(), stateToDropTo.getValue(update.getLocation()));
 					else
-						capi.getState().setValue(update.loc, Element.UNDEF);
+						capi.getState().setValue(update.getLocation(), Element.UNDEF);
 				}
 			}
 			ASTNode pos = stateToDropTo.getPosition();
@@ -338,7 +329,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	public void update(EngineEvent event) {
 		if (event instanceof EngineModeEvent) {
 			if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepSucceeded) {
-				updates = capi.getUpdateSet(0);
+				updates = ASMUpdate.wrapUpdateSet(capi);
 				shouldStepOver = false;
 				shouldStepReturn = false;
 				stepSucceeded = true;
@@ -451,7 +442,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			}
 		}
 		states.add(state);
-		updates = new HashSet<Update>();
+		updates = new HashSet<ASMUpdate>();
 	}
 	
 	/**
@@ -506,7 +497,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			try {
 				if (!breakpoint.isEnabled() || breakpoint instanceof ASMMethodBreakpoint)
 					continue;
-				if (breakpoint instanceof ASMLineBreakpoint && ((ASMLineBreakpoint) breakpoint).getSpecName().equals(sourceName) && ((ASMLineBreakpoint) breakpoint).getLineNumber() == lineNumber)
+				if (breakpoint instanceof ASMLineBreakpoint && new Path(((ASMLineBreakpoint) breakpoint).getSpecName()).equals(new Path(sourceName)) && ((ASMLineBreakpoint) breakpoint).getLineNumber() == lineNumber)
 					return true;
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
@@ -519,9 +510,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	@Override
 	public void beforeNodeEvaluation(ASTNode pos) {
 		if (isUnvisited(pos)) {
-			String context = pos.getContext(capi.getParser(), capi.getSpec());
-			sourceName = ASMDebugUtils.parseSourceName(context);
-			lineNumber = ASMDebugUtils.parseLineNumber(context);
+			sourceName = ASMDebugUtils.getFileName(pos, capi);
+			lineNumber = ASMDebugUtils.getLineNumber(pos, capi);
 			if (sourceName == null || lineNumber < 0)
 				return;
 			
@@ -579,9 +569,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			stepOverPos = null;
 		}
 		if (!pos.getUpdates().isEmpty()) {
-			String context = pos.getContext(capi.getParser(), capi.getSpec());
-			sourceName = ASMDebugUtils.parseSourceName(context);
-			lineNumber = ASMDebugUtils.parseLineNumber(context);
+			sourceName = ASMDebugUtils.getFileName(pos, capi);
+			lineNumber = ASMDebugUtils.getLineNumber(pos, capi);
 			if (sourceName == null || lineNumber < 0)
 				return;
 			
@@ -593,9 +582,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 						if (!breakpoint.isEnabled() || breakpoint == prevWatchpoint)
 							continue;
 						for (Update update : pos.getUpdates()) {
-							String updateContext = getUpdateContext(update);
-							String updateSourceName = ASMDebugUtils.parseSourceName(updateContext);
-							int updateLineNumber = ASMDebugUtils.parseLineNumber(updateContext);
+							String updateSourceName = ASMDebugUtils.getFileName(update, capi);
+							int updateLineNumber = ASMDebugUtils.getLineNumber(update, capi);
 							
 							if (!sourceName.equals(updateSourceName) || lineNumber != updateLineNumber)
 								continue;
@@ -616,7 +604,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 			prevWatchpoint = null;
-			updates.addAll(pos.getUpdates());
+			updates.addAll(ASMUpdate.wrapUpdateSet(pos.getUpdates().toSet(), capi));
 		}
 	}
 
@@ -630,14 +618,13 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 						continue;
 					if (breakpoint instanceof ASMMethodBreakpoint && ((ASMMethodBreakpoint) breakpoint).getRuleName().equals(rule.getName())) {
 						try {
-							String context = pos.getContext(capi.getParser(), capi.getSpec());
-							String ruleSourceName = ASMDebugUtils.parseSourceName(context);
+							String ruleSourceName = ASMDebugUtils.getFileName(pos, capi);
 							
 							if (!ruleSourceName.equals(((ASMLineBreakpoint)breakpoint).getSpecName()))
 								continue;
 							
 							sourceName = ruleSourceName;
-							lineNumber = ASMDebugUtils.parseLineNumber(context);
+							lineNumber = ASMDebugUtils.getLineNumber(pos, capi);
 							if (sourceName == null || lineNumber < 0) {
 								sourceName = ((ASMLineBreakpoint)breakpoint).getSpecName();
 								lineNumber = ((ASMLineBreakpoint)breakpoint).getLineNumber();

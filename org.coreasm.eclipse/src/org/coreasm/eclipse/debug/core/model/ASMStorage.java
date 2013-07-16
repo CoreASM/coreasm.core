@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.eclipse.engine.debugger.WatchExpressionAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
@@ -17,7 +18,6 @@ import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.NameConflictException;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
-import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 
@@ -33,7 +33,7 @@ public class ASMStorage extends HashStorage {
 	private Set<Element> lastSelectedAgents = new HashSet<Element>();
 	private Map<String, Element> envVars;
 	private Map<Location, Element> stackedUpdates;
-	private Set<Update> updates;
+	private Set<ASMUpdate> updates;
 	private Set<Element> agents = new HashSet<Element>();
 	private Stack<CallStackElement> callStack = new Stack<CallStackElement>();
 	private String sourceName;
@@ -44,7 +44,7 @@ public class ASMStorage extends HashStorage {
 		this(storage.wapi, storage.storage, storage.step, storage.lastSelectedAgents, storage.envVars, storage.updates, storage.agents, storage.callStack, storage.sourceName, storage.lineNumber);
 	}
 	
-	public ASMStorage(WatchExpressionAPI wapi, AbstractStorage storage, int step, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<Update> updates, Set<? extends Element> agents, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
+	public ASMStorage(WatchExpressionAPI wapi, AbstractStorage storage, int step, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Set<? extends Element> agents, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		super(wapi);
 		this.wapi = wapi;
 		this.storage = storage;
@@ -77,7 +77,7 @@ public class ASMStorage extends HashStorage {
 		initAggregatorPluginCache();
 	}
 	
-	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<Update> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
+	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		this.pos = pos;
 		this.lastSelectedAgents = new HashSet<Element>();
 		this.lastSelectedAgents.addAll(lastSelectedAgents);
@@ -117,7 +117,7 @@ public class ASMStorage extends HashStorage {
 		return envVars;
 	}
 	
-	public Set<Update> getUpdates() {
+	public Set<ASMUpdate> getUpdates() {
 		return updates;
 	}
 	

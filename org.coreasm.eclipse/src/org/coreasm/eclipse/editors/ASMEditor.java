@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.editors.errors.AbstractError;
+import org.coreasm.eclipse.editors.errors.CoreASMEclipseError;
 import org.coreasm.eclipse.editors.errors.ErrorManager;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.errors.SyntaxError;
@@ -13,8 +14,17 @@ import org.coreasm.eclipse.editors.errors.UndefinedError;
 import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
 import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
+import org.coreasm.eclipse.editors.warnings.CoreASMEclipseWarning;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.coreasm.eclipse.tools.ColorManager;
+import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.CoreASMIssue;
+import org.coreasm.engine.CoreASMWarning;
+import org.coreasm.engine.Specification;
+import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.parser.CharacterPosition;
+import org.coreasm.engine.parser.Parser;
 import org.coreasm.util.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -23,6 +33,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -34,8 +45,12 @@ import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -64,6 +79,7 @@ implements IDocumentListener
 
 	// constant for marker types
 	public static final String MARKER_TYPE_PROBLEM = "org.coreasm.eclipse.markers.ProblemMarker";
+	public static final String MARKER_TYPE_RUNTIME_PROBLEM = "org.coreasm.eclipse.markers.RuntimeProblemMarker";
 	public static final String MARKER_TYPE_PLUGINS = "org.coreasm.eclipse.markers.PluginMarker";
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
 	public static final String MARKER_TYPE_DECLARATIONS = "asm.markerType.declarations";
@@ -386,7 +402,31 @@ implements IDocumentListener
 		}
 	}
 	
-	public void createErrorMark(AbstractError error)
+	public static void createRuntimeErrorMark(CoreASMError error, ControlAPI capi) {
+		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(error, capi))));
+		if (editor instanceof ASMEditor) {
+			ASMEditor asmEditor = (ASMEditor)editor;
+			asmEditor.createErrorMark(new CoreASMEclipseError(error, capi, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
+		}
+	}
+	
+	private static String getIssueFileName(CoreASMIssue issue, ControlAPI capi) {
+		CharacterPosition charPos = issue.pos;
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			Node node = issue.node;
+			if (charPos == null && node != null && node.getScannerInfo() != null)
+				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				if (spec != null)
+					return spec.getLine(charPos.line).fileName;
+			}
+		}
+		return null;
+	}
+	
+	public void createErrorMark(AbstractError error, boolean runtime)
 	{
 		IDocument document = getInputDocument();
 		int line = 0;
@@ -405,14 +445,25 @@ implements IDocumentListener
 		map.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 		map.put("data", error.encode());
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
+			MarkerUtilities.createMarker(getInputFile(), map, (runtime ? MARKER_TYPE_RUNTIME_PROBLEM : MARKER_TYPE_PROBLEM));
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
-	public void createWarningMark(AbstractWarning warning) {
+	public void createErrorMark(AbstractError error) {
+		createErrorMark(error, false);
+	}
+	
+	public static void createRuntimeWarningMark(CoreASMWarning warning, ControlAPI capi) {
+		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(warning, capi))));
+		if (editor instanceof ASMEditor) {
+			ASMEditor asmEditor = (ASMEditor)editor;
+			asmEditor.createWarningMark(new CoreASMEclipseWarning(warning, capi, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
+		}
+	}
+	
+	public void createWarningMark(AbstractWarning warning, boolean runtime) {
 		int line = 0;
 		try {
 			line = getInputDocument().getLineOfOffset(warning.getPosition());
@@ -429,10 +480,34 @@ implements IDocumentListener
 		map.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 		map.put("data", warning.getData());
 		try {
-			MarkerUtilities.createMarker(getInputFile(), map, MARKER_TYPE_PROBLEM);
+			MarkerUtilities.createMarker(getInputFile(), map, (runtime ? MARKER_TYPE_RUNTIME_PROBLEM : MARKER_TYPE_PROBLEM));
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void createWarningMark(AbstractWarning warning) {
+		createWarningMark(warning, false);
+	}
+	
+	private static IEditorPart getEditor(IResource resource) {
+		final IEditorPart[] editor = new IEditorPart[1];
+		if (resource instanceof IFile) {
+			final IEditorInput input = new FileEditorInput((IFile)resource);
+			
+			if (input != null) {
+				Display.getDefault().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						if (page != null)
+							editor[0] = page.findEditor(input);
+					}
+				});
+			}
+		}
+		return editor[0];
 	}
 	
 	/**
@@ -447,6 +522,15 @@ implements IDocumentListener
 		}
 	}
 	
+	public static void removeRuntimeProblemMarkers(ControlAPI capi) {
+		Specification spec = capi.getSpec();
+		String fileName = spec.getAbsolutePath();
+		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(fileName)));
+		if (editor instanceof ASMEditor) {
+			ASMEditor asmEditor = (ASMEditor)editor;
+			asmEditor.removeMarkers(ASMEditor.MARKER_TYPE_RUNTIME_PROBLEM);
+		}
+	}
 	
 	/**
 	 * Returns the parser object which is bound to this ASMEditor instance.

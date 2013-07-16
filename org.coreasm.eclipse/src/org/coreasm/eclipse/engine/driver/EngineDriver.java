@@ -28,24 +28,29 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.coreasm.eclipse.CoreASMPlugin;
+import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.engine.CoreASMEngineFactory;
 import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.coreasm.eclipse.tools.ColorManager;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngine;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineErrorObserver;
 import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineStepObserver;
+import org.coreasm.engine.EngineWarningEvent;
+import org.coreasm.engine.EngineWarningObserver;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.StepFailedEvent;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugins.debuginfo.DebugInfoPlugin.DebugInfoPSI;
-import org.coreasm.engine.plugins.io.InputProvider;
 import org.coreasm.engine.plugins.io.IOPlugin.IOPluginPSI;
+import org.coreasm.engine.plugins.io.InputProvider;
 import org.coreasm.util.CoreASMGlobal;
 import org.coreasm.util.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -57,7 +62,7 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 
 
-public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorObserver {
+public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorObserver, EngineWarningObserver {
 
 	private static EngineDriver syntaxInstance=null;
 	protected static EngineDriver runningInstance=null;
@@ -274,6 +279,8 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 			setInputOutputPhase2();
 			
 			preExecutionCallback();
+			
+			clearEclipseRuntimeErrors();
 
 			while (engine.getEngineMode()==EngineMode.emIdle) {
 				if (shouldPause) {
@@ -562,9 +569,25 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 			synchronized (this) {
 				lastError = ((EngineErrorEvent)event).getError();
 			}
+			showErrorInEclipse(lastError);
+		}
+		else if (event instanceof EngineWarningEvent) {
+			showWarningInEclipse(((EngineWarningEvent)event).getWarning());
 		}
 	}
-
+	
+	private void showErrorInEclipse(CoreASMError error) {
+		ASMEditor.createRuntimeErrorMark(error, (ControlAPI)engine);
+	}
+	
+	private void showWarningInEclipse(CoreASMWarning warning) {
+		ASMEditor.createRuntimeWarningMark(warning, (ControlAPI)engine);
+	}
+	
+	private void clearEclipseRuntimeErrors() {
+		ASMEditor.removeRuntimeProblemMarkers((ControlAPI)engine);
+	}
+	
 	/**
 	 * @return Returns the maxsteps.
 	 */

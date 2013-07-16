@@ -26,11 +26,10 @@ public class ReturnRuleWarningRecognizer implements IWarningRecognizer {
 					while (!fringe.isEmpty()) {
 						ASTNode node = fringe.pop();
 						if (node instanceof ReturnRuleNode) {
-							ReturnRuleNode returnRuleNode = (ReturnRuleNode)node;
 							ASTNode parent = node.getParent();
 							while (parent instanceof LocalRuleNode || parent instanceof DerivedFunctionNode)
 								parent = parent.getParent();
-							if (parent != declarationNode || returnRuleNode.getRuleNode() instanceof LocalRuleNode) {
+							if (parent != declarationNode) {
 								ASTNode nameNode = null;
 								if (Kernel.GR_RULEDECLARATION.equals(declarationNode.getGrammarRule()))
 									nameNode = declarationNode.getFirst().getFirst();
