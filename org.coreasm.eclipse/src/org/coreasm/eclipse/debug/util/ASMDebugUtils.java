@@ -36,15 +36,15 @@ public class ASMDebugUtils {
 		if (capi != null) {
 			Parser parser = capi.getParser();
 			CharacterPosition charPos = ((ScannerInfo)update.sources.toArray()[0]).getPos(parser.getPositionMap());
-			if (charPos != null) {
-				Specification spec = capi.getSpec();
-				if (spec != null) {
-					String fileName = spec.getLine(charPos.line).fileName;
-					int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
-					if (lastIndexOfSeperator >= 0)
-						fileName = fileName.substring(lastIndexOfSeperator + 1);
-					return fileName;
-				}
+			Specification spec = capi.getSpec();
+			if (spec != null) {
+				String fileName = spec.getAbsolutePath();
+				if (charPos != null)
+					fileName = spec.getLine(charPos.line).fileName;
+				int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
+				if (lastIndexOfSeperator >= 0)
+					fileName = fileName.substring(lastIndexOfSeperator + 1);
+				return fileName;
 			}
 		}
 		return null;
@@ -71,15 +71,15 @@ public class ASMDebugUtils {
 			CharacterPosition charPos = node.getCharPos(parser);
 			if (charPos == null && node != null && node.getScannerInfo() != null)
 				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (charPos != null) {
-				Specification spec = capi.getSpec();
-				if (spec != null) {
-					String fileName = spec.getLine(charPos.line).fileName;
-					int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
-					if (lastIndexOfSeperator >= 0)
-						fileName = fileName.substring(lastIndexOfSeperator + 1);
-					return fileName;
-				}
+			Specification spec = capi.getSpec();
+			if (spec != null) {
+				String fileName = spec.getAbsolutePath();
+				if (charPos != null)
+					fileName = spec.getLine(charPos.line).fileName;
+				int lastIndexOfSeperator = fileName.lastIndexOf(File.separator);
+				if (lastIndexOfSeperator >= 0)
+					fileName = fileName.substring(lastIndexOfSeperator + 1);
+				return fileName;
 			}
 		}
 		return null;

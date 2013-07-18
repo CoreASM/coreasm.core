@@ -415,12 +415,13 @@ implements IDocumentListener
 		if (capi != null) {
 			Parser parser = capi.getParser();
 			Node node = issue.node;
+			Specification spec = capi.getSpec();
 			if (charPos == null && node != null && node.getScannerInfo() != null)
 				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (charPos != null) {
-				Specification spec = capi.getSpec();
-				if (spec != null)
+			if (spec != null) {
+				if (charPos != null)
 					return spec.getLine(charPos.line).fileName;
+				return spec.getAbsolutePath();
 			}
 		}
 		return null;
