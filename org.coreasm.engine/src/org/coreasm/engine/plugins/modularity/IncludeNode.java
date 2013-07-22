@@ -3,6 +3,7 @@
  */
 package org.coreasm.engine.plugins.modularity;
 
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -12,7 +13,7 @@ import org.coreasm.engine.interpreter.ScannerInfo;
  * 
  * @author Markus
  */
-public class IncludeNode extends Node {
+public class IncludeNode extends ASTNode {
 	private static final long serialVersionUID = 1L;
 
 	private String filename = null;
@@ -26,12 +27,12 @@ public class IncludeNode extends Node {
 	}
 	
 	public IncludeNode(ScannerInfo scannerInfo) {
-		super(ModularityPlugin.PLUGIN_NAME, "include", scannerInfo, "Include");
+		super(ModularityPlugin.PLUGIN_NAME, ASTNode.DECLARATION_CLASS, "CoreModule", "IncludeNode", scannerInfo);
 	}
 	
 	public IncludeNode(String pluginName,  
 			String token, ScannerInfo scannerInfo, String concreteType){
-		super(pluginName, token, scannerInfo, concreteType);
+		super(ModularityPlugin.PLUGIN_NAME, ASTNode.DECLARATION_CLASS, "CoreModule", "", scannerInfo, concreteType);
 	}
 
 	public String getFilename() {
