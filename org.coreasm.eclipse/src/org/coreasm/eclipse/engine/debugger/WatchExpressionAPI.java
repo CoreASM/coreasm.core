@@ -50,6 +50,8 @@ public class WatchExpressionAPI implements ControlAPI {
 	}
 	
 	public Element evaluateExpression(ASTNode expression, Element agent, ASMStorage storage) throws InterpreterException {
+		if (Thread.holdsLock(capi.getInterpreter().getInterpreterInstance()))
+			throw new InterpreterException(new CoreASMError("The current thread already holds a lock on the interpreter instance!"));
 		this.storage = storage;
 		copyOprRegFromCapi();
 		

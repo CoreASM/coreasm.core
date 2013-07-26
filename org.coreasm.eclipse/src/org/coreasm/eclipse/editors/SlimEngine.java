@@ -64,6 +64,8 @@ public class SlimEngine implements ControlAPI {
 	private List<CoreASMWarning> warnings = new ArrayList<CoreASMWarning>();
 	private List<CoreASMError> errors = new ArrayList<CoreASMError>();
 	
+	private Specification specification;
+	
 	public SlimEngine(Parser parser, Set<String> plugins) {
 		super();
 
@@ -232,6 +234,15 @@ public class SlimEngine implements ControlAPI {
 			return engine.getSpec();
 	}
 	
+	public void setSpec(Specification specification) {
+		this.specification = specification;
+	}
+	
+	@Override
+	public Specification getSpec() {
+		return specification;
+	}
+	
 	@Override
 	public Parser getParser() {
 		return parser;
@@ -278,6 +289,7 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public void warning(CoreASMWarning w) {
+		w.setContext(parser, specification);
 		warnings.add(w);
 	}
 	
@@ -313,6 +325,7 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public void error(CoreASMError e) {
+		e.setContext(parser, specification);
 		errors.add(e);
 	}
 
@@ -421,12 +434,6 @@ public class SlimEngine implements ControlAPI {
 			boolean loadPlugins) {
 		throw new UnsupportedOperationException();
 
-	}
-
-	@Override
-	public Specification getSpec() {
-		throw new UnsupportedOperationException();
-		
 	}
 
 	@Override

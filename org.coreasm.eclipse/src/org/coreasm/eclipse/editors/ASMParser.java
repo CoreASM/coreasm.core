@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.editors;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Observable;
@@ -136,6 +137,11 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	{
 		long tStart = System.currentTimeMillis();
 		String filename = parentEditor.getInputFile().getProjectRelativePath().toString();
+		try {
+			if (slimengine != null)
+				((SlimEngine)slimengine).setSpec(new Specification(slimengine, parentEditor.getInputFile().getLocation().toFile()));
+		} catch (IOException e) {
+		}
 		//System.out.print("=====================================\nparsing... (" + filename + ") ");
 
 		StringBuilder logmsg = new StringBuilder(100);

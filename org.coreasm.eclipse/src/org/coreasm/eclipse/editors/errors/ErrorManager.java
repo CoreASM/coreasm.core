@@ -15,6 +15,7 @@ import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.NumberOfArgumentsWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.ReturnRuleWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
 import org.eclipse.core.resources.IMarker;
@@ -58,6 +59,7 @@ public class ErrorManager implements Observer
 		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
 		addErrorRecognizer(new CoreASMErrorRecognizer(asmEditor));
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
+		addWarningRecognizer(new NumberOfArgumentsWarningRecognizer(asmEditor));
 		addWarningRecognizer(new ReturnRuleWarningRecognizer());
 		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
 	}

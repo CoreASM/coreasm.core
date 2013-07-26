@@ -1,10 +1,8 @@
 package org.coreasm.eclipse.engine.debugger;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -76,7 +74,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
-	private Map<ASTNode, String> ruleArgs;
 	private Set<ASMUpdate> updates = new HashSet<ASMUpdate>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
@@ -430,17 +427,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				state = new ASMStorage(wapi, capi.getStorage(), -capi.getStepCount() - 1, agent, envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 			state.updateState(pos, agent, envVars, updates, callStack, sourceName, lineNumber);
 		}
-		if (ruleArgs != null) {
-			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
-				ASTNode node = (ASTNode)arg.getKey().cloneTree();
-				try {
-					wapi.evaluateExpression(node, currentAgent, state);
-				} catch (InterpreterException e) {
-				}
-				if (node.isEvaluated())
-					envVars.put(arg.getValue(), node.getValue());
-			}
-		}
 		states.add(state);
 		updates = new HashSet<ASMUpdate>();
 	}
@@ -640,18 +626,11 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 		}
-		ruleArgs = new HashMap<ASTNode, String>();
-		if (rule.getParam() != null) {
-			int i = 0;
-			for (String param : rule.getParam())
-				ruleArgs.put(args.get(i++), param);
-		}
 	}
 	
 	@Override
 	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
 		currentAgent = agent;
-		ruleArgs = null;
 	}
 	
 	@Override

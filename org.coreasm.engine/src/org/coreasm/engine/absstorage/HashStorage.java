@@ -774,7 +774,8 @@ public class HashStorage implements AbstractStorage {
 						return ((FunctionElement)id).getValue(loc.args);
 					else {
 						String msg = "Reading from an out-function '" + loc + "' results in an undef value.";
-						logger.warn(msg);
+//						CHANGE: Why print the same warning twice?
+//						logger.warn(msg);
 						capi.warning("Abstract Storage", msg);
 						return Element.UNDEF;
 					}

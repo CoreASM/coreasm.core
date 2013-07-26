@@ -61,19 +61,31 @@ public class ASMDeclarationWatcher implements Observer {
 	public static class FunctionDeclaration extends Declaration {
 		private final String[] domain;
 		private final String range;
+		private String comment;
 		
-		private FunctionDeclaration(FunctionNode node) {
+		private FunctionDeclaration(FunctionNode node, String comment) {
 			super(node.getName());
 			this.domain = node.getDomain().toArray(new String[node.getDomain().size()]);
 			this.range = node.getRange();
+			this.comment = comment;
 		}
 		
 		private FunctionDeclaration(String declaration) {
 			super(declaration.substring(0, declaration.indexOf(':')));
 			int index = declaration.indexOf("->");
 			String declarationDomain = declaration.substring(name.length() + 3, index - 2);
-			domain = declarationDomain.split(", ");
-			range = declaration.substring(index + 3);
+			String[] domain = declarationDomain.split(", ");
+			if (domain[0].length() > 0)
+				this.domain = domain;
+			else
+				this.domain = new String[0];
+			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0) {
+				comment = declaration.substring(indexOfNewLine + 2);
+				range = declaration.substring(index + 3, indexOfNewLine);
+			}
+			else
+				range = declaration.substring(index + 3);
 		}
 		
 		public String[] getDomain() {
@@ -86,7 +98,7 @@ public class ASMDeclarationWatcher implements Observer {
 		
 		@Override
 		public String toString() {
-			return "Function: " + name + ": " + Arrays.toString(domain) + " -> " + range;
+			return "Function: " + name + ": " + Arrays.toString(domain) + " -> " + range + (comment != null ? "\n\n" + comment : "");
 		}
 	}
 	public static class UniverseDeclaration extends Declaration {
@@ -104,11 +116,13 @@ public class ASMDeclarationWatcher implements Observer {
 			}
 		}
 		private List<Member> members = new ArrayList<Member>();
+		private String comment;
 		
-		private UniverseDeclaration(UniverseNode node) {
+		private UniverseDeclaration(UniverseNode node, String comment) {
 			super(node.getName());
 			for (ASTNode member = node.getFirst().getNext(); member != null; member = member.getNext())
 				members.add(new Member(this, member.getToken()));
+			this.comment = comment;
 		}
 		
 		private UniverseDeclaration(String declaration) {
@@ -118,6 +132,9 @@ public class ASMDeclarationWatcher implements Observer {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
 					members.add(new Member(this, member));
 			}
+			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0)
+				comment = declaration.substring(indexOfNewLine + 2);
 		}
 		
 		public List<Member> getMembers() {
@@ -134,6 +151,8 @@ public class ASMDeclarationWatcher implements Observer {
 				declaration += member.getName();
 			}
 			declaration += " }";
+			if (comment != null)
+				declaration += "\n\n" + comment;
 			return declaration;
 		}
 	}
@@ -152,11 +171,13 @@ public class ASMDeclarationWatcher implements Observer {
 			}
 		}
 		private List<Member> members = new ArrayList<Member>();
+		private String comment;
 		
-		private EnumerationDeclaration(EnumerationNode node) {
+		private EnumerationDeclaration(EnumerationNode node, String comment) {
 			super(node.getName());
 			for (EnumerationElement member : node.getMembers())
 				members.add(new Member(this, member.getName()));
+			this.comment = comment;
 		}
 		
 		private EnumerationDeclaration(String declaration) {
@@ -166,6 +187,9 @@ public class ASMDeclarationWatcher implements Observer {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
 					members.add(new Member(this, member));
 			}
+			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0)
+				comment = declaration.substring(indexOfNewLine + 2);
 		}
 		
 		public List<Member> getMembers() {
@@ -181,6 +205,8 @@ public class ASMDeclarationWatcher implements Observer {
 				declaration += member.getName();
 			}
 			declaration += " }";
+			if (comment != null)
+				declaration += "\n\n" + comment;
 			return declaration;
 		}
 	}
@@ -213,6 +239,10 @@ public class ASMDeclarationWatcher implements Observer {
 			if (indexOfBracket >= 0)
 				declaration = declaration.substring(0, indexOfBracket);
 			return declaration;
+		}
+		
+		public List<String> getParams() {
+			return params;
 		}
 		
 		@Override
@@ -260,6 +290,10 @@ public class ASMDeclarationWatcher implements Observer {
 			if (indexOfBracket >= 0)
 				declaration = declaration.substring(0, indexOfBracket);
 			return declaration;
+		}
+		
+		public List<String> getParams() {
+			return params;
 		}
 		
 		@Override
@@ -341,15 +375,15 @@ public class ASMDeclarationWatcher implements Observer {
 				if ("Signature".equals(node.getGrammarRule())) {
 					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
 						if (signature instanceof EnumerationNode) {
-							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature);
+							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature, parseComment(document, node));
 							declarations.add(enumeration);
 							for (EnumerationDeclaration.Member member : enumeration.getMembers())
 								declarations.add(member);
 						}
 						else if (signature instanceof FunctionNode)
-							declarations.add(new FunctionDeclaration((FunctionNode)signature));
+							declarations.add(new FunctionDeclaration((FunctionNode)signature, parseComment(document, node)));
 						else if (signature instanceof UniverseNode) {
-							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature);
+							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature, parseComment(document, node));
 							declarations.add(universe);
 							for (UniverseDeclaration.Member member : universe.getMembers())
 								declarations.add(member);

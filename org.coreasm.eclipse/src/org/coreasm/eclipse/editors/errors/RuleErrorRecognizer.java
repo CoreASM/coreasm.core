@@ -36,7 +36,8 @@ implements ITreeErrorRecognizer
 	// error code tags
 	private static String CLASSNAME = RuleErrorRecognizer.class.getCanonicalName();
 	private static String MULTI_NAME = "MultiName"; 
-	public static String NOT_A_RULE_NAME = "NotARuleName";
+	public static final String NOT_A_RULE_NAME = "NotARuleName";
+	public static final String NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH = "NumberOfArgumentsDoesNotMatch";
 	
 	public RuleErrorRecognizer(ASMEditor parentEditor) {
 		this.parentEditor = parentEditor;
@@ -56,10 +57,10 @@ implements ITreeErrorRecognizer
 			}
 		}
 		
-		Set<String> ruleNames = new HashSet<String>();
+		HashMap<String, RuleDeclaration> ruleDeclarations = new HashMap<String, RuleDeclaration>();
 		for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(parentEditor.getInputFile(), true)) {
 			if (declaration instanceof RuleDeclaration)
-				ruleNames.add(declaration.getName());
+				ruleDeclarations.put(declaration.getName(), (RuleDeclaration)declaration);
 		}
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		for (ASTNode declarationNode = ((ASTNode)document.getRootnode()).getFirst(); declarationNode != null; declarationNode = declarationNode.getNext()) {
@@ -71,9 +72,16 @@ implements ITreeErrorRecognizer
 						ASTNode node = fringe.pop();
 						if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode && node.getParent() instanceof MacroCallRuleNode) {
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-							if (frNode.hasName() && !ruleNames.contains(frNode.getName())) {
-								if (!frNode.hasArguments())
-									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode.getScannerInfo().charPosition, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
+							if (frNode.hasName()) {
+								RuleDeclaration declaration = ruleDeclarations.get(frNode.getName());
+								if (declaration != null) {
+									if (!frNode.hasArguments()) {
+										if (declaration.getParams().size() > 0)
+											errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode.getScannerInfo().charPosition, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+									}
+									else if (frNode.getArguments().size() != declaration.getParams().size())
+										errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode.getScannerInfo().charPosition, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+								}
 								else
 									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode.getScannerInfo().charPosition, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
 							}
