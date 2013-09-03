@@ -36,7 +36,7 @@ public class ASMUpdate extends ASMUpdateViewElement {
 						onBreakpoint = true;
 						break;
 					}
-					else if (breakpoint instanceof ASMWatchpoint && (((ASMWatchpoint)breakpoint).isAccess() && !((ASMWatchpoint)breakpoint).getFuctionName().equals(getLocation().name) && getText().contains(((ASMWatchpoint)breakpoint).getFuctionName() + "(")
+					else if (breakpoint instanceof ASMWatchpoint && (((ASMWatchpoint)breakpoint).isAccess() && !((ASMWatchpoint)breakpoint).getFuctionName().equals(getLocation().name) && toString().contains(((ASMWatchpoint)breakpoint).getFuctionName() + "(")
 																	 || ((ASMWatchpoint)breakpoint).isModification() && ((ASMWatchpoint)breakpoint).getFuctionName().equals(getLocation().name))) {
 						onBreakpoint = true;
 						break;

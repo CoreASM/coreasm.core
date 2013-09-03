@@ -26,14 +26,6 @@ public class ASMUpdateViewElement {
 	}
 	
 	/**
-	 * Returns the given text
-	 * @return the given text
-	 */
-	public String getText() {
-		return text;
-	}
-	
-	/**
 	 * Returns the number of the line in the assigned source file.
 	 * @return the number of the line in the assigned source file
 	 */
@@ -51,6 +43,6 @@ public class ASMUpdateViewElement {
 	
 	@Override
 	public String toString() {
-		return getText();
+		return text;
 	}
 }
