@@ -122,6 +122,7 @@ public class ASMDebugUtils {
 			return null;
 		
 		context = context.substring(beginIndex);
+		context = context.substring(context.lastIndexOf(File.separator) + 1);
 		return context.substring(0, context.indexOf(":"));
 	}
 	
@@ -149,10 +150,12 @@ public class ASMDebugUtils {
 		
 		if (res instanceof IContainer) {
 			try {
-				for (IResource member : ((IContainer)res).members()) {
-					IResource file = findFile(member, filename); 
-					if (file != null)
-						return file;
+				if (res.isAccessible()) {
+					for (IResource member : ((IContainer)res).members()) {
+						IResource file = findFile(member, filename); 
+						if (file != null)
+							return file;
+					}
 				}
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block

@@ -11,6 +11,7 @@ import org.coreasm.eclipse.debug.util.ASMDebugUtils;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.util.Tools;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
@@ -218,7 +219,7 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 				if (debugTarget.isTerminated()) {
 					if (debugTarget.isUpdateFailed()) {
 						ArrayList<ASMUpdateViewElement> errors = new ArrayList<ASMUpdateViewElement>();
-						String[] errorLines = debugTarget.getStepFailedMsg().replaceAll("\t", " ").split("\r\n");
+						String[] errorLines = debugTarget.getStepFailedMsg().replaceAll("\t", " ").split(Tools.getEOL());
 						String reason = errorLines[0];
 						
 						for (int i = 0; i < errorLines.length; i++) {
