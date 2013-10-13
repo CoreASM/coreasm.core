@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.editors;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Observable;
@@ -58,6 +59,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	
 	private ControlAPI slimengine;		// for obtaining references for the plugins
 		
+	private PositionMap positionMap = null;
 	
 	public ASMParser(ASMEditor parentEditor)
 	{
@@ -137,26 +139,26 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	{
 		long tStart = System.currentTimeMillis();
 		String filename = parentEditor.getInputFile().getProjectRelativePath().toString();
-		try {
-			if (slimengine != null)
-				((SlimEngine)slimengine).setSpec(new Specification(slimengine, parentEditor.getInputFile().getLocation().toFile()));
-		} catch (IOException e) {
-		}
 		//System.out.print("=====================================\nparsing... (" + filename + ") ");
 
 		StringBuilder logmsg = new StringBuilder(100);
 		logmsg.append("parsed: ").append(filename).append(" ... ");
 
 		ASMDocument doc = (ASMDocument) documentProvider.getDocument(parentEditor.getInput());
-		String strDoc = doc.get();
 		ParsingResult result = null;
-		
 
 		// forget if the document is a module or not, so it will be rechecked
 		// on the next call of isIncludedSpecification()
 		doc.resetInclusionState();	
 
 		initParser();	// create a new parser if necessary 
+		
+		positionMap = null;
+		try {
+			((SlimEngine)slimengine).setSpec(new Specification(slimengine, new StringReader(doc.get()), parentEditor.getInputFile().getLocation().toFile().getAbsolutePath()));
+		} catch (IOException e) {
+		}
+		((SlimEngine)slimengine).notifyEngineParsing();
 		
 		try {
 			ParserTools parserTools = ParserTools.getInstance(slimengine);			
@@ -167,7 +169,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 			else
 				// specification is not a module -> run root parser
 				parser = rootParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
-			rootnode = parser.parse(strDoc);
+			rootnode = parser.parse(slimengine.getSpec().getText());
 			doc.setRootnode(rootnode);
 			
 			//System.out.println("correct");
@@ -207,7 +209,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 		
 		// notify observers
 		if (result.wasSuccessful)
-			((SlimEngine)slimengine).notifyEngine();
+			((SlimEngine)slimengine).notifyEngineParsingFinished();
 		setChanged();
 		notifyObservers(result);
 
@@ -540,8 +542,10 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 
 	@Override
 	public PositionMap getPositionMap() {
-		throw new UnsupportedOperationException();
-		
+		if (positionMap == null) {
+			positionMap = new PositionMap(slimengine.getSpec().getText(), 1, 1);
+		}
+		return positionMap;
 	}
 	
 }

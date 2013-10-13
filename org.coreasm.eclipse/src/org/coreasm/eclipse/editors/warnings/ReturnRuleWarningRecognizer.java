@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Stack;
 
 import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -12,9 +14,15 @@ import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 
 public class ReturnRuleWarningRecognizer implements IWarningRecognizer {
+	private final ASMEditor parentEditor;
+	
+	public ReturnRuleWarningRecognizer(ASMEditor parentEditor) {
+		this.parentEditor = parentEditor;
+	}
 
 	@Override
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
+		ControlAPI capi = parentEditor.getParser().getSlimEngine();
 		List<AbstractWarning> warnings = new LinkedList<AbstractWarning>();
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		
@@ -38,7 +46,7 @@ public class ReturnRuleWarningRecognizer implements IWarningRecognizer {
 									nameNode = derivedFunctionNode.getNameSignatureNode().getFirst();
 								}
 								if (nameNode != null)
-									warnings.add(new ReturnUndefWarning(nameNode.getToken(), nameNode.getScannerInfo().charPosition, node.getScannerInfo().charPosition));
+									warnings.add(new ReturnUndefWarning(nameNode.getToken(), node.getScannerInfo().charPosition, nameNode, capi, document));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());

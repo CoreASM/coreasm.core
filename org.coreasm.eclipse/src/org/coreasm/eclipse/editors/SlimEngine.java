@@ -36,6 +36,7 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.ServiceProvider;
 import org.coreasm.engine.plugin.ServiceRequest;
+import org.coreasm.engine.plugins.modularity.ModularityPlugin;
 import org.coreasm.engine.scheduler.Scheduler;
 
 /**
@@ -60,6 +61,7 @@ public class SlimEngine implements ControlAPI {
 	
 	private Set<Plugin> plugins;	// plugins which are available through this engine;
 	private Set<ExtensionPointPlugin> parsingSpecSrcModePlugins = new HashSet<ExtensionPointPlugin>();
+	private Set<ExtensionPointPlugin> parsingSpecTargetModePlugins = new HashSet<ExtensionPointPlugin>();
 	
 	private List<CoreASMWarning> warnings = new ArrayList<CoreASMWarning>();
 	private List<CoreASMError> errors = new ArrayList<CoreASMError>();
@@ -115,6 +117,23 @@ public class SlimEngine implements ControlAPI {
 				ExtensionPointPlugin extensionPointPlugin = (ExtensionPointPlugin)p2;
 				if (extensionPointPlugin.getSourceModes() != null && extensionPointPlugin.getSourceModes().containsKey(EngineMode.emParsingSpec))
 					parsingSpecSrcModePlugins.add(extensionPointPlugin);
+				if (extensionPointPlugin.getTargetModes() != null && extensionPointPlugin.getTargetModes().containsKey(EngineMode.emParsingSpec)) {
+					if (!(extensionPointPlugin instanceof ModularityPlugin))
+						parsingSpecTargetModePlugins.add(extensionPointPlugin);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Notify the engine that parsing the specification is about to start.
+	 */
+	public void notifyEngineParsing() {
+		for (ExtensionPointPlugin plugin : parsingSpecTargetModePlugins) {
+			try {
+				plugin.fireOnModeTransition(EngineMode.emIdle, EngineMode.emParsingSpec);
+			} catch (Throwable t) {
+				t.printStackTrace();
 			}
 		}
 	}
@@ -122,13 +141,14 @@ public class SlimEngine implements ControlAPI {
 	/**
 	 * Notify the engine that parsing the specification has finished.
 	 */
-	public void notifyEngine() {
-		for (ExtensionPointPlugin plugin : parsingSpecSrcModePlugins)
+	public void notifyEngineParsingFinished() {
+		for (ExtensionPointPlugin plugin : parsingSpecSrcModePlugins) {
 			try {
 				plugin.fireOnModeTransition(EngineMode.emParsingSpec, EngineMode.emIdle);
 			} catch (Throwable t) {
 				t.printStackTrace();
 			}
+		}
 	}
 
 	/**

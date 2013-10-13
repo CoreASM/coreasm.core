@@ -2,6 +2,7 @@ package org.coreasm.eclipse.editors.errors;
 
 import java.util.Map;
 
+import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.Specification;
@@ -23,7 +24,7 @@ public class CoreASMEclipseError extends AbstractError {
 	public CoreASMEclipseError(CoreASMError error, ControlAPI capi, IDocument document) {
 		super(ErrorType.COREASM_ERROR);
 		set(AbstractError.DESCRIPTION, "CoreASM Error: " + error.message);
-		set(AbstractError.POSITION, calculatePosition(error, capi, document));
+		set(AbstractError.POSITION, AbstractWarning.calculatePosition(error.node, error.pos, capi, document));
 		set(AbstractError.LENGTH, calculateLength(error.node, document));
 	}
 	
@@ -32,30 +33,6 @@ public class CoreASMEclipseError extends AbstractError {
 		super(attributes);
 	}
 
-	private static int calculatePosition(CoreASMError error, ControlAPI capi, IDocument document) {
-		CharacterPosition charPos = error.pos;
-		if (capi != null) {
-			Parser parser = capi.getParser();
-			Node node = error.node;
-			if (charPos == null && node != null && node.getScannerInfo() != null)
-				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (charPos != null) {
-				Specification spec = capi.getSpec();
-				try {
-					int line = charPos.line;
-					if (spec != null)
-						line = spec.getLine(charPos.line).line;
-					return document.getLineOffset(line - 1) + charPos.column - 1;
-				} catch (BadLocationException e) {
-				}
-			}
-		}
-		Node node = error.node;
-		if (node != null)
-			return node.getScannerInfo().charPosition;
-		return 0;
-	}
-	
 	private static int calculateLength(Node node, IDocument document) {
 		if (node instanceof MacroCallRuleNode)
 			node = ((MacroCallRuleNode)node).getFirst();

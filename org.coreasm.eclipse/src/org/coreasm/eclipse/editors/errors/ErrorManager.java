@@ -53,14 +53,14 @@ public class ErrorManager implements Observer
 		this.warningRecognizers = new LinkedList<IWarningRecognizer>();
 
 		// Creating and adding all available ErrorRecognizers.
-		addErrorRecognizer(new InitErrorRecognizer());
+		addErrorRecognizer(new InitErrorRecognizer(asmEditor));
 		addErrorRecognizer(new RuleErrorRecognizer(asmEditor));
 		addErrorRecognizer(new PluginErrorRecognizer(asmEditor.getParser()));
 		addErrorRecognizer(new ModularityErrorRecognizer(asmEditor));
 		addErrorRecognizer(new CoreASMErrorRecognizer(asmEditor));
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
 		addWarningRecognizer(new NumberOfArgumentsWarningRecognizer(asmEditor));
-		addWarningRecognizer(new ReturnRuleWarningRecognizer());
+		addWarningRecognizer(new ReturnRuleWarningRecognizer(asmEditor));
 		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
 	}
 	

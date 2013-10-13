@@ -5,6 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.coreasm.eclipse.editors.warnings.AbstractWarning;
+import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.interpreter.Node;
+import org.eclipse.jface.text.IDocument;
+
 /**
  * This class models a SimpleError. This is an error which has been found by
  * an IErrorParser. It defines the following attributes:
@@ -32,6 +37,18 @@ extends AbstractError
 		set(AbstractError.HEADER, title);
 		set(AbstractError.DESCRIPTION, descr);
 		set(AbstractError.POSITION, position);
+		set(AbstractError.LENGTH, length);
+		set(AbstractError.CLASSNAME, classname);
+		set(AbstractError.ERROR_ID, errorID);
+	}
+	
+	public SimpleError(String title, String descr, Node node, ControlAPI capi, IDocument document,
+			int length, String classname, String errorID) 
+	{
+		super(ErrorType.SIMPLE);
+		set(AbstractError.HEADER, title);
+		set(AbstractError.DESCRIPTION, descr);
+		set(AbstractError.POSITION, AbstractWarning.calculatePosition(node, null, capi, document));
 		set(AbstractError.LENGTH, length);
 		set(AbstractError.CLASSNAME, classname);
 		set(AbstractError.ERROR_ID, errorID);

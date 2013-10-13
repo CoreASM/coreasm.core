@@ -4,8 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.AstTools;
 import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadLocationException;
@@ -30,11 +32,18 @@ implements ITreeErrorRecognizer
 	private static String NO_INIT = "NoInit";
 	private static String MULTI_INITS = "MultiInits";
 	private static String UNKN_INIT = "UnknInit";
+	
+	private ASMEditor parentEditor;
+	
+	public InitErrorRecognizer(ASMEditor parentEditor) {
+		super();
+		this.parentEditor = parentEditor;
+	}
 
 	@Override
 	public void checkForErrors(ASMDocument document, List<AbstractError> errors)
 	{
-
+		ControlAPI capi = parentEditor.getParser().getSlimEngine();
 		ASTNode root = (ASTNode) document.getRootnode();
 		
 		// get a list with all initialization nodes
@@ -46,7 +55,7 @@ implements ITreeErrorRecognizer
 			// Mark "CoreASM ID" for the error
 			int pos = root.getScannerInfo().charPosition;
 			int length = 8 + id.length();
-			AbstractError error = new SimpleError("No \"init\" statement", "specification \"" + id + "\" contains no \"init\" statement", pos, length, CLASSNAME, NO_INIT);
+			AbstractError error = new SimpleError("No \"init\" statement", "specification \"" + id + "\" contains no \"init\" statement", root, capi, document, length, CLASSNAME, NO_INIT);
 			errors.add(error);
 		}
 		// check if there are more than one init nodes
@@ -56,7 +65,7 @@ implements ITreeErrorRecognizer
 				// Mark the whole init statement ("init" and ID)
 				int pos = inode.getScannerInfo().charPosition;
 				int length = 5 + id.length();
-				AbstractError error = new SimpleError("Multiple \"init\" statements", "specification contains multiple \"init\" statements", pos, length, CLASSNAME, MULTI_INITS);
+				AbstractError error = new SimpleError("Multiple \"init\" statements", "specification contains multiple \"init\" statements", inode, capi, document, length, CLASSNAME, MULTI_INITS);
 				errors.add(error);
 			}
 		}
@@ -71,7 +80,7 @@ implements ITreeErrorRecognizer
 				int length = id.length();
 				String name = AstTools.findId(inode);
 				String msg = "There is no rule \"" + name + "\"";
-				AbstractError error = new SimpleError("Undeclared initalization rule", msg, pos, length, CLASSNAME, UNKN_INIT);
+				AbstractError error = new SimpleError("Undeclared initalization rule", msg, inode, capi, document, length, CLASSNAME, UNKN_INIT);
 				errors.add(error);
 			}	
 		}
