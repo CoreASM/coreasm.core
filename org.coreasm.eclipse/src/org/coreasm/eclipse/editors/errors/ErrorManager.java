@@ -194,11 +194,12 @@ public class ErrorManager implements Observer
 			
 			if (perr != null) {
 				// SYNTAX ERROR
-				int line = pe.getLocation().line;
+				int line = asmEditor.getParser().getSlimEngine().getSpec().getLine(pe.getLocation().line).line;
 				int col = pe.getLocation().column;
 				int index = 0;
 				try {
-					index = result.document.getLineOffset(line-1) + col-1;
+					if (line > 0)
+						index = result.document.getLineOffset(line-1) + col-1;
 				} catch (BadLocationException e1) {
 					e1.printStackTrace();
 				}

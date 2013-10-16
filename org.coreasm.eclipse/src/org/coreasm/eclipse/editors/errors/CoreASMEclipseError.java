@@ -5,13 +5,9 @@ import java.util.Map;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
-import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
-import org.coreasm.engine.parser.CharacterPosition;
-import org.coreasm.engine.parser.Parser;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 
 /**

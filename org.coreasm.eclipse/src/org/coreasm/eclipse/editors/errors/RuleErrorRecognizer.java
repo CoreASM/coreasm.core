@@ -53,7 +53,6 @@ implements ITreeErrorRecognizer
 			for (ASTNode n: rulenodes) {
 				String msg = "There are multiple rules with this name";
 				Node idNode = AstTools.findIdNode(n);
-				int pos = idNode.getScannerInfo().charPosition;
 				AbstractError error = new SimpleError("naming conflict", msg, idNode, capi, document, idNode.getToken().length(), CLASSNAME, MULTI_NAME);
 				errors.add(error);
 			}

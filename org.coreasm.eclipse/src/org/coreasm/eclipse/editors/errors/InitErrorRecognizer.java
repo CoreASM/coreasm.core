@@ -53,7 +53,6 @@ implements ITreeErrorRecognizer
 		if (initList.size() == 0 && !((ASMDocument) document).isIncludedSpecification()) {
 			String id = AstTools.findId(root);
 			// Mark "CoreASM ID" for the error
-			int pos = root.getScannerInfo().charPosition;
 			int length = 8 + id.length();
 			AbstractError error = new SimpleError("No \"init\" statement", "specification \"" + id + "\" contains no \"init\" statement", root, capi, document, length, CLASSNAME, NO_INIT);
 			errors.add(error);
@@ -63,7 +62,6 @@ implements ITreeErrorRecognizer
 			for (ASTNode inode: initList) {
 				String id = AstTools.findId(inode);
 				// Mark the whole init statement ("init" and ID)
-				int pos = inode.getScannerInfo().charPosition;
 				int length = 5 + id.length();
 				AbstractError error = new SimpleError("Multiple \"init\" statements", "specification contains multiple \"init\" statements", inode, capi, document, length, CLASSNAME, MULTI_INITS);
 				errors.add(error);
@@ -74,13 +72,12 @@ implements ITreeErrorRecognizer
 		for (ASTNode inode: initList) {
 			ASTNode rnode = getInitRuleDefinition(root, inode);
 			if (rnode == null) {
-				String id = AstTools.findId(inode);
+				Node idNode = AstTools.findIdNode(inode);
 				// Mark only the ID
-				int pos = inode.getScannerInfo().charPosition + 5;
-				int length = id.length();
+				int length = idNode.getToken().length();
 				String name = AstTools.findId(inode);
 				String msg = "There is no rule \"" + name + "\"";
-				AbstractError error = new SimpleError("Undeclared initalization rule", msg, inode, capi, document, length, CLASSNAME, UNKN_INIT);
+				AbstractError error = new SimpleError("Undeclared initalization rule", msg, idNode, capi, document, length, CLASSNAME, UNKN_INIT);
 				errors.add(error);
 			}	
 		}
