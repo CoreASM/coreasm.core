@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -188,8 +189,11 @@ public class Specification {
 	public void updateLines(List<SpecLine> lines) {
 		this.lines = Collections.unmodifiableList(lines);
 		StringBuffer txt = new StringBuffer();
-		for (SpecLine l: lines)
-			txt.append(l.text + Tools.getEOL());
+		Iterator<SpecLine> it = lines.iterator();
+		while (it.hasNext()) {
+			txt.append(it.next().text);
+			if ( it.hasNext() ) txt.append(Tools.getEOL());
+		}
 		this.text = txt.toString();
 		this.rootNode = null;
 	}
