@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>org.coreasm.eclipse.repository</artifactId>
+	<packaging>eclipse-repository</packaging>
+	<name>CoreASM Eclipse Plugin Repository</name>
+
+	<parent>
+		<version>1.7.0-SNAPSHOT</version>
+		<groupId>org.coreasm</groupId>
+		<artifactId>org.coreasm.eclipse.parent</artifactId>
+	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<includeAllDependencies>true</includeAllDependencies>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-director-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<formats>
+						<win32>zip</win32>
+						<linux>tar.gz</linux>
+						<macosx>tar.gz</macosx>
+					</formats>
+				</configuration>
+				<executions>
+					<execution>
+						<id>materialize-products</id>
+						<goals>
+							<goal>materialize-products</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>archive-products</id>
+						<goals>
+							<goal>archive-products</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+  <extensions>
+   <!-- Enabling the use of FTP -->
+   <extension>
+    <groupId>org.apache.maven.wagon</groupId>
+    <artifactId>wagon-ftp</artifactId>
+    <version>1.0-beta-6</version>
+   </extension>
+  </extensions>
+ </build>
+
+ <profiles>
+  <!-- This profile is used to upload the repo -->
+  <profile>
+   <id>uploadRepo</id>
+   <properties>
+    <!-- Properties relative to the 
+    distant host where to upload the repo -->
+    <scp.url>http://pmserver.informatik.uni-ulm.de</scp.url>
+    <scp.toDir>/var/www/coreasm/</scp.toDir>
+    <!-- Relative path to the repo being uploaded -->
+    <repo.path>${project.build.directory}/repository/</repo.path>
+   </properties>
+
+   <build>
+    <plugins>
+     <!-- Upload the repo to the server -->
+     <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>wagon-maven-plugin</artifactId>
+      <version>1.0-beta-4</version>
+      <executions>
+       <execution>
+        <id>upload-repo</id>
+        <phase>install</phase>
+        <goals>
+         <goal>upload</goal>
+        </goals>
+        <configuration>
+         <fromDir>${repo.path}</fromDir>
+         <includes>**</includes>
+         <toDir>${scp.toDir}</toDir>
+         <url>${scp.url}</url>
+         <serverId>p2Repo</serverId>
+         <!-- Points to your settings.xml 
+         where the connection settings are 
+          stored as shown below -->
+         <!-- <server> -->
+         <!-- <id>p2Repo</id> -->
+         <!-- <username>username</username> -->
+         <!-- <password>password</password> -->
+         <!-- </server> -->
+        </configuration>
+       </execution>
+      </executions>
+     </plugin>
+    </plugins>
+   </build>
+  </profile>
+ </profiles>
+	
+</project>

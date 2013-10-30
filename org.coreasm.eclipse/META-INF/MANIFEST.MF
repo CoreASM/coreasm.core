@@ -1,20 +1,13 @@
 Manifest-Version: 1.0
+Eclipse-BundleShape: dir
 Bundle-ManifestVersion: 2
 Bundle-Name: CoreASM Eclipse Plugin
 Bundle-SymbolicName: org.coreasm.eclipse;singleton:=true
 Bundle-Version: 1.7.0.qualifier
 Bundle-Activator: org.coreasm.eclipse.CoreASMPlugin
 Bundle-Vendor: coreasm.org
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.debug.ui,
- org.eclipse.jface.text,
- org.eclipse.ui.console,
- org.eclipse.ui.editors,
- org.eclipse.ui.ide
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.ui, org.eclipse.core.runtime, org.eclipse.debug.ui, org.eclipse.jface.text, org.eclipse.ui.console, org.eclipse.ui.editors, org.eclipse.ui.ide
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: ., target/lib/org.coreasm.engine.jar
+Import-Package: org.eclipse.ui.dialogs, org.eclipse.ui.views.contentoutline
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.ui.dialogs,
- org.eclipse.ui.views.contentoutline
-Bundle-ClassPath: .,
- target/lib/org.coreasm.engine.jar

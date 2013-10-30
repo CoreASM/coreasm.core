@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.coreasm.eclipse.feature_1.0.0.qualifier.jar" id="org.coreasm.eclipse.feature" version="1.0.0.qualifier">
+      <category name="CoreASM_Eclipse_Plugin"/>
+   </feature>
+   <category-def name="CoreASM_Eclipse_Plugin" label="CoreASM Eclipse Plugin"/>
+</site>
