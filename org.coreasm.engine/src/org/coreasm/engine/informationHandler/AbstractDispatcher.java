@@ -123,8 +123,8 @@ abstract class AbstractDispatcher {
 						obs.clearInformation();
 					}
 				}
-				this.newActions.remove(dispInfo);
 			}
+			this.newActions.clear();
 		}
 	}
 }
