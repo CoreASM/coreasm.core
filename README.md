@@ -28,7 +28,7 @@ using a CoreASM Engine and offers control over the engine.
 
 ### How is it related to CoreASM on SourceForge?
 
-These are the same projects. At some point in 2012 we have stopped maintaing the
+These are the same projects. At some point in 2013 we have stopped maintaing the
 code on sourceforge and started moving the repository to github.
 
 
@@ -44,12 +44,14 @@ To build/update eclipse project files, run:
 
     mvn eclipse:eclipse
 
+A detailed manual how to setup an Eclipse based development environment for CoreASM can be found in our [wiki](https://github.com/CoreASM/coreasm.core/wiki) .
+
 
 The Latest Version
 ------------------
 
-Latest released versions of Carma and the CoreASM Engine can be found on the CoreASM 
-Project web site <http://www.coreasm.org>. 
+Latest released versions of Carma, CoreASM Eclipse and the CoreASM Engine can be found on [github](https://github.com/CoreASM/coreasm.core). Older versions can be found on the CoreASM 
+Project web site <http://www.coreasm.org>.
 
 
 Licensing
@@ -65,5 +67,5 @@ web pages:
 Thanks for using Carma.
 
 The CoreASM Development Team
-2005-2012
+2005-2013
 
