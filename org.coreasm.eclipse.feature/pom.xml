@@ -6,10 +6,9 @@
 	<artifactId>org.coreasm.eclipse.feature</artifactId>
 	<packaging>eclipse-feature</packaging>
 	<name>CoreASM Eclipse Plugin Feature</name>
-	<version>1.0.0-SNAPSHOT</version>
 
 	<parent>
-		<version>1.7.0-SNAPSHOT</version>
+		<version>1.0.2-SNAPSHOT</version>
 		<groupId>org.coreasm</groupId>
 		<artifactId>org.coreasm.eclipse.parent</artifactId>
 		<relativePath>../org.coreasm.eclipse.parent</relativePath>

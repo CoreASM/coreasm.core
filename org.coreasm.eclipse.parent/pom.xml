@@ -1,14 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>org.coreasm.eclipse.parent</artifactId>
 	<packaging>pom</packaging>
 	<name>CoreASM Eclipse Parent Project</name>
+	<version>1.0.2-SNAPSHOT</version>
 
 	<parent>
 		<artifactId>org.coreasm.parent</artifactId>
 		<groupId>org.coreasm</groupId>
 		<version>1.7.0-SNAPSHOT</version>
+		<relativePath>../org.coreasm.parent</relativePath>
 	</parent>
 
 	<modules>
@@ -19,8 +22,10 @@
 
 	<properties>
 		<tycho-version>0.18.1</tycho-version>
+		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
+		<kepler-repo.url>http://download.eclipse.org/releases/kepler</kepler-repo.url>
 	</properties>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -32,7 +37,6 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
-				<version>${tycho-version}</version>
 				<configuration>
 					<pomDependencies>consider</pomDependencies>
 				</configuration>
@@ -60,10 +64,44 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 		<!-- To define the plugin version in your parent POM -->
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>target-platform-configuration</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<environments>
+							<environment>
+								<os>linux</os>
+								<ws>gtk</ws>
+								<arch>x86</arch>
+							</environment>
+							<environment>
+								<os>linux</os>
+								<ws>gtk</ws>
+								<arch>x86_64</arch>
+							</environment>
+							<environment>
+								<os>win32</os>
+								<ws>win32</ws>
+								<arch>x86</arch>
+							</environment>
+							<environment>
+								<os>win32</os>
+								<ws>win32</ws>
+								<arch>x86_64</arch>
+							</environment>
+							<environment>
+								<os>macosx</os>
+								<ws>cocoa</ws>
+								<arch>x86_64</arch>
+							</environment>
+						</environments>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
@@ -99,10 +137,14 @@
 
 	<repositories>
 		<repository>
+			<id>kepler</id>
+			<url>${kepler-repo.url}</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
 			<id>juno</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/juno</url>
+			<url>${juno-repo.url}</url>
 		</repository>
 	</repositories>
-
 </project>

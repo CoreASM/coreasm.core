@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.coreasm</groupId>
 	<artifactId>org.coreasm.parent</artifactId>
-	<version>1.7.0-SNAPSHOT</version>
+	<version>1.7.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>CoreASM Parent Project</name>
 
@@ -14,6 +14,10 @@
 		<module>../org.coreasm.ui.carma</module>
 		<module>../org.coreasm.eclipse.parent</module>
 	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
 	<licenses>
 		<license>
