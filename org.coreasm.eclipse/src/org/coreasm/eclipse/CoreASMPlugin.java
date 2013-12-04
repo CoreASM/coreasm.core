@@ -4,6 +4,8 @@ package org.coreasm.eclipse;
 import java.net.URI;
 import java.net.URL;
 
+import javax.swing.JOptionPane;
+
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.coreasm.util.Tools;
 import org.eclipse.core.runtime.FileLocator;
@@ -64,22 +66,21 @@ public class CoreASMPlugin extends AbstractUIPlugin {
 	 * @return the root folder of the plugin
 	 */
 	private String findRootFolder() {
-		final URI pluginsFolderURI = locateFile(PLUGIN_ID, PLUGINS_FOLDER_NAME);
-		if (pluginsFolderURI == null) {
+		final URL pluginsFolderURL = locateFile(PLUGIN_ID, ".");
+		if (pluginsFolderURL == null) {
 			logger.error("Could not locate the Eclipse plugin folder.");
 			return ".";
 		}
-		String pluginsFolder = pluginsFolderURI.getPath();
-		pluginsFolder = pluginsFolder.substring(0, pluginsFolder.lastIndexOf(PLUGINS_FOLDER_NAME));
-		logger.info("CoreASM Eclipse root folder is detected at '{}'.", pluginsFolder);
-		return pluginsFolder;
+		String rootFolder = pluginsFolderURL.getPath();
+		logger.info("CoreASM Eclipse root folder is detected at '{}'.", rootFolder);
+		return rootFolder;
 	}
 	
-	private static URI locateFile(String bundle, String fullPath) {
+	private static URL locateFile(String bundle, String fullPath) {
 		try {
 			URL url = FileLocator.find(Platform.getBundle(bundle), new Path(fullPath), null);
 			if (url != null)
-				return FileLocator.resolve(url).toURI();
+				return FileLocator.resolve(url);
 		} catch (Exception e) {
 		}
 		return null;
