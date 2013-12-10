@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.engine.CoreASMWarning;
 
 /**
@@ -21,9 +22,10 @@ public class CoreASMWarningRecognizer implements IWarningRecognizer {
 	
 	@Override
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
+		SlimEngine slimEngine = (SlimEngine)parentEditor.getParser().getSlimEngine();
 		List<AbstractWarning> warnings = new ArrayList<AbstractWarning>();
-		for (CoreASMWarning warning : parentEditor.getParser().getSlimEngine().getWarnings())
-			warnings.add(new CoreASMEclipseWarning(warning, null, document));
+		for (CoreASMWarning warning : slimEngine.getWarnings())
+			warnings.add(new CoreASMEclipseWarning(warning, slimEngine, document));
 		return warnings;
 	}
 

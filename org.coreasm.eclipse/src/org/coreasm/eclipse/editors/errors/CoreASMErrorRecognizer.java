@@ -23,6 +23,6 @@ public class CoreASMErrorRecognizer implements ITextErrorRecognizer {
 	public void checkForErrors(ASMDocument document, List<AbstractError> errors) {
 		SlimEngine slimEngine = (SlimEngine)parentEditor.getParser().getSlimEngine();
 		for (CoreASMError error : slimEngine.getErrors())
-			errors.add(new CoreASMEclipseError(error, null, document));
+			errors.add(new CoreASMEclipseError(error, slimEngine, document));
 	}
 }

@@ -1,10 +1,7 @@
 package org.coreasm.eclipse;
 
 
-import java.net.URI;
 import java.net.URL;
-
-import javax.swing.JOptionPane;
 
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 import org.coreasm.util.Tools;

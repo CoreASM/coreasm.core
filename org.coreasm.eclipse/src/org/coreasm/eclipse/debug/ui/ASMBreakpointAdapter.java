@@ -10,6 +10,8 @@ import org.coreasm.eclipse.debug.core.model.ASMMethodBreakpoint;
 import org.coreasm.eclipse.debug.core.model.ASMWatchpoint;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.editors.warnings.AbstractWarning;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -170,7 +172,7 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 			
 			try {
 				documentProvider.connect(this);
-				return getASTNodesOnLine(documentProvider.getDocument(editor.getEditorInput()), textSelection.getStartLine());
+				return getASTNodesOnLine(documentProvider.getDocument(editor.getEditorInput()), editor.getParser().getSlimEngine(), textSelection.getStartLine());
 			} catch (CoreException e) {
 			} catch (BadLocationException e) {
 			} finally {
@@ -180,7 +182,7 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 		return Collections.emptyList();
 	}
 	
-	private List<ASTNode> getASTNodesOnLine(IDocument doc, int line) throws BadLocationException {
+	private List<ASTNode> getASTNodesOnLine(IDocument doc, ControlAPI capi, int line) throws BadLocationException {
 		ASMDocument asmDoc = (ASMDocument)doc;
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		List<ASTNode> nodes = new LinkedList<ASTNode>();
@@ -190,9 +192,7 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 			fringe.add(rootNode);
 		while (!fringe.isEmpty()) {
 			ASTNode node = fringe.pop();
-			int offset = node.getScannerInfo().charPosition;
-			
-			if (doc.getLineOfOffset(offset) == line)
+			if (doc.getLineOfOffset(AbstractWarning.calculatePosition(node, null, capi, doc)) == line)
 				nodes.add(node);
 			for (ASTNode child : node.getAbstractChildNodes())
 				fringe.add(fringe.size(), child);
