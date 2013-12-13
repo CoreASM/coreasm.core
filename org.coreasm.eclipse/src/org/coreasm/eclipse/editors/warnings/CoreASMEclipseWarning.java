@@ -1,6 +1,6 @@
 package org.coreasm.eclipse.editors.warnings;
 
-import org.coreasm.engine.ControlAPI;
+import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
@@ -14,8 +14,8 @@ import org.eclipse.jface.text.IDocument;
  */
 public class CoreASMEclipseWarning extends AbstractWarning {
 
-	public CoreASMEclipseWarning(CoreASMWarning warning, ControlAPI capi, IDocument document) {
-		super("CoreASM Warning: " + warning.message, "CoreASMWarning", calculatePosition(warning.node, warning.pos, capi, document), calculateLength(warning.node));
+	public CoreASMEclipseWarning(CoreASMWarning warning, IDocument document) {
+		super("CoreASM Warning: " + warning.message, "CoreASMWarning", ((ASMDocument)document).getNodePosition(warning.node, warning.pos), calculateLength(warning.node));
 	}
 
 	private static int calculateLength(Node node) {

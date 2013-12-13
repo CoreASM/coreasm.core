@@ -1,10 +1,8 @@
 package org.coreasm.eclipse.preferences;
 
 import org.coreasm.eclipse.CoreASMPlugin;
-import org.coreasm.eclipse.editors.ASMEditor;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
-import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;

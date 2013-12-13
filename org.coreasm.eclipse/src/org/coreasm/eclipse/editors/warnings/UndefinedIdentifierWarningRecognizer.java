@@ -12,7 +12,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.SlimEngine;
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
@@ -54,7 +53,6 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	
 	@Override
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
-		ControlAPI capi = parentEditor.getParser().getSlimEngine();
 		List<AbstractWarning> warnings = new LinkedList<AbstractWarning>();
 		Set<String> functionNames = getDeclaredNames(document);
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
@@ -73,17 +71,17 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 							if (frNode.hasName()) {
 								if (!frNode.hasArguments()) {
 									if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
-										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), Collections.<ASTNode>emptyList(), frNode, capi, document));
+										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), Collections.<ASTNode>emptyList(), frNode, document));
 								}
 								else if (!isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
-									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getArguments(), frNode, capi, document));
+									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getArguments(), frNode, document));
 							}
 						}
 						else if (ASTNode.EXPRESSION_CLASS.equals(node.getGrammarClass())) {
 							if (node instanceof RuleOrFuncElementNode) {
 								RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
 								if (!isFunctionName(ruleOrFuncElementNode.getElementName(), functionNames))
-									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), Collections.<ASTNode>emptyList(), node, capi, document));
+									warnings.add(new UndefinedIdentifierWarning(ruleOrFuncElementNode.getElementName(), Collections.<ASTNode>emptyList(), node, document));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());

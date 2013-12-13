@@ -51,21 +51,22 @@ public class MarkAsLocalProposal implements ICompletionProposal {
 	public void apply(IDocument document) {
 		if (!(document instanceof ASMDocument))
 			return;
-		ASTNode node = getNodeOfOffset((ASMDocument)document, identifierOffset);
+		ASMDocument asmDocument = (ASMDocument)document;
+		ASTNode node = getNodeOfOffset(asmDocument, identifierOffset);
 		while (node != null && !ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass()) && !(node instanceof LocalRuleNode))
 			node = node.getParent();
 		try {
 			if (node instanceof LocalRuleNode) {
 				for (Node child : node.getChildNodes()) {
 					if ("in".equals(child.getToken())) {
-						document.replace(child.getScannerInfo().charPosition - 1, 0, ", " + name);
+						document.replace(asmDocument.getNodePosition(child) - 1, 0, ", " + name);
 						return;
 					}
 				}
 			}
 			else if (node != null) {
 				ASTNode ruleBody = node.getFirst().getNext();
-				int offset = ruleBody.getScannerInfo().charPosition;
+				int offset = asmDocument.getNodePosition(ruleBody);
 				String localBlock = "local " + name + " in ";
 				
 				document.replace(offset, 0, localBlock);
@@ -88,11 +89,11 @@ public class MarkAsLocalProposal implements ICompletionProposal {
 						ASTNode node = fringe.pop();
 						if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode) {
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-							if (frNode.hasName() && frNode.getScannerInfo().charPosition == offset)
+							if (frNode.hasName() && document.getNodePosition(frNode) == offset)
 								return frNode;
 						}
 						else if (ASTNode.EXPRESSION_CLASS.equals(node.getGrammarClass())) {
-							if (node instanceof RuleOrFuncElementNode && node.getScannerInfo().charPosition + 1 == offset)
+							if (node instanceof RuleOrFuncElementNode && document.getNodePosition(node) + 1 == offset)
 								return node;
 						}
 						fringe.addAll(node.getAbstractChildNodes());

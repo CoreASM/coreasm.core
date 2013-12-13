@@ -2,8 +2,7 @@ package org.coreasm.eclipse.editors.errors;
 
 import java.util.Map;
 
-import org.coreasm.eclipse.editors.warnings.AbstractWarning;
-import org.coreasm.engine.ControlAPI;
+import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
@@ -17,10 +16,10 @@ import org.eclipse.jface.text.IDocument;
  */
 public class CoreASMEclipseError extends AbstractError {
 	
-	public CoreASMEclipseError(CoreASMError error, ControlAPI capi, IDocument document) {
+	public CoreASMEclipseError(CoreASMError error, ASMDocument document) {
 		super(ErrorType.COREASM_ERROR);
 		set(AbstractError.DESCRIPTION, "CoreASM Error: " + error.message);
-		set(AbstractError.POSITION, AbstractWarning.calculatePosition(error.node, error.pos, capi, document));
+		set(AbstractError.POSITION, document.getNodePosition(error.node, error.pos));
 		set(AbstractError.LENGTH, calculateLength(error.node, document));
 	}
 	

@@ -3,10 +3,7 @@ package org.coreasm.eclipse.editors.outlining;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;

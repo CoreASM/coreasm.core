@@ -25,7 +25,7 @@ public class CoreASMWarningRecognizer implements IWarningRecognizer {
 		SlimEngine slimEngine = (SlimEngine)parentEditor.getParser().getSlimEngine();
 		List<AbstractWarning> warnings = new ArrayList<AbstractWarning>();
 		for (CoreASMWarning warning : slimEngine.getWarnings())
-			warnings.add(new CoreASMEclipseWarning(warning, slimEngine, document));
+			warnings.add(new CoreASMEclipseWarning(warning, document));
 		return warnings;
 	}
 

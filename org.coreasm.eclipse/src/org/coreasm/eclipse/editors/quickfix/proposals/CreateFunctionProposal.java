@@ -46,7 +46,8 @@ public class CreateFunctionProposal implements ICompletionProposal {
 	public void apply(IDocument document) {
 		if (!(document instanceof ASMDocument))
 			return;
-		Node rootNode = ((ASMDocument)document).getRootnode();
+		ASMDocument asmDocument = (ASMDocument)document;
+		Node rootNode = asmDocument.getRootnode();
 		ASTNode nodeToAddAfter = null;
 		for (ASTNode node = ((ASTNode)rootNode).getFirst(); node != null; node = node.getNext()) {
 			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
@@ -62,7 +63,7 @@ public class CreateFunctionProposal implements ICompletionProposal {
 		}
 		try {
 			if (nodeToAddAfter != null) {
-				int line = document.getLineOfOffset(nodeToAddAfter.getScannerInfo().charPosition) + 1;
+				int line = asmDocument.getLineOfNode(nodeToAddAfter) + 1;
 				int offset = document.getLineOffset(line);
 				String declarationString = "function " + name + ": ";
 				

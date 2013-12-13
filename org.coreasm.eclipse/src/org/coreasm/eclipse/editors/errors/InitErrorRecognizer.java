@@ -4,10 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDocument;
-import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.AstTools;
 import org.coreasm.eclipse.editors.IconManager;
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadLocationException;
@@ -33,17 +31,9 @@ implements ITreeErrorRecognizer
 	private static String MULTI_INITS = "MultiInits";
 	private static String UNKN_INIT = "UnknInit";
 	
-	private ASMEditor parentEditor;
-	
-	public InitErrorRecognizer(ASMEditor parentEditor) {
-		super();
-		this.parentEditor = parentEditor;
-	}
-
 	@Override
 	public void checkForErrors(ASMDocument document, List<AbstractError> errors)
 	{
-		ControlAPI capi = parentEditor.getParser().getSlimEngine();
 		ASTNode root = (ASTNode) document.getRootnode();
 		
 		// get a list with all initialization nodes
@@ -54,7 +44,7 @@ implements ITreeErrorRecognizer
 			String id = AstTools.findId(root);
 			// Mark "CoreASM ID" for the error
 			int length = 8 + id.length();
-			AbstractError error = new SimpleError("No \"init\" statement", "specification \"" + id + "\" contains no \"init\" statement", root, capi, document, length, CLASSNAME, NO_INIT);
+			AbstractError error = new SimpleError("No \"init\" statement", "specification \"" + id + "\" contains no \"init\" statement", root, document, length, CLASSNAME, NO_INIT);
 			errors.add(error);
 		}
 		// check if there are more than one init nodes
@@ -63,7 +53,7 @@ implements ITreeErrorRecognizer
 				String id = AstTools.findId(inode);
 				// Mark the whole init statement ("init" and ID)
 				int length = 5 + id.length();
-				AbstractError error = new SimpleError("Multiple \"init\" statements", "specification contains multiple \"init\" statements", inode, capi, document, length, CLASSNAME, MULTI_INITS);
+				AbstractError error = new SimpleError("Multiple \"init\" statements", "specification contains multiple \"init\" statements", inode, document, length, CLASSNAME, MULTI_INITS);
 				errors.add(error);
 			}
 		}
@@ -77,7 +67,7 @@ implements ITreeErrorRecognizer
 				int length = idNode.getToken().length();
 				String name = AstTools.findId(inode);
 				String msg = "There is no rule \"" + name + "\"";
-				AbstractError error = new SimpleError("Undeclared initalization rule", msg, idNode, capi, document, length, CLASSNAME, UNKN_INIT);
+				AbstractError error = new SimpleError("Undeclared initalization rule", msg, idNode, document, length, CLASSNAME, UNKN_INIT);
 				errors.add(error);
 			}	
 		}
@@ -185,7 +175,7 @@ implements ITreeErrorRecognizer
 				ASMDocument doc = (ASMDocument) error.getDocument();
 				Node rootnode = doc.getRootnode();
 				Node firstRuleNode = AstTools.findFirstChildNode((ASTNode) rootnode, AstTools.GRAMMAR_RULE);
-				int begin = firstRuleNode.getScannerInfo().charPosition;
+				int begin = doc.getNodePosition(firstRuleNode);
 				String strInit = "init " + choice + "\n\n";
 				try {
 					doc.replace(begin, 0, strInit);
@@ -201,7 +191,7 @@ implements ITreeErrorRecognizer
 				ASMDocument doc = (ASMDocument) error.getDocument();
 				Node rootnode = doc.getRootnode();
 				Node firstRuleNode = AstTools.findFirstChildNode((ASTNode) rootnode, AstTools.GRAMMAR_RULE);
-				int begin = firstRuleNode.getScannerInfo().charPosition;
+				int begin = doc.getNodePosition(firstRuleNode);
 				for (String choice : choices)
 					proposals.add(new CompletionProposal("init " + choice + "\n\n", begin, 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt + " '" + choice + "'", null, null));
 			}
@@ -259,7 +249,7 @@ implements ITreeErrorRecognizer
 					String id = AstTools.findId(initnode);
 					if (id.equals(choice))	// skip the chosen init
 						continue;
-					int begin = initnode.getScannerInfo().charPosition;
+					int begin = doc.getNodePosition(initnode);
 					int len = 5 + id.length();
 					// check if the whole line can be deleted (when there are only whitespaces left)
 					try {
@@ -349,20 +339,20 @@ implements ITreeErrorRecognizer
 		{
 			if (error instanceof SimpleError) {
 				SimpleError sError = (SimpleError) error;
-				ASMDocument document = (ASMDocument) sError.getDocument();
+				ASMDocument doc = (ASMDocument) sError.getDocument();
 				
 				// Read rule name from document
-				String rulename = document.get().substring(error.getPosition(), error.getPosition() + error.getLength());
+				String rulename = doc.get().substring(error.getPosition(), error.getPosition() + error.getLength());
 				
 				// The new rule should be inserted before the first existing rule
-				ASTNode firstRuleNode = AstTools.findFirstChildNode((ASTNode) document.getRootnode(), AstTools.GRAMMAR_RULE);
-				int offset = document.getLength();
+				ASTNode firstRuleNode = AstTools.findFirstChildNode((ASTNode) doc.getRootnode(), AstTools.GRAMMAR_RULE);
+				int offset = doc.getLength();
 				if (firstRuleNode != null) {
-					offset = firstRuleNode.getScannerInfo().charPosition;
+					offset = doc.getNodePosition(firstRuleNode);
 				}
 				String replacement = "\n\nrule " + rulename + " =\n\tskip\n\n";
 				try {
-					document.replace(offset, 0, replacement);
+					doc.replace(offset, 0, replacement);
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
@@ -373,16 +363,16 @@ implements ITreeErrorRecognizer
 		public void collectProposals(AbstractError error, List<ICompletionProposal> proposals) {
 			if (error instanceof SimpleError) {
 				SimpleError sError = (SimpleError) error;
-				ASMDocument document = (ASMDocument) sError.getDocument();
+				ASMDocument doc = (ASMDocument) sError.getDocument();
 				
 				// Read rule name from document
-				String rulename = document.get().substring(error.getPosition(), error.getPosition() + error.getLength());
+				String rulename = doc.get().substring(error.getPosition(), error.getPosition() + error.getLength());
 				
 				// The new rule should be inserted before the first existing rule
-				ASTNode firstRuleNode = AstTools.findFirstChildNode((ASTNode) document.getRootnode(), AstTools.GRAMMAR_RULE);
-				int offset = document.getLength();
+				ASTNode firstRuleNode = AstTools.findFirstChildNode((ASTNode) doc.getRootnode(), AstTools.GRAMMAR_RULE);
+				int offset = doc.getLength();
 				if (firstRuleNode != null)
-					offset = firstRuleNode.getScannerInfo().charPosition;
+					offset = doc.getNodePosition(firstRuleNode);
 				proposals.add(new CompletionProposal("\n\nrule " + rulename + " =\n\tskip\n\n", offset, 0, 0, IconManager.getIcon("/icons/editor/bullet.gif"), prompt, null, null));
 			}
 		}

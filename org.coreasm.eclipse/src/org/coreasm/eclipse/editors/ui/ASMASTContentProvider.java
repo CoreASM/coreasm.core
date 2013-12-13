@@ -3,8 +3,6 @@ package org.coreasm.eclipse.editors.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadPositionCategoryException;

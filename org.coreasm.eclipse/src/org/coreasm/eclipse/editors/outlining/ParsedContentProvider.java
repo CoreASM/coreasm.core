@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.AstTools;
@@ -15,14 +14,12 @@ import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.NodeType;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugins.modularity.IncludeNode;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 /**
@@ -60,7 +57,6 @@ public class ParsedContentProvider implements ITreeContentProvider
 	private final static OutlineTreeNode OUTDATED =
 			new OutlineTreeNode(NodeType.OUTDATED_NODE, OUTDATED_STRING, null, null, 0, 1);
 
-	private IEditorInput input;
 	private IDocumentProvider documentProvider;
 	private IPositionUpdater positionUpdater = new DefaultPositionUpdater(AST_POSITIONS);
 	private ASMEditor editor;
@@ -359,8 +355,6 @@ public class ParsedContentProvider implements ITreeContentProvider
 	 */
 	private void parseSyntaxTree(Node node, ParsingResult result)
 	{
-		ASMDocument doc = (ASMDocument) documentProvider.getDocument(input);
-		
 		Map<ListNames, List<OutlineTreeNode>> listsUnsorted =
 				result.lists.get(DisplayModeOrder.UNSORTED);
 			

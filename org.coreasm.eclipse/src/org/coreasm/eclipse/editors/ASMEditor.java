@@ -178,7 +178,7 @@ implements IDocumentListener
 	}
 
 	@Override
-	public Object getAdapter(Class required)
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class required)
 	{
 		if (IContentOutlinePage.class.equals(required))
 		{
@@ -245,7 +245,7 @@ implements IDocumentListener
 			e.printStackTrace();
 		}
 		
-		Map map = new HashMap();
+		Map<String, Object> map = new HashMap<String, Object>();
 		MarkerUtilities.setLineNumber(map, line);
 		MarkerUtilities.setMessage(map, error.getDescription());
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
@@ -266,7 +266,7 @@ implements IDocumentListener
 	 */
 	public void createSyntaxMark(SyntaxError error, int severity)
 	{
-		Map map = new HashMap();
+		Map<String, Object> map = new HashMap<String, Object>();
 		MarkerUtilities.setLineNumber(map, error.getLine());
 		MarkerUtilities.setMessage(map, error.getDescription().replace('\n', ' '));
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
@@ -296,7 +296,7 @@ implements IDocumentListener
 			e.printStackTrace();
 		}
 
-		Map<String, Comparable> map = new HashMap();
+		Map<String, Object> map = new HashMap<String, Object>();
 		MarkerUtilities.setLineNumber(map, error.getLine());
 		MarkerUtilities.setMessage(map, error.getDescription());
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
@@ -334,7 +334,7 @@ implements IDocumentListener
 		if (strPlugins.length() > 0)
 			strPlugins.deleteCharAt(strPlugins.length()-1);
 		
-		Map map = new HashMap();
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
 		map.put("plugins", strPlugins.toString());
 		map.put(IMarker.CHAR_START, 0);
@@ -372,7 +372,7 @@ implements IDocumentListener
 		if (strIncludes.length() > 0)
 			strIncludes.deleteCharAt(strIncludes.length()-1);
 		
-		Map map = new HashMap();
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put(IMarker.LOCATION, getInputFile().getFullPath().toString());
 		map.put("includes", strIncludes.toString());
 		map.put(IMarker.CHAR_START, 0);
@@ -406,7 +406,8 @@ implements IDocumentListener
 		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(error, capi))));
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
-			asmEditor.createErrorMark(new CoreASMEclipseError(error, capi, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
+			ASMDocument asmDocument = (ASMDocument)asmEditor.getDocumentProvider().getDocument(editor.getEditorInput());
+			asmEditor.createErrorMark(new CoreASMEclipseError(error, asmDocument), true);
 		}
 	}
 	
@@ -460,7 +461,7 @@ implements IDocumentListener
 		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(warning, capi))));
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
-			asmEditor.createWarningMark(new CoreASMEclipseWarning(warning, capi, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
+			asmEditor.createWarningMark(new CoreASMEclipseWarning(warning, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
 		}
 	}
 	

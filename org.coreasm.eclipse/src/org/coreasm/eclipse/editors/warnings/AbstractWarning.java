@@ -1,12 +1,5 @@
 package org.coreasm.eclipse.editors.warnings;
 
-import org.coreasm.engine.ControlAPI;
-import org.coreasm.engine.Specification;
-import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.parser.CharacterPosition;
-import org.coreasm.engine.parser.Parser;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 
 /**
  * An abstract implementation of a warning
@@ -24,27 +17,6 @@ public abstract class AbstractWarning {
 		this.data = data;
 		this.position = position;
 		this.length = length;
-	}
-	
-	public static int calculatePosition(Node node, CharacterPosition charPos, ControlAPI capi, IDocument document) {
-		if (capi != null) {
-			Parser parser = capi.getParser();
-			if (charPos == null && node != null && node.getScannerInfo() != null)
-				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (charPos != null) {
-				Specification spec = capi.getSpec();
-				try {
-					int line = charPos.line;
-					if (spec != null)
-						line = spec.getLine(charPos.line).line;
-					return document.getLineOffset(line - 1) + charPos.column - 1;
-				} catch (BadLocationException e) {
-				}
-			}
-		}
-		if (node != null)
-			return node.getScannerInfo().charPosition;
-		return 0;
 	}
 	
 	public String getDescription() {

@@ -2,18 +2,25 @@ package org.coreasm.eclipse.editors;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.Specification;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.parser.CharacterPosition;
+import org.coreasm.engine.parser.Parser;
 import org.coreasm.util.Logger;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 /**
  * The ASMDocument class represents a CoreASM specification as a document of an
  * Eclipse CoreASM editor.
  * 
- * @author Markus Müller
+ * @author Markus Müller, Michael Stegmaier
  */
 public class ASMDocument
 extends Document
@@ -30,6 +37,8 @@ extends Document
 	/** This flag stores if a specification is a full specification (beginning
 	 * with "CoreASM") or if it is a module (beginning with "CoreModule"). */
 	private Boolean isIncluded = null;
+	
+	private ControlAPI capi;
 	
 	public ASMDocument()
 	{
@@ -119,6 +128,90 @@ extends Document
 	{
 		return rootnode;
 	}
+	
+	/**
+	 * Returns the position of the specified Node or CharacterPosition in this document
+	 * @param node Node to return position of
+	 * @return
+	 */
+	public int getNodePosition(Node node) {
+		return getNodePosition(node, null);
+	}
+	
+	/**
+	 * Returns the position of the specified Node or CharacterPosition in this document
+	 * @param node Node to return position of
+	 * @param charPos CharacterPosition to return position of
+	 * @return
+	 */
+	public int getNodePosition(Node node, CharacterPosition charPos) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			if (charPos == null && node != null && node.getScannerInfo() != null)
+				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			if (charPos != null) {
+				Specification spec = capi.getSpec();
+				try {
+					int line = charPos.line;
+					if (spec != null)
+						line = spec.getLine(charPos.line).line;
+					return getLineOffset(line - 1) + charPos.column - 1;
+				} catch (BadLocationException e) {
+				}
+			}
+		}
+		if (node != null)
+			return node.getScannerInfo().charPosition;
+		return 0;
+	}
+	
+	/**
+	 * Returns a list of nodes in the specified line
+	 * @param line Line to return nodes of
+	 * @return List of nodes in the specified line
+	 */
+	public List<ASTNode> getASTNodesOnLine(int line) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		List<ASTNode> nodes = new LinkedList<ASTNode>();
+		ASTNode rootNode = (ASTNode)getRootnode();
+		
+		if (rootNode != null)
+			fringe.add(rootNode);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			try {
+				if (getLineOfOffset(getNodePosition(node)) == line)
+					nodes.add(node);
+			} catch (BadLocationException e) {
+			}
+			for (ASTNode child : node.getAbstractChildNodes())
+				fringe.add(fringe.size(), child);
+		}
+		return nodes;
+	}
+	
+	/**
+	 * Returns a list of nodes in the line of the specified offset
+	 * @param offset Offset in the line of which the nodes should be returned
+	 * @return List of nodes in the line of the specified offset
+	 */
+	public List<ASTNode> getASTNodesOnLineOfOffset(int offset) throws BadLocationException {
+		return getASTNodesOnLine(getLineOfOffset(offset));
+	}
+	
+	/**
+	 * Returns the line number of the specified node
+	 * @param node Node to return line number of
+	 * @return the line number of the specified node
+	 * @throws BadLocationException
+	 */
+	public int getLineOfNode(ASTNode node) throws BadLocationException {
+		return getLineOfOffset(getNodePosition(node));
+	}
+	
+	public void setControlAPI(ControlAPI capi) {
+		this.capi = capi;
+	}
 
 	/**
 	 * Sets the rootnode of a new syntax tree for the document. If the rootnode
@@ -146,7 +239,7 @@ extends Document
 				
 				int offset = 0;
 				try {
-					offset = child.getScannerInfo().charPosition;
+					offset = getNodePosition(child);
 				} catch (NullPointerException e) {
 					Logger.log(Logger.WARNING, Logger.ui, "syntax node without a ScannerInfo: " + child.toString());
 				}

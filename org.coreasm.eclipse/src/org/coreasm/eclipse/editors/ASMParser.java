@@ -171,6 +171,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 				parser = rootParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
 			rootnode = parser.parse(slimengine.getSpec().getText());
 			doc.setRootnode(rootnode);
+			doc.setControlAPI(slimengine);
 			
 			//System.out.println("correct");
 			logmsg.append("correct ");

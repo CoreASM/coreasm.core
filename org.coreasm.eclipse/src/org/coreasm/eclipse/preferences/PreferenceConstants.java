@@ -1,7 +1,5 @@
 package org.coreasm.eclipse.preferences;
 
-import java.util.Date;
-
 import org.coreasm.engine.EngineProperties;
 
 /**

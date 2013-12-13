@@ -19,7 +19,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 
 /**
  * The <code>ASMDeclarationWatcher</code> manages the markers for declarations.
@@ -399,11 +398,11 @@ public class ASMDeclarationWatcher implements Observer {
 		return declarations;
 	}
 	
-	private static String parseComment(IDocument document, ASTNode node) {
+	private static String parseComment(ASMDocument document, ASTNode node) {
 		try {
 			String comment = "";
 			String line;
-			int lineNumber = document.getLineOfOffset(node.getScannerInfo().charPosition);
+			int lineNumber = document.getLineOfNode(node);
 			boolean blockComment = false;
 			do {
 				lineNumber--;

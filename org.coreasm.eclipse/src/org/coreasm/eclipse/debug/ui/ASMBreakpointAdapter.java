@@ -1,17 +1,13 @@
 package org.coreasm.eclipse.debug.ui;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 import org.coreasm.eclipse.debug.core.model.ASMLineBreakpoint;
 import org.coreasm.eclipse.debug.core.model.ASMMethodBreakpoint;
 import org.coreasm.eclipse.debug.core.model.ASMWatchpoint;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.eclipse.editors.warnings.AbstractWarning;
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -24,8 +20,6 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.ILineBreakpoint;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
@@ -172,32 +166,14 @@ public class ASMBreakpointAdapter implements IToggleBreakpointsTarget {
 			
 			try {
 				documentProvider.connect(this);
-				return getASTNodesOnLine(documentProvider.getDocument(editor.getEditorInput()), editor.getParser().getSlimEngine(), textSelection.getStartLine());
+				ASMDocument document = (ASMDocument)documentProvider.getDocument(editor.getEditorInput());
+				return document.getASTNodesOnLine(textSelection.getStartLine());
 			} catch (CoreException e) {
-			} catch (BadLocationException e) {
 			} finally {
 				documentProvider.disconnect(this);
 			}
 		}
 		return Collections.emptyList();
-	}
-	
-	private List<ASTNode> getASTNodesOnLine(IDocument doc, ControlAPI capi, int line) throws BadLocationException {
-		ASMDocument asmDoc = (ASMDocument)doc;
-		Stack<ASTNode> fringe = new Stack<ASTNode>();
-		List<ASTNode> nodes = new LinkedList<ASTNode>();
-		ASTNode rootNode = (ASTNode)asmDoc.getRootnode();
-		
-		if (rootNode != null)
-			fringe.add(rootNode);
-		while (!fringe.isEmpty()) {
-			ASTNode node = fringe.pop();
-			if (doc.getLineOfOffset(AbstractWarning.calculatePosition(node, null, capi, doc)) == line)
-				nodes.add(node);
-			for (ASTNode child : node.getAbstractChildNodes())
-				fringe.add(fringe.size(), child);
-		}
-		return nodes;
 	}
 	
 	/**

@@ -14,7 +14,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.AstTools;
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
@@ -47,13 +46,12 @@ implements ITreeErrorRecognizer
 	@Override
 	public void checkForErrors(ASMDocument document, List<AbstractError> errors)
 	{
-		ControlAPI capi = parentEditor.getParser().getSlimEngine();
 		List<ASTNode> rulenodes = getRules((ASTNode) document.getRootnode());
 		if (rulenodes.size() > 0) {
 			for (ASTNode n: rulenodes) {
 				String msg = "There are multiple rules with this name";
 				Node idNode = AstTools.findIdNode(n);
-				AbstractError error = new SimpleError("naming conflict", msg, idNode, capi, document, idNode.getToken().length(), CLASSNAME, MULTI_NAME);
+				AbstractError error = new SimpleError("naming conflict", msg, idNode, document, idNode.getToken().length(), CLASSNAME, MULTI_NAME);
 				errors.add(error);
 			}
 		}
@@ -78,13 +76,13 @@ implements ITreeErrorRecognizer
 								if (declaration != null) {
 									if (!frNode.hasArguments()) {
 										if (declaration.getParams().size() > 0)
-											errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, capi, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+											errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
 									}
 									else if (frNode.getArguments().size() != declaration.getParams().size())
-										errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, capi, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+										errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
 								}
 								else
-									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, capi, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
+									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
 							}
 						}
 						fringe.addAll(node.getAbstractChildNodes());
@@ -170,7 +168,7 @@ implements ITreeErrorRecognizer
 				for (ASTNode rulenode: rulenodes) {
 					Node idnode = AstTools.findIdNode(rulenode);
 					names.add(idnode.getToken());
-					if (idnode.getScannerInfo().charPosition == error.getPosition())
+					if (doc.getNodePosition(idnode) == error.getPosition())
 						oldname = idnode.getToken();
 				}
 			
@@ -200,7 +198,7 @@ implements ITreeErrorRecognizer
 					Node rulenode = rulenodes.get(i);
 					if (!newnames.containsKey(rulenode))
 						continue;
-					int pos = AstTools.findIdNode(rulenode).getScannerInfo().charPosition;
+					int pos = doc.getNodePosition(AstTools.findIdNode(rulenode));
 					int len = oldname.length();
 					String newname = newnames.get(rulenode);
 					try {

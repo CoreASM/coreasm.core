@@ -41,12 +41,13 @@ public class MoveToTopProposal implements ICompletionProposal {
 	public void apply(IDocument document) {
 		if (!(document instanceof ASMDocument))
 			return;
-		ASTNode node = getNodeOfOffset((ASMDocument)document, nodeOffset);
+		ASMDocument asmDocument = (ASMDocument)document;
+		ASTNode node = getNodeOfOffset(asmDocument, nodeOffset);
 		try {
 			if (node instanceof ReturnRuleNode) {
 				ReturnRuleNode returnRuleNode = (ReturnRuleNode)node;
-				int start = node.getScannerInfo().charPosition;
-				int end = node.getFirstCSTNode().getNextCSTNode().getNextCSTNode().getScannerInfo().charPosition + 2;
+				int start = asmDocument.getNodePosition(node);
+				int end = asmDocument.getNodePosition(node.getFirstCSTNode().getNextCSTNode().getNextCSTNode()) + 2;
 				
 				document.replace(start, end - start, "");
 				
@@ -54,9 +55,9 @@ public class MoveToTopProposal implements ICompletionProposal {
 					node = node.getParent();
 				if (node != null) {
 					ASTNode ruleBody = node.getFirst().getNext();
-					int offset = ruleBody.getScannerInfo().charPosition;
+					int offset = asmDocument.getNodePosition(ruleBody);
 					if (ruleBody instanceof ReturnRuleNode && ruleBody.getFirst().getNext() instanceof LocalRuleNode)
-						offset = ruleBody.getFirst().getNext().getScannerInfo().charPosition;
+						offset = asmDocument.getNodePosition(ruleBody.getFirst().getNext());
 					String returnStatement = "return " + returnRuleNode.getExpressionNode().unparseTree() + " in ";
 					
 					document.replace(offset, 0, returnStatement);
@@ -78,7 +79,7 @@ public class MoveToTopProposal implements ICompletionProposal {
 					fringe.add(declarationNode);
 					while (!fringe.isEmpty()) {
 						ASTNode node = fringe.pop();
-						if (node instanceof ReturnRuleNode && node.getScannerInfo().charPosition == offset)
+						if (node instanceof ReturnRuleNode && document.getNodePosition(node) == offset)
 							return node;
 						fringe.addAll(node.getAbstractChildNodes());
 					}

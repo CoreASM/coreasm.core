@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMStorage;
@@ -193,12 +191,13 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				if (value != null)
 					return new HoverInfo(value);
 			}
+			ASMDocument document = (ASMDocument)textViewer.getDocument();
 			ASTNode hoverNode = null;
-			List<ASTNode> nodes = getASTNodesOnLineOfOffset(textViewer.getDocument(), hoverRegion.getOffset());
+			List<ASTNode> nodes = document.getASTNodesOnLineOfOffset(hoverRegion.getOffset());
 			for (ASTNode node : nodes) {
-				int offset = node.getScannerInfo().charPosition;
+				int offset = document.getNodePosition(node);
 				if (hoverRegion.getOffset() >= offset) {
-					if (hoverNode == null || offset >= hoverNode.getScannerInfo().charPosition)
+					if (hoverNode == null || offset >= document.getNodePosition(hoverNode))
 						hoverNode = node;
 					if (node instanceof FunctionRuleTermNode) {
 						FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
@@ -211,7 +210,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
 							if (pluginFunction != null)
 								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (value != null ? " = " + value : ""));
-							String declaration = getDeclaration((ASMDocument)textViewer.getDocument(), frNode.getName());
+							String declaration = getDeclaration(document, frNode.getName());
 							if (declaration == null)
 								return new HoverInfo(frNode.toString());
 							return new HoverInfo(declaration + (value != null ? " = " + value : ""));
@@ -222,7 +221,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						FunctionInfo pluginFunction = getPluginFunction(ruleOrFuncElementNode.getElementName());
 						if (pluginFunction != null)
 							return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name);
-						String declaration = getDeclaration((ASMDocument)textViewer.getDocument(), ruleOrFuncElementNode.getElementName());
+						String declaration = getDeclaration(document, ruleOrFuncElementNode.getElementName());
 						if (declaration == null)
 							return new HoverInfo(ruleOrFuncElementNode.toString());
 						return new HoverInfo(declaration);
@@ -235,30 +234,6 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		} catch (BadLocationException e) {
 		}
 		return null;
-	}
-	
-	private List<ASTNode> getASTNodesOnLineOfOffset(IDocument doc, int offset) throws BadLocationException {
-		return getASTNodesOnLine(doc, doc.getLineOfOffset(offset));
-	}
-	
-	private List<ASTNode> getASTNodesOnLine(IDocument doc, int line) throws BadLocationException {
-		ASMDocument asmDoc = (ASMDocument)doc;
-		Stack<ASTNode> fringe = new Stack<ASTNode>();
-		List<ASTNode> nodes = new LinkedList<ASTNode>();
-		ASTNode rootNode = (ASTNode)asmDoc.getRootnode();
-		
-		if (rootNode != null)
-			fringe.add(rootNode);
-		while (!fringe.isEmpty()) {
-			ASTNode node = fringe.pop();
-			int offset = node.getScannerInfo().charPosition;
-			
-			if (doc.getLineOfOffset(offset) == line)
-				nodes.add(node);
-			for (ASTNode child : node.getAbstractChildNodes())
-				fringe.add(fringe.size(), child);
-		}
-		return nodes;
 	}
 	
 	private String getExpressionValue(IDocument doc, int offset, int length) {
