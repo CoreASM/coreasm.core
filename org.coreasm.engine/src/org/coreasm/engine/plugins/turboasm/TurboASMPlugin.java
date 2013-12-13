@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -43,6 +44,7 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
+import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
@@ -78,7 +80,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	public static final String PLUGIN_NAME = TurboASMPlugin.class.getSimpleName();
 
 	/* work copies of a tree */
-	private ThreadLocal<Map<ASTNode, ASTNode>> workCopies;
+	private ThreadLocal<Map<ASTNode, Stack<ASTNode>>> workCopies;
 	
 	/* composed updates cache */
 	private ThreadLocal<Map<ASTNode,UpdateMultiset>> composedUpdatesMap;
@@ -103,10 +105,10 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	
 	@Override
 	public void initialize() {
-		workCopies = new ThreadLocal<Map<ASTNode,ASTNode>>() {
+		workCopies = new ThreadLocal<Map<ASTNode,Stack<ASTNode>>>() {
 			@Override
-			protected Map<ASTNode, ASTNode> initialValue() {
-				return new HashMap<ASTNode, ASTNode>();
+			protected Map<ASTNode, Stack<ASTNode>> initialValue() {
+				return new HashMap<ASTNode, Stack<ASTNode>>();
 			}
 		};
 		composedUpdatesMap = new ThreadLocal<Map<ASTNode,UpdateMultiset>>() {
@@ -128,7 +130,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	/*
 	 * Returns the work copy cache for this thread
 	 */
-	private Map<ASTNode, ASTNode> getThreadWorkCopy() {
+	private Map<ASTNode, Stack<ASTNode>> getThreadWorkCopy() {
 		return workCopies.get();
 	}
 	
@@ -564,14 +566,24 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		exArgs.add(loc);
 		exParams.add(RESULT_KEYWORD);
 		
-		Map<ASTNode, ASTNode> workCopy = getThreadWorkCopy();
+		Map<ASTNode, Stack<ASTNode>> workCopy = getThreadWorkCopy();
 
-		ASTNode wCopy = workCopy.get(pos);
+		// Using a stack of workcopies because copyTreeSub returns an equal copy of the rule body
+		Stack<ASTNode> wCopyStack = workCopy.get(pos);
+		if (wCopyStack == null) {
+			wCopyStack = new Stack<ASTNode>();
+			workCopy.put(pos, wCopyStack);
+		}
+		ASTNode wCopy = null;
+		// if the current pos is the parent of the workcopy on the top of the stack we have already evaluated the rulecall
+		if (!wCopyStack.isEmpty() && pos == wCopyStack.peek().getParent())
+			wCopy = wCopyStack.peek();
 		// If there is no work copy created for this rule call
 		if (wCopy == null) {
 			wCopy = interpreter.copyTreeSub(rule.getBody(), exParams, exArgs);
-			workCopy.put(pos, wCopy);
+			wCopyStack.push(wCopy);
 			wCopy.setParent(pos);
+			notifyOnRuleCall(rule, args, pos, interpreter.getSelf());
 			return wCopy; // as new value of 'pos'
 		} else { // if there already is a work copy
 			pos.setNode(null, wCopy.getUpdates(), wCopy.getValue());
@@ -580,9 +592,37 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			// to throw this copy out! :)
 			wCopy.dipose();
 
-			workCopy.remove(pos);
+			wCopyStack.pop();
+			if (wCopyStack.isEmpty())
+				workCopy.remove(pos);
+			
+			notifyOnRuleExit(rule, args, pos, interpreter.getSelf());
 			return pos;
 		}
+	}
+	
+	/**
+	 * Notifies the listeners on rule call.
+	 * @param rule the rule that is being called
+	 * @param args the arguments being passed with the call
+	 * @param pos the node of the rule
+	 * @param agent the executing agent
+	 */
+	private void notifyOnRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
+		for (InterpreterListener listener : capi.getInterpreterListeners())
+			listener.onRuleExit(rule, args, pos, agent);
+	}
+	
+	/**
+	 * Notifies the listeners on rule exit.
+	 * @param rule the rule that is being exited
+	 * @param args the arguments that have been passed with the call
+	 * @param pos the node of the rule
+	 * @param agent the executing agent
+	 */
+	private void notifyOnRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
+		for (InterpreterListener listener : capi.getInterpreterListeners())
+			listener.onRuleCall(rule, args, pos, agent);
 	}
 
 	public VersionInfo getVersionInfo() {

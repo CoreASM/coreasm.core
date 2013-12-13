@@ -1,8 +1,10 @@
 package org.coreasm.eclipse.engine.debugger;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -55,6 +57,7 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IBreakpoint;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * This is the main class of the the debugger. It controls the engine and provides access to it's state.
@@ -74,6 +77,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
+	private Map<ASTNode, String> ruleArgs;
 	private Set<ASMUpdate> updates = new HashSet<ASMUpdate>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
@@ -427,6 +431,24 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				state = new ASMStorage(wapi, capi.getStorage(), -capi.getStepCount() - 1, agent, envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 			state.updateState(pos, agent, envVars, updates, callStack, sourceName, lineNumber);
 		}
+		if (ruleArgs != null) {
+			final ASMStorage[] statePointer = new ASMStorage[] { state };
+			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
+				final ASTNode node = (ASTNode)arg.getKey().cloneTree();
+				Display.getDefault().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						try {
+							wapi.evaluateExpression(node, currentAgent, statePointer[0]);
+						} catch (InterpreterException e) {
+						}
+					}
+				});
+				if (node.isEvaluated())
+					envVars.put(arg.getValue(), node.getValue());
+			}
+		}
 		states.add(state);
 		updates = new HashSet<ASMUpdate>();
 	}
@@ -626,11 +648,18 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 		}
+		ruleArgs = new HashMap<ASTNode, String>();
+		if (rule.getParam() != null) {
+			int i = 0;
+			for (String param : rule.getParam())
+				ruleArgs.put(args.get(i++), param);
+		}
 	}
 	
 	@Override
 	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
 		currentAgent = agent;
+		ruleArgs = null;
 	}
 	
 	@Override
