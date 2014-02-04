@@ -1,4 +1,4 @@
-package org.coreasm.engine.informationHandler;
+package org.coreasm.util.information;
 
 import java.util.Date;
 

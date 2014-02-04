@@ -1,10 +1,14 @@
-package org.coreasm.engine.informationHandler;
+package org.coreasm.util.information;
 
 import java.util.HashMap;
 
+/**
+ * @author Marcel Dausend
+ *
+ */
 public class InformationDispatcher extends AbstractDispatcher {
 
-	static HashMap<String, InformationDispatcher> infoDispatcher  = new HashMap<String, InformationDispatcher>();;
+	static HashMap<String, InformationDispatcher> infoDispatcher = new HashMap<String, InformationDispatcher>();
 
 	/**
 	 * @param stackTrace e.g. the plugin which will distribute some error information
@@ -31,23 +35,17 @@ public class InformationDispatcher extends AbstractDispatcher {
 	}
 
 	/** register observer to all InformationDispatchers */
-	public static void addObserver(IInformationDispatchObserver observer){
-		for ( InformationDispatcher disp : infoDispatcher.values()) {
-			((AbstractDispatcher)disp).addSuperObserver(observer);
-		}
+	public static void addObserver(InformationObserver observer){
+		addSuperObserver(observer);
 	}
 
 	/** remove observer from all InformationDispatchers */
-	public static void deleteObserver(IInformationDispatchObserver observer){
-		for ( InformationDispatcher disp : infoDispatcher.values()) {
-			((AbstractDispatcher)disp).deleteSuperObserver(observer);
-		}
+	public static void deleteObserver(InformationObserver observer){
+		deleteSuperObserver(observer);
 	}
 
 	/** remove all observers from all InformationDispatchers */
 	public static void deleteObservers(){
-		for ( InformationDispatcher disp : infoDispatcher.values()) {
-			((AbstractDispatcher)disp).deleteSuperObervers();
-		}
+		deleteSuperObervers();
 	}
 }

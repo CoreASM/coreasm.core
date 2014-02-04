@@ -1,10 +1,13 @@
 /**
  *
  */
-package org.coreasm.engine.informationHandler;
+package org.coreasm.util.information;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+
+import org.coreasm.util.information.InformationObject.VerbosityLevel;
 
 /**
  * @author Marcel Dausend
@@ -25,7 +28,7 @@ abstract class AbstractDispatcher {
 	private LinkedList<DispatcherContext> newActions;
 	private DistributionMode distributionMode;
 
-	HashMap<String, IInformationDispatchObserver> observers = new HashMap<String, IInformationDispatchObserver>();
+	private static HashMap<String, InformationObserver> observers = new HashMap<String, InformationObserver>();
 
 	/**
 	 * creates an Dispatcher with <code>DistributionMode.AUTOCOMMIT</code>
@@ -47,9 +50,9 @@ abstract class AbstractDispatcher {
 	 *
 	 * \todo introduce priorities
 	 */
-	protected void addSuperObserver(IInformationDispatchObserver iStorageAndDispatchObserver) {
-		if (! this.observers.containsKey(iStorageAndDispatchObserver.getClass().getCanonicalName()))
-			this.observers.put(iStorageAndDispatchObserver.getClass().getCanonicalName(), iStorageAndDispatchObserver);
+	protected static void addSuperObserver(InformationObserver iStorageAndDispatchObserver) {
+		if (! observers.containsKey(iStorageAndDispatchObserver.getClass().getCanonicalName()))
+			observers.put(iStorageAndDispatchObserver.getClass().getCanonicalName(), iStorageAndDispatchObserver);
 	}
 
 	/**
@@ -57,19 +60,43 @@ abstract class AbstractDispatcher {
 	 *
 	 * @param iStorageAndDispatchObserver
 	 */
-	protected void deleteSuperObserver(IInformationDispatchObserver iStorageAndDispatchObserver) {
-		if (this.observers.containsKey(iStorageAndDispatchObserver.getClass().getCanonicalName()))
-		this.observers.remove(iStorageAndDispatchObserver.getClass().getCanonicalName());
+	protected static void deleteSuperObserver(InformationObserver iStorageAndDispatchObserver) {
+		if (observers.containsKey(iStorageAndDispatchObserver.getClass().getCanonicalName()))
+			observers.remove(iStorageAndDispatchObserver.getClass().getCanonicalName());
 	}
 
 	/**
 	 * remove all observers
 	 */
-	protected void deleteSuperObervers() {
-		this.observers.clear();
+	protected static void deleteSuperObervers() {
+		observers.clear();
+	}
+	
+	public synchronized void createInformation(String message, ResponseHandler responseHandler) {
+		createInformation(new InformationObject(this, message, responseHandler));
+	}
+	
+	public synchronized void createInformation(String message) {
+		createInformation(new InformationObject(this, message));
+	}
+	
+	public synchronized void createInformation(String message, Map<String, String> data, ResponseHandler responseHandler) {
+		createInformation(new InformationObject(this, message, data, responseHandler));
+	}
+	
+	public synchronized void createInformation(String message, Map<String, String> data) {
+		createInformation(new InformationObject(this, message, data));
+	}
+	
+	public synchronized void createInformation(String message, VerbosityLevel verbosity, Map<String, String> data, ResponseHandler responseHandler) {
+		createInformation(new InformationObject(this, message, verbosity, data, responseHandler));
+	}
+	
+	public synchronized void createInformation(String message, VerbosityLevel verbosity, Map<String, String> data) {
+		createInformation(new InformationObject(this, message, verbosity, data));
 	}
 
-	public synchronized void createInformation(InformationObject info) {
+	private synchronized void createInformation(InformationObject info) {
 		//Instantiate new DispatcherContext with given information object
 		DispatcherContext newInfoDispObject = new DispatcherContext(info, Action.CREATION);
 
@@ -116,7 +143,7 @@ abstract class AbstractDispatcher {
 	private synchronized void notifyObservers() {
 		if (!this.newActions.isEmpty()) {
 			for (DispatcherContext dispInfo : this.newActions) {
-				for (IInformationDispatchObserver obs : observers.values()) {
+				for (InformationObserver obs : observers.values()) {
 					if (dispInfo.getAction().equals(Action.CREATION)) {
 						obs.informationCreated(dispInfo.getInformation());
 					} else if (dispInfo.getAction().equals(Action.CLEAR)) {
