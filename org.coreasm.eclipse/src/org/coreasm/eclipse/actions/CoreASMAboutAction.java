@@ -191,7 +191,7 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 		link.setText(FOOTER);
 
 		shell.setText("About CoreASM");
-		shell.setSize(370, 550);
+		shell.setSize(375, 550);
 
 		scrolledComposite.setContent(composite);
 		scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -218,6 +218,7 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 
 					Map<String, String> pluginList = new HashMap<String, String>();
 					Map<String, VersionInfo> list = engine.getPluginsVersionInfo();
+					list.put("CoreASM Engine", engine.getVersionInfo());
 					for (Entry<String, VersionInfo> plugin : list.entrySet()) {
 						pluginList.put(plugin.getKey(), plugin.getValue().toString());
 					}
