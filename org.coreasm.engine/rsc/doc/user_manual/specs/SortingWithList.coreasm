@@ -1,0 +1,54 @@
+/**
+ * "Sorting with List"
+ *
+ * A Sample CoreASM Specification
+ *
+ * (c) 2006 Roozbeh Farahbod  
+ *
+ */
+
+CoreASM SortingWithList
+
+use StandardPlugins
+use ListPlugin
+
+init InitRule
+
+// Init Rule
+rule InitRule = 
+   par
+      numbers := {5, 10, 19, 2, 4, 31, RandomGuess, RandomGuess}
+      program(self) := @MainProgram
+   endpar
+
+// Main Program
+rule MainProgram = 
+   seq
+      sortedList <- SortSet(numbers)
+   next
+      par
+         print "Sorted list: " + sortedList
+         Agents(self) := false
+      endpar
+
+// Returns a random number between 1 and 100 inclusive
+rule RandomGuess = 
+   return rand in
+      choose x in [ 1 .. 100 ] do
+         rand := x
+
+// Sorts a set of numbers and returns the sorted list in 'result'
+rule SortSet(set) = 
+   seq 
+      par
+         result := << >>
+         tempSet := set
+      endpar
+   next
+      while (|tempSet| > 0) 
+         choose x in tempSet with (forall y in tempSet holds x <= y) do 
+            par
+               remove x from tempSet
+               result := result + << x >>
+            endpar
+

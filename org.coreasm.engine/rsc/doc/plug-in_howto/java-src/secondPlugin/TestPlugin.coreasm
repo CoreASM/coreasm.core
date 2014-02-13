@@ -1,0 +1,13 @@
+CoreASM TestSecondSamplePlugin
+
+use NumberPlugin
+use StringPlugin
+use SecondSamplePlugin
+use IOPlugin
+
+init Main
+
+rule Main = 
+   print hashValue("R Farahbod")
+
+

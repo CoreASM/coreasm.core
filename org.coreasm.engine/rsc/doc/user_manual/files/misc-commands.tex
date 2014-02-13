@@ -1,0 +1,231 @@
+% ---------------------------------------------------------
+% misc-commands.tex     (last modified: $Date: 2009-07-30 15:18:35 +0200 (Thu, 30 Jul 2009) $)
+%
+% Miscellaneous LaTeX Commands for
+% "Design and Specification of the
+%  CoreASM Execution Engine"
+%
+% Copyright (c) 2005-2009 Roozbeh Farahbod
+% Copyright (c) 2005 Vincenzo Gervasi
+% Copyright (c) 2005 Mashaal Memon
+%
+% ---------------------------------------------------------
+
+% ----------------- Universe Names
+\newcommand{\Node}{\Rdom{Node}}
+\newcommand{\Var}{\String}
+\newcommand{\Updates}{\Rdom{Multiset(Update)}}
+\newcommand{\Upd}{\Rdom{Update}}
+\newcommand{\Location}{\Rdom{Location}}
+\newcommand{\Back}{\Rdom{BackgroundElement}}
+\newcommand{\Class}{\Rdom{Class}}
+\newcommand{\Token}{\Rdom{Token}}
+\newcommand{\Pattern}{\Rdom{Pattern}}
+\newcommand{\Element}{\Rdom{Element}}
+\newcommand{\Number}{\Rdom{Number}}
+\newcommand{\element}{Element}
+\newcommand{\Val}{\Element}
+\newcommand{\UniverseElement}{\Rdom{UniverseElement}}
+\newcommand{\Operation}{\Rdom{Operation}}
+\newcommand{\Property}{\Name}
+\newcommand{\PropertyValue}{\Name}
+\newcommand{\FunctionElement}{\Rdom{FunctionElement}}
+\newcommand{\Signature}{\Rdom{Signature}}
+\newcommand{\MathFuncElement}{\Rdom{MathFunctionElement}}
+\newcommand{\FClass}{\Rdom{FuncClass}}
+\newcommand{\Rule}{\Rdom{Rule}}
+\newcommand{\RuleElement}{\Rdom{Rule}}
+\newcommand{\IdentifierElement}{\Rdom{IdentifierElement}}
+\newcommand{\Plugin}{\Rdom{Plugin}}
+\newcommand{\SuperUnivElement}{\Rdom{SuperUniverseElement}}
+\newcommand{\SuperUnivName}{\ensuremath{\Rqterm{SUPER\_UNIVERSE}}}
+\newcommand{\Action}{\Rdom{Action}}
+\newcommand{\Storage}{\Rdom{Storage}}
+\newcommand{\Engine}{\Rdom{Engine}}
+\newcommand{\CAPI}{\Rdom{ControlAPI}}
+\newcommand{\Spec}{\Rdom{Spec}}
+\newcommand{\EngineMode}{\Rdom{EngineMode}}
+\newcommand{\State}{\Rdom{State}}
+\newcommand{\Boolean}{\Rdom{Boolean}}
+%\newcommand{\BooleanElement}{\Rdom{BooleanElement}}
+\newcommand{\BooleanElement}{\Rdom{BooleanElement}}
+\newcommand{\Int}{\Rdom{Integer}}
+\newcommand{\Real}{\Rdom{Real}}
+%\newcommand{\IntElement}{\Rdom{IntElement}}
+\newcommand{\NumberElement}{\Rdom{NumberElement}}
+\newcommand{\IntRangeElement}{\Rdom{NumberRange}}
+%\newcommand{\String}{\Rdom{String}}
+\newcommand{\String}{\Rdom{String}}
+\newcommand{\Agent}{\Rdom{Agent}}
+\newcommand{\Program}{\Rdom{Program}}
+\newcommand{\Observer}{\Rdom{EventObserver}}
+\newcommand{\OprImp}{\Rdom{OperatorImp}}
+\newcommand{\Operator}{\Rdom{Operator}}
+\newcommand{\PluginAction}{\Rdom{PluginAction}}
+\newcommand{\SetElement}{\Rdom{SetElement}}
+\newcommand{\Set}{\Rdom{Set}}
+\newcommand{\Flag}{\Rdom{Flag}}
+\newcommand{\Name}{\Rdom{Name}}
+\newcommand{\NamedElement}{\Rdom{NamedElement}}
+\newcommand{\EnumerationBackgroundElement}{\Rdom{EnumerationBackground}}
+
+% ----------------- Quoted Names
+\newcommand{\epTypeChecking}{\Rqterm{TypeChecking}}
+\newcommand{\epvIgnore}{\Rqterm{Ignore}}
+\newcommand{\epvWarning}{\Rqterm{Warning}}
+\newcommand{\epvError}{\Rqterm{Error}}
+
+
+% ----------------- Functions and Rules
+\newcommand{\token}[1]{\mbox{\sf #1}}
+\newcommand{\pos}{\ensuremath{\Rfun{pos}}\xspace}
+\newcommand{\vpos}{\ensuremath{\Rfun{value}(\Rfun{pos})}}
+\newcommand{\upos}{\ensuremath{\Rfun{updates}(\Rfun{pos})}}
+\newcommand{\lpos}{\ensuremath{\Rfun{loc}(\Rfun{pos})}}
+\newcommand{\TT}{\mbox{\sf true$_e$}\xspace}
+\newcommand{\FF}{\mbox{\sf false$_e$}\xspace}
+\newcommand{\UU}{\mbox{\sf undef$_e$}\xspace}
+\newcommand{\RESULT}{\mbox{\bf result}}
+\newcommand{\ERROR}[1]{\Rroutine{Error}(\mbox{`#1'})}
+\newcommand{\WARN}[1]{\Rroutine{Warning}(\mbox{`#1'})}
+\newcommand{\Bool}{\ensuremath{\mathbb B}}
+\newcommand{\sbkg}[1]{\mbox{\scriptsize\it bkg}{\scriptsize (#1)}}
+\newcommand{\push}{\ensuremath{\Rroutine{PushState}}\xspace}
+\newcommand{\pop}{\ensuremath{\Rroutine{PopState}}\xspace}
+\newcommand{\diff}{\ensuremath{\Rroutine{Diff}}\xspace}
+\newcommand{\apply}[1]{\ensuremath{\Rroutine{Apply}({#1})}\xspace}
+\newcommand{\clearTree}{\ensuremath{\Rroutine{ClearTree}}\xspace}
+\newcommand{\getValue}[1]{\Rfun{getValue}(#1)}
+\newcommand{\engineMode}{\ensuremath{\Rfun{engineMode}}}
+\renewcommand{\exp}{\ensuremath{\Rfun{exp}}}
+\newcommand{\id}{\ensuremath{\Rfun{x}\xspace}}
+%\newcommand{\uneval}{\raisebox{0.7ex}{\framebox{\hspace{1ex}e}}}
+%\newcommand{\unevale}{\raisebox{0.7ex}{\framebox[0.7em]{}}\hspace{-0.4em}\textcolor[rgb]{0.5, 0.5, 0.5}{e}}
+%\newcommand{\node}{\rule{0.7em}{1.5ex}}
+\newcommand{\fvalue}{\Rfun{value$_{fe}$}}
+\newcommand{\fclass}{\Rfun{class$_{fe}$}}
+\newcommand{\locname}{\Rfun{name$_{lc}$}}
+\newcommand{\locargs}{\Rfun{args$_{lc}$}}
+\newcommand{\fsetvalue}{SetValue$_{\mbox{fe}}$}
+\newcommand{\fgetvalue}{getValue$_{\mbox{fe}}$}
+\newcommand{\umember}{\Rfun{member$_{ue}$}}
+\newcommand{\rname}{\Rfun{name$_{re}$}}
+\newcommand{\rbody}{\Rfun{body}}
+\newcommand{\rparam}{\Rfun{param}}
+
+\newlength{\circwidth}
+\newcommand{\gencircled}[2]{%
+\settowidth{\circwidth}{\makebox{#2}}%
+\hspace*{.5\circwidth}%
+\makebox[0pt]{#2}%
+\makebox[0pt]{\small{#1}}%
+\hspace*{.5\circwidth}%
+}
+\newcommand{\circled}[1]{\gencircled{#1}{$\bigcirc$}}
+\newcommand{\cplus}{\,\gencircled{$+$}{$\bigcirc$}\,}
+\newcommand{\cminus}{\,\gencircled{$-$}{$\bigcirc$}\,}
+
+\newcommand{\vboxed}[1]{\gencircled{#1}{$\bigbox$}}
+
+%\newcommand{\uneval}{\boxed{\makebox{1.0em}{}}}
+\newcommand{\uneval}{\vboxed{~}}
+\newcommand{\unevale}{\vboxed{\textcolor[rgb]{0.6,0.6,0.6}{\it e}}~}
+\newcommand{\unevalr}{\vboxed{\textcolor[rgb]{0.6,0.6,0.6}{\it r}}~}
+\newcommand{\unevall}{\vboxed{\textcolor[rgb]{0.6,0.6,0.6}{\it l}}~}
+%\newcommand{\node}{\raisebox{-0.5ex}{\rule{1.43ex}{1em}}}
+\newcommand{\node}{\vboxed{{\footnotesize ?}}}
+\newcommand{\onode}{~\varodot~}
+\newcommand{\aovId}{\Rfun{id}}
+\newcommand{\idName}{\Rfun{name}}
+\newcommand{\bkg}{\Rfun{bkg}}
+\newcommand{\vul}{\Rfun{vul}}
+%\newcommand{\vulpos}{\vul(\pos)}
+%\newcommand{\setvul}[3]{\vulpos:=(#1,#2,#3)}
+%\newcommand{\setPos}{SetPosVUL}
+%\newcommand{\SetPos}[1]{\Rroutine{\setPos}(#1)}
+\newcommand{\sema}[1]{\ensuremath{[\![#1]\!]}}
+\newcommand{\setvul}[3]{\sema{\pos}:=(#3, #2, #1)}
+
+\newcommand{\Rfunction}{\mbox{\bf function }}
+\newcommand{\Renum}{\mbox{\bf enum }}
+\newcommand{\Runiverse}{\mbox{\bf universe }}
+
+\newcommand{\AddEnv}[1]{\Rroutine{AddEnv}(#1)}
+\newcommand{\RemoveEnv}[1]{\Rroutine{RemoveEnv}(#1)}
+
+
+% ----------------- Partial Updates related Naming
+% \newcommand{\PartialUpdate}[1]{Special update#1}
+% \newcommand{\PartialUUpdate}[1]{Special Update#1}
+% \newcommand{\PARTIALUPDATE}[1]{SpecialUpdate#1}
+% \newcommand{\integra}[1]{aggrega#1}
+% \newcommand{\Integra}[1]{Aggrega#1}
+% \newcommand{\failedIntegra}[0]{failed\Integra{tion}}
+\newcommand{\registry}[0]{updateInstructions}
+% \newcommand{\Registry}[0]{Registry}
+\newcommand{\scratchpad}[0]{considered}
+\newcommand{\uilva}[3]{\ensuremath{\langle #1, #2, #3 \rangle}}
+\newcommand{\update}[3]{\uilva{#1}{#2}{#3}}
+\newcommand{\uima}[1]{\ensuremath{\langle\!\langle#1\rangle\!\rangle}}
+
+
+% ----------------- Style and Formatting
+\newcommand{\HIDE}[1]{}
+\newcommand{\loc}[1]{\ensuremath{{}^{#1}}}
+\newcommand{\lpatrule}[2]{\ensuremath{\llparenthesis\,{#1}\,\rrparenthesis}\tprsep\ensuremath{\rightarrow}\tprsep\ensuremath{#2}}
+\newcommand{\tprsep}{\,}
+\newcommand{\patrule}[2]{\lpatrule{#1}{\mbox{$\begin{array}[t]{l}#2\end{array}$}}}
+\newcommand{\patrulebr}[3]{\lpatrule{#2}{\hfill}\\\begin{minipage}{10cm}\hspace{#1}\bmRule #3 \emRule\end{minipage}}
+\newenvironment{tabbedpatrule}%
+    {\renewcommand{\tprsep}{&}\begin{tabular}{lcl}}%
+	    {\end{tabular}\renewcommand{\tprsep}{\,}}
+%\newenvironment{tabbedpatrule}%
+%    {\renewcommand{\tprsep}{&}\begin{tabular}{lcl}}%
+%    {\end{tabular}\renewcommand{\tprsep}{\,}}
+\newcommand{\lpatrulepr}[3]{\ensuremath{\llparenthesis\,{#1}\,\rrparenthesis\raisebox{-2mm}{{\footnotesize [#2]}}}\tprsep\ensuremath{\rightarrow}\tprsep\ensuremath{#3}}
+\newcommand{\patrulepr}[3]{\lpatrulepr{#1}{#2}{\mbox{$\begin{array}[t]{l}#3\end{array}$}}}
+\newcommand{\patspace}{\\ \\}
+\newcommand{\smallpatspace}{\vspace{0.15cm}\\}
+\newcommand{\issue}[1]{[{\small Issue #1}]}
+\newcommand{\ppoint}[1]{{\bf \footnotesize Plug-in Point:} #1}
+\newcommand{\bref}{\begin{small} \vspace{0.2cm} \begin{tabular}{|l} \begin{minipage}{0.8\textwidth} \vspace{0.2cm} {\sf \textbf{Reference}}: \begin{list}{-}}
+%
+\newcommand{\eref}{\end{list} \vspace{0.2cm} \end{minipage} \end{tabular} \vspace{0.2cm} \end{small}}
+\newcommand{\state}[1]{{\itshape #1}}
+
+\newcommand{\equivdef}[2]{\mbox{$\begin{array}[t]{lcl}\mbox{$\begin{array}[t]{l}#1\end{array}$}&\ \equiv \ &\mbox{$\begin{array}[t]{l}#2\end{array}$}\end{array}$}}
+\newcommand{\equivdefspace}{\\ \\}
+
+\newcommand{\bleq}{\begin{displaymath}\begin{array}{l}}
+\newcommand{\bceq}{\begin{displaymath}\begin{array}{c}}
+\newcommand{\eeq}{\end{array}\end{displaymath}}
+
+\newcommand{\pluginRequires}{\vspace{2mm}\noindent{\bf Required: }}
+\newcommand{\pluginFuncs}{\vspace{2mm}\noindent{\bf Functions: }}
+
+% ----------------- Plugin Documentation Styles
+\newenvironment{PluginHeader}[3]
+%{\begin{boxitpara}{box 0.9 1 0.9 setrgbcolor fill}\begin{center}\begin{minipage}{0.92\textwidth}
+{\begin{boxitpara}{box}\begin{center}\begin{minipage}{0.92\textwidth}
+{\bf #1 Plugin} \\ %\hfill {\small{version #2}} \\ 
+% \texttt{#3} \\
+\rule[0.7ex]{\textwidth}{0.2mm}}
+{\end{minipage}\end{center}\end{boxitpara}}
+\newcommand{\plugininfo}[2]{\vspace{-0.8ex}~\\{\small{\bf #1:}} \\ \noindent\hspace*{0.5cm} {#2}}
+\newcommand{\preqs}[1]{\plugininfo{Required Plugins}{#1}}
+\newcommand{\pbkgs}[1]{\plugininfo{Backgrounds}{#1}}
+\newcommand{\punivs}[1]{\plugininfo{Universes}{#1}}
+\newcommand{\pfuncs}[1]{\plugininfo{Functions}{{\ttfamily #1}}}
+\newcommand{\pexprs}[1]{\plugininfo{Expression Forms}{{\texttt{#1}}}}
+\newcommand{\poprs}[1]{\plugininfo{Operators}{{\texttt{#1}}}}
+\newcommand{\pacts}[1]{\plugininfo{Update Actions}{#1}}
+\newcommand{\psrcmodes}[1]{\plugininfo{Source Modes}{#1}}
+\newcommand{\ptrgmodes}[1]{\plugininfo{Target Modes}{#1}}
+\newcommand{\pplugins}[1]{\plugininfo{Enclosed Plugins}{#1}}
+\newcommand{\pfsig}[3]{\code{#1:~#2 -> #3}}
+\newcommand{\pnfsig}[2]{\code{#1:~-> #2}}
+
+% ----------------- Symbols
+\newcommand{\mset}[1]{\{\hspace{-0.27em}| #1 |\hspace{-0.28em}\}}
+\newcommand{\collection}[1]{[\hspace{-0.27em}\ #1\ \hspace{-0.28em}]}
+%\newcommand{\implies}{\Rightarrow}

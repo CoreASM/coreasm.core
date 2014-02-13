@@ -1,0 +1,1862 @@
+% ---------------------------------------------------------
+% CoreASM-UserManual.tex 	$Revision: #1 $
+%
+% "CoreASM User Manual"
+%
+% Copyright (c) 2006-2007 Roozbeh Farahbod
+%
+% This work is licensed under the Creative Commons 
+% Attribution-NonCommercial-NoDerivs License. To view 
+% a copy of this license, visit the following link:
+%
+%   http://creativecommons.org/licenses/by-nc-nd/2.0/ca/ 
+% 
+% ---------------------------------------------------------
+
+\documentclass{article}
+
+%\DeclareFontShape{OT1}{cmtt}{bx}{n}{
+%  <5><6><7><8><9><10><10.95><12><14.4><17.28><20.74><24.88>cmttb10}{}
+
+
+\newcommand{\version}{1.5-beta}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage{stmaryrd}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{makeidx}
+\usepackage{psboxit}
+\usepackage{xspace}
+\usepackage{bold-extra}
+\usepackage{cmtt}
+\definecolor{darkgreen}{rgb}{0,0.3,0}
+\usepackage[colorlinks=true, citecolor=blue, linkcolor=blue, urlcolor=darkgreen]{hyperref}
+
+\setlength{\oddsidemargin}{0.2in}
+\setlength{\textwidth}{5.8in}
+\addtolength{\parskip}{0.07in}
+
+\input{./files/ASMTeXCommands}
+\input{./files/misc-commands}
+\input{./files/CoreASMCommands}
+
+% ----------------- CoreASM Spec Float
+\floatstyle{boxed}
+\newfloat{coreasmbox}{thp}{los}[section]
+\floatname{coreasmbox}{CoreASM Spec}
+\floatstyle{plain}
+
+\makeindex
+
+\pagestyle{fancy}
+%\renewcommand{\chaptermark}[1]{
+%	\markboth{\thechapter.\ #1}{}}
+\lhead{{\small \leftmark}}
+\rhead{{\small \CoreASM\ {\scshape Language User Manual}}}
+% You need to turn the 'twoside' option on, 
+% before uncommenting the following lines.
+%\fancyhead{}
+%\fancyhead[LO,RE]{{\small \leftmark}}
+%\fancyhead[RO,LE]{{\small \CoreASM Execution Engine}}
+
+
+
+% ----------------- Commands
+\newcommand{\hlight}[1]{\textcolor{blue}{\textbf{#1}}}
+\newcommand{\edit}[1]{\textcolor[rgb]{0, 0.5, 0}{#1}}
+\newcommand{\new}[1]{1}%\edit{#1}}
+\newcommand{\comment}[1]{\textcolor[rgb]{0, 0, 0.5}{Comment: #1}}
+\newcommand{\incorrect}[1]{\textcolor[rgb]{0.5, 0, 0}{#1}}
+
+\newcommand{\codebf}[1]{\xspace{\bf \code{#1}}\xspace}
+\newcommand{\keyword}[1]{\codebf{#1}}
+
+\newcommand{\codecom}[1]{\textcolor[gray]{0.5}{// #1}}
+%\newcommand{\ruleform}[1]{\vspace*{4mm} \noindent \framebox{\sffamily \footnotesize \bfseries R} #1 \vspace{1mm}}
+\newcommand{\ruleform}[2]{\pform{$\blacktriangleright$}{#1}{#2}}
+\newcommand{\funcform}[2]{\pform{$\blacklozenge$}{#1}{#2}}
+\newcommand{\opform}[2]{\pform{$\vartriangleright$}{#1}{#2}}
+\newcommand{\pform}[3]{\vspace*{4mm} \noindent #1 #2 \vspace{1mm}\textcolor[gray]{0.7}{\dotfill}\mbox{{\sffamily \footnotesize #3}}}
+%\newcommand{\bExample}{\begin{quote}\ttfamily}
+%\newcommand{\eExample}{\end{quote}}
+\newcommand{\bExample}{\begin{small} \vspace{0.3cm} \begin{tabular}{|l} \begin{minipage}{0.85\textwidth} \vspace{0.2cm} \ttfamily}
+\newcommand{\eExample}{\vspace{0.2cm} \end{minipage} \end{tabular} \vspace{0.3cm} \end{small}}
+\newenvironment{spec}{\ttfamily}{}
+%\newcommand{\optional}[1]{\raisebox{-4mm}{$\stackrel{\underline{\mbox{#1}}}{\mbox{\footnotesize optional}}$}}
+\newcommand{\optional}[1]{$\underset{optional}{\underline{\mbox{#1}}}$}
+%\newcommand{\optional}[1]{$\underbrace{\mbox{#1}}_{optional}$}
+%\newcommand{\optional}[1]{$[\mbox{\code{#1}}]$}
+\renewcommand{\id}{{\em id}\xspace}
+\renewcommand{\loc}{{\em loc}\xspace}
+\newcommand{\val}{{\em value}\xspace}
+\newcommand{\crule}{{\em rule}\xspace}
+\newcommand{\guard}{{\em guard}\xspace}
+\newcommand{\rulei}[1]{{\em rule}$_{#1}$\xspace}
+\newcommand{\idi}[1]{{\em id}$_{#1}$\xspace}
+\newcommand{\valuei}[1]{{\em value}$_{#1}$\xspace}
+\newcommand{\valuepi}[1]{{\em value}$'_{#1}$\xspace}
+\newcommand{\loci}[1]{{\em loc}$_{#1}$\xspace}
+%\newcommand{\tab}{$~~~~$}
+\newcommand{\tab}{\textcolor[gray]{1}{MMM}}
+%\newcommand{\tab}{\code{\hspace*{1em}}}
+\newcommand{\specref}[1]{Spec~\ref{spec:#1}}
+\newcommand{\indexrule}[1]{\index{#1 rule@\keyword{#1} rule}}
+\newcommand{\indexexp}[1]{\index{#1 expression@\keyword{#1} expression}}
+\newcommand{\indexfunc}[1]{\index{#1 function@\code{#1} function}}
+
+% ----------------- Commands: Copyright Notice 
+\newcommand{\copyrightNotice}[1]{{Copyright \copyright\ #1}}
+%\newcommand{\revision}{{\footnotesize Document \mbox{$Revision: #1 $}}}
+
+
+% ----------------- Title and Abstract
+
+\renewcommand{\url}[1]{\href{http://#1}{{\ttfamily #1}}}
+
+\usepackage{hyperref}
+\begin{document}
+
+\title{\huge \CoreASM Language User Manual \\ {\Large engine version \version} \\ {\large \url{www.coreasm.org}}}
+
+\author{Roozbeh Farahbod \\ \ttfamily info@coreasm.org} 
+
+\date{\copyrightNotice{2006-2011} \\~\\ {\bf DRAFT of \today} \\ {This document is still under construction to match the latest version of the engine. Your criticism is welcome!}}
+
+ \maketitle
+
+\newpage
+\tableofcontents
+\newpage
+
+% ----------------- Main Body
+\PScommands
+
+\section{Installing \CoreASM}
+
+There are currently two user interfaces available for the \CoreASM engine: a
+command-line interface called \Carma, and a graphical interactive
+development environment in the Eclipse platform, known as the \CoreASM Eclipse
+Plugin.
+
+% Since the specifics of how to install plugins on Eclipse can vary from version to version, 
+% please see -website- for up-to-date information" ecc.
+% For instructions on how to download and install and use \CoreASM with any of these
+% interfaces, please visit \url{www.coreasm.org/download}.
+
+\subsection{\CoreASM with \Carma}
+
+\CoreASM engine with \Carma can be downloaded from the web at \url{www.coreasm.org/download}.
+
+
+\subsubsection{System Requirements}
+
+You need to have Sun Microsystems Java 1.6 (JVM) installed on your machine.
+
+\subsubsection{Installing \Carma}
+
+To install \CoreASM with \Carma just unzip the contents of the binary package into a 
+directory of your choice. Alternatively, You can build \CoreASM with \Carma using the 
+ant build file provided in the source package.
+
+\subsubsection{Running \Carma}
+
+Under \Carma's home directory (where you installed Carma), 
+simply run `carma' (under POSIX systems) or `carma.bat' (under Windows systems). 
+To be able to run \Carma form other directories, change the value of {\ttfamily CARMA\_HOME} environment 
+variable in `carma' or `carma.bat' (depending on your operating system) so that it points to the folder 
+in which Carma is installed.
+
+To start, try Carma with `{\ttfamily --help}' to see the list of command-line arguments. 
+
+\subsection{\CoreASM Eclipse Plugin}
+
+This section explains how to install the \CoreASM Eclipse plugin.
+
+\subsubsection{System Requirements}
+
+You need to have Eclipse 3.5 or newer installed on your machine.
+
+\subsubsection{Installing \CoreASM Eclipse Plugin}
+
+To install the latest development version of the \CoreASM Eclipse plugin using the update site, 
+run Eclipse and follow these steps:
+
+\newcommand{\menulink}{$\rightarrow$}
+\newcommand{\menunav}[1]{{\sl #1}}
+
+\begin{enumerate}
+    \item Uninstall and remove any previously installed \CoreASM Eclipse plugin version 0.4.x or older.
+    
+	\item Under \menunav{Help \menulink Install New Software\ldots} add an update site with the following information:
+	\begin{quote}
+        {\em Name:} CoreASM Eclipse Plugin trunk
+
+        {\em URL:} \url{http://www.coreasm.org/eclipse/update-trunk}
+	\end{quote}
+	
+	\item Select the ``CoreASM Eclipse Plugin Features'' category and continue with the installation. 
+\end{enumerate}
+
+The development version of the \CoreASM Eclipse plugin is tested on Eclipse 3.5.
+
+\subsubsection{Using \CoreASM Eclipse Plugin}
+
+\paragraph{Creating a New Project} ~
+
+\begin{enumerate}
+    \item From the Eclipse menu choose: \menunav{File \menulink New \menulink Project\ldots}
+    \item Choose \menunav{General \menulink Project} from the ``New Project'' dialog. Click \menunav{Next}.
+    \item Give the project a name. Click \menunav{Finish}. 
+\end{enumerate}
+
+\paragraph{Creating a New \CoreASM Specification} ~
+
+\noindent {\em Method 1:}
+
+\begin{enumerate}
+	\item From the Eclipse menu choose: \menunav{File \menulink New \menulink Other\ldots}
+	\item In the New dialog choose \menunav{CoreASM \menulink CoreASM Specification}. Click \menunav{Next}.
+    \item Choose the project container for the specification.
+    \item Enter the name of the new \CoreASM specification file. The file must have the extension {\ttfamily .casm} or {\ttfamily .coreasm}. 
+	\item Click \menunav{Finish}. 
+\end{enumerate}
+
+\noindent {\em Method 2:}
+
+\begin{enumerate}
+    \item File the Eclipse menu choose: \menunav{File \menulink New \menulink File\ldots}
+    \item In the new file dialog choose a project container for the new file and enter a name for the new file. Again, The file must have the extension {\ttfamily .casm} or {\ttfamily .coreasm}.
+    \item Click \menunav{Finish}. 
+\end{enumerate}
+
+\paragraph{Running a \CoreASM Specification} ~
+
+\noindent {\em Method 1:}
+
+Shortcut method for running a specification with default configuration:
+
+\begin{enumerate}
+    \item In the Eclipse window, right click on a \CoreASM specification file.
+    \item In the context menu choose: \menunav{Run as \menulink CoreASM Specification} 
+\end{enumerate}
+
+\noindent {\em Method 2:}
+
+If you need more control of the parameters for repeated execution, 
+you can create a specific \CoreASM Launch Configuration as follows:
+
+\begin{enumerate}
+    \item From the Eclipse menu choose: \menunav{Run \menulink Run\ldots}
+	\item In the ``Run'' dialog, choose the ``ASM Specification'' launch configuration
+group and create a new ASM launch configuration (right click then select \menunav{New}, or
+click the New launch configuration button on the tool bar).
+    \item Enter a name for the launch configuration.
+    \item Enter the project and specification file to be run. This can be done via the browse buttons.
+    \item Configure the ``Termination Conditions'' and ``Output Verbosity'' options as desired.
+    \item Click \menunav{Apply}.
+    \item Click \menunav{Run} to run the specification. 
+\end{enumerate}
+
+Once the configuration has been launched once, it can be run again through the Run Button/Drop down menu in the main Eclipse toolbar.
+
+\paragraph{Controlling the Execution of the \CoreASM Engine} ~
+
+While the engine is running, you can click on the 
+``Stop CoreASM Engine'' button to stop the run. To pause a running engine, 
+click on the ``Pause CoreASM Engine'' button. If you pause the engine, the 
+run can be resumed by clicking on the ``Resume CoreASM Engine'' button. 
+
+% ----------------- Section: CoreASM Specification
+\section{\CoreASM Specification}
+
+
+Figure~\ref{fig:specStructure} shows a typical structure of a \CoreASM specification\footnote{
+As of version 1.1, this structure is not required anymore and different components of the specification
+can appear in any order. The only requirement is that the specification must start with a \keyword{CoreASM}
+phrase.}.
+Every specification starts with the keyword \keyword{CoreASM}\index{CoreASM@\keyword{CoreASM}} followed by the name
+of the specification. Plugins that are required in the specification are then listed one by 
+one with the keyword \keyword{use}\index{use@\keyword{use}} followed by the name of the plugin. 
+
+The \emph{Header}\index{Header block} block is where various definitions take place. What goes into this  
+section depends on the plugins that are used. The \CoreASM Kernel 
+does not define anything for the header section. 
+
+The \emph{init rule}\index{init rule} of the specification (the rule
+that creates the initial state) is defined by keyword 
+\keyword{init}\index{init@\keyword{init}|see{init rule}} followed
+by a rule name. This would be the rule that initializes the state of the machine
+that is defined by the specification. The body of the init rule must be declared
+in the \emph{Rule Declaration}\index{Rule Declaration} block.
+
+A sample \CoreASM specification is presented in \specref{thisiscoreasm}.
+
+\begin{figure}
+\begin{center}
+\begin{minipage}{0.55\textwidth}
+\begin{boxitpara}{box}
+\small
+\codebf{CoreASM} \code{SpecificationName}\\
+
+\codebf{use} \code{SamplePlugin}\\
+\codebf{use} \ldots
+\begin{center} \begin{minipage}{0.97\textwidth} \begin{boxitpara}{box 0.9 setgray fill}
+\sf Header Block
+\\
+\end{boxitpara} \end{minipage} \end{center}
+\codebf{init} \code{InitRuleName}
+\begin{center} \begin{minipage}{0.97\textwidth} \begin{boxitpara}{box 0.9 setgray fill}
+\sf Rule Declaration Block
+\\\vspace{1.5cm}
+\end{boxitpara} \end{minipage} \end{center}
+\end{boxitpara}
+\end{minipage}
+\end{center}
+\caption{Typical Structure of a \CoreASM Specification}
+\label{fig:specStructure}
+\end{figure}
+
+\subsection{Running \CoreASM Specifications}
+\label{running}
+
+To run a \CoreASM specification you need to have a \CoreASM engine driver. Currently, there are
+two engine drivers available:
+
+\begin{itemize}
+	\item \CoreASM Eclipse Plugin is a plugin for the Eclipse (see \url{www.eclipse.org}) 
+		development environment that provides syntax highlighting and a nice GUI to control 
+		specification runs.
+
+	\item \Carma is a command-line \CoreASM engine driver. To run a specification using 
+		\Carma simply run \Carma on the command line and pass it the name of the specification 
+		file as an argument. Make sure to specify a termination condition (e.g., \code{--steps 20}
+		or \code{--empty-updates}) for the run.
+		Run \Carma with \code{--help} for a complete list of options that controls its behavior.  
+
+		The following command runs \code{MySpec} using \Carma and stops after 30 steps, or after
+		a step that generates empty updates; it also dumps the final state before termination.
+
+		\begin{quote}\code{carma --steps 30 --empty-updates --dump-final-state MySpec.coreasm} \end{quote} 
+
+		Alternatively, to run the specification of \specref{thisiscoreasm}, one can use the following options which would make \Carma to mark the end of each step and stop after 30 steps or when there is no agent with a defined program:
+
+		\begin{quote}\code{carma --marksteps --steps 30 --no-agent ThisIsCoreASM.coreasm} \end{quote} 
+
+		In this example, \Carma will stop after three steps.
+
+		%Here are some examples to run 
+		%\Carma with a sample specification:
+\end{itemize}
+%\subsection{This Is CoreASM}
+%\label{thisiscoreasm}
+
+\begin{coreasmbox}
+	\begin{spec}
+	\codebf{CoreASM} ThisIsCoreASM\\
+	\\
+	\codebf{use} Standard\\
+	\\
+	\codebf{init} InitRule\\
+	\\
+	\codebf{rule} InitRule = \\
+	\tab \codebf{par}\\
+	\tab \tab terminate := \codebf{false}\\
+	\tab \tab program(self) := @MainProgram\\
+	\tab \codebf{endpar}\\
+	\\
+	\codebf{rule} MainProgram = \\
+	\tab \codebf{if} \codebf{not} terminate \codebf{then}\\
+	\tab \tab \codebf{par}\\
+	\tab \tab \tab \codebf{print} "This is CoreASM."\\
+	\tab \tab \tab terminate := \codebf{true}\\
+	\tab \tab \codebf{endpar}\\
+	\tab \codebf{else}\\
+	\tab \tab program(self) := \codebf{undef}
+	\end{spec}
+	\caption{CoreASM-Says-Hello example}
+	\label{spec:thisiscoreasm}
+\end{coreasmbox}
+
+
+% -------------------------------- * KERNEL
+\section{Kernel}
+\label{kernel}
+
+Kernel\index{CoreASM kernel}\index{kernel|see{CoreASM kernel}} of the \CoreASM engine provides the minimum set of vocabulary and rules to 
+have a \CoreASM specification.
+
+Basic values such as \keyword{undef}\index{undef@\keyword{undef}}, \keyword{true}\index{true@\keyword{true}}, and \keyword{false}\index{false@\keyword{false}} are defined in the 
+kernel along with the background of Boolean values (\code{BOOLEAN})\index{Boolean background} and the universe 
+of \code{Agents}\index{Agents@\code{Agents}}. A function called \code{program}\index{program@\code{program}} is also defined in the kernel which 
+maps agents to their programs (\CoreASM rules). At any time during the evaluation of a 
+rule, \keyword{self}\index{self@\keyword{self}} refers the the agent that is running the enclosing rule.
+
+\CoreASM kernel also defines a couple of important operators:
+
+\opform{\valuei{1} = \valuei{2}}{Kernel}
+
+This is the equality operator\index{equality operator}\index{=@=|see{equality operator}}. 
+
+\opform{\codebf{ruleelement} \id}{Kernel}\index{ruleelement@\keyword{ruleelement}}
+
+This operator returns the rule element of a rule with the given name (\id). \new{Rule element is an element in the CoreASM state
+that represents a rule defined in the specification.} It is useful in 
+assigning rules to programs of agents. In the following example, \code{Main} is the name 
+of a rule:
+
+\bExample
+	program(self) := \codebf{ruleelement} Main
+\eExample
+
+The above rule, assigns the rule named \code{Main} as the value of the program 
+of the agent running this rule.
+
+\opform{{\bf @} \id}{Kernel}\index{atsign@\code{@} sign}
+
+Returns the rule element (rule body) or function element of a rule or function 
+with the given name (\id). If the given name is the name of a rule, it works exactly 
+the same as \keyword{ruleelement}. Thus, if \code{Main} is rule, we can have:
+
+\bExample
+	program(self) := {\bf @}Main
+\eExample
+
+\subsection{Rule Forms}
+
+The following rule forms are defined in the kernel:
+
+\ruleform{\loc \code{:=} \val}{Kernel}\index{update rule}\index{:=@\code{:=}|see{update rule}}
+
+Assigns the value of \val to the location \loc.
+
+\ruleform{\codebf{import} \id\ \codebf{do}\xspace \crule}{Kernel}\index{import@\keyword{import}}
+
+Imports a new element, assigns it as the value of the environment variable \id,
+and evaluates \crule.
+
+\ruleform{\codebf{skip}}{Kernel}\indexrule{skip}
+
+Does nothing. This is like a NoOp.
+  
+
+\subsection{Kernel Engine Properties}
+
+The following properties affect the behaivour of the \CoreASM engine. 
+
+\begin{description}
+	\item[engine.error.printStackTrace] if equals to \code{"yes"}, the engine will 
+		print the stack trace of errors and exceptions. The default value is \code{"no"}. 
+
+	\item[engine.limits.maxProcessors] the maximum number of processors the engine 
+		can use for simulation. The default value is \code{"1"}. 
+
+	\item[scheduler.printProcessorStats] if equals to \code{"yes"}, the engine 
+		will print some information on processor utilization after every step. The default value is \code{"no"}. 
+
+	\item[scheduler.threadBatchSize] in a multi-threaded simulation, the value
+		of this property defines the minimum number of agents assigned to every thread.
+	The default value is \code{"1"}.
+	
+	\item[engine.pluginFolders] a colon-separated list of folders that provide additional plugins. 
+
+	\item[engine.pluginLoadRequest] a comma separated list of plugins to be loaded in addition to those listed in the specification being loaded.
+\end{description}
+
+% -------------------------------- * BASIC ASM PLUGINS
+\section{Basic ASM Plugins}\index{Basic ASM plugin}
+\label{basicASM}
+
+In this section we list the plugins that provide the basic ASM rule forms. All
+the plugins in this section can be loaded individually (as instructed in each
+section) or all together with the following \keyword{use} phrase, 
+
+\bExample
+	\codebf{use} BasicASMPlugins
+\eExample
+
+\noindent which automatically loads the following plugins: BlockRule,
+ConditionalRule, ChooseRule, ForallRule, LetRule, and
+Number.
+
+Note that the words ``Plugin'' and ``Plugins'' in the name of the plugins are optional.
+For example, Basic ASM plugins can also be loaded using the following line:
+
+\bExample
+	\codebf{use} BasicASM
+\eExample
+
+
+% -------------------------------- BLOCK RULE
+\subsection{Block Rule}
+\label{block}
+
+The Block Rule plugin\index{Block Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} BlockRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{par} \rulei{1} \optional{\rulei{2} \ldots \rulei{n}} \codebf{endpar}}{Block Rule Plugin}\index{block rule}\index{par@\keyword{par}|see{block rule}}
+
+Instructs the engine to evaluate all the given rules in parallel. The update 
+generated by this rule is the union of all the updates generated by \rulei{1}
+to \rulei{n}. %A block rule must have at least two rules ($n \geq 2$).
+
+
+% -------------------------------- CHOOSE
+\subsection{Choose Rule}
+\label{choose}
+
+The Choose Rule plugin\index{Choose Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} ChooseRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{choose} \id \codebf{in} \val \optional{\codebf{with} \guard} \codebf{do} \rulei{1} 
+		\optional{\codebf{ifnone} \rulei{2}} \optional{$~$\codebf{endchoose}${~}$}}{Choose Rule Plugin}\index{choose rule@\keyword{choose} rule}
+
+Chooses an element from the {\em enumerable}\index{enumerable}\footnote{An {\em enumerable} is an element
+that can be enumerated; i.e., that is a collection of other values. Sets, universes, and 
+some backgrounds are enumerable values.} 
+\val which
+satisfies \guard, assigns it as the value of \id and evaluates \rulei{1}.  If
+the \keyword{ifnone} clause is provided, \rulei{2} will be evaluated if no
+element can be found. The last keyword \keyword{endchoose} is optional. 
+
+The following example chooses the minimum price $p$ from the set of $prices$ and prints (see Section~\ref{io}) 
+$p$ on the screen:
+
+\bExample
+	\codebf{choose} p \codebf{in} prices \codebf{with} 
+		(\codebf{forall} pi \codebf{in} prices \codebf{holds} p <= pi) \codebf{do}\index{choose rule@\keyword{choose} rule} \\
+	\tab \codebf{print} p
+\eExample
+
+See Section~\ref{predicate} for more information on \keyword{forall} expressions.
+
+The ChooseRule plugin also provides the following expression form to non-deterministically {\em pick} a value from
+an enumerable that satisfies the given (optional) condition:
+
+\opform{\codebf{pick} \id \codebf{in} \val \optional{\codebf{with} \guard}}{Choose Rule Plugin}\indexexp{pick}
+
+\noindent For example, the following assignment non-deterministically assigns true or false to location \code{foo}:
+
+\bExample
+	foo := \codebf{pick} x \codebf{in} \{\codebf{true}, \codebf{false}\}
+\eExample
+
+% -------------------------------- CONDITIONAL
+\subsection{Conditional Rule}
+\label{conditional}
+
+The Conditional Rule plugin\index{Conditional Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} ConditionalRule
+\eExample
+
+\noindent This plugin provides the following rule forms:
+
+\ruleform{\codebf{if} \val \codebf{then} \crule}{Conditional Rule Plugin}\index{conditional rule}\index{if@\keyword{if-then-else}|see{conditional rule}}
+
+Evaluates \crule only if \val is \code{true}. It expects \val to be
+a Boolean value (being either \code{true} or \code{false}).
+
+\ruleform{\codebf{if} \val \codebf{then} \rulei{1} \codebf{else} \rulei{2}}{Conditional Rule Plugin}\index{conditional rule}
+
+Evaluates \rulei{1} only if \val is \code{true} and \rulei{2} only if \val
+is \code{false}. It expects \val to be
+a Boolean value (being either \code{true} or \code{false}).
+
+The Conditional Rule plugin also provides a conditional operation of the form:
+
+\opform{\valuei{c} \codebf{?} \valuei{t} \codebf{:} \valuei{f}}{Conditional Rule Plugin}\index{conditional operation}
+
+The value of this operator is \valuei{t}, if \valuei{c} evaluates to \code{true}; it is \valuei{f},
+if \valuei{c} evaluates to \code{false}; otherwise, it is \keyword{undef}. 
+
+
+% -------------------------------- FORALL
+\subsection{Forall Rule}
+\label{forall}
+
+The Forall Rule plugin\index{Forall Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} ForallRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{forall} \id \codebf{in} \val \optional{\codebf{with} \guard} 
+		\codebf{do} \crule \optional{$~$\codebf{endforall}$_{~}$}}{Forall Rule Plugin}\index{forall rule@\keyword{forall} rule}
+
+For all the elements in the enumerable \val that satisfy \guard, assigns the
+element to \id, and evaluates \crule.
+The following examples assigns the \code{DefaultProgram} rule as the program of
+all the agents program of which is \keyword{undef}:
+
+\bExample
+	\codebf{forall} a \codebf{in} Agents \codebf{with} program(a) = \codebf{undef} \codebf{do}\\
+	\tab program(a) := \codebf{ruleelement} DefaultProgram
+\eExample
+
+
+% -------------------------------- LET
+\subsection{Let Rule}
+\label{let}
+
+The Let Rule plugin\index{Let Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} LetRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{let} \idi{1} = \valuei{1} \optional{, \idi{2} = \valuei{2} , 
+		\ldots , \idi{n} = \valuei{n}} \codebf{in} \crule }{Let Rule Plugin}\index{let rule@\keyword{let} rule}
+
+For all the given pairs of \id and \val, assigns \valuei{i} as the value of
+the environment variable \idi{i}, and evaluates \crule.
+ 
+
+% -------------------------------- CASE
+\subsection{Case Rule}
+\label{case}
+
+The Case Rule plugin\index{Case Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} CaseRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{case} \val \codebf{of} \valuei{1} \code{:} \rulei{1}\ldots \valuei{n} \code{:} \rulei{n} \codebf{endcase}}{Case Rule Plugin}\index{case rule@\keyword{case} rule}
+
+The case condition \val will be evaluated first and then
+all the guards \valuei{i} will be evaluated in an unspecified order. Afterward, rules
+with a guard value equal to the value of the case condition will be evaluated.
+Finally, the updates generated by the matching cases are united to form the
+set of updates generated by the case rule.
+ 
+% -------------------------------- PREDICATE LOGIC
+\subsection{Predicate Logic}
+\label{predicate}
+
+The Predicate Logic plugin\index{Predicate Logic plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} PredicateLogic
+\eExample
+
+\noindent This plugin provides the following functions and expression forms: 
+
+\opform{\codebf{forall} \id \codebf{in} \val \codebf{holds} \guard}{Predicate Logic Plugin}\indexexp{forall}
+
+This Boolean expression holds if \guard holds for all the elements of \val (which must be an enumerable value). 
+
+\opform{\codebf{exists} \id \codebf{in} \val \codebf{with} \guard}{Predicate Logic Plugin}\indexexp{exists}
+
+This Boolean expression holds if there exists at least one element in \val
+(which must be an enumerable value) that satisfies \guard.
+
+\opform{\valuei{1} \code{!=} \valuei{2}}{Predicate Logic Plugin}\index{not-equal operator}\index{not equal@\code{!=} operator|see{not-equal operator}}
+
+This is the not-equal operator which is defined on all elements. The semantics of 
+this operator is equivalent to `\code{\codebf{not} (value1 = value2)}'. 
+
+\opform{\valuei{1} bin-op \valuei{2}}{Predicate Logic Plugin}\index{Boolean operators}
+
+Performs a binary operation on the given values. The following operators are defined
+on Boolean values:
+
+\begin{quote} \code{or}, \code{xor}, \code{and}, \code{implies} \end{quote}\index{Boolean operators}\index{or@\keyword{or}|see{Boolean operators}}\index{xor@\keyword{xor}|see{Boolean operators}}\index{and@\keyword{and}|see{Boolean operators}}\index{implies@\keyword{implies}|see{Boolean operators}}
+
+\noindent The following two operators are also defined which require \valuei{2} to be an enumerable:
+
+\begin{quote} \code{memberof} and \code{notmemberof} \end{quote}\index{membership operators}\index{memberof@\keyword{memberof} operator|see{membership operators}} 
+
+\opform{\codebf{not} \val}{Predicate Logic Plugin}\index{not@\keyword{not} operator}
+
+This is the negation operator which is defined on Boolean values.
+
+
+
+% -------------------------------- NUMBER
+\subsection{Number Background}
+\label{number}
+
+The Number plugin\index{Number plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Number
+\eExample
+
+\noindent This plugin provides the number background (\code{NUMBER})\index{Number background} and
+a valuable set of functions and expression forms. 
+
+\opform{\valuei{1} bin-op \valuei{2} }{Number Plugin}
+
+Performs binary operations on number values. Currently supported operators are
+
+\begin{quote} \code{+ - * / div \%} \\ \code{ > >= < <= } \end{quote}
+
+which result in Number or Boolean values.
+
+\opform{$|$ \val $|$ }{Number Plugin}\index{size-of operator}\index{=bar@\texttt{"|x"|}|see{size-of operator}}
+
+If \val is enumerable (such as a set), this operator will evaluate to the size of \val.
+
+\funcform{$\Rfun{infinity} : \rightarrow \Rdom{Number}$}{Number Plugin}\index{infinity@\code{infinity} function}
+
+Is the positive infinity.
+
+\funcform{$\Rfun{toNumber} : \Rdom{Element} \rightarrow \Rdom{Number}$}{Number Plugin}\index{toNumber@\code{toNumber} function}
+
+This is a conversion function that maps any value to a Number value (which can also be \keyword{undef}).
+The following example uses this function to read a number from the environment:
+
+\bExample
+	\codebf{seq} \\
+	\tab amount := input("Input Amount")\\
+	\codebf{next} \\
+	\tab \codebf{let} value = toNumber(amount) \codebf{in} \\
+	\tab \tab \codebf{if} value = \codebf{undef} \codebf{then} \\
+	\tab \tab \tab \codebf{print} "Error."\\
+	\tab \tab \codebf{else} \\
+	\tab \tab \tab DepositAmount(value)\\
+\eExample
+
+\funcform{$\Rfun{isNaturalNumber} : \Rdom{Number} \rightarrow \Rdom{Boolean}$}{Number Plugin}\index{isNaturalNumber@\code{isNaturalNumber} function}
+
+Returns \code{true} if the argument is a Natural number (i.e., positive non-zero integer).
+
+\funcform{$\Rfun{isIntegerNumber} : \Rdom{Number} \rightarrow \Rdom{Boolean}$}{Number Plugin}\index{isIntegerNumber@\code{isIntegerNumber} function}
+
+Returns \code{true} if the argument is an Integer number.
+
+\funcform{$\Rfun{isRealNumber} : \Rdom{Number} \rightarrow \Rdom{Boolean}$}{Number Plugin}\index{isRealNumber@\code{isRealNumber} function}
+
+Returns \code{true} if the argument is a valid non-infinite Real number.
+
+\funcform{$\Rfun{isEvenNumber} : \Rdom{Number} \rightarrow \Rdom{Boolean}$}{Number Plugin}\index{isEvenNumber@\code{isEvenNumber} function}
+
+Returns \code{true} if the argument is an Integer number divisible by two.
+
+\funcform{$\Rfun{isOddNumber} : \Rdom{Number} \rightarrow \Rdom{Boolean}$}{Number Plugin}\index{isOddNumber@\code{isOddNumber} function}
+
+Returns \code{true} if the argument is an Integer number which is not divisible by two.
+
+\funcform{$\mbox{\code{size}} : \Rdom{Element} \rightarrow \Rdom{Number}$}{Number Plugin}\index{size function@\code{size} function}
+
+Returns the size of the given collection.
+
+\smallskip
+The Number plugin also provides a background for number ranges (\code{NUMBER\_RANGE})\index{Number Range background}.
+Number range elements are enumerable and can be defined using the following syntax.
+
+\opform{\code{[ \valuei{start} .. \valuei{end} \optional{ \codebf{step} \valuei{step}} ] }}{Number Plugin}\index{number range elements}\index{\{x\}@\texttt{"[ "]}|see{number range elements}}
+
+Creates a range of numbers from \valuei{start} to \valuei{end} with the optional step. It is 
+also possible to use `\code{:}' instead of \keyword{step}.
+In the following example, \code{RandomGuess} returns a random number between 1 and 100:
+
+\bExample
+	\codebf{rule} RandomGuess = \\
+	\tab \codebf{return} rand \codebf{in}\\
+	\tab \tab \codebf{choose} x \codebf{in} [ 1 .. 100 ] \codebf{do}\\
+	\tab \tab \tab rand := x
+\eExample
+
+
+% -------------------------------- * COREASM PLUGINS
+\section{Standard Plugins}\index{Standard plugins}
+\label{standard}
+
+Most of the \CoreASM plugins, including all the Basic ASM plugins, are included in the Standard plugins package. 
+In this section we list the plugins that are provided by the Standard plugins package in addition to the ones 
+listed in the previous section. All
+these plugins can be loaded individually (as instructed in each
+section) or all together with the following \keyword{use} phrase, 
+
+\bExample
+	\codebf{use} Standard
+\eExample
+
+\noindent which automatically loads all the plugins listed in Section~\ref{basicASM} 
+in addition to the ones listed in this section.
+
+
+% -------------------------------- KERNEL EXTENSIONS
+\subsection{Kernel Extensions}
+\label{kernelext}
+
+The Kernel Extensions plugin\index{Kernel Extensions plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} KernelExtensions
+\eExample
+
+This plugin extends the Kernel capabilities in handling function and rule elements. The current version provides the following expression and rule forms. 
+
+\opform{\id (\valuei{1},\ldots, \valuei{n}) (\valuepi{1}, \ldots, \valuepi{m})}{Kernel Extensions Plugin}\indexexp{application}\vspace{-2mm}
+
+\opform{(\val) (\valuepi{1}, \ldots, \valuepi{m})}{Kernel Extensions Plugin}\indexexp{application}
+
+The above two forms apply the arguments \valuepi{i} to the function element at location \id(\valuei{1},\ldots, \valuei{n}) or to 
+the function element resulting from evaluation of \val. If the function element refers to a function in the state, 
+the location of the above expressions are also set to the location of the function with the given arguments; otherwise (e.g., in case 
+of non-state functions) the location will be not be defined. Here are some examples, assuming that \code{foo} and \code{bar} are two 
+defined functions, and \code{bar = @foo}:
+
+\bExample
+	\clkeyword{print} bar()(5, 4)   \clcomment{// printing the value of foo(5, 4)}\\
+	(bar)(1, 3) := 4   \clcomment{// assigning 4 to foo(1, 3) }\\ 
+\eExample
+
+\ruleform{\codebf{call} \id (\valuei{1},\ldots, \valuei{n}) (\valuepi{1}, \ldots, \valuepi{m})}{Kernel Extensions Plugin}\indexexp{call} \vspace{-2mm}
+ 
+\ruleform{\codebf{call} (\val) (\valuepi{1}, \ldots, \valuepi{m})}{Kernel Extensions Plugin}\indexexp{call}
+
+The above two rules call the rule element value of \id(\valuei{1},\ldots, \valuei{n}) (the first form) or \val (the second form) 
+with the arguments \valuepi{i}. For example, if we have \code{foo(5) = @MyRule} and 
+
+\bExample
+	\clkeyword{rule} MyRule(a, b) = \\
+	\tab \clkeyword{print} a + \clstr{" talks to "} + b\\
+\eExample
+
+then we can call this rule by:
+
+\bExample
+	\clkeyword{call} foo(5) (\clstr{"John"}, \clstr{"Mary"}) \clcomment{// prints "John talks to Mary"}
+\eExample
+
+This plugin is not yet part of the Standard Plugin package.
+
+
+% -------------------------------- ABSTRACT
+\subsection{Abstraction}
+\label{abstraction}
+
+The Abstraction plugin\index{Abstraction plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Abstraction
+\eExample
+
+This plugin provides the following rule form, which is useful when the specifier wants
+to leave the detail of a rule abstract. 
+
+\ruleform{\codebf{abstract} \val}{Abstraction Plugin}\indexrule{abstract}
+
+In the following example, the rule \code{SendMessage} is left abstract:
+
+\bExample
+	\codebf{rule} SendMessage =\\
+	\tab \codebf{abstract} "Sending the message."\\ 
+\eExample
+
+
+% -------------------------------- EXTEND
+\subsection{Extend Rule}
+\label{extend}
+
+The Extend Rule plugin\index{Extend Rule plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} ExtendRule
+\eExample
+
+\noindent This plugin provides the following rule form:
+
+\ruleform{\codebf{extend} \val \codebf{with} \id \codebf{do} \crule}{Extend Rule Plugin}\index{extend rule@\keyword{extend} rule}
+
+This rule has two semantics depending on \val: 
+
+\begin{enumerate}
+	\item If \val is a universe, it imports a new element, assigns it to \id, and evaluates 
+\crule. The resulting update set is the union of the updates generated by \crule and
+a single update to add the imported element to the universe \val. 
+
+	\item If \val is a background, it gets the default element from the background, assigns it to 
+\id and evaluates \crule. The resulting update set is the updates generated by
+\crule.
+\end{enumerate}
+
+In the following example, the universe \code{Agents} is extended with a new agent and 
+the program of that agent is set to \code{MainProgram}:
+
+\bExample
+	\codebf{extend} Agents \codebf{with} a \codebf{do}\\
+	\tab program(a) := @MainProgram
+\eExample
+
+\noindent However, the same result can be achieved by:
+
+\bExample
+	\codebf{import} a \codebf{do}\\
+	\tab \codebf{par}\\
+	\tab \tab Agents(a) := \codebf{true}\\
+	\tab \tab program(a) := @MainProgram\\
+	\tab \codebf{endpar}
+\eExample
+
+
+% -------------------------------- TURBO ASM
+\subsection{TurboASM Rules}
+\label{turboasm}
+
+The TurboASM plugin\index{TurboASM plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} TurboASM
+\eExample
+
+\noindent This plugin provides the following rule forms:
+
+\ruleform{\codebf{seq} \rulei{1} \optional{\codebf{next}} \rulei{2}}{TurboASM Plugin}\index{seq rule@\keyword{seq} rule}
+
+Evaluates \rulei{1}, applies the generated updates in a virtual state, and evaluates \rulei{2} in that state. 
+The resulting update set is a sequential composition of the updates generated by \rulei{1} and \rulei{2}.
+The optional keyword \keyword{next} is meant to improve readability specially where the sequence rule is combined 
+with other rule forms. 
+
+\ruleform{\codebf{seqblock} \rulei{1} \optional{\rulei{2} \ldots \rulei{n}} \codebf{endseqblock}}{TurboASM Plugin}\index{sequence block rule}\index{seq block rule@\keyword{seqblock}|see{sequence block rule}}
+
+Similar to the \keyword{seq} rule (above), this rule form executes the listed rules in sequence. It evaluates \rulei{1}, 
+applies the generated updates in a virtual state, evaluates \rulei{2} in that state and applies the generated 
+updates in a virtual state, and so on. 
+The resulting update set is a sequential composition of the updates generated by \rulei{1} \ldots \rulei{n}.
+
+\ruleform{\codebf{iterate} \crule}{TurboASM Plugin}
+
+Repeatedly evaluates \crule, until the update set produced is either empty or inconsistent; at that point, 
+the accumulated updates are computed (the resulting update set can be inconsistent if the computation of 
+the last step had produced an inconsistent set of updates). 
+%Evaluates \rule and if the resulting update set is not empty, applies the updates in a virtual state. 
+%Repeats evaluating \rule while the resulting update set is not empty and it is not inconsistent. 
+
+\ruleform{\codebf{while} (\val) \crule}{TurboASM Plugin}\indexrule{while}
+
+This rule is equivalent to:
+
+\bExample
+	\codebf{iterate} \\
+	\tab \codebf{if} \val \codebf{then} \crule
+\eExample
+
+\ruleform{\loc \code{<-} \crule}{TurboASM Plugin}\index{return result rule}\index{<- rule@\keyword{<-} rule|see{return result rule}}
+
+Replaces all the occurrences of \keyword{result} in \crule with \loc and
+evaluates the rule. \new{In the ASM book this is written as `$loc \leftarrow rule$'.}
+In the following example, the evaluation of
+\code{MainProgram} assigns the value of 5 divided by 2 (i.e., 2.5) to
+\code{division}:
+
+\bExample
+	\codebf{rule} Divide(a, b) =  \\
+	\tab \codebf{if} b > 0 \codebf{then}\\
+	\tab \tab \codebf{result} := a / b\\
+	\tab \codebf{else}\\
+	\tab \tab \codebf{par}\\
+	\tab \tab \tab \codebf{result} := \codebf{undef} \\
+	\tab \tab \tab error := \codebf{true} ~~~\codecom{also updates the global state}\\
+	\tab \tab \codebf{endpar}\\
+	\\
+	\codebf{rule} MainProgram = \\
+	\tab division <-  Divide(5, 2)
+	%\tab \codebf{seq} \\
+	%\tab \tab division := 0\\
+	%\tab \tab \codebf{assign} Divide(5, 2) \codebf{to} division
+\eExample
+
+
+\ruleform{\codebf{return} \val \codebf{in} \crule}{TurboASM Plugin}\indexrule{return}
+
+First, \crule is evaluated; \val is then evaluated in the state obtained by provisionally 
+applying the updates of \crule to the current state, and the \val is returned, while 
+the updates and the provisional state itself are discarded. This rule form can be used
+as an expression as it always return a value.
+
+The above example can also be written as below:
+
+\bExample
+	\codebf{rule} Divide(a, b) =  \\
+	\tab \codebf{return} d \codebf{in}\\
+	\tab \tab \codebf{if} b > 0 \codebf{then}\\
+	\tab \tab \tab \codebf{d} := a / b\\
+	\tab \tab \codebf{else}\\
+	\tab \tab \tab \codebf{par}\\
+	\tab \tab \tab \tab \codebf{d} := \codebf{undef} \\
+	\tab \tab \tab \tab error := \codebf{true} ~~~\codecom{has no effect}\\
+	\tab \tab \tab \codebf{endpar}\\
+	\\
+\codebf{rule} MainProgram = \\
+\tab division := Divide(5, 2) \\
+\eExample
+
+Note that this time, \code{Divide} cannot change the global state as all the updates
+are discarded after \val is evaluated.
+
+\ruleform{\codebf{local} \idi{1} \optional{, \idi{2}, \ldots , \idi{n}} \codebf{in} \crule}{TurboASM Plugin}\indexrule{local}
+
+Evaluates \crule but discards all the updates to locations addressed by \id-s (as location names). 
+In the following example, \code{newValue} will get the local value of \code{foo(5, 7)} (i.e., \code{25}) 
+but the update to \code{foo(5, 7)} will be discarded afterwards.
+
+\bExample
+	\codebf{rule} LocalRule =\\
+	\tab \codebf{local} foo \codebf{in}\\
+	\tab \tab \codebf{seq}\\
+	\tab \tab \tab foo(5, 7) := 25 \\
+	\tab \tab \tab newValue := foo(5, 7) \\
+\eExample
+
+
+% -------------------------------- STRING
+\subsection{String Background}
+\label{string}
+
+The String plugin\index{String plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} String
+\eExample
+
+\noindent This plugin provides the string background (\code{STRING})\index{String background} and
+a small set of functions and expression forms. 
+
+\opform{\valuei{1} \code{+} \valuei{2}}{String Plugin}\index{string concatenation}
+
+If both values are string, this operator concatenates the given string values in to one. If one of the
+values is not a string value, it tries to convert it into a string value, and then concatenates the values.
+This operator is not defined on two non-string values.
+
+With this operator, one can simply put values together to create a customized message:
+
+\bExample
+	\codebf{print} "The amount of \$" + amount + " is deposited to your account."
+\eExample
+
+\funcform{$ \mbox{\code{toString}} : \Rdom{Element} \rightarrow \Rdom{String}$}{String Plugin}\index{toString function@\code{toString} function}
+
+A conversion function that maps any value to a String value (which can also be \keyword{undef}).
+
+\funcform{$ \mbox{\code{strlen}} : \Rdom{String} \rightarrow \Rdom{Number}$}{String Plugin}\index{strlen function@\code{strlen} function}
+
+Returns the length of the given String value.
+
+
+
+% -------------------------------- INPUT - OUTPUT
+\subsection{Input and Output}
+\label{io}
+
+The IO plugin\index{IO plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} IO
+\eExample
+
+\noindent This plugin provides the following rule form and function:
+
+\ruleform{\codebf{print} \val}{IO Plugin}\indexrule{print}
+
+Prints out \val to the environment. Depending on the environment (engine driver) this value
+can be printed on the standard output.
+
+\funcform{$ \Rfun{input}: \Rdom{String} \rightarrow \Rdom{String}$}{IO Plugin}\index{input function@\code{input} function}
+
+Reads a string value from the environment.
+\new{Given a step and given an argument \Tfun{arg}, every evaluation of $\Rfun{input}(\Rfun{arg})$ during this step}
+will result in the same value. Please refer to Section~\ref{string} for an introduction to the String
+Plugin. 
+
+The machine specified in Spec~\ref{spec:sayshello} is an extension of our This-Is-CoreASM example (see
+\specref{thisiscoreasm}) that reads a name from the environment and prints
+out a greeting to that name:
+
+\begin{coreasmbox}
+	\begin{spec}	
+	\codebf{CoreASM} CoreASMSaysHello\\
+	\\
+	\codebf{use} StandardPlugins\\
+	\\
+	\codebf{init} InitRule\\
+	\\
+	\codebf{rule} InitRule = \\
+	\tab \codebf{par}\\
+	\tab \tab terminate := \codebf{false}\\
+	\tab \tab program(self) := @MainProgram\\
+	\tab \tab name := input("What is your name?")\\
+	\tab \codebf{endpar}\\
+	\\
+	\codebf{rule} MainProgram = \\
+	\tab \codebf{if} \codebf{not} terminate \codebf{then}\\
+	\tab \tab \codebf{par}\\
+	\tab \tab \tab \codebf{print} "This is CoreASM."\\
+	\tab \tab \tab terminate := \codebf{true}\\
+	\tab \tab \tab \codebf{print} "Hello " + name + "!"\\
+	\tab \tab \codebf{endpar}
+	\end{spec}
+	\caption{CoreASM-Says-Hello example}
+	\label{spec:sayshello}
+\end{coreasmbox}
+
+
+% -------------------------------- COLLECTION
+\subsection{Collection}
+
+The Collection plugin\index{Collection plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Collection
+\eExample
+
+This plugin provides the foundation for collections (i.e., sets, lists, maps, etc.) in \CoreASM and provides some general functions 
+on collections. However, each specific collection background (e.g., list or set) is provided by its corresponding plugin. 
+
+\funcform{$\mbox{\code{foldl}} : \Rdom{Element} \times \Rdom{Function} \times \Rdom{Element} \rightarrow \Rdom{Element}$}{Collection Plugin}\index{fold-left function@\code{foldl} function}
+
+\code{foldl(c, @func, init)} processes the collection \code{c} (e.g., a set or a list) using the binary function \code{func} and the initial value \code{init} and returns the final result.
+
+\[ \Rfun{foldl} ([x_1,\ldots,x_n], f, i) \equiv f(x_n, f(x_{n-1}, \ldots f(x_1, init))) \ldots ) \] 
+ 
+\funcform{$\mbox{\code{foldr}} : \Rdom{Element} \times \Rdom{Function} \times \Rdom{Element} \rightarrow \Rdom{Element}$}{Collection Plugin}\index{fold-right function@\code{foldr} function}
+
+\code{foldr(c, @func, init)} processes the collection \code{c} (a set or a list)
+using the binary function \code{func} and the initial value
+\code{init} and returns the final result.
+
+\[ \Rfun{foldr} ([x_1,\ldots,x_n], f, i) \equiv f(x_1, f(x_2, \ldots f(x_n, init))) \ldots ) \] 
+ 
+\funcform{$\mbox{\code{fold}} : \Rdom{Element} \times \Rdom{Function} \times \Rdom{Element} \rightarrow \Rdom{Element}$}{Collection Plugin}\index{fold function@\code{fold} function}
+
+This is the same as \code{foldr}; see above.
+
+\funcform{$\mbox{\code{map}} : \Rdom{Element} \times \Rdom{Function} \rightarrow \Rdom{Element}$}{Collection Plugin}\index{map function@\code{map} function}
+
+\code{map(c, @func)} applies the unary function \code{func} to all the elements of \code{c} (any collection, such as list and set) 
+and returns a new collection (with the same structure as that of \code{c}).  
+
+\[ \Rfun{map} ([x_1,\ldots,x_n], f) \equiv [ f(x_1), f(x_2), \ldots f(x_n) ] \] 
+
+\funcform{$\mbox{\code{filter}} : \Rdom{Element} \times \Rdom{Function} \rightarrow \Rdom{Element}$}{Collection Plugin}\index{filter function@\code{filter} function}
+
+\code{filter(c, @func)} applies the boolean unary function \code{func} to all the elements of \code{c} and returns a new collection with only those elements of \code{c} for which \code{func} returns \code{true}. 
+
+
+% -------------------------------- SET
+\subsection{Set Background}
+\label{set}
+
+The Set plugin\index{Set plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Set
+\eExample
+
+\noindent This plugin provides the set background (\code{SET})\index{Set background} and
+a a number of functions and expression forms. 
+
+\opform{\code{\{} \optional{\valuei{1}, \ldots, \valuei{n}} \code{\}}}{Set Plugin}\index{set element}\index{\{\}@\texttt{"\{\ldots"\}}|see{set element}}\index{set enumeration}
+
+Creates a set element that includes the listed values. The values should be basic terms (i.e., no operators) or
+they should be surrounded in parentheses.
+
+\opform{\code{\{} \id $|$ \id \codebf{in} \val \optional{\codebf{with} \guard} \code{\}}}{Set Plugin}\index{set element}\index{set comprehension}
+
+This is the basic form set comprehension. It creates a set of all the elements in \val
+which satisfy \guard. Of course, \val must be enumerable.
+
+\opform{\code{\{} \id \codebf{is} {\em exp}\xspace $|$ \idi{1} \codebf{in} \valuei{1} 
+		\optional{, \ldots, \idi{n} \codebf{in} \valuei{n}} \codebf{with} \guard \code{\}}}{Set Plugin}\index{set element}\index{set comprehension}
+
+Creates a set element that contains all the elements of the form {\em exp} which
+satisfy the \guard. In this form, {\em exp} is a function of \idi{1}\ldots \idi{n} and 
+every \idi{i} is bound to an enumerable \valuei{i}. 
+
+In the following example, \code{SetAdd} takes two sets \code{set1} and \code{set2} as input and produces a new set
+by adding every element of \code{set1} to all the elements of \code{set2}:   
+
+\bExample
+	\codebf{rule} SetAdd(set1, set2) = \\
+	\tab \codebf{return} a \codebf{in}\\
+	\tab \tab a := \{ x \codebf{is} (x1 + x2) $|$ x1 \codebf{in} set1, x2 \codebf{in} set2 \}\\ 
+\eExample
+
+The result of evaluating \code{SetAdd(\{1, 2, 3\}, \{10, 20\})} would be:
+
+\begin{quote} \code{ \{22.0, 23.0, 12.0, 21.0, 13.0, 11.0\}} \end{quote}
+
+\opform{\valuei{1} bin-op \valuei{2}}{Set Plugin}
+
+Performs a set binary operation where both \valuei{1} and \valuei{2} are sets. 
+Currently, \code{subset}\indexexp{subset}, \code{union}\indexexp{union}, \code{intersect}\indexexp{intersect}, and \code{diff}\indexexp{diff} are supported.
+
+\smallskip
+Set background also provides two important rule forms which allow for parallel incremental
+updates of set data structures. 
+
+\ruleform{\codebf{add} \val \codebf{to} \loc}{Set Plugin}\indexrule{add-to-set}
+
+If \loc is a location in the state (e.g., a function) and its value is a set, this rule 
+produces an update instruction (partial update) that adds \val to \loc.
+
+\ruleform{\codebf{remove} \val \codebf{from} \loc}{Set Plugin}\indexrule{remove-from-set}
+
+If \loc is a location in the state (e.g., a function) and its value is a set, 
+this rule produces an update instruction (partial update)
+that removes \val to \loc.
+
+
+% -------------------------------- LIST
+\subsection{List Background}
+\label{list}
+
+The List plugin\index{List plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} List
+\eExample
+
+\noindent This plugin provides a list background (\code{LIST})\index{List background} and a rich set of functions and operators on lists.
+
+\opform{\code{[} \optional{\valuei{1}, \valuei{2}, \ldots , \valuei{n}} \code{]}}{List Plugin}\index{list element}\index{[]@\code{[\ldots]}|see{list element}}
+
+Creates a list element that includes \valuei{1} to \valuei{n} in the given order.\footnote{The old form of \code{<<x1,\ldots,xn>>} still works but it
+is deprecated and may not be supported in future releases of the \CoreASM engine.}
+List elements are enumerable. The index of the first element is 1.
+
+\opform{\valuei{1} \code{+} \valuei{2}}{List Plugin}\index{list concatenation}
+
+If both values are list, this operator concatenates the given lists in to one list. 
+
+\funcform{$\mbox{\code{toList}} : \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{toList}
+
+If \code{e} is an enumerable (e.g., number range, set, etc.), \code{toList(e)} will return a list that includes all the 
+elements of \code{e}. If \code{e} is not ordered (e.g., a set), the order of elements in the returned list will be non-deterministic;
+otherwise the elements will be in the same order.
+
+\funcform{$\mbox{\code{flattenList}} : \Rdom{List} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{flattenList}
+
+If \code{l} is a netsting list, \code{flattenList(l)} will return a flatten version of \code{l}.
+
+\funcform{$\mbox{\code{head}} : \Rdom{List} \rightarrow \Rdom{Element}$}{List Plugin}\indexfunc{head}
+
+Returns the first element of the list.
+
+\funcform{$\mbox{\code{last}} : \Rdom{List} \rightarrow \Rdom{Element}$}{List Plugin}\indexfunc{last}
+
+Returns the last element of the list.
+
+\funcform{$\mbox{\code{tail}} : \Rdom{List} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{tail}
+
+Returns all but the first element of the list.
+
+\funcform{$\mbox{\code{cons}} : \Rdom{Element} \times \Rdom{List} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{cons}
+
+Creates a new list with the given element as its head and given list as its tail.
+
+\funcform{$\mbox{\code{nth}} : \Rdom{List} \times \Rdom{Number} \rightarrow \Rdom{Element}$}{List Plugin}\indexfunc{nth}
+
+Returns the n$^{th}$ element of the list. The index of the first element is 1.
+
+\funcform{$\mbox{\code{take}} : \Rdom{List} \times \Rdom{Number} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{take}
+
+\code{take(list, i)} returns the first $i$ elements of list \code{list}. 
+
+\funcform{$\mbox{\code{drop}} : \Rdom{List} \times \Rdom{Number} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{drop}
+
+\code{drop(list, i)} returns what is left after dropping the first $i$ elements of the list \code{list}. 
+
+\funcform{$\mbox{\code{reverse}} : \Rdom{List} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{reverse}
+
+Returns a list consisting of the given list's elements in reverse order. 
+
+\funcform{$\mbox{\code{indexes}} : \Rdom{List} \times \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{indexes}
+
+Returns a potentially empty list of the indexes of the given element in given list.
+
+\funcform{$\mbox{\code{indices}} : \Rdom{List} \times \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{indices}
+
+The same as \code{indexes}; see above.
+
+\funcform{$\mbox{\code{setnth}} : \Rdom{List} \times \Rdom{Number} \times \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{setnth}
+
+\code{setnth(list, i, e)}, if \code{i} is a valid index for \code{list}, returns a new list in which the 
+element at index \code{i} is \code{e}. 
+
+\medskip
+
+List background also provides the following rule forms to manipulate lists:  
+
+\ruleform{\codebf{add} \val \codebf{to} \loc}{List Plugin}\indexrule{add-to-list}
+
+If \loc is a location in the state and its value is a list, this rule 
+produces an update that adds \val to \loc. In lists order matters, so the update produced
+by this rule is NOT incremental (not like the one for sets). As a result, there cannot be two parallel 
+\code{add} rules operating on the same list. 
+
+\ruleform{\codebf{remove} \val \codebf{from} \loc}{List Plugin}\indexrule{remove-from-list}
+
+If \loc is a location in the state and its value is a list, 
+this rule produces an update that removes the first occurrence of \val from \loc.
+As for \code{add}, this rule is also NOT incremental (not like the one for sets) and there 
+cannot be two parallel \code{remove} rules operating on the same list.
+
+\ruleform{\codebf{shift left} \val \codebf{into} \loc}{List Plugin}\indexrule{shift-left-list}
+
+If \loc is a location in the state and \val is a list, it removes the first element
+of the list and puts it in the given location (shifiting the list to left).
+
+\ruleform{\codebf{shift right} \val \codebf{into} \loc}{List Plugin}\indexrule{shift-right-list}
+
+If \loc is a location in the state and \val is a list, it removes the last element
+of the list and puts it in the given location (shifiting the list to right).
+
+\smallskip
+In the following example, \code{SortSet} sorts elements of a given set into a 
+list:  
+  
+\bExample
+	\codebf{rule} SortSet(set) = \\
+	\tab \codebf{seq} \\
+	\tab \tab \codebf{par}\\
+	\tab \tab \tab \codebf{result} := []\\
+	\tab \tab \tab tempSet := set\\
+	\tab \tab \codebf{endpar}\\
+	\tab \codebf{next}\\
+	\tab \tab \codebf{while} ($|$ tempSet $|$ > 0) \\
+	\tab \tab \tab \codebf{choose} x \codebf{in} tempSet \codebf{with} (\codebf{forall} y \codebf{in} tempSet \codebf{holds} x <= y) \codebf{do}\\ 
+	\tab \tab \tab \tab \codebf{par}\\
+	\tab \tab \tab \tab \tab \codebf{remove} x \codebf{from} tempSet\\
+	\tab \tab \tab \tab \tab \codebf{add} x \codebf{to} result\\
+	\tab \tab \tab \tab \codebf{endpar}
+\eExample
+ 
+
+% -------------------------------- QUEUE
+\subsection{Queue}
+\label{queue}
+
+The Queue plugin\index{Queue plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Queue
+\eExample
+
+\noindent This plugin provides the following queue\index{queue} operations (rule forms) on lists:
+
+\ruleform{\codebf{enqueue} \val \codebf{into} \loc}{Queue Plugin}\indexrule{enqueue}
+
+If \loc is a location in the state and its value is a queue (i.e., a list), it adds \val to 
+the end of the queue.
+
+\ruleform{\codebf{dequeue} \loci{v} \codebf{from} \loci{q}}{Queue Plugin}\indexrule{dequeue}
+
+If \loci{q} is a location in the state and its value is a queue (i.e., a list), it removes 
+the first element of this queue and assigns it as the value of the location \loci{v}. 
+
+
+% -------------------------------- STACK
+\subsection{Stack}
+\label{stack}
+
+The Stack plugin\index{Stack plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Stack
+\eExample
+
+\noindent This plugin provides the following stack\index{stack} operations and functions on lists:
+
+\ruleform{\codebf{push} \val \codebf{into} \loc}{Stack Plugin}\indexrule{push}
+
+If \loc is a location in the state and its value is a stack (i.e., a list), it pushes \val to 
+the front of the stack.
+
+\ruleform{\codebf{pop} \loci{v} \codebf{from} \loci{s}}{Stack Plugin}\indexrule{pop}
+
+If \loci{s} is a location in the state and its value is a stack (i.e., a list), it removes
+the first element of the stack (top of the stack) and assigns it as the value of \loci{v}.
+
+\funcform{$\mbox{\code{peek}} : \Rdom{List} \rightarrow \Rdom{Element}$}{Stack Plugin}\indexfunc{peek}
+
+Returns the top of the stack (first element of the list) without changing the stack.
+
+
+% -------------------------------- MAP
+\subsection{Map Background}
+\label{map}
+
+The Map plugin\index{Map plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Map
+\eExample
+
+\noindent This plugin provides a map background (\code{MAP})\index{Map background}.
+
+\opform{\code{\{} \code{->} \code{\}}}{Map Plugin}\index{map element}\index{[]@\code{[\ldots]}|see{map element}}
+
+Creates an empty map.
+
+\opform{\code{\{} \valuei{k1} \code{->} \valuei{v1}, \optional{\valuei{k2} \code{->} \valuei{v2}, \ldots , \valuei{kn} \code{->} \valuei{vn}} \code{\}}}{Map Plugin}\index{map element}\index{[]@\code{[\ldots]}|see{map element}}
+
+Creates a map with the given key-value pairs. Map elements are enumerable; every map can be viewed as a set of pairs  
+which are represented by lists of size 2.
+
+\funcform{$\mbox{\code{toMap}} : \Rdom{Element} \rightarrow \Rdom{Map}$}{Map Plugin}\indexfunc{toMap}
+
+If \code{e} is an enumerable (e.g., a set) consisting of pairs of elements (lists of size two) 
+of the form $[k_i, v_i]$ such that $\forall [k_i, v_i] \not\exists [k_j, v_j] ~~k_i = k_j \wedge v_i \neq v_j$, 
+\code{toMap(e)} returns a map element representing a mapping of $k_i$s to $v_i$s;
+otherwise, it returns \keyword{undef}. For example, the following two expressions create equal maps:
+
+\bExample
+	toMap(\{[1, "John"], [2, "Mary"]\})\\
+	\{ 1 -> "John", 2 -> "Mary"\}
+\eExample
+
+\funcform{$\mbox{\code{mapToPairs}} : \Rdom{Map} \rightarrow \Rdom{Set}$}{Map Plugin}\indexfunc{mapToPairs}
+
+Returns a set of pairs of the form $(key, value)$ from the given map elements. The pairs are list elements of
+size two. For example, the following two expressions are equal:
+
+\bExample
+	mapToPairs( \{1 -> "John", 2 -> "Mary"\} )\\
+	\{[1, "John"], [2, "Mary"]\}
+\eExample
+
+
+Map background also provides the following rule forms to manipulate maps:  
+
+\ruleform{\codebf{add} \val \codebf{to} \loc}{Map Plugin}\indexrule{add-to-map}
+
+If \loc is a location in the state, its value is a map, and \val is a map, this rule 
+produces an update that copied all of the mappings from \val to \loc. These mappings 
+will replace any mappings that \loc had for any of the keys shared with \val. 
+In the current version of Map plugin, the update produced
+by this rule is NOT incremental (not like the one for sets). As a result, there cannot be two parallel 
+\code{add} rules operating on the same map. 
+
+\ruleform{\codebf{remove} \val \codebf{from} \loc}{Map Plugin}\indexrule{remove-from-map}
+
+If \loc is a location in the state and its value is a map, this rule produces an 
+update that removes \val from \loc according to the following:
+\begin{enumerate}
+	\item if \val is a map, this rule removes all the exact mappings 
+		of \val from \loc;
+	\item if \val is not a map but an enumerable, this rule removes all the 
+		mappings for the elements of \val (as keys) from \loc;
+	\item if \val is neither a map nor an enumerable, this rule removes the mapping
+		for \val (as a key) from \loc if present.
+\end{enumerate} 
+In the current version of Map plugin, the update produced
+by this rule is NOT incremental (not like the one for sets). As a result, there cannot be two parallel 
+\code{remove} rules operating on the same map. 
+
+% -------------------------------- SIGNATURE
+\subsection{Signature Plugin}
+\label{signature}
+
+The Signature plugin\index{Signature plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Signature
+\eExample
+
+\noindent The signature plugin extends the header section of \CoreASM
+specifications (see Figure~\ref{fig:specStructure}) to add support for definition of functions,
+universes, and custom data types and also extends the engine to support for
+certain forms of type checking. This plugin is still under development. The current
+version includes the following features: 
+
+\begin{itemize}
+	\item Definition of universes through the following syntax (with optional initial elements):
+		\begin{quote} \code{ \codebf{universe} \id \optional{= \{ \idi{1}, \ldots, \idi{n} \}} } \end{quote}\index{universe@\keyword{universe}}
+
+	\item Definition of enumeration backgrounds through the following syntax:
+		\begin{quote} \code{ \codebf{enum} \idi{e} = \{ \idi{1} \optional{, \ldots, \idi{n}} \} } \end{quote}\index{enumeration backgrounds}\index{enum@\keyword{enum}|see{enumeration background}}
+		For example, the following line defines a new enumeration background of four elements:
+
+		\bExample
+			\code{ \codebf{enum} PRODUCT = \{ Soda, Juice, Sandwich, Candy \} }
+		\eExample
+	
+		The elements are in fact defined as constant functions that hold values of the background \code{PRODUCT}. 
+
+	\item Definition of functions through the following syntax:
+		\begin{quote} \code{ \codebf{function} \idi{f} : \optional{\idi{u1} * \ldots * \idi{un}} -> \idi{r}} \end{quote}\index{function@\keyword{function}}\index{controlled@\keyword{controlled}} 
+		As an example, the following signature defines a function named \code{priceTable} that maps pairs of string values to numbers:
+		
+		\bExample
+			\code{ \codebf{function} priceTable : STRING * STRING -> NUMBER }	
+		\eExample
+
+	\item Definition of derived functions through the following syntax:
+		\begin{quote} \code{ \codebf{derived} \idi{f} \optional{( \idi{1}, \ldots, \idi{n})} = {\em expression} } \end{quote}\index{derived function@\keyword{derived}} 
+		As an example, the following declaration defines a derived function $f(x, y) = x^2 + y^2$: 
+		
+		\bExample
+			\code{ \codebf{derived} f(x, y) = x\^{}2 + y\^{}2  }	
+		\eExample
+
+\end{itemize}
+
+\medskip
+
+Depending on the properties of the engine (see the Options Plugin, Section~\ref{options}) the Signature plugin can use the signature information 
+to perform the following checks:
+\begin{itemize}
+
+\item {\bf Type checking on assignments}: if the
+``\code{Signature.TypeChecking}'' property is set to ``\code{warning}'',
+``\code{strict}'' or ``\code{on}'', before the updates are applied to the
+state, the Signature Plugin checks the types of arguments and assigned values
+against the defined signatures and issues a warning (in case of
+``\code{warning}'') or stops the execution of the engine with an error (in case
+of ``\code{strict}'' or ``\code{on}'').     
+
+
+\item {\bf Unknown identifiers:} if the ``\code{Signature.NoUndefinedId}''
+property is set to ``\code{warning}'', ``\code{strict}'' or ``\code{on}'', the
+Signature Plugin issues a warning (in case of ``\code{warning}'') or stops the
+execution of the engine with an error (in case of ``\code{strict}'' or
+``\code{on}'') if a function name is used and its signature is not defined in
+the header of the specification. This feature helps in identifying typos
+in the specification. 
+
+\end{itemize}
+
+\section{Additional Plugins}
+\label{additional}
+
+The plugins listed in this section are currently not part of any plugin packages.
+
+% -------------------------------- MODULARITY
+\subsection{Modularity}
+\label{Modularity}
+
+The Modularity plugin\index{Modularity plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Modularity
+\eExample
+
+This plugin allows one to break the specification into separate files or {\em modules}. As its current version, 
+the functionality provided is limited to introducing an \codebf{include} keyword that would load another file 
+into the current specification. 
+
+\begin{quote} \code{ \codebf{include} {\em filename}} \end{quote}\index{include@\keyword{include}}
+
+Included files can themselves have other \codebf{include} clauses to further break down 
+the specification.
+
+% -------------------------------- OPTIONS
+\subsection{Options}
+\label{options}
+
+The Options plugin\index{Options plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Options
+\eExample
+
+\noindent The Options plugin extends the header section of \CoreASM
+specifications (see Figure~\ref{fig:specStructure}) to provide the following syntax i
+to set values of engine properties: 
+
+\begin{quote} \code{ \codebf{option} {\em property} {\em value} } \end{quote}\index{option@\keyword{option}}
+
+Other plugins (such as the Signature Plugin, see Section~\ref{signature}) can use these options to 
+customize their behavior.
+
+% -------------------------------- SCHEDULING
+\subsection{Scheduling Policies}
+\label{scheduling}
+
+The Scheduling Policies plugin\index{Scheduling Policies plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} SchedulingPolicies
+\eExample
+
+This plugin provides alternative scheduling policies for simulation of multi-agent specifications. 
+For any specification (for any run), only one scheduling policy can be defined, using the following option:
+
+\begin{quote} \code{ \codebf{option} \code{SchedulingPolicies.policy} {\em policyname} } \end{quote}
+
+Currently, there are two scheduling policies provided by this plugin:
+\begin{itemize}
+  \item \codebf{allfirst} Tries executing all the agents in every computation step. If this fails at any step,
+	the policy falls back to the engine's default scheduling policy.
+
+  \item \codebf{onebyone} Executes only one agent in every step. It tries to be {\em fair} by not executing an 
+	agent more than once unless all other agents have been given a chance to execute.
+
+\end{itemize}
+
+The following rules are also provided by this plugin to control the execution of agents during a simulation.
+
+\ruleform{\codebf{suspend} \val}{SchedulingPolicies Plugin}\indexrule{suspend}
+
+If \val is an agent, this rule {\em suspends} the execution of that agent from the next computation step.
+The suspended agents will not be chosen by the engine for execution.  
+
+\ruleform{\codebf{resume} \val}{SchedulingPolicies Plugin}\indexrule{resume}
+
+If \val is an agent which has been suspended, this rule {\em resumes} the execution of that agent from the next computation step;
+i.e., the agent will be available for execution from the next step.
+
+\ruleform{\codebf{terminate} \val}{SchedulingPolicies Plugin}\indexrule{terminate}
+
+If \val is an agent, it will no longer be available for scheduling for the rest of the current run of the machine. 
+
+\ruleform{\codebf{shutdown}}{SchedulingPolicies Plugin}\indexrule{shutdown}
+
+Clears the \code{Agents} universe, such that there will be no agent available to contribute to the 
+next computation step.  Depending on the parameters of the run, this can stop the execution of the engine.
+
+% -------------------------------- TIME
+\subsection{Time}
+\label{time}
+
+The Time plugin\index{Time plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Time
+\eExample
+
+\noindent This plugin provides the following monitored function: 
+
+\funcform{$ \mbox{\code{now}} : \rightarrow \Rdom{Number}$}{Time Plugin}\index{now function@\keyword{now} function}
+
+Returns a value representing the current time of the system. \new{Of course, given a step, the value of now is fixed.}
+
+\funcform{$ \mbox{\code{stepcount}} : \rightarrow \Rdom{Number}$}{Time Plugin}\index{stepcount function@\keyword{stepcount} function}
+
+Returns the number of computation steps performed so far by the engine excluding the current step.
+
+% -------------------------------- DEBUG INFO
+\subsection{DebugInfo} 
+\label{debugInfo}
+
+DebugInfo plugin is a \CoreASM plugin to maintain logging information for debugging purposes and it 
+can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} DebugInfo
+\eExample
+
+The plugin adds the following rule to the \CoreASM language:
+
+\ruleform{\codebf{debuginfo} \id\ \val}{DebugInfo Plugin}\indexrule{debuginfo}
+
+\noindent which, upon evaluation, adds the string representation of the given \val to the logging channel identified by the given \id. 
+
+The set of active channels are to be defined as a space-separated list of channel ids, set as the value
+\code{DebugInfo.activeChannels} engine property. This can be done either through the Options plugin or 
+by setting the values directly from the engine driver (e.g., \Carma). For example, using the Options plugin one can add the following
+line to a spec to turn the logging on for channels {\em warning} and {\em error}:
+
+\begin{coreasm}
+  \clkeyword{option} DebugInfo.activeChannels "warning, error"
+\end{coreasm}
+
+\noindent In order to turn all channels on, one can use the special channel id {\em ALL}:
+
+\begin{coreasm}
+ \clkeyword{option} DebugInfo.activeChannels ALL \clcomment{// or "ALL"}
+\end{coreasm}
+
+Since this rule is only used for debugging purposes, 
+the evaluation of \codebf{debuginfo} results in an empty update set and a print out of the debugging information (if the corresponding 
+channel is active) to the standard output, whether or not the updates of the enclosing rule block is discarded by the engine or not. 
+Applications of the engine can set redirect the output of 
+this plugin using the plugin's service interface (see \code{org.coreasm.engine.plugin.Plugin\#getPluginInterface()}). 
+
+\subsubsection*{Example}
+
+\begin{coreasm}
+\input{specs/DebugInfoExample}
+\end{coreasm}
+
+
+% -------------------------------- MATH
+\subsection{Math}
+\label{math}
+
+The Math plugin\index{Math plugin} can be loaded by the following \keyword{use} phrase:
+
+\bExample
+	\codebf{use} Math
+\eExample
+
+\noindent Math Plugin extends the \CoreASM engine to provide some basic mathematical functions. Most of these functions are equivalent of their Java counterparts in \code{java.lang.Math}. For such functions, the following descriptions are basically taken from the {\em Java 2 Platform Standard Edition 5.0 API Specification}. 
+
+\subsubsection{Constants}
+
+\begin{itemize}
+\item {\bf \code{MathE}} \\ The value that is closer than any other to $e$, the base of the natural logarithms.
+\item {\bf \code{MathPI}} \\   The value that is closer than any other to $\pi$, the ratio of the circumference of a 
+ circle to its diameter. 
+\end{itemize}
+
+\subsubsection{Basic Derived Functions}
+
+%\begin{tabular}{l|l}
+\begin{itemize}
+\item {\bf \code{abs(v)} }   Returns the absolute value of $v$.
+\item {\bf \code{acos(v)} }   Returns the arc cosine of an angle, in the range of $0$ through $\pi$.
+\item {\bf \code{asin(v)} }   Returns the arc sine of an angle, in the range of $-\pi/2$ through $\pi/2$.
+\item {\bf \code{atan(v)} }   Returns the arc tangent of an angle, in the range of $-\pi/2$ through $\pi/2$.
+\item {\bf \code{atan2(x, y)} }  Converts rectangular coordinates $(x, y)$ to polar $(r, \theta)$ and returns $\theta$.
+\item {\bf \code{cuberoot(v)} }   Returns the cube root of $v$.
+\item {\bf \code{cbrt(v)} }   Returns the cube root of $v$.
+\item {\bf \code{ceil(v)} }   Returns the smallest (closest to negative infinity) value that is greater than or equal to the argument and is equal to a mathematical integer.
+\item {\bf \code{cos(v)} }   Returns the trigonometric cosine of an angle.
+\item {\bf \code{cosh(v)} }   Returns the hyperbolic cosine of $v$.
+\item {\bf \code{exp(v)} }   Returns Euler's number $e$ raised to the power of $v$.
+\item {\bf \code{expm1(v)} }   Returns $e^v -1$.
+\item {\bf \code{floor(v)} }   Returns the largest (closest to positive infinity) value that is less than or equal to the argument and is equal to a mathematical integer.
+\item {\bf \code{hypot(x, y)} }   Returns $\sqrt{x^2 + y^2}$ without intermediate overflow or underflow.
+\item {\bf \code{IEEEremainder(v1, v2)} }   Computes the remainder operation on two arguments as prescribed by the IEEE 754 standard.
+\item {\bf \code{log(v)} }   Returns the natural logarithm (base $e$) of $v$.
+\item {\bf \code{log10(v)} }   Returns the base $10$ logarithm of $v$.
+\item {\bf \code{log1p(v)} }   Returns the natural logarithm of the sum of the argument and 1; i.e., $ln(v + 1)$.
+\item {\bf \code{max(v1, v2)} }   Returns the greater of two values.
+%\item {\bf \code{max(\{v_1, \ldots, v_n\})} }  Returns the maximum value in a collection of numbers. 
+%												 If there is one non-number in the collection, it returns \Rundef.
+\item {\bf \code{min(v1, v2)} }   Returns the smaller of two values.
+%\item {\bf \code{min(\{v_1, \ldots, v_n\})} }  Returns the minimum value in a collection of numbers.
+%												 If there is one non-number in the collection, it returns \Rundef.
+\item {\bf \code{pow(x, y)} }   Returns the value of the first argument raised to the power of the second argument.
+\item {\bf \code{random()} }   Returns a random value with a positive sign, greater than or equal to $0.0$ and less than $1.0$.
+\item {\bf \code{round(v)} }   Returns the closest mathematical integer to the argument.
+\item {\bf \code{signum(v)} }  Returns zero if the argument is zero, $1.0$ if the argument is greater than zero, $-1.0$ if the argument is less than zero.
+\item {\bf \code{sin(v)} }   Returns the trigonometric sine of an angle.
+\item {\bf \code{sinh(v)} }   Returns the hyperbolic sine of $v$.
+\item {\bf \code{sqrt(v)} }   Returns the correctly rounded positive square root of $v$; i.e., $\sqrt{v}$.
+\item {\bf \code{tan(v)} }   Returns the trigonometric tangent of an angle.
+\item {\bf \code{tanh(v)} }   Returns the hyperbolic tangent of $v$.
+\item {\bf \code{toDegrees(v)} }   Converts an angle measured in radians to an approximately equivalent angle measured in degrees.
+\item {\bf \code{toRadians(v)} }   Converts an angle measured in degrees to an approximately equivalent angle measured in radians.
+%\item {\bf \code{sum(\{v_1, \ldots, v_n\})} }   This function returns the sum of a collection of numbers. If there is one non-number in the collection, it returns \Rundef.
+\end{itemize}
+%\end{tabular}
+
+\subsubsection{Special Derived Functions}
+
+\begin{itemize}
+
+\item {\bf \code{powerset(set)} }  Computes the powerset of the given set. 
+
+\item {\bf \code{max(\{v1,\ldots,vn\})} }  Returns the maximum value in a collection of numbers. 
+	If there is one non-number in the collection, it returns \Rundef.
+
+%\item {\bf \code{max(\{v1,\ldots, vn\}, @f)} }  Returns the maximum value in a collection of numbers, 
+%	after applying function {\bf \code{f}} to the values in the collection. If there is one non-number 
+%	in the collection, it returns \Rundef.
+
+\item {\bf \code{min(\{v1,\ldots,vn\})} }  Returns the minimum value in a collection of numbers.
+	If there is one non-number in the collection, it returns \Rundef.
+
+%\item {\bf \code{min(\{v1,\ldots, vn\}, @f)} }  Returns the minimum value in a collection of numbers, 
+%	after applying function {\bf \code{f}} to the values in the collection. If there is one non-number 
+%	in the collection, it returns \Rundef.
+
+\item {\bf \code{sum(\{v1,\ldots,vn\})} }   This function returns the sum of a collection of numbers. 
+	If there is one non-number in the collection, it returns \Rundef.
+
+\item {\bf \code{sum(\{v1,\ldots,vn\}, @f)} }   This function returns the sum of a collection of numbers, 
+	after applying function {\bf \code{f}} to the values in the collection. If there is one non-number 
+	in the collection, it returns \Rundef.
+
+\item {\bf \code{powerset(\{e1,\ldots,en\})} } This function returns the powerset of the given set of elements.
+
+\end{itemize}
+
+\subsubsection{An Example}
+
+\begin{coreasmbox}
+	\begin{spec}
+	\codebf{CoreASM} MathPluginExample\\
+	\\
+	\codebf{use} StandardPlugins\\
+	\codebf{use} MathPlugin\\
+	\\
+	\codebf{init} Init\\
+	\\
+	\codebf{rule} Init = \\
+	\codebf{par}\\
+	\tab program(self) := @Main\\
+	\tab a(1) := 5\\
+	\tab a(2) := 10\\
+	\tab a(100) := 500\\
+	\codebf{endpar}\\
+	\\
+	\codebf{rule} Main = \\
+	\tab \codebf{let} e = MathE \codebf{in}\\
+	\tab \codebf{par}\\
+	\tab \tab \codebf{print} "'e' = " + e\\
+	\tab \tab \codebf{print}print "log(e) = " + log(e)\\
+	\tab \tab \codebf{print} "sin(30) = " + round( sin( toRadians(30) ) * 10 ) / 10\\
+	\tab \tab \codebf{print} "asin(0.5) = " + round( toDegrees( asin(0.5) ) )\\
+	\tab \tab \codebf{print} "min(51, 43) = " + min(51, 43)\\
+	\tab \tab \codebf{print} "sum( \{1, 2, 100\} ) = " + sum(\{1, 2, 100\})\\
+	\tab \tab \codebf{print} "sum( \{1, 2, 100\}, @a ) = " + sum(\{1, 2, 100\}, @a)\\
+    %\tab \tab \codebf{print} "\{2, 3\} is in P(\{1, 2, 3\}) = " + (\{2, 3\} memberof powerset(\{1,2,3\})) \\
+    \tab \tab \codebf{choose} x \codebf{in} powerset(\{1, 2, 3, 4\}) \codebf{do} \\
+    \tab \tab \tab \codebf{if} x \codebf{memberof} powerset(\{1, 2, 3\}) \codebf{then} \\
+    \tab \tab \tab \tab \codebf{print} x + " is a member of powerset(\{1, 2, 3\})"\\
+    \tab \tab \tab \codebf{else}\\ 
+    \tab \tab \tab \tab \codebf{print} x + " is not a member of powerset(\{1, 2, 3\})"\\
+	\tab \codebf{endpar}\\
+	\end{spec}
+	\caption{Using Math Plugin}
+	\label{spec:mathexample}
+\end{coreasmbox}
+
+As an example, the output of the \CoreASM Spec~\ref{spec:mathexample} would be the following:
+
+\definecolor{shellgray}{rgb}{0.2,0.2,0.2}
+\definecolor{black}{rgb}{0,0,0}
+\newenvironment{shell}
+	{\noindent \color{shellgray}\vspace{0.2cm} \begin{minipage}{0.9\textwidth} \vspace{0.2cm}}
+	{\vspace{0.2cm} \end{minipage} \vspace{0.2cm} \color{black}}
+
+\begin{shell}
+\begin{verbatim}
+sum( {1, 2, 100} ) = 103
+min(51, 43) = 43
+asin(0.5) = 30
+powerset({1, 2, 3}) = {{}, {3}, {2}, {3, 2}, {1}, {3, 1}, {2, 1}, {3, 2, 1}}
+{2, 3} memberof powerset({1, 2, 3} = true
+log(e) = 1
+sum( {1, 2, 100}, @a ) = 515
+'e' = 2.718281828459045
+{2, 1, 4} is not a member of powerset({1, 2, 3})
+sin(30) = 0.5
+\end{verbatim}
+\end{shell}
+
+\printindex
+
+\end{document}
+

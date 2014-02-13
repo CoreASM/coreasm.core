@@ -1,0 +1,5 @@
+The specifications in this folder can be run by the following command:
+
+  carma -y SPEC-FILE-NAME
+
+
