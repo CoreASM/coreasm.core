@@ -55,12 +55,12 @@ public class InformationObject implements Serializable{
 		this(sender, message, VerbosityLevel.WARNING, Collections.<String, String>emptyMap(), responseHandler);
 	}
 
-	public AbstractDispatcher getSender() {
-		return sender;
-	}
-
 	public String getMessage() {
 		return message;
+	}
+	
+	public String getSender() {
+		return sender.getId();
 	}
 
 	public VerbosityLevel getVerbosity() {

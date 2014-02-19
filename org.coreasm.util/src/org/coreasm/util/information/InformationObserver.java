@@ -4,5 +4,5 @@ public interface InformationObserver {
 
 	void informationCreated(InformationObject information);
 
-	void clearInformation();
+	void clearInformation(InformationObject information);
 }

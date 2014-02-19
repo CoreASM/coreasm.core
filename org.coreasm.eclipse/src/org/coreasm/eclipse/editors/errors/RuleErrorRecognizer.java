@@ -75,11 +75,19 @@ implements ITreeErrorRecognizer
 								RuleDeclaration declaration = ruleDeclarations.get(frNode.getName());
 								if (declaration != null) {
 									if (!frNode.hasArguments()) {
-										if (declaration.getParams().size() > 0)
-											errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+										if (declaration.getParams().size() > 0) {
+											SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+											error.set("NumberOfArguments", 0);
+											error.set("NumberOfParams", declaration.getParams().size());
+											errors.add(error);
+										}
 									}
-									else if (frNode.getArguments().size() != declaration.getParams().size())
-										errors.add(new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH));
+									else if (frNode.getArguments().size() != declaration.getParams().size()) {
+										SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+										error.set("NumberOfArguments", frNode.getArguments().size());
+										error.set("NumberOfParams", declaration.getParams().size());
+										errors.add(error);
+									}
 								}
 								else
 									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));

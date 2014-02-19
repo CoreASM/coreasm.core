@@ -65,25 +65,25 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 									FunctionDeclaration functionDeclaration = (FunctionDeclaration)declaration;
 									if (!frNode.hasArguments()) {
 										if (functionDeclaration.getDomain().length > 0 && !isEnvironmentVariable(frNode) && !isLocalFunction(frNode))
-											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode, document));
+											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), 0, frNode, document));
 									}
 									else if (functionDeclaration.getDomain().length != frNode.getArguments().size())
-										warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode, document));
+										warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode.getArguments().size(), frNode, document));
 								}
 								else if (declaration instanceof UniverseDeclaration || declaration instanceof EnumerationDeclaration) {
 									if (frNode.hasArguments()) {
 										if (frNode.getArguments().size() > 1)
-											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode, document));
+											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode.getArguments().size(), frNode, document));
 									}
 								}
 								else if (declaration instanceof DerivedFunctionDeclaration) {
 									DerivedFunctionDeclaration functionDeclaration = (DerivedFunctionDeclaration)declaration;
 									if (!frNode.hasArguments()) {
 										if (functionDeclaration.getParams().size() > 0 && !isEnvironmentVariable(frNode) && !isLocalFunction(frNode))
-											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode, document));
+											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), 0, frNode, document));
 									}
 									else if (functionDeclaration.getParams().size() != frNode.getArguments().size())
-										warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode, document));
+										warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode.getArguments().size(), frNode, document));
 								}
 							}
 						}

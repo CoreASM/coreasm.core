@@ -204,33 +204,33 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						if (frNode.hasName() && hoverRegion.getOffset() + hoverRegion.getLength() < offset + frNode.getName().length()) {
 							String value = getExpressionValue(textViewer.getDocument(), frNode.getName());
 							if (isEnvironmentVariable(frNode))
-								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : ""));
+								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : "")) + "\nParser Info: " + frNode;
 							if (isLocalFunction(frNode))
-								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : ""));
+								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
 							if (pluginFunction != null)
-								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (value != null ? " = " + value : ""));
+								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							String declaration = getDeclaration(document, frNode.getName());
 							if (declaration == null)
-								return new HoverInfo(frNode.toString());
-							return new HoverInfo(declaration + (value != null ? " = " + value : ""));
+								return new HoverInfo("Plugin: " + frNode.getPluginName() + "\nParser Info: " + frNode);
+							return new HoverInfo(declaration + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 						}
 					}
 					else if (node instanceof RuleOrFuncElementNode) {
 						RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
 						FunctionInfo pluginFunction = getPluginFunction(ruleOrFuncElementNode.getElementName());
 						if (pluginFunction != null)
-							return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name);
+							return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + "\nParser Info: " + ruleOrFuncElementNode);
 						String declaration = getDeclaration(document, ruleOrFuncElementNode.getElementName());
 						if (declaration == null)
-							return new HoverInfo(ruleOrFuncElementNode.toString());
-						return new HoverInfo(declaration);
+							return new HoverInfo("Plugin: " + ruleOrFuncElementNode.getPluginName() + "\nParser Info: " + ruleOrFuncElementNode);
+						return new HoverInfo(declaration + "\nParser Info: " + ruleOrFuncElementNode);
 					}
 				}
 			}
 			if (hoverNode == null || hoverNode instanceof FunctionRuleTermNode)
 				return null;
-			return new HoverInfo(hoverNode.toString());
+			return new HoverInfo("Plugin: " + hoverNode.getPluginName() + "\nParser Info: " + hoverNode);
 		} catch (BadLocationException e) {
 		}
 		return null;

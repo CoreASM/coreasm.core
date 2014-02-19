@@ -14,7 +14,7 @@ public class InformationDispatcher extends AbstractDispatcher {
 	 * @param stackTrace e.g. the plugin which will distribute some error information
 	 */
 	private InformationDispatcher(String sourceId) {
-		super();
+		super(sourceId);
 		if ( infoDispatcher != null )
 			infoDispatcher.put(sourceId, this);
 	}

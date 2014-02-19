@@ -2,22 +2,26 @@ package org.coreasm.eclipse.editors.quickfix;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.FunctionDeclaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.AbstractQuickFix;
 import org.coreasm.eclipse.editors.errors.RuleErrorRecognizer;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.MoveToTopProposal;
+import org.coreasm.engine.Specification.FunctionInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -39,6 +43,8 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  *
  */
 public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
+	
+	private static HashSet<FunctionInfo> pluginFunctions = null;
 
 	@Override
 	public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
@@ -99,8 +105,28 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 				String undefinedIdentifier = data[1];
 				int arguments = Integer.parseInt(data[2]);
 				for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
-					if (isSimilar(undefinedIdentifier, declaration.getName()))
-						proposals.add(new CompletionProposal(declaration.getName(), start, end - start, 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+					if (isSimilar(undefinedIdentifier, declaration.getName())) {
+						if (declaration instanceof RuleDeclaration) {
+							RuleDeclaration ruleDeclaration = (RuleDeclaration)declaration;
+							if (ruleDeclaration.getParams().size() > 0)
+								proposals.add(new CompletionProposal(declaration.getName() + "()", start, end - start, declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
+							else
+								proposals.add(new CompletionProposal(declaration.getName(), start, end - start, declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+						}
+						else if (declaration instanceof FunctionDeclaration) {
+							FunctionDeclaration functionDeclaration = (FunctionDeclaration)declaration;
+							if (functionDeclaration.getDomain().length > 0)
+								proposals.add(new CompletionProposal(declaration.getName() + "()", start, end - start, declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
+							else
+								proposals.add(new CompletionProposal(declaration.getName(), start, end - start, declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+						}
+						else
+							proposals.add(new CompletionProposal(declaration.getName(), start, end - start, declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+					}
+				}
+				for (FunctionInfo function : getPluginFunctions()) {
+					if (isSimilar(undefinedIdentifier, function.name))
+						proposals.add(new CompletionProposal(function.name, start, end - start, function.name.length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + function.name + "'", null, null));
 				}
 				proposals.add(new MarkAsLocalProposal(undefinedIdentifier, start, IconManager.getIcon("/icons/editor/bullet.gif")));
 				if (arguments == 0)
@@ -111,6 +137,8 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					proposals.add(new CreateUniverseProposal(undefinedIdentifier, IconManager.getIcon("/icons/editor/bullet.gif")));
 				proposals.add(new CreateRuleProposal(undefinedIdentifier, arguments, IconManager.getIcon("/icons/editor/bullet.gif")));
 			}
+			else if ("NumberOfAgruments".equals(data[0]) && Integer.parseInt(data[2]) == 0)
+				proposals.add(new CompletionProposal(data[1] + "()", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "()'", null, null));
 			else if ("ReturnUndef".equals(data[0]))
 				proposals.add(new MoveToTopProposal(Integer.parseInt(data[1]), IconManager.getIcon("/icons/editor/bullet.gif")));
 		}
@@ -121,11 +149,24 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					String undefinedRule = error.getDocument().get(error.getPosition(), error.getLength());
 					for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
 						if (declaration instanceof RuleDeclaration) {
-							if (isSimilar(undefinedRule, declaration.getName()))
-								proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), 0, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+							if (isSimilar(undefinedRule, declaration.getName())) {
+								RuleDeclaration ruleDeclaration = (RuleDeclaration)declaration;
+								if (ruleDeclaration.getParams().size() > 0)
+									proposals.add(new CompletionProposal(declaration.getName() + "()", error.getPosition(), error.getLength(), declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
+								else
+									proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+							}
 						}
 					}
 					proposals.add(new CreateRuleProposal(undefinedRule, 0, IconManager.getIcon("/icons/editor/bullet.gif")));
+				} catch (BadLocationException e) {
+				}
+			}
+			else if (error instanceof SimpleError && RuleErrorRecognizer.NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH.equals(((SimpleError)error).getErrorID())) {
+				try {
+					String ruleName = error.getDocument().get(error.getPosition(), error.getLength());
+					if (Integer.parseInt(error.get("NumberOfArguments")) == 0)
+						proposals.add(new CompletionProposal(ruleName + "()", error.getPosition(), error.getLength(), ruleName.length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + ruleName + "()'", null, null));
 				} catch (BadLocationException e) {
 				}
 			}
@@ -134,6 +175,16 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					fix.collectProposals(error, proposals);
 			}
 		}
+	}
+	
+	private static HashSet<FunctionInfo> getPluginFunctions() {
+		if (pluginFunctions == null) {
+			pluginFunctions = new HashSet<FunctionInfo>();
+			pluginFunctions.addAll(SlimEngine.getFullEngine().getSpec().getDefinedFunctions());
+			pluginFunctions.addAll(SlimEngine.getFullEngine().getSpec().getDefinedUniverses());
+			pluginFunctions.addAll(SlimEngine.getFullEngine().getSpec().getDefinedBackgrounds());
+		}
+		return pluginFunctions;
 	}
 	
 	/**

@@ -23,6 +23,8 @@ abstract class AbstractDispatcher {
 	public enum DistributionMode {
 		COMMIT, AUTOCOMMIT;
 	};
+	
+	private final String id;
 
 	/** thread specific information */
 	private LinkedList<DispatcherContext> newActions;
@@ -33,12 +35,12 @@ abstract class AbstractDispatcher {
 	/**
 	 * creates an Dispatcher with <code>DistributionMode.AUTOCOMMIT</code>
 	 */
-	public AbstractDispatcher() {
-		newActions = new LinkedList<DispatcherContext>();
-		distributionMode = DistributionMode.AUTOCOMMIT;
+	public AbstractDispatcher(String id) {
+		this(id, DistributionMode.AUTOCOMMIT);
 	}
 
-	public AbstractDispatcher(DistributionMode mode) {
+	public AbstractDispatcher(String id, DistributionMode mode) {
+		this.id = id;
 		newActions = new LinkedList<DispatcherContext>();
 		distributionMode = mode;
 	}
@@ -109,9 +111,9 @@ abstract class AbstractDispatcher {
 		}
 	}
 
-	public synchronized void clearInformation() {
+	public synchronized void clearInformation(String message) {
 		//Instantiate new DispatcherContext with a null-Object as information object
-		DispatcherContext newInfoDispObject = new DispatcherContext(null, Action.CLEAR);
+		DispatcherContext newInfoDispObject = new DispatcherContext(new InformationObject(this, message), Action.CLEAR);
 
 		newActions.add(newInfoDispObject);
 		if (this.getDistributionMode().equals(DistributionMode.AUTOCOMMIT)) {
@@ -133,6 +135,10 @@ abstract class AbstractDispatcher {
 	public synchronized DistributionMode getDistributionMode() {
 		return this.distributionMode;
 	}
+	
+	public String getId() {
+		return id;
+	}
 
 	/**
 	 * call both interface functions of IStorageAndDispatchObserver foreach
@@ -144,10 +150,14 @@ abstract class AbstractDispatcher {
 		if (!this.newActions.isEmpty()) {
 			for (DispatcherContext dispInfo : this.newActions) {
 				for (InformationObserver obs : observers.values()) {
-					if (dispInfo.getAction().equals(Action.CREATION)) {
-						obs.informationCreated(dispInfo.getInformation());
-					} else if (dispInfo.getAction().equals(Action.CLEAR)) {
-						obs.clearInformation();
+					try {
+						if (dispInfo.getAction().equals(Action.CREATION)) {
+							obs.informationCreated(dispInfo.getInformation());
+						} else if (dispInfo.getAction().equals(Action.CLEAR)) {
+							obs.clearInformation(dispInfo.getInformation());
+						}
+					} catch (Throwable t) {
+						t.printStackTrace();
 					}
 				}
 			}
