@@ -381,7 +381,7 @@ public class IOPlugin extends Plugin implements
 			// for all locations to aggregate
 			for (Location l : locsToAggregate) {
 				if (l.equals(OUTPUT_FUNC_LOC)) {
-					StringBuffer outputResult = new StringBuffer();
+					String outputResult = "";
 					
 					// if regular update affects this location
 					if (pluginAgg.regularUpdatesAffectsLoc(l)) {
@@ -389,7 +389,7 @@ public class IOPlugin extends Plugin implements
 					} else {
 						for (Update update: pluginAgg.getLocUpdates(l)) {
 							if (update.action.equals(PRINT_ACTION)) {
-								outputResult.append(update.value.toString() + "\n");
+								outputResult += update.value.toString() + "\n";
 								// flag update aggregation as successful for this update
 								pluginAgg.flagUpdate(update, Flag.SUCCESSFUL, this);
 								contributingAgents.addAll(update.agents);
@@ -400,7 +400,7 @@ public class IOPlugin extends Plugin implements
 					pluginAgg.addResultantUpdate(
 							new Update(
 									OUTPUT_FUNC_LOC, 
-									new	StringElement(outputResult.toString()),  
+									new	StringElement(outputResult),  
 									Update.UPDATE_ACTION,
 									contributingAgents,
 									contributingNodes
@@ -426,15 +426,17 @@ public class IOPlugin extends Plugin implements
 
 	public void compose(PluginCompositionAPI compAPI) {
 		synchronized (this) {
-			StringBuffer outputResult1 = new StringBuffer();
-			StringBuffer outputResult2 = new StringBuffer();
+			String outputResult1 = "";
+			String outputResult2 = "";
 			Set<Element> contributingAgents = new HashSet<Element>();
 			Set<ScannerInfo> contributingNodes = new HashSet<ScannerInfo>();
 			
 			// First, add all the updates in the second set
 			for (Update u: compAPI.getLocUpdates(2, OUTPUT_FUNC_LOC)) {
 				if (u.action.equals(PRINT_ACTION)) {
-					outputResult2.append(u.value.toString() + "\n");
+					if (!outputResult2.isEmpty())
+						outputResult2 += '\n';
+					outputResult2 += u.value.toString();
 					contributingAgents.addAll(u.agents);
 					contributingNodes.addAll(u.sources);
 				}
@@ -447,7 +449,9 @@ public class IOPlugin extends Plugin implements
 			if (!compAPI.isLocUpdatedWithActions(2, OUTPUT_FUNC_LOC, Update.UPDATE_ACTION)) {
 				for (Update u: compAPI.getLocUpdates(1, OUTPUT_FUNC_LOC)) {
 					if (u.action.equals(PRINT_ACTION)) {
-						outputResult1.append(u.value.toString() + "\n");
+						if (!outputResult1.isEmpty())
+							outputResult1 += '\n';
+						outputResult1 += u.value.toString();
 						contributingAgents.addAll(u.agents);
 						contributingNodes.addAll(u.sources);
 					}
@@ -455,12 +459,12 @@ public class IOPlugin extends Plugin implements
 						compAPI.addComposedUpdate(u, this);
 				}
 			}
-			if (outputResult1.length() > 0 || outputResult2.length() > 0) {
+			if (!outputResult1.isEmpty() || !outputResult2.isEmpty()) {
 				String strResult2 = "";
-				if (outputResult2.length() > 0)
+				if (!outputResult2.isEmpty())
 					strResult2 = outputResult2.substring(0, outputResult2.length() - 1);
 				compAPI.addComposedUpdate(new Update(OUTPUT_FUNC_LOC, 
-						new StringElement(outputResult1.append(strResult2).toString()), 
+						new StringElement(outputResult1 + strResult2), 
 						PRINT_ACTION, contributingAgents, contributingNodes), this);
 			}
 		}
