@@ -460,11 +460,13 @@ public class IOPlugin extends Plugin implements
 				}
 			}
 			if (!outputResult1.isEmpty() || !outputResult2.isEmpty()) {
-				String strResult2 = "";
-				if (!outputResult2.isEmpty())
-					strResult2 = outputResult2.substring(0, outputResult2.length() - 1);
+				String outputResult = outputResult1;
+				if (outputResult.isEmpty())
+					outputResult = outputResult2;
+				else if (!outputResult2.isEmpty())
+					outputResult = outputResult1 + '\n' + outputResult2;
 				compAPI.addComposedUpdate(new Update(OUTPUT_FUNC_LOC, 
-						new StringElement(outputResult1 + strResult2), 
+						new StringElement(outputResult), 
 						PRINT_ACTION, contributingAgents, contributingNodes), this);
 			}
 		}
