@@ -83,12 +83,12 @@
 		</plugins>
 
 		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
 		<resources>
 			<resource>
 				<directory>rsc</directory>
 			</resource>
 		</resources>
+		<testSourceDirectory>test</testSourceDirectory>
 		<testResources>
 			<testResource>
 				<directory>test-rsc</directory>
