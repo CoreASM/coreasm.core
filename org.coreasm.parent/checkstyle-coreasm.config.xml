@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: CoreASM
+    Checkstyle-Configuration: CoreASM Checkstyle
     Description: none
 -->
 <module name="Checker">
@@ -21,6 +21,7 @@
     </module>
     <module name="JavadocStyle">
       <property name="scope" value="package"/>
+      <property name="checkFirstSentence" value="false"/>
     </module>
     <module name="ConstantName">
       <property name="applyToPrivate" value="false"/>
@@ -55,8 +56,6 @@
     <module name="AvoidNestedBlocks"/>
     <module name="EmptyBlock"/>
     <module name="LeftCurly"/>
-    <module name="NeedBraces"/>
-    <module name="RightCurly"/>
     <module name="AvoidInlineConditionals">
       <property name="severity" value="ignore"/>
       <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
@@ -105,10 +104,7 @@
       <property name="scope" value="public"/>
       <property name="suppressLoadErrors" value="true"/>
     </module>
-  </module>
-  <module name="JavadocPackage">
-    <property name="severity" value="ignore"/>
-    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+    <module name="JavadocType"/>
   </module>
   <module name="NewlineAtEndOfFile">
     <property name="severity" value="ignore"/>
@@ -126,4 +122,5 @@
     <property name="message" value="Line has trailing spaces."/>
     <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
   </module>
+  <module name="StrictDuplicateCode"/>
 </module>

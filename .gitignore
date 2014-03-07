@@ -1,4 +1,5 @@
 /*/bin/
 /*/target/
+/*/report/
 .DS_Store
 *.class
