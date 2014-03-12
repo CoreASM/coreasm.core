@@ -8,7 +8,7 @@
 	<name>CoreASM Eclipse Plugin Repository</name>
 
 	<parent>
-		<version>1.0.2-SNAPSHOT</version>
+		<version>1.0.3-SNAPSHOT</version>
 		<groupId>org.coreasm</groupId>
 		<artifactId>org.coreasm.eclipse.parent</artifactId>
 		<relativePath>../org.coreasm.eclipse.parent</relativePath>

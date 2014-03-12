@@ -1,10 +1,9 @@
 package org.coreasm.eclipse;
 
 
+import java.io.File;
 import java.net.URL;
 
-import org.coreasm.eclipse.preferences.PreferenceConstants;
-import org.coreasm.util.Tools;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -15,6 +14,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.coreasm.eclipse.preferences.PreferenceConstants;
+import org.coreasm.util.Tools;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -46,8 +48,12 @@ public class CoreASMPlugin extends AbstractUIPlugin {
 	 */
 	public CoreASMPlugin() {
 		plugin = this;
+		String rootFolder = findRootFolder();
+		Tools.setRootFolder(rootFolder);
+		File folder = new File(new File(new File(rootFolder), "target"), "lib");
+
+		System.setProperty(Tools.COREASM_ENGINE_LIB_PATH, new File(folder, "org.coreasm.engine.jar").getAbsolutePath());
 		
-		Tools.setRootFolder(findRootFolder());
 	}
 
 	// TODO clean up the following two methods 
@@ -86,6 +92,7 @@ public class CoreASMPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called upon plug-in activation
 	 */
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
@@ -94,6 +101,7 @@ public class CoreASMPlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called when the plug-in is stopped
 	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 		plugin = null;

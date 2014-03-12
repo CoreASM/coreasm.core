@@ -20,12 +20,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,7 +39,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
@@ -66,15 +73,15 @@ import org.coreasm.engine.plugin.ServiceRequest;
 import org.coreasm.engine.scheduler.Scheduler;
 import org.coreasm.engine.scheduler.SchedulerImp;
 import org.coreasm.util.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * This class provides the actual implementation of a CoreASM engine. It implements {@link ControlAPI} and has
- * four components: a {@link Parser}, a {@link Scheduler}, an {@link Interpreter}, and an {@link AbstractStorage}.
- *
- * @author Roozbeh Farahbod
- *
+ * This class provides the actual implementation of a CoreASM engine. It
+ * implements {@link ControlAPI} and has
+ * four components: a {@link Parser}, a {@link Scheduler}, an
+ * {@link Interpreter}, and an {@link AbstractStorage}.
+ * 
+ * @author Roozbeh Farahbod, Michael Stegmaier, Marcel Dausend
+ * 
  */
 public class Engine implements ControlAPI {
 
@@ -530,77 +537,128 @@ public class Engine implements ControlAPI {
 		logger.debug(
 				"Loading plugin catalog...");
 
-		String rootFolder = Tools.getRootFolder();
-
-		// drop '/' from the end
-		if (rootFolder.charAt(rootFolder.length() - 1) == '/')
-			rootFolder = rootFolder.substring(0, rootFolder.length() - 1);
-
-		// Looking into the default plugin folder
-		loadCatalog(rootFolder + "/plugins", true);
+		try {
+			loadCatalog(getClass(), "plugins/");
+		}
+		catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 
 		// looking to the extended plugin folders
 		String pluginFolders = getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
 		if (pluginFolders != null) {
-			for (String folder: Tools.tokenize(pluginFolders, EngineProperties.PLUGIN_FOLDERS_DELIM))
-				if (folder.length() != 0)
-					loadCatalog(folder, false);
+			for (String pluginFolder : Tools.tokenize(pluginFolders, EngineProperties.PLUGIN_FOLDERS_DELIM)) {
+				File folder = new File(pluginFolder);
+				if (folder.isDirectory()) {
+					for (File file : folder.listFiles())
+						loadPluginClasses(file);
+				}
+			}
 		}
 	}
 
-	/**
-	 * Loads the plugin catalog from the given folder. If <code>enforceFolder</code>
-	 * is true, it throws an exception if the folder is empty.
-	 */
-	private void loadCatalog(String folder, boolean enforceFolder) throws IOException {
-		File pluginsDir = new File(folder);
-		logger.debug("Plugin folder: {}", pluginsDir);
-
-		String[] folders = pluginsDir.list();
-		if (folders == null) {
-			if (enforceFolder) {
-				logger.error("Problem reading pluging folder: {}", folder);
-				throw new IOException("Cannot read plugin folder ("
-						+ pluginsDir.getName() + ").");
-			} else {
-				loadPluginClasses(folder);
-				return;
-			}
+	private void loadCatalog(Class<?> clazz, String dir) throws URISyntaxException, IOException {
+		URL dirURL = clazz.getClassLoader().getResource(dir);
+		//1st case: file
+		if (dirURL != null && dirURL.getProtocol().equals("file")) {
+			/* A file path: easy enough */
+			File[] files = new File(dirURL.toURI()).listFiles();
+			for (File file : files)
+				loadPluginClasses(file);
 		}
-		for (int i = 0; i < folders.length; i++) {
-			String fullName = folder + "/"	+ folders[i];
-
-			// ignore .svn and other hidden files/folders
-			if (folders[i].startsWith(".")) {
-				logger.warn("Ignoring {}", fullName);
-				continue;
+		else {
+			if (dirURL == null) {
+				/*
+				 * In case of a jar file, we can't actually find a directory.
+				 * Have to assume the same jar as clazz.
+				 */
+				String me = clazz.getName().replace(".", "/") + ".class";
+				dirURL = clazz.getClassLoader().getResource(me);
 			}
-			loadPluginClasses(fullName);
+	
+			//2nd case: jar
+			if (dirURL.getProtocol().equals("jar")) {
+				/* A JAR path */
+				String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!")); //strip out only the JAR file
+				JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
+				Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
+				Set<JarEntry> result = new HashSet<JarEntry>(); //avoid duplicates in case it is a subdirectory
+				while (entries.hasMoreElements()) {
+					JarEntry entry = entries.nextElement();
+					String name = entry.getName();
+					if (name.startsWith(dir) && !name.substring(dir.length()).contains("/")) { //filter according to the path
+						if (result.add(entry))
+							loadPluginClasses(jar, entry);
+					}
+				}
+			}
+			//3rd case: bundle resource
+			else if (dirURL.getProtocol().equals("bundleresource")) {
+				/* A JAR path */
+				if (System.getProperty(Tools.COREASM_ENGINE_LIB_PATH) == null)
+					throw new NullPointerException("path to engine library has not been set.");
+				JarFile jar = new JarFile(System.getProperty(Tools.COREASM_ENGINE_LIB_PATH));
+				Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
+				Set<JarEntry> result = new HashSet<JarEntry>(); //avoid duplicates in case it is a subdirectory
+				while (entries.hasMoreElements()) {
+					JarEntry entry = entries.nextElement();
+					String name = entry.getName();
+					if (name.startsWith(dir) && !name.substring(dir.length()).contains("/")) { //filter according to the path
+						if (result.add(entry))
+							loadPluginClasses(jar, entry);
+					}
+				}
+			}
+			else
+				throw new UnsupportedOperationException("Cannot list files for URL " + dirURL);
 		}
 	}
 
 	/*
 	 * Loads a single plugin
 	 */
-	private void loadPluginClasses(String fileName) {
-		File file = new File(fileName);
-
+	private void loadPluginClasses(File file) {
 		try {
 			// checking if the path points to a directory (folder)
 			if (file.isDirectory())
 				loadPluginClassesFromDirectory(file);
 			else
 			// checking if the path points to a ZIP file
-			if (fileName.toUpperCase().endsWith(".ZIP"))
+			if (file.getName().toUpperCase().endsWith(".ZIP"))
 				loadPluginClassesFromZipFile(file);
 			else
 			// checking if the path points to a JAR file
-			if (fileName.toUpperCase().endsWith(".JAR"))
+			if (file.getName().toUpperCase().endsWith(".JAR"))
 				loadPluginClassesFromJarFile(file);
 			else
 				throw new EngineException("Cannot detect plugin.");
 		} catch (EngineException e) {
-			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", fileName, e.getMessage());
+			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", file.getName(), e.getMessage());
+		}
+	}
+
+	/*
+	 * Loads a single plugin
+	 */
+	private void loadPluginClasses(JarFile jar, JarEntry entry) {
+		try {
+			// checking if the path points to a directory (folder)
+			if (entry.isDirectory())
+				;
+			//				loadPluginClassesFromDirectory(entry);
+			else
+			// checking if the path points to a ZIP file
+			if (entry.getName().toUpperCase().endsWith(".ZIP"))
+				loadPluginClassesFromZipFile(entry);
+			else
+			// checking if the path points to a JAR file
+			if (entry.getName().toUpperCase().endsWith(".JAR"))
+				loadPluginClassesFromJarFile(jar, entry);
+			else
+				throw new EngineException("Cannot detect plugin.");
+		}
+		catch (EngineException e) {
+			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", entry.getName(), e.getMessage());
 		}
 	}
 
@@ -661,7 +719,14 @@ public class Engine implements ControlAPI {
 	 * Loads a plugin from a Zip file.
 	 */
 	private void loadPluginClassesFromZipFile(File file) throws EngineException {
-		throw new EngineException("Plugin ZIP files are not supported.");
+		throw new EngineException("Plugin ZIP files are not supported." + file.getName());
+	}
+
+	/*
+	 * Loads a plugin from a Zip file.
+	 */
+	private void loadPluginClassesFromZipFile(JarEntry entry) throws EngineException {
+		throw new EngineException("Plugin ZIP files are not supported. " + entry.getName());
 	}
 
 	/*
@@ -670,7 +735,7 @@ public class Engine implements ControlAPI {
 	private void loadPluginClassesFromJarFile(File file) throws EngineException{
 		String className = null;
 		try {
-			className = getJarPluginClassName(file.getAbsolutePath());
+			className = getJarPluginClassName(new FileInputStream(file));
 		} catch (IOException e) {
 			throw new EngineException("Cannot load the JAR file.");
 		} catch (EngineException e) {
@@ -679,6 +744,27 @@ public class Engine implements ControlAPI {
 		loadPlugin(file.getName(), className, file);
 	}
 
+	/*
+	 * Loads a plugin from a Jar file.
+	 */
+	private void loadPluginClassesFromJarFile(JarFile jar, JarEntry entry) throws EngineException {
+		String className = null;
+		try {
+			className = getJarPluginClassName(jar.getInputStream(entry));
+		}
+		catch (IOException e) {
+			throw new EngineException("Cannot load the JAR file.");
+		}
+		catch (EngineException e) {
+			throw e;
+		}
+		try {
+			loadPlugin(entry.getName(), className, new URL("jar", "", jar.getName() + "!/" + entry.getName()));
+		}
+		catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/*
 	 * Loads a single plugin class from the given list of resources.
@@ -691,7 +777,13 @@ public class Engine implements ControlAPI {
 		} catch (MalformedURLException e) {
 			throw new EngineException("Cannot locate plugin.");
 		}
+		loadPlugin(pName, className, urls);
+	}
 
+	/*
+	 * Loads a single plugin class from the given list of resources.
+	 */
+	private void loadPlugin(String pName, String className, URL... urls) throws EngineException {
 		URLClassLoader loader = null;
 		if (this.classLoader == null)
 			loader = new URLClassLoader(urls);
@@ -699,7 +791,7 @@ public class Engine implements ControlAPI {
 			loader = new URLClassLoader(urls, this.classLoader);
 
 		Object o = null;
-		Class pc = null;
+		Class<?> pc = null;
 		try {
 			logger.debug( "Loading plugin: {}", className);
 			pc = loader.loadClass(className);
@@ -751,19 +843,18 @@ public class Engine implements ControlAPI {
 
 	/**
 	 * Given a Jar file name, looks for the name of the plugin class.
-	 *
-	 * @param jarFile
-	 *            absolute path to the jar file
+	 * 
+	 * @param inputStream
+	 *            input stream from a jar file
 	 * @return full class name of the plugin (e.g., "test.plugin.TestPlugin")
 	 * @throws IOException
 	 *             in case of any IO error
 	 * @throws EngineException
 	 *             if the plugin does not have an identification file
 	 */
-	private String getJarPluginClassName(String jarFile) throws IOException,
+	private String getJarPluginClassName(InputStream inputStream) throws IOException,
 			EngineException {
-		JarInputStream stream = new java.util.jar.JarInputStream(
-				new FileInputStream(jarFile));
+		JarInputStream stream = new JarInputStream(inputStream);
 		JarEntry jEntry = null;
 		boolean found = false;
 		do {
@@ -779,7 +870,7 @@ public class Engine implements ControlAPI {
 			pluginClassName = getPluginClassName(stream);
 		stream.close();
 		if (pluginClassName == null)
-			throw new EngineException("Invalid Plugin package (" + jarFile
+			throw new EngineException("Invalid Plugin package (" + inputStream
 					+ "). Cannot find the identification file.");
 		return pluginClassName;
 	}
@@ -823,6 +914,7 @@ public class Engine implements ControlAPI {
 		}
 
 		Collections.sort(sortedList, new Comparator<Plugin>() {
+			@Override
 			public int compare(Plugin o1, Plugin o2) {
 				Plugin p1 = (Plugin)o1;
 				Plugin p2 = (Plugin)o2;
@@ -1218,6 +1310,7 @@ public class Engine implements ControlAPI {
 		 * @see #processNextCommand()
 		 * @see #next(EngineMode)
 		 */
+		@Override
 		public void run() {
 			try {
 				engineBusy = true;
@@ -1437,6 +1530,10 @@ public class Engine implements ControlAPI {
 								}
 							}
 							engineBusy = false;
+						case emTerminated:
+						break;
+						default:
+						break;
 
 						}
 					} catch (CoreASMError ce) {
@@ -1606,6 +1703,8 @@ public class Engine implements ControlAPI {
 							}
 					}
 					break;
+				case ecRecover:
+				break;
 				}
 				if (shouldRemoveFirstCommand)
 					commandQueue.remove(0);

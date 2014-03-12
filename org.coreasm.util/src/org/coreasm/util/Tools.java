@@ -47,6 +47,9 @@ public class Tools {
 	private static String eol = null;
 	
 	public static final int DEFAULT_STRING_LENGTH_LIMIT =   40;
+
+	public static final String COREASM_ENGINE_LIB_PATH = "coreasm.engine.lib.path";
+
 	private static Random random = new Random();
 	
 	/**

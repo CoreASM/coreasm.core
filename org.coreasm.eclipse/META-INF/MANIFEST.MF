@@ -10,7 +10,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: ., target/lib/org.coreasm.engine.jar
 Import-Package: org.eclipse.ui.dialogs, org.eclipse.ui.views.contentoutline
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 1.0.2.qualifier
+Bundle-Version: 1.0.3.qualifier
 Export-Package: org.coreasm.util,
  org.coreasm.util.odf,
  org.coreasm.util.information,
