@@ -2,10 +2,9 @@ package org.coreasm.eclipse.util;
 
 import java.util.Map;
 
-import org.coreasm.eclipse.editors.ASMDocument;
-import org.coreasm.eclipse.editors.ASMEditor;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IFileEditorInput;
@@ -14,7 +13,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
-public class Utilities {
+import org.coreasm.eclipse.CoreASMPlugin;
+import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.preferences.PreferenceConstants;
+
+public final class Utilities {
 	public static void createMarker(String markerType, String filename, int line, int column, int length, Map<String, Object> attributes) {
 		try {
 			final IWorkbenchWindow[] pointer = new IWorkbenchWindow[1];
@@ -59,5 +63,10 @@ public class Utilities {
 		IWorkbenchPage page = win.getActivePage();
 		if (page != null)
 			((ASMEditor)page.getActiveEditor()).removeMarkers(markerType);
+	}
+
+	public static String getAdditionalPluginsFolders() {
+		IPreferenceStore prefStore = CoreASMPlugin.getDefault().getPreferenceStore();
+		return prefStore.getString(PreferenceConstants.ADDITIONAL_PLUGINS_FOLDERS);
 	}
 }
