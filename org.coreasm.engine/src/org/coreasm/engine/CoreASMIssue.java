@@ -93,7 +93,7 @@ public class CoreASMIssue extends Error {
 			buf.append(message);
 		
 		CharacterPosition tempPos = pos;
-		if (tempPos == null) 
+		if (tempPos == null && node != null && parser != null) 
 			try {
 				tempPos = node.getScannerInfo().getPos(parser.getPositionMap());
 			} catch (NullPointerException e) {/* it's ok */}

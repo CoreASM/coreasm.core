@@ -41,7 +41,7 @@ import org.eclipse.jface.text.IDocument;
  * are interested in the result of each parsing can be notified after each
  * run of the parser.
  * 
- * @author Markus Müller, Michael Stegmaier
+ * @author Markus Mï¿½ller, Michael Stegmaier
  */
 public class ASMParser extends Observable implements org.coreasm.engine.parser.Parser
 {
@@ -145,6 +145,8 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 		logmsg.append("parsed: ").append(filename).append(" ... ");
 
 		ASMDocument doc = (ASMDocument) documentProvider.getDocument(parentEditor.getInput());
+		if (doc.get().isEmpty())
+			return;
 		ParsingResult result = null;
 
 		// forget if the document is a module or not, so it will be rechecked
@@ -169,6 +171,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 			else
 				// specification is not a module -> run root parser
 				parser = rootParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
+			
 			rootnode = parser.parse(slimengine.getSpec().getText());
 			doc.setRootnode(rootnode);
 			doc.setControlAPI(slimengine);
@@ -433,7 +436,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	/**
 	 * This class stores the result of a parser run. It is delivered to the
 	 * observers of the parser.
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public class ParsingResult
 	{
@@ -461,7 +464,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	 * Job class, so it can be managed by the Eclipse job scheduler. The job
 	 * doesn't reschedule itself after parsing, this must be done manually,
 	 * and this is done by the ASMEditor class each time an edit occurs.
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public class ParsingJob
 	extends Job 
