@@ -510,9 +510,12 @@ public class Node implements Serializable {
 
 		public String getFormatString(Node node) {
 			String result = "%s";
+			if (KEYWORD_NODE.equals(node.getConcreteNodeType())
+			|| node.getParent() instanceof ASTNode && ASTNode.BINARY_OPERATOR_CLASS.equals(((ASTNode)node.getParent()).getGrammarClass()) && node.getParent().getToken().equals(node.getToken()))
+				result = " " + result + " ";
 			// concatenate all the string representation of 
 			// the node itself and all its children 
-			for (int i=0; i < node.getNumberOfChildren(); i++)
+			for (int i = 0; i < node.getNumberOfChildren(); i++)
 				result = result + "%s";
 			return result;
 		}
