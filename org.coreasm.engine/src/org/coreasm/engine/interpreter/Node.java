@@ -569,12 +569,14 @@ public class Node implements Serializable {
 			return scannerInfo.getPos(parser.getPositionMap());
 	}
 	
- 	/**
+
 	public void replaceWith(Node replacement) {
 		this.getParent().children.replace(replacement, this);
 		replacement.setParent(this.getParent());
 		this.setParent(null);
 	}
+
+	/**
 	 * This method removes the node (and its subtree) from its tree and returns
 	 * its previous sibling node, so that one can use this information for
 	 * exchanging nodes.
