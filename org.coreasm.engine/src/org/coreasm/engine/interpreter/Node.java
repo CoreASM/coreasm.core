@@ -203,8 +203,9 @@ public class Node implements Serializable {
 		else {
 			List<Node> result = new ArrayList<Node>();
 			
-			for (NameNodeTuple tuple: children.getChildTupleList()) 
-				if (tuple.name.equals(name))
+
+			for (NameNodeTuple tuple : children.getChildTupleList())
+				if (name.equals(tuple.name))
 					result.add(tuple.node);
 			
 			return result;
@@ -218,8 +219,8 @@ public class Node implements Serializable {
 	 * @return one single node; can be <code>null</code>
 	 */
 	public Node getChildNode(String name) {
-		for (NameNodeTuple tuple: children.getChildTupleList())
-			if (tuple.name.equals(name))
+		for (NameNodeTuple tuple : children.getChildTupleList())
+			if (name.equals(tuple.name))
 				return tuple.node;
 		return null;
 	}
