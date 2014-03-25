@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.Node.NameNodeTuple;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
@@ -21,6 +22,21 @@ public class ASMASTContentProvider implements ITreeContentProvider
 	
 	protected final static String AST_POSITIONS = "__ast_position";
 	protected IPositionUpdater positionUpdater = new DefaultPositionUpdater(AST_POSITIONS); 
+	
+	private class ContentWrapper {
+		private final NameNodeTuple content;
+		
+		private ContentWrapper(NameNodeTuple content) {
+			this.content = content;
+		}
+		
+		@Override
+		public String toString() {
+			if (!Node.DEFAULT_NAME.equals(content.name))
+				return content.name + ": " + content.node;
+			return content.node.toString();
+		}
+	}
 	
 	public ASMASTContentProvider(IDocumentProvider provider, ASMParser parser)
 	{
@@ -86,13 +102,15 @@ public class ASMASTContentProvider implements ITreeContentProvider
 	@Override
 	public Object[] getChildren(Object parentElement) 
 	{
+		if (parentElement instanceof ContentWrapper)
+			parentElement = ((ContentWrapper) parentElement).content.node;
 		if (parentElement instanceof Node) {
 			Node node = (Node) parentElement;
-			List<Node> allChildren = node.getChildNodes();
-			List<Node> returnChildren = new ArrayList<Node>();
-			for (Node n: allChildren)
-				if ( ! n.getConcreteNodeType().equals("delimiter"))
-					returnChildren.add(n);
+			List<NameNodeTuple> allChildren = node.getChildNodesWithNames();
+			List<ContentWrapper> returnChildren = new ArrayList<ContentWrapper>();
+			for (NameNodeTuple n: allChildren)
+				if ( ! n.node.getConcreteNodeType().equals("delimiter"))
+					returnChildren.add(new ContentWrapper(n));
 			return returnChildren.toArray();
 		}
 		else return null;
@@ -101,6 +119,8 @@ public class ASMASTContentProvider implements ITreeContentProvider
 	@Override
 	public Object getParent(Object element) 
 	{
+		if (element instanceof ContentWrapper)
+			element = ((ContentWrapper) element).content.node;
 		if (element instanceof Node)
 			return ((Node)element).getParent();
 		else return null;
@@ -109,6 +129,8 @@ public class ASMASTContentProvider implements ITreeContentProvider
 	@Override
 	public boolean hasChildren(Object element)
 	{
+		if (element instanceof ContentWrapper)
+			element = ((ContentWrapper) element).content.node;
 		if (element instanceof Node)
 			return ((Node)element).getChildNodes().size() > 0;
 		else return false;
