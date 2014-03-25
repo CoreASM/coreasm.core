@@ -665,6 +665,10 @@ public class Node implements Serializable {
 		 * Create a name-node tuple with the given name and node.
 		 */
 		public NameNodeTuple(String name, Node node) {
+			if (name == null)
+				throw new IllegalArgumentException("name must not be null!");
+			if (node == null)
+				throw new IllegalArgumentException("node must not be null!");
 			this.name = name;
 			this.node = node;
 		}
