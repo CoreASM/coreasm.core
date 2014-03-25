@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Location;
@@ -33,7 +34,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -82,6 +82,7 @@ public class AbstractionPlugin extends Plugin
 	@Override
 	public void initialize() {}
 
+	@Override
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();
 	}
@@ -89,10 +90,12 @@ public class AbstractionPlugin extends Plugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ParserPlugin#getParser(java.lang.String)
 	 */
+	@Override
 	public Parser<Node> getParser(String nonterminal) {
 		return null;
 	}
 
+	@Override
 	public Map<String, GrammarRule> getParsers() {
 		if (parsers == null) {
 			parsers  = new HashMap<String, GrammarRule>();
@@ -109,8 +112,10 @@ public class AbstractionPlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
+						@Override
 						public Node map(Object... vals) {
 							Node node = new AbstractRuleNode(((Node)vals[0]).getScannerInfo());
+							node.addChild((Node) vals[0]);
 							node.addChild("alpha", (Node)vals[1]);
 							return node;
 						}
@@ -127,6 +132,7 @@ public class AbstractionPlugin extends Plugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.VersionInfoProvider#getVersionInfo()
 	 */
+	@Override
 	public VersionInfo getVersionInfo() {
 		return VERSION_INFO;
 	}
@@ -139,6 +145,7 @@ public class AbstractionPlugin extends Plugin
 		return this.dependencyList;
 	}
 
+	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
 		if (pos instanceof AbstractRuleNode) 
 			return interpretAbstractRule(interpreter, (AbstractRuleNode)pos);
@@ -168,10 +175,12 @@ public class AbstractionPlugin extends Plugin
 		return pos;
 	}
 
+	@Override
 	public String[] getKeywords() {
 		return keywords;
 	}
 
+	@Override
 	public String[] getOperators() {
 		return operators;
 	}
