@@ -103,6 +103,35 @@ public class ChildNodesList {
 	}
 
 	/**
+	 * Replaces the given node from the hash-map.
+	 * 
+	 * @author Marcel Dausend
+	 */
+	public void replace(Node newNode, Node oldNode) {
+		//get link from old node
+		LinkedListTuple oldLink = nodeWrappers.remove(oldNode);
+		if (oldLink == null)
+			throw new CoreASMError("Node to be replaced is missing.");
+		//create new link with same name as oldLink, e.g. "alpha"
+		String oldLinkName = oldLink.nodeTuple.name;
+		LinkedListTuple newLink = new LinkedListTuple(new NameNodeTuple(oldLinkName, newNode));
+		newLink.next = oldLink.next;
+		nodeWrappers.put(newNode, newLink);
+		if (lastChild == oldLink)
+			lastChild = newLink;
+		if (firstChild == oldLink)
+			firstChild = newLink;
+		else {
+			LinkedListTuple prev = firstChild;
+			while (prev != null && prev.next != oldLink)
+				prev = prev.next;
+			if (prev != null)
+				prev.next = newLink;
+		}
+		invalidateChildList();
+	}
+
+	/**
 	 * Adds a child node with the given name after the given node. If node is
 	 * null, it adds it to the end of the list.
 	 */
