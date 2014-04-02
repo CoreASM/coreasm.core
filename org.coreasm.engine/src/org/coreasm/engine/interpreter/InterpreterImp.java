@@ -503,9 +503,11 @@ public class InterpreterImp implements Interpreter {
 						// check the arity of the rule
 						if (theRule.getParam().size() == 0) 
 							pos = ruleCall(theRule, null, pos);
-						else
+						else if (pos instanceof MacroCallRuleNode)
 							capi.error("The number of arguments passed to '" + x  + 
 									"' does not match its signature.", pos, this);
+						else	// treat rules like RuleOrFuncElementNode if they aren't a MacroRuleCallNode
+							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
 					} else {
 						if (pos instanceof MacroCallRuleNode) 
 							capi.error("\"" + x + "\" is not a rule name.", pos, this);
@@ -931,7 +933,15 @@ public class InterpreterImp implements Interpreter {
 					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
 					&& (ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS) 
 							&& (i = params.indexOf(ast.getFirst().getToken())) >= 0)) {
-				result = copyTree(args.get(i));
+				ASTNode arg = args.get(i);
+				if (arg instanceof RuleOrFuncElementNode) {
+					FunctionRuleTermNode fnNode = new FunctionRuleTermNode(arg.getScannerInfo());
+					for (NameNodeTuple child : ast.getChildNodesWithNames())
+						fnNode.addChild(child.name, copyTreeSub(child.node, params, args, result));
+					fnNode.getFirst().replaceWith(arg.getFirst());
+					arg = fnNode;
+				}
+				result = copyTree(arg);
 				result.setParent(parent);
 				//result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
 			} else { 
