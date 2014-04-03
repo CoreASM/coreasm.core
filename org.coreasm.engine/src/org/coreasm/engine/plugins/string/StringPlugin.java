@@ -56,7 +56,7 @@ public class StringPlugin extends Plugin
 	
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 4, 1, "");
 	
-	public static final String STRING_TOKEN = "string";
+	public static final String STRING_TOKEN = "STRING";
 	
 	public static final String STRINGCONCAT_OP = "+";
 
