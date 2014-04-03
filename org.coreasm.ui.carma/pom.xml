@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>org.coreasm</groupId>
 			<artifactId>org.coreasm.engine</artifactId>
-			<version>1.6.1-SNAPSHOT</version>
+			<version>1.6.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
