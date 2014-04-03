@@ -32,9 +32,11 @@
       </win>
    </launcher>
 
+
    <vm>
       <linux include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6</linux>
    </vm>
+
 
    <plugins>
       <plugin id="org.coreasm.aspects.eclipse"/>
@@ -45,6 +47,16 @@
    <features>
       <feature id="org.eclipse.platform" version="4.3.2.v20140221-1852"/>
       <feature id="org.coreasm.eclipse.feature" version="1.0.3.qualifier"/>
+      <feature id="org.eclipse.help"/>
+      <feature id="org.eclipse.emf.ecore"/>
+      <feature id="org.eclipse.e4.rcp"/>
+      <feature id="org.eclipse.equinox.p2.core.feature"/>
+      <feature id="org.eclipse.emf.common"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature"/>
+      <feature id="org.eclipse.equinox.p2.user.ui"/>
+      <feature id="org.eclipse.rcp"/>
+      <feature id="org.eclipse.equinox.p2.extras.feature"/>
+      <feature id="org.eclipse.jdt" version="3.9.2.v20140221-1700"/>
    </features>
 
    <configurations>
