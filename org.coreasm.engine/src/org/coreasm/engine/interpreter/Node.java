@@ -169,6 +169,10 @@ public class Node implements Serializable {
 	 */
 	public void addChildAfter(Node indexNode, String name, Node node) 
 			throws IllegalArgumentException {
+		if (indexNode == null) {
+			addChild(name, node);
+			return;
+		}
 		int index = 0;
 		for (NameNodeTuple nameNodeTuple : children) {
 			if (nameNodeTuple.node == indexNode) {
@@ -612,47 +616,18 @@ public class Node implements Serializable {
 		throw new CoreASMError("Node to be replaced is missing.");
 	}
 
-	/**
-	 * This method removes the node (and its subtree) from its tree and returns
-	 * its previous sibling node, so that one can use this information for
-	 * exchanging nodes.
-	 * 
-	 * @return null if the node to be deleted is first child, else return its
-	 *         previous sibling
-	 * @author Marcel Dausend
-	 */
 	public Node removeFromTree(){
-		Node previousSiblingNode = null;
-		if(this.getParent()!=null){
-			 previousSiblingNode = this.getParent().removeNodeFromChildList(this);
-			this.setParent(null);
+		Iterator<NameNodeTuple> it = parent.children.iterator();
+		NameNodeTuple prev = null;
+		while (it.hasNext()) {
+			NameNodeTuple nameNodeTuple = it.next();
+			if (nameNodeTuple.node == this) {
+				it.remove();
+				return prev.node;
 			}
-		else return this;
-		return previousSiblingNode;
-	}
-	
-	/**
-	 * Removes this node from the list of children of its parent.
-	 * 
-	 * @param node
-	 *            which should be removed from the childlist of this
-	 * @return null if the node to be deleted is first child, else return its
-	 *         previous sibling
-	 * @author Marcel Dausend
-	 */
-	private Node removeNodeFromChildList(Node child){
-		Node currentChild = this.getFirstCSTNode();
-		if(currentChild==child)
-			this.children.remove(child);
-		else
-			while(currentChild.getNextCSTNode()!=null) {
-				if(currentChild.getNextCSTNode()==child)
-				{
-					this.children.remove(child);
-					return currentChild;
-				}else currentChild = currentChild.getNextCSTNode();
-			}
-			return null;
+			prev = nameNodeTuple;
+		}
+		return null;
 	}
 	
 	/**
