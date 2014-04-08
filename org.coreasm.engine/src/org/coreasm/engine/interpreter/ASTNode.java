@@ -21,7 +21,6 @@ import java.util.List;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.UpdateMultiset;
-import org.coreasm.engine.interpreter.Node;
 
 /** 
  * Represents nodes of the abstract syntax tree.
@@ -248,6 +247,7 @@ public class ASTNode extends Node implements Serializable {
 	 * 
 	 * @throws Error if the parent is not an abstract node
 	 */
+	@Override
 	public ASTNode getParent() {
 		if (parent == null || parent instanceof ASTNode)
 			return (ASTNode)parent;
@@ -267,7 +267,7 @@ public class ASTNode extends Node implements Serializable {
 		else {
 			List<ASTNode> result = new ArrayList<ASTNode>();
 			
-			for (Node node: children.getChildList()) 
+			for (Node node : getChildNodes())
 				if (node instanceof ASTNode)
 					result.add((ASTNode)node);
 		
@@ -289,7 +289,7 @@ public class ASTNode extends Node implements Serializable {
 		else {
 			List<NameAbstractNodeTuple> result = new ArrayList<NameAbstractNodeTuple>();
 			
-			for (NameNodeTuple t: children.getChildTupleList())
+			for (NameNodeTuple t : children)
 				if (t.node instanceof ASTNode)
 					result.add(new NameAbstractNodeTuple(t.name, (ASTNode)t.node));
 			return result;
@@ -320,6 +320,7 @@ public class ASTNode extends Node implements Serializable {
 	/**
 	 * Returns a <code>String</code> representation of this node.
 	 */
+	@Override
 	public String toString() {
 		String str = "[";
 		if (token != null)
@@ -384,6 +385,7 @@ public class ASTNode extends Node implements Serializable {
 		
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if (o == null)
 			return false;
@@ -398,6 +400,7 @@ public class ASTNode extends Node implements Serializable {
 			return false;
 	}
 	
+	@Override
 	public int hashCode() {
 		return super.hashCode();
 	}
