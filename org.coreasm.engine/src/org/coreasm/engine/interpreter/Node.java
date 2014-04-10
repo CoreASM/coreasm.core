@@ -541,6 +541,7 @@ public class Node implements Serializable {
 		public String getFormatString(Node node) {
 			String result = "%s";
 			if (KEYWORD_NODE.equals(node.getConcreteNodeType())
+			|| GENERAL_ID_NODE.equals(node.getConcreteNodeType())
 			|| node.getParent() instanceof ASTNode && ASTNode.BINARY_OPERATOR_CLASS.equals(((ASTNode)node.getParent()).getGrammarClass()) && node.getParent().getToken().equals(node.getToken()))
 				result = " " + result + " ";
 			// concatenate all the string representation of 
