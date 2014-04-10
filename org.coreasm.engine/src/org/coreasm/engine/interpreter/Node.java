@@ -623,6 +623,8 @@ public class Node implements Serializable {
 			NameNodeTuple nameNodeTuple = it.next();
 			if (nameNodeTuple.node == this) {
 				it.remove();
+				if (prev == null)
+					return null;
 				return prev.node;
 			}
 			prev = nameNodeTuple;
