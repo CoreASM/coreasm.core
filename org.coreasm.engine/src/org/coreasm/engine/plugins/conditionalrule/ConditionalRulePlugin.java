@@ -116,6 +116,10 @@ public class ConditionalRulePlugin extends Plugin
         }
     }
 
+				if (!(conditionalNode.getGuard().getValue() instanceof BooleanElement))
+					capi.error("Element used as guard within \"if\" is not a boolean.",
+							conditionalNode.getGuard(),
+							interpreter);
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();
 	}
