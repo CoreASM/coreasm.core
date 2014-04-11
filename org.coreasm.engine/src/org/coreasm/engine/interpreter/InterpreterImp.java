@@ -347,6 +347,15 @@ public class InterpreterImp implements Interpreter {
 						else {
 							// If this 'x' refers to a function in the state...
 							final FunctionElement f = storage.getFunction(x);
+							if (f != null && f.isModifiable() || isUndefined(x)) {
+								try {
+									if (storage.getValue(new Location(x, ElementList.NO_ARGUMENT)) instanceof RuleElement)
+										return pos;	// let interpretRules handle it
+								} catch (InvalidLocationException e) {
+									throw new EngineError("Location is invalid in 'interpretRules()'." + 
+											"This cannot happen!");
+								}
+							}
 //							if (storage.isFunctionName(x)) {
 							if (f != null) {
 								final Location l = new Location(x, ElementList.NO_ARGUMENT, f.isModifiable());
@@ -366,6 +375,16 @@ public class InterpreterImp implements Interpreter {
 						
 						// If this 'x' refers to a function in the state...
 						final FunctionElement f = storage.getFunction(x);
+						if (f != null && f.isModifiable() || isUndefined(x)) {
+							try {
+								Element e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+								if (e instanceof RuleElement)
+									return pos;	// let interpretRules handle it
+							} catch (InvalidLocationException e) {
+								throw new EngineError("Location is invalid in 'interpretRules()'." + 
+										"This cannot happen!");
+							}
+						}
 						if (f != null) {
 							final List<ASTNode> args = frNode.getArguments();
 							// look for the parameter that needs to be evaluated
@@ -495,11 +514,26 @@ public class InterpreterImp implements Interpreter {
 				x = frNode.getName();
 				RuleElement theRule = null;
 				
-				// If the current node is of the form 'x' with no arguments
-				if (!frNode.hasArguments()) {
-					
-					if (storage.isRuleName(x)) {
-						theRule = ruleValue(x);
+				if (storage.isRuleName(x))
+					theRule = ruleValue(x);
+				else {
+					try {
+						Element e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+						if (e instanceof RuleElement)
+							theRule = (RuleElement)e;
+						else if (pos instanceof MacroCallRuleNode)
+							capi.error("\"" + x + "\" is not a rule name.", pos, this);
+					} catch (InvalidLocationException e) {
+						throw new EngineError("Location is invalid in 'interpretRules()'." + 
+								"This cannot happen!");
+					}
+				}
+				
+				if (theRule != null) {
+				
+					// If the current node is of the form 'x' with no arguments
+					if (!frNode.hasArguments()) {
+						
 						// check the arity of the rule
 						if (theRule.getParam().size() == 0) 
 							pos = ruleCall(theRule, null, pos);
@@ -508,25 +542,17 @@ public class InterpreterImp implements Interpreter {
 									"' does not match its signature.", pos, this);
 						else	// treat rules like RuleOrFuncElementNode if they aren't a MacroRuleCallNode
 							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
-					} else {
-						if (pos instanceof MacroCallRuleNode) 
-							capi.error("\"" + x + "\" is not a rule name.", pos, this);
-					}
-				
-				} else { // if current node is 'x(...)' (with arguments)
 					
-					if (storage.isRuleName(x)) {
-						theRule = ruleValue(x);
-						if (theRule.getParam().size() == frNode.getArguments().size())
-							pos = ruleCall(theRule, frNode.getArguments(), pos);
-						else
-							capi.error("The number of arguments passed to '" + x  + 
-									"' does not match its signature.", pos, this);
-					} else {
-						if (pos instanceof MacroCallRuleNode) 
-							capi.error("\"" + x + "\" is not a rule name.", pos, this);
+					} else { // if current node is 'x(...)' (with arguments)
+						
+						if (theRule != null) {
+							if (theRule.getParam().size() == frNode.getArguments().size())
+								pos = ruleCall(theRule, frNode.getArguments(), pos);
+							else
+								capi.error("The number of arguments passed to '" + x  + 
+										"' does not match its signature.", pos, this);
+						}
 					}
-					
 				}
 			}
 		}
@@ -935,22 +961,21 @@ public class InterpreterImp implements Interpreter {
 							&& (i = params.indexOf(ast.getFirst().getToken())) >= 0)) {
 				ASTNode arg = args.get(i);
 				if (arg instanceof RuleOrFuncElementNode) {
-					FunctionRuleTermNode fnNode = new FunctionRuleTermNode(arg.getScannerInfo());
-					for (NameNodeTuple child : ast.getChildNodesWithNames())
-						fnNode.addChild(child.name, copyTreeSub(child.node, params, args, result));
-					fnNode.getFirst().replaceWith(arg.getFirst());
-					arg = fnNode;
+					FunctionRuleTermNode frNode = new FunctionRuleTermNode(arg.getScannerInfo());
+					frNode.addChild("alpha", arg.getFirst());
+					arg = frNode;
 				}
 				result = copyTree(arg);
+				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
+					if (!"alpha".equals(child.name))	// don't copy the id of this node
+						result.addChild(child.name, copyTreeSub(child.node, params, args, result));
+				}
 				result.setParent(parent);
-				//result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
 			} else { 
 				result = a.duplicate();
 				result.setParent(parent);
-				for (NameNodeTuple child: a.getChildNodesWithNames()) {
-					result.addChild(child.name, 
-							copyTreeSub(child.node, params, args, result));
-				}
+				for (NameNodeTuple child: a.getChildNodesWithNames())
+					result.addChild(child.name, copyTreeSub(child.node, params, args, result));
 			}
 			
 		}
