@@ -718,9 +718,9 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 	protected void handleError() {
 		String message = "";
 		if (lastError != null)
-			message = message + lastError.showError();
+			message = lastError.showError();
 		else
-			message = message + " unknown.";
+			message = "Enginemode should be " + EngineMode.emIdle + " but is " + engine.getEngineMode();
         
 //		JOptionPane.showMessageDialog(null, message, "CoreASM Engine Error", JOptionPane.ERROR_MESSAGE);
         showErrorDialog("CoreASM Engine Error",message);
