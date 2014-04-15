@@ -1,0 +1,159 @@
+/*
+ * Leader election algorithm with minimal path to leader
+ * computation over next hop in CoreASM.
+ * by Julian Lettner.
+ */
+
+CoreASM LeaderElection
+
+use Standard
+// for max(..)
+use Math
+// for treating a list like a queue (enqueue .. into ..), we need a queue because of concurrency
+use Queue
+// Strict options
+option Signature.NoUndefinedId strict
+option Signature.TypeChecking strict
+
+// Universe and enums
+enum AgentState = {proposeToNeighbors, checkProposals}
+
+// Functions
+function state: Agents -> AgentState	// agent states
+function cand: Agents -> Agents			// current leader candidates
+function proposals: Agents -> LIST		// received proposals for specific agent
+// Function type of proposals is a list (queue) because of concurrency (need to use enqueue)
+// Proposals elemnts are a list with 3 elements: [cand, nearNeighbor, distance]
+function nearNeighbor: Agents -> Agents	// next hop on shortest path to leader
+function distance: Agents -> NUMBER		// total (summed up) distance to leader
+function distanceBetween: Agents * Agents -> NUMBER	// distance between two neighbors
+
+// Example (derived) functions
+// Edit the following for changing the example scenario
+derived neighborMap = {
+	1 -> {2, 4},
+	2 -> {1, 3, 4, 5},
+	3 -> {2, 6},
+	4 -> {1, 2, 5},
+	5 -> {2, 4, 6},
+	6 -> {5, 3}
+}
+rule InitDistances =
+	par
+		InitBidirDistance(1, 2, 5)
+		InitBidirDistance(1, 4, 1)
+		InitBidirDistance(2, 3, 5)
+		InitBidirDistance(2, 4, 2)
+		InitBidirDistance(2, 5, 2)
+		InitBidirDistance(3, 6, 12)
+		InitBidirDistance(4, 5, 5)
+		InitBidirDistance(5, 6, 3)
+	endpar
+	
+rule InitBidirDistance(a1, a2, distance) =
+	par
+		distanceBetween(a1, a2) := distance
+		distanceBetween(a2, a1) := distance
+	endpar
+
+// Derived functions
+// Number of connected nodes (agents), neighbor relationship and 'self' functions
+derived agentCount = size(neighborMap)
+// 'self' functions
+derived myNeighbors = neighborMap()(self)
+derived myState = state(self)
+derived myCandidate= cand(self)
+derived myNearNeighbor = nearNeighbor(self)
+derived myDistance = distance(self)
+derived myProposals = {x | x in proposals(self)}
+derived myName = "Agent " + self
+// 'ground model' functions
+derived thereAreProposals = size(myProposals) > 0
+// Proposals are lists with 3 elements: [cand, nearNeighbor, distance]
+derived bestProposal =
+	pick x in myProposals with (forall y in myProposals holds
+		nth(x,1) >= nth(y,1) and							// correct leader
+		(nth(x,1) = nth(y,1) implies nth(x,3) <= nth(y,3))	// minimal distance if same leader
+	)
+derived bestCand = nth(bestProposal, 1)
+derived bestNearNeighbor = nth(bestProposal, 2)
+derived bestDistance = nth(bestProposal, 3)
+// Proposal improved current status if better leader or shorter path to same leader
+derived proposalsImprove = bestCand > myCandidate or (bestCand = myCandidate and bestDistance < myDistance) 
+derived networkConverged = 
+	forall x in [1..agentCount] holds
+		cand(x) = agentCount and state(x) = checkProposals and size(proposals(x)) = 0
+// Every agent knows correct leader and minimal path, is in state 'check proposals' and it's proposal set is empty
+
+init InitRule
+
+// --- Initial rule ---
+rule InitRule =
+	seq
+		par
+			// Intialize distance between neighbors
+			InitDistances
+			// Initialize agents
+			forall i in [1..agentCount] do par
+				Agents(i) := true
+				program(i) := @AgentProgram
+				// Initial values for agents
+				state(i) := proposeToNeighbors	// agent state 
+				cand(i) := i					// leader candidate -> self
+				proposals(i) := []				// no proposals
+				distance(i) := 0				// distance to leader
+				nearNeighbor(i) := i			// Next hop -> self (initial candidate)						
+			endpar endforall
+		endpar
+	next
+		program(self) := undef
+
+// --- Program for every agent ---
+rule AgentProgram =
+	par
+		// Standard algorithm
+		case myState of
+			proposeToNeighbors: ProposeToNeighbors
+			checkProposals: CheckProposals
+		endcase		
+		// Termination condition 
+		// This is a bit like cheating (single agent does not know global state), but
+		// we only use it to shutdown the ASM execution engine.
+		// Only terminate agent if agent already knows the correct leader and there are
+		// no more proposals circulating in the network (= converged state).
+		if networkConverged then par
+			print myName + ": elected leader " + myCandidate+ "/" + myDistance + ", next hop is " + myNearNeighbor
+			program(self) := undef
+		endpar endif
+	endpar
+
+rule ProposeToNeighbors =
+	par
+		// Propose candidate to neighbors
+		forall a in myNeighbors do par
+			// We need enqueue because of concurrency
+			enqueue [myCandidate, self, myDistance + distanceBetween(self, a)] into proposals(a)	
+		endpar endforall
+		print myName + ": proposing " + myCandidate+ "/" + myDistance + " to " + myNeighbors
+		// Update state		
+		state(self) := checkProposals
+	endpar
+
+rule CheckProposals =
+	if thereAreProposals then par
+		// Update canditate if proposal provides better candidate
+		if proposalsImprove then par
+			cand(self) := bestCand
+			nearNeighbor(self) := bestNearNeighbor
+			distance(self) := bestDistance
+			print myName + ": updating best candidate " + myCandidate+ "/" + myDistance + " to " + bestCand + "/" + bestDistance
+			// Propose to neighbors only if there is a new candidate
+			state(self) := proposeToNeighbors
+		endpar else
+			// Set state
+			state(self) := checkProposals
+		endif
+		// Remove proposals from set
+		proposals(self) := []
+		print myName + ": clearing proposals " + myProposals
+	endpar endif 
