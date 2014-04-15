@@ -27,8 +27,11 @@ public class CoreASMEclipseWarning extends AbstractWarning {
 			fringe.add(problemNode);
 			while (!fringe.isEmpty()) {
 				Node node = fringe.pop();
-				if (node.getScannerInfo().charPosition > end)
-					end = node.getScannerInfo().charPosition;
+				int len = 0;
+				if (node.getToken() != null)
+					len = node.getToken().length();
+				if (node.getScannerInfo().charPosition + len > end)
+					end = node.getScannerInfo().charPosition + len;
 				for (Node child : node.getChildNodes())
 					fringe.add(child);
 			}
