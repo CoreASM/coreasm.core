@@ -1,129 +1,98 @@
-/* George Ma
- * Dining Philosphers sample CoreASM spec.
- * Created on August 16, 2006
- *
- * Revised by Roozbeh Farahbod, Marcel Dausend
- * $Revision$, $Date$
+/* 
+ * Dining Philosphers
+ * A Sample Specification in CoreASM
+ * 
+ * (c) 2006-2009 George Ma and Roozbeh Farahbod
  */
 CoreASM DiningPhilosophers
 
-use StandardPlugins
+use Standard
 
-enum CHOPSTICK = {c1, c2, c3, c4, c5}
-enum Persons = {Juan, Sina, Herbert, Albert, Fredrich }
-
-function controlled eating : Agents -> BOOLEAN
-function controlled chopOwner: CHOPSTICK -> Agents
-function controlled hungry : Agents -> BOOLEAN
-function leftChop: Agents -> CHOPSTICK
-function rightChop: Agents -> CHOPSTICK
-
-
-derived CanPickBothChopsticks =	(chopOwner(leftChop(self)) = undef) and (chopOwner(rightChop(self)) = undef)
+enum Chopstick = {c1, c2, c3, c4, c5}
+enum Philosophers = {Albert, Herbert, Fredrich, Sina, Juan}
+ 
+function eating: Philosophers -> BOOLEAN
+function hungry: Philosophers -> BOOLEAN
+function leftChop: Philosophers -> Chopstick
+function rightChop: Philosophers -> Chopstick
+function chopOwner: Chopstick -> Philosophers
 
 init initRule
 
-// main program of every philosopher
-rule Philosopher = {
-	if hungry(self) and (not eating(self)) then
-		if CanPickBothChopsticks then
-			StartEating
-		else
-			print self + " is hungry but can't eat."
+/* ---- Program of Every Philosopher ---- */
+rule PhilosopherProgram = {
+ 	if hungry(self) and (not eating(self)) then
+		if canPickBothChopsticks then 
+			StartEating 
+	else 
+		print self + " is hungry but can't eat."
+	  
 	if (not hungry(self)) and eating(self) then
 		StopEating
+	  
 	hungry(self) := flip
+}  
+  
+rule StartEating = {
+	chopOwner(leftChop(self)) := self
+	chopOwner(rightChop(self)) := self
+	eating(self) := true
+	print self + " starts eating."
 }
 
-// starts eating
-rule StartEating =
-   par
-		chopOwner(leftChop(self)) := self
-		chopOwner(rightChop(self)) := self
-		eating(self) := true
-		print self + " starts eating."
-   endpar
+rule StopEating = {
+	chopOwner(leftChop(self)) := undef
+	chopOwner(rightChop(self)) := undef
+	eating(self) := false
+	print self + " stops eating."
+}
 
+/* ---- Initializing the Table ----- */
+rule initRule = {
+	/* Sets up philosophers around table with chopsticks in between.
+	   No philosopher is initially eating.
+	   Philosophers are hungry at random. 
+	 */
+	forall p in Philosophers do {
+		Agents(p) := true
+		program(p) := @PhilosopherProgram
+		eating(p) := false
+		hungry(p) := flip
+	}
+	
+	rightChop(Albert) := c5
+	leftChop(Albert) := c1 
 
-// stops eating
-rule StopEating =
-   par
-      chopOwner(leftChop(self)) := undef
-      chopOwner(rightChop(self)) := undef
-      eating(self) := false
-      print self + " stops eating."
-   endpar
+	rightChop(Herbert) := c1
+	leftChop(Herbert) := c2
 
+	rightChop(Fredrich) := c2
+	leftChop(Fredrich) := c3
+	
+	rightChop(Sina) := c3
+	leftChop(Sina) := c4
+		
+	rightChop(Juan) := c4
+	leftChop(Juan) := c5
+	
+	/* all chopsticks are intially free */
+	forall c in Chopstick do
+		chopOwner(c) := undef
+	
+	print "TABLE:  c1  Herbert  c2  Fredrich  c3  Sina  c4  Juan  c5  Albert  c1\n" 
+	
+	Agents(self) := false
+}
 
+/* ---- Derived Functions ----- */
+derived canPickBothChopsticks =	
+			(chopOwner(leftChop(self)) = undef) 
+			and (chopOwner(rightChop(self)) = undef)
 
-// return a random BOOLEAN
-rule flip =
-	return b in
-		choose c in BOOLEAN do
-			b := c
+// flip of a coin
+derived flip = pick b in BOOLEAN
 
- // Initializes the table!
-rule initRule =
-   par
-		/* setup philosophers around table with chopsticks in between
-		   no philosopher is eating initially
-		   philosophers are hungry at random */
-		//import Albert do
-			par
-				Agents(Albert) := true
-				program(Albert) := @Philosopher
-				leftChop(Albert) := c1
-				rightChop(Albert) := c5
-				eating(Albert) := false
-				hungry(Albert) := flip
-			endpar
-
-		//import p2 do
-			par
-				program(Herbert) := @Philosopher
-				Agents(Herbert) := true
-				leftChop(Herbert) := c2
-				rightChop(Herbert) := c1
-				eating(Herbert) := false
-				hungry(Herbert) := flip
-			endpar
-
-		//import p3 do
-			par
-				program(Fredrich) := @Philosopher
-				Agents(Fredrich) := true
-				leftChop(Fredrich) := c3
-				rightChop(Fredrich) := c2
-				eating(Fredrich) := false
-				hungry(Fredrich) := flip
-			endpar
-
-		//import p4 do
-			par
-				program(Sina) := @Philosopher
-				Agents(Sina) := true
-				leftChop(Sina) := c4
-				rightChop(Sina) := c3
-				eating(Sina) := false
-				hungry(Sina) := flip
-			endpar
-
-		//import p5 do
-			par
-				program(Juan) := @Philosopher
-				Agents(Juan) := true
-				leftChop(Juan) := c5
-				rightChop(Juan) := c4
-				eating(Juan) := false
-				hungry(Juan) := flip
-			endpar
-
-		// all chopsticks are intially free
-		forall c in CHOPSTICK do
-			chopOwner(c) := undef
-
-		print "TABLE:  c1  Herbert  c2  Fredrich  c3  Sina  c4  Juan  c5  Albert  c1\n"
-
-		//deactivate initial agent
-		Agents(self) := false
- 	endpar
+  
+/* ---- Turning Signature Checking On ----- */ 
+use Options
+option Signature.NoUndefinedId strict
