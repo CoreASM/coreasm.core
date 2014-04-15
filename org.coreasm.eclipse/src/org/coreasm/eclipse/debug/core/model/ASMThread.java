@@ -103,13 +103,15 @@ public class ASMThread extends ASMDebugElement implements IThread {
 			
 			if (stackFrames == null) {
 				for (int i = 0; i < frames.length; i++)
-					frames[frames.length - i - 1] = new ASMStackFrame(this, states[i]);
+					frames[frames.length - 1 - i] = new ASMStackFrame(this, states[i]);
 			}
 			else {
 				// if there are at least as many states has we have stackframes in cache, just copy all stackframes from cache
-				if (states.length >= stackFrames.length) {
+				if (frames.length >= stackFrames.length) {
 					for (int i = 0; i < stackFrames.length; i++)
-						frames[i + states.length - stackFrames.length] = stackFrames[i];
+						frames[i + frames.length - stackFrames.length] = stackFrames[i];
+					for (int i = stackFrames.length; i < frames.length; i++)
+						frames[frames.length - 1 - i] = new ASMStackFrame(this, states[i]);
 				}
 				else {
 					for (int i = 0; i < frames.length; i++)

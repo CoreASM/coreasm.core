@@ -1,10 +1,10 @@
 package org.coreasm.eclipse.editors.warnings;
 
+import java.util.Stack;
+
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.engine.CoreASMWarning;
-import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.eclipse.jface.text.IDocument;
 
 /**
@@ -18,24 +18,21 @@ public class CoreASMEclipseWarning extends AbstractWarning {
 		super("CoreASM Warning: " + warning.showWarning(null, null), "CoreASMWarning", ((ASMDocument)document).getNodePosition(warning.node, warning.pos), calculateLength(warning.node));
 	}
 
-	private static int calculateLength(Node node) {
-		if (node instanceof MacroCallRuleNode)
-			node = ((MacroCallRuleNode)node).getFirst();
-		if (node instanceof FunctionRuleTermNode) {
-			FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-			if (frNode.hasName())
-				return frNode.getName().length();
-		}
-		if (node != null) {
-			if (node.getToken() != null)
-				return node.getToken().length();
-			Node lastChild = node.getFirstCSTNode();
-			for (Node child = lastChild; child != null; child = child.getNextCSTNode()) {
-				if (child.getToken() != null)
-					lastChild = child;
+	public static int calculateLength(Node problemNode) {
+		if (problemNode != null) {
+			int start = problemNode.getScannerInfo().charPosition;
+			int end = start;
+			
+			Stack<Node> fringe = new Stack<Node>();
+			fringe.add(problemNode);
+			while (!fringe.isEmpty()) {
+				Node node = fringe.pop();
+				if (node.getScannerInfo().charPosition > end)
+					end = node.getScannerInfo().charPosition;
+				for (Node child : node.getChildNodes())
+					fringe.add(child);
 			}
-			if (lastChild != null && lastChild.getToken() != null)
-				return lastChild.getScannerInfo().charPosition - node.getScannerInfo().charPosition + lastChild.getToken().length();
+			return end - start;
 		}
 		return 0;
 	}

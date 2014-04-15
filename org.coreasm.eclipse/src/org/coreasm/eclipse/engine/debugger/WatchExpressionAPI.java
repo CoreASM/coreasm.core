@@ -53,8 +53,8 @@ public class WatchExpressionAPI implements ControlAPI {
 		if (Thread.holdsLock(capi.getInterpreter().getInterpreterInstance()))
 			throw new InterpreterException(new CoreASMError("The current thread already holds a lock on the interpreter instance!"));
 //		FIXME Find a better way to determine if the current thread is an eclipse thread
-		if (Thread.currentThread().isDaemon())
-			throw new InterpreterException(new CoreASMError("This method may only be called from an Eclipse Thread!"));
+//		if (!Thread.currentThread().isDaemon())
+//			throw new InterpreterException(new CoreASMError("This method may only be called from an Eclipse Thread!"));
 		this.storage = storage;
 		copyOprRegFromCapi();
 		
