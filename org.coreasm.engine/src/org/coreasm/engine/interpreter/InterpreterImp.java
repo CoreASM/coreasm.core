@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.absstorage.AbstractStorage;
@@ -118,45 +119,53 @@ public class InterpreterImp implements Interpreter {
 		// from within this method. It should be passed to them and a 
 		// new value should be retrieved. 
 		// As it is now on 28-Aug-2006.
-	
-		if (!pos.isEvaluated()) {
-			// notification for observers (i.e. debugger)
-			notifyListenersBeforeNodeEvaluation(pos);
-			
-			final String pName = pos.getPluginName();
-			
-			if (logger.isDebugEnabled()) {
-				logger.debug("Interpreting node {} @ {}.", pos.toString(), pos.getContext(capi.getParser(), capi.getSpec()));
-			}
-			
-			if (pName != null && !pName.equals(Kernel.PLUGIN_NAME)) {
-				logger.debug("Using plugin {}.", pName);
-				Plugin p = capi.getPlugin(pName);
-				if (p instanceof InterpreterPlugin){
-					pos = ((InterpreterPlugin)p).interpret(this, pos);
-				} else {
-					throw new InterpreterException("Pluging '" + p.getName() + "' is not an interpreter plugin.");
+		try {
+			if (!pos.isEvaluated()) {
+				// notification for observers (i.e. debugger)
+				notifyListenersBeforeNodeEvaluation(pos);
+				
+				final String pName = pos.getPluginName();
+				
+				if (logger.isDebugEnabled()) {
+					logger.debug("Interpreting node {} @ {}.", pos.toString(), pos.getContext(capi.getParser(), capi.getSpec()));
 				}
+				
+				
+				if (pName != null && !pName.equals(Kernel.PLUGIN_NAME)) {
+					logger.debug("Using plugin {}.", pName);
+					Plugin p = capi.getPlugin(pName);
+					if (p instanceof InterpreterPlugin){
+						pos = ((InterpreterPlugin)p).interpret(this, pos);
+					} else {
+						throw new InterpreterException("Pluging '" + p.getName() + "' is not an interpreter plugin.");
+					}
+				} else {
+					ASTNode prevPos = pos;
+					pos = kernelInterpreter(pos);
+					// Prevent infinite loop
+					if (pos == prevPos && !pos.isEvaluated())
+						capi.error("Failed to interpret node.", pos, this);
+				}
+	
+				// TODO Deviating from the spec (needs to be handled properly)
+				//      the following statement deviates from the spec in response to 
+				//      a problem with undefined identifiers being used where a rule 
+				//      is expected
+				// UPDATE: this should not be a problem anymore as unknown identifiers
+				//         used as macro-call rules are prevented and reported by the 
+				//         engine. But in general, this is not a bad guard.
+				if (pos.isEvaluated() && pos.getUpdates() == null)
+					pos.setNode(pos.getLocation(), new UpdateMultiset(), pos.getValue());
+				
+				if (pos.isEvaluated())
+					notifyListenersAfterNodeEvaluation(pos);
+				
 			} else {
-				pos = kernelInterpreter(pos);
+				if (pos.getParent() != null) 
+					pos = pos.getParent();
 			}
-
-			// TODO Deviating from the spec (needs to be handled properly)
-			//      the following statement deviates from the spec in response to 
-			//      a problem with undefined identifiers being used where a rule 
-			//      is expected
-			// UPDATE: this should not be a problem anymore as unknown identifiers
-			//         used as macro-call rules are prevented and reported by the 
-			//         engine. But in general, this is not a bad guard.
-			if (pos.isEvaluated() && pos.getUpdates() == null)
-				pos.setNode(pos.getLocation(), new UpdateMultiset(), pos.getValue());
-			
-			if (pos.isEvaluated())
-				notifyListenersAfterNodeEvaluation(pos);
-			
-		} else {
-			if (pos.getParent() != null) 
-				pos = pos.getParent();
+		} catch (CoreASMError e) {
+			capi.error(e);
 		}
 	}
 
