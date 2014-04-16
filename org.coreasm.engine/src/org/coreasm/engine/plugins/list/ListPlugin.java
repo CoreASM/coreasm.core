@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
@@ -39,10 +40,9 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -97,10 +97,12 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	}
 	
 
+	@Override
 	public String[] getKeywords() {
 		return keywords;
 	}
 
+	@Override
 	public String[] getOperators() {
 		return operators;
 	}
@@ -110,10 +112,12 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		return depencyList;
 	}
 
+	@Override
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();
 	}
 	
+	@Override
 	public Parser<Node> getParser(String nonterminal) {
 		if (nonterminal.equals("ListTerm"))
 			return refListTermParser.lazy();
@@ -129,6 +133,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		listBackground = new ListBackgroundElement();
 	}
 
+	@Override
 	public Map<String, GrammarRule> getParsers() {
 		if (parsers == null) {
 			parsers = new HashMap<String, GrammarRule>();
@@ -165,6 +170,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					new Parser[] {listTermParser1}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
+						@Override
 						public Node map(Object... vals) {
 							Node node = new ListTermNode();
 							addChildren(node, vals);
@@ -201,6 +207,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
+						@Override
 						public Node map(Object... vals) {
 							boolean isLeft = ((Node)vals[1]).getToken().equals("left");
 							Node node = new ShiftRuleNode(((Node)vals[0]).getScannerInfo(), isLeft);
@@ -218,6 +225,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		return parsers;
 	}
 	
+	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
 //		AbstractStorage storage = capi.getStorage();
 		
@@ -295,6 +303,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	}
 
 
+	@Override
 	public Collection<OperatorRule> getOperatorRules() {
 		if (operatorRules == null) {
 			operatorRules = new ArrayList<OperatorRule>();
@@ -309,6 +318,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	}
 
 
+	@Override
 	public Element interpretOperatorNode(Interpreter interpreter, ASTNode opNode) throws InterpreterException {
 		Element result = null;
 		String x = opNode.getToken();
@@ -355,6 +365,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		return result;
 	}
 
+	@Override
 	public VersionInfo getVersionInfo() {
 		return VERSION_INFO;
 	}
@@ -364,10 +375,12 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 //		return UPDATE_ACTIONS;
 //	}
 //
+	@Override
 	public Set<String> getBackgroundNames() {
 		return getBackgrounds().keySet();
 	}
 
+	@Override
 	public Map<String, BackgroundElement> getBackgrounds() {
 		if (backgrounds == null) {
 			backgrounds = new HashMap<String, BackgroundElement>();
@@ -377,10 +390,12 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		return backgrounds;
 	}
 
+	@Override
 	public Set<String> getFunctionNames() {
 		return getFunctions().keySet();
 	}
 
+	@Override
 	public Map<String, FunctionElement> getFunctions() {
 		if (functions == null) {
 			functions = new HashMap<String, FunctionElement>();
@@ -404,22 +419,28 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			functions.put(IndexesFunctionElement.NAME_ALTERNATIVE, indexesFunc);
 			
 			functions.put(SetNthFunctionElement.NAME, new SetNthFunctionElement(capi));
+			functions.put(ZipFunctionElement.NAME, new ZipFunctionElement(capi));
+
 		}
 		return functions;
 	}
 
+	@Override
 	public Set<String> getRuleNames() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public Map<String, RuleElement> getRules() {
 		return null;
 	}
 
+	@Override
 	public Set<String> getUniverseNames() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public Map<String, UniverseElement> getUniverses() {
 		return null;
 	}
