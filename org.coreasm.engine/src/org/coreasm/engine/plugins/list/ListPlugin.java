@@ -420,7 +420,8 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			
 			functions.put(SetNthFunctionElement.NAME, new SetNthFunctionElement(capi));
 			functions.put(ZipFunctionElement.NAME, new ZipFunctionElement(capi));
-
+			functions.put(ZipWithFunctionElement.NAME, new ZipWithFunctionElement(capi));
+			functions.put(ReplicateFunctionElement.NAME, new ReplicateFunctionElement(capi));
 		}
 		return functions;
 	}
