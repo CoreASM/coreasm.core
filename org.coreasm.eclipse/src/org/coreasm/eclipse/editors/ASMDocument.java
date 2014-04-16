@@ -20,7 +20,7 @@ import org.eclipse.jface.text.Document;
  * The ASMDocument class represents a CoreASM specification as a document of an
  * Eclipse CoreASM editor.
  * 
- * @author Markus Müller, Michael Stegmaier
+ * @author Markus Mï¿½ller, Michael Stegmaier
  */
 public class ASMDocument
 extends Document
@@ -149,7 +149,7 @@ extends Document
 			Parser parser = capi.getParser();
 			if (charPos == null && node != null && node.getScannerInfo() != null)
 				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (charPos != null) {
+			if (charPos != null && charPos != CharacterPosition.NO_POSITION) {
 				Specification spec = capi.getSpec();
 				try {
 					int line = charPos.line;

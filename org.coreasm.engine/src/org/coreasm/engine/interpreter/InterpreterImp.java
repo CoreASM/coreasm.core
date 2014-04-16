@@ -165,7 +165,10 @@ public class InterpreterImp implements Interpreter {
 					pos = pos.getParent();
 			}
 		} catch (CoreASMError e) {
-			capi.error(e);
+			if (e.node != null)
+				capi.error(e);
+			else
+				capi.error(e.message, pos, this);
 		}
 	}
 
