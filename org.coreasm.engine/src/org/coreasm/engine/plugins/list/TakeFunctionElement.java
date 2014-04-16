@@ -65,12 +65,11 @@ public class TakeFunctionElement extends NthFunctionElement {
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {
-		Element number = args.get(1);
 		return (args.size() == 2) 
 				&& (args.get(0) instanceof AbstractListElement)
-				&& (number instanceof NumberElement)
-				&& (((NumberElement)number).isInteger())
-				&& (((NumberElement)number).getValue() >= 0);
+				&& (args.get(1) instanceof NumberElement)
+				&& (((NumberElement)args.get(1)).isInteger())
+				&& (((NumberElement)args.get(1)).getValue() >= 0);
 	}
 
 }

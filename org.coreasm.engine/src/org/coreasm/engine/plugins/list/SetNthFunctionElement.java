@@ -74,11 +74,10 @@ public class SetNthFunctionElement extends ListFunctionElement {
 	}
 	
 	protected boolean checkArguments(List<? extends Element> args) {
-		Element number = args.get(1);
 		return (args.size() == 3) 
 				&& (args.get(0) instanceof ListElement)
-				&& (number instanceof NumberElement)
-				&& (((NumberElement)number).isNatural())
+				&& (args.get(1) instanceof NumberElement)
+				&& (((NumberElement)args.get(1)).isNatural())
 				&& (args.get(2) != null);
 	}
 }

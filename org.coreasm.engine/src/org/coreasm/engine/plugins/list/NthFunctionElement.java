@@ -66,10 +66,9 @@ public class NthFunctionElement extends FunctionElement {
 	}
 	
 	protected boolean checkArguments(List<? extends Element> args) {
-		Element number = args.get(1);
 		return (args.size() == 2) 
 				&& (args.get(0) instanceof AbstractListElement)
-				&& (number instanceof NumberElement)
-				&& (((NumberElement)number).isNatural());
+				&& (args.get(1) instanceof NumberElement)
+				&& (((NumberElement)args.get(1)).isNatural());
 	}
 }
