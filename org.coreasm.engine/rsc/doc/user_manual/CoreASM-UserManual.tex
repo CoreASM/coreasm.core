@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+% !TeX program = pdflatex 
 % ---------------------------------------------------------
 % CoreASM-UserManual.tex 	$Revision: #1 $
 %
@@ -19,7 +21,7 @@
 %  <5><6><7><8><9><10><10.95><12><14.4><17.28><20.74><24.88>cmttb10}{}
 
 
-\newcommand{\version}{1.5-beta}
+\newcommand{\version}{1.6.2-beta}
 
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -122,11 +124,11 @@
 \usepackage{hyperref}
 \begin{document}
 
-\title{\huge \CoreASM Language User Manual \\ {\Large engine version \version} \\ {\large \url{www.coreasm.org}}}
+\title{\huge \CoreASM Language User Manual \\ {\Large engine version \version} \\ {\large \url{github.com/CoreASM/}}}
 
-\author{Roozbeh Farahbod \\ \ttfamily info@coreasm.org} 
+\author{Roozbeh Farahbod \\ \texttt{info@coreasm.org}\\\\Marcel Dausend \\ \texttt{marcel.dausend@uni-ulm.de}}  
 
-\date{\copyrightNotice{2006-2011} \\~\\ {\bf DRAFT of \today} \\ {This document is still under construction to match the latest version of the engine. Your criticism is welcome!}}
+\date{\copyrightNotice{2006-2014} \\~\\ {\bf DRAFT of \today} \\ {This document is still under construction to match the latest version of the engine. Your criticism is welcome!}}
 
  \maketitle
 
@@ -393,7 +395,7 @@ have a \CoreASM specification.
 
 Basic values such as \keyword{undef}\index{undef@\keyword{undef}}, \keyword{true}\index{true@\keyword{true}}, and \keyword{false}\index{false@\keyword{false}} are defined in the 
 kernel along with the background of Boolean values (\code{BOOLEAN})\index{Boolean background} and the universe 
-of \code{Agents}\index{Agents@\code{Agents}}. A function called \code{program}\index{program@\code{program}} is also defined in the kernel which 
+of \code{Agents}\index{Agents@\code{Agents}}. A function called \code{program}\indexfunc{program} is also defined in the kernel which 
 maps agents to their programs (\CoreASM rules). At any time during the evaluation of a 
 rule, \keyword{self}\index{self@\keyword{self}} refers the the agent that is running the enclosing rule.
 
@@ -539,7 +541,7 @@ $p$ on the screen:
 
 \bExample
 	\codebf{choose} p \codebf{in} prices \codebf{with} 
-		(\codebf{forall} pi \codebf{in} prices \codebf{holds} p <= pi) \codebf{do}\index{choose rule@\keyword{choose} rule} \\
+		(\codebf{forall} pi \codebf{in} prices \codebf{holds} p <= pi) \codebf{do}\indexrule{choose} \\
 	\tab \codebf{print} p
 \eExample
 
@@ -568,7 +570,7 @@ The Conditional Rule plugin\index{Conditional Rule plugin} can be loaded by the 
 
 \noindent This plugin provides the following rule forms:
 
-\ruleform{\codebf{if} \val \codebf{then} \crule}{Conditional Rule Plugin}\index{conditional rule}\index{if@\keyword{if-then-else}|see{conditional rule}}
+\ruleform{\codebf{if} \val \codebf{then} \crule}{Conditional Rule Plugin}\index{conditional rule}\index{if@\keyword{if-then-else} rule|see{conditional rule}}
 
 Evaluates \crule only if \val is \code{true}. It expects \val to be
 a Boolean value (being either \code{true} or \code{false}).
@@ -1060,7 +1062,9 @@ A conversion function that maps any value to a String value (which can also be \
 
 Returns the length of the given String value.
 
+\funcform{$ \mbox{\code{matches}} : \Rdom{String} \rightarrow \Rdom{String}$}{String Plugin}\index{matches function@\code{matches} function}
 
+Returns true, if the first parameter matches the given regular expression provided by the second parameter. Otherwise false is returned. The syntax for the regular expressions follows the java language definition. For example, the function \code{matches("42", "[0-9]+")} returns true.
 
 % -------------------------------- INPUT - OUTPUT
 \subsection{Input and Output}
@@ -1276,6 +1280,11 @@ Creates a new list with the given element as its head and given list as its tail
 
 Returns the n$^{th}$ element of the list. The index of the first element is 1.
 
+\funcform{$\mbox{\code{setnth}} : \Rdom{List} \times \Rdom{Number} \times \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{setnth}
+
+\code{setnth(list, i, e)}, if \code{i} is a valid index for \code{list}, returns a new list in which the 
+element at index \code{i} is \code{e}. 
+
 \funcform{$\mbox{\code{take}} : \Rdom{List} \times \Rdom{Number} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{take}
 
 \code{take(list, i)} returns the first $i$ elements of list \code{list}. 
@@ -1296,10 +1305,17 @@ Returns a potentially empty list of the indexes of the given element in given li
 
 The same as \code{indexes}; see above.
 
-\funcform{$\mbox{\code{setnth}} : \Rdom{List} \times \Rdom{Number} \times \Rdom{Element} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{setnth}
+\funcform{$\mbox{\code{zip}} : \Rdom{List} \times \Rdom{List} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{zip}
 
-\code{setnth(list, i, e)}, if \code{i} is a valid index for \code{list}, returns a new list in which the 
-element at index \code{i} is \code{e}. 
+The function \code{zip} takes two lists and returns a list of corresponding pairs. If one input list is short, excess elements of the longer list are discarded. 
+
+\funcform{$\mbox{\code{zipwith}} : \Rdom{List} \times \Rdom{List} \times \Rdom{Function} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{zipwith}
+
+The function \code{zipwith} generalises zip by zipping with the function given as the last argument, instead of a tupling function. For example, \code{zipwith (l1, l2, @max)}  is applied to two lists to produce a list of corresponding maximums.
+
+\funcform{$\mbox{\code{replicate}} : \Rdom{Element} \times \Rdom{Number} \rightarrow \Rdom{List}$}{List Plugin}\indexfunc{replicate}
+
+The function \code{replicate(x, n)} returns a new list where the given element x is repeated n times. 
 
 \medskip
 

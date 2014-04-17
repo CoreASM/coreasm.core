@@ -85,7 +85,7 @@ import org.coreasm.util.Tools;
  */
 public class Engine implements ControlAPI {
 
-	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 6, 0, "beta");
+	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 6, 2, "beta");
 
 	private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 
