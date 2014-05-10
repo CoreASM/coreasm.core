@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Enumerable;
@@ -55,28 +56,26 @@ public class FoldFunctionElement extends CollectionFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			Collection<? extends Element> values = ((Enumerable)args.get(0)).enumerate();
-			FunctionElement f = (FunctionElement)args.get(1);
-			
-			Element lastValue = args.get(2);
-			
-			if (isFoldR) {
-				Stack<Element> stack = new Stack<Element>();
-				for (Element e: values) 
-					stack.push(e);
-				while (!stack.isEmpty())
-					lastValue = f.getValue(ElementList.create(lastValue, stack.pop()));
-				result = lastValue;
-			} else {
-				for (Element e: values) 
-					lastValue = f.getValue(ElementList.create(lastValue, e));
-				result = lastValue;
-			}
-			
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for fold.");
+		
+		Collection<? extends Element> values = ((Enumerable)args.get(0)).enumerate();
+		FunctionElement f = (FunctionElement)args.get(1);
+		
+		Element lastValue = args.get(2);
+		
+		if (isFoldR) {
+			Stack<Element> stack = new Stack<Element>();
+			for (Element e: values) 
+				stack.push(e);
+			while (!stack.isEmpty())
+				lastValue = f.getValue(ElementList.create(lastValue, stack.pop()));
+			return lastValue;
+		} else {
+			for (Element e: values) 
+				lastValue = f.getValue(ElementList.create(lastValue, e));
+			return lastValue;
 		}
-		return result;
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {

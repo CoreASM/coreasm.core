@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Enumerable;
@@ -51,17 +52,14 @@ public class MapFunctionElement extends CollectionFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			Collection<? extends Element> values = ((Enumerable)args.get(0)).enumerate();
-			FunctionElement f = (FunctionElement)args.get(1);
-			Collection<Element> resultValues = new ArrayList<Element>();
-			for (Element e: values) 
-				resultValues.add(f.getValue(ElementList.create(e)));
-			
-			result = ((AbstractMapElement)args.get(0)).getNewInstance(resultValues);
-		}
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for map.");
+		Collection<? extends Element> values = ((Enumerable)args.get(0)).enumerate();
+		FunctionElement f = (FunctionElement)args.get(1);
+		Collection<Element> resultValues = new ArrayList<Element>();
+		for (Element e: values) 
+			resultValues.add(f.getValue(ElementList.create(e)));
+		return ((AbstractMapElement)args.get(0)).getNewInstance(resultValues);
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {
