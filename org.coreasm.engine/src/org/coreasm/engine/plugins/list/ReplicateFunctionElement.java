@@ -50,9 +50,9 @@ public class ReplicateFunctionElement extends ListFunctionElement {
 	}
 
 	/**
-	 * Implementation of a Haskell like replicate function for two lists.
-	 * @param x
-	 * @param n
+	 * Implementation of a Haskell like replicate function
+	 * @param x element to replicate
+	 * @param n number of desired replications
 	 * @return list
 	 */
 	private List<? extends Element> replicate(Element x, NumberElement n) {
@@ -64,6 +64,6 @@ public class ReplicateFunctionElement extends ListFunctionElement {
 
 	protected boolean checkArguments(List<? extends Element> args) {
 		return (args.size() == 2)
-				&& (args.get(1) != null && args.get(1) instanceof NumberElement && ((NumberElement)args.get(1)).isNatural());
+				&& (args.get(1) != null && args.get(1) instanceof NumberElement && ((NumberElement)args.get(1)).isInteger() && ((NumberElement)args.get(1)).getValue() >= 0);
 	}
 }
