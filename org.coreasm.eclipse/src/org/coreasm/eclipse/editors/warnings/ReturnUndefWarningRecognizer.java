@@ -11,7 +11,7 @@ import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 
-public class ReturnRuleWarningRecognizer implements IWarningRecognizer {
+public class ReturnUndefWarningRecognizer implements IWarningRecognizer {
 
 	@Override
 	public List<AbstractWarning> checkForWarnings(ASMDocument document) {
