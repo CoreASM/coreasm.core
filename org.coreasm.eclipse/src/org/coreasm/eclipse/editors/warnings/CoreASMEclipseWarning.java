@@ -1,7 +1,5 @@
 package org.coreasm.eclipse.editors.warnings;
 
-import java.util.Stack;
-
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.interpreter.Node;
@@ -20,22 +18,16 @@ public class CoreASMEclipseWarning extends AbstractWarning {
 
 	public static int calculateLength(Node problemNode) {
 		if (problemNode != null) {
-			int start = problemNode.getScannerInfo().charPosition;
-			int end = start;
-			
-			Stack<Node> fringe = new Stack<Node>();
-			fringe.add(problemNode);
-			while (!fringe.isEmpty()) {
-				Node node = fringe.pop();
-				int len = 0;
-				if (node.getToken() != null)
-					len = node.getToken().length();
-				if (node.getScannerInfo().charPosition + len > end)
-					end = node.getScannerInfo().charPosition + len;
-				for (Node child : node.getChildNodes())
-					fringe.add(child);
+			Node node = problemNode;
+			while (node.getFirstCSTNode() != null) {
+				node = node.getFirstCSTNode();
+				while (node.getNextCSTNode() != null)
+					node = node.getNextCSTNode();
 			}
-			return end - start;
+			int len = 0;
+			if (node.getToken() != null)
+				len = node.getToken().length();
+			return node.getScannerInfo().charPosition + len - problemNode.getScannerInfo().charPosition;
 		}
 		return 0;
 	}
