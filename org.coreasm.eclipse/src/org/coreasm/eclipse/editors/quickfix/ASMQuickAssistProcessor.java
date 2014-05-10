@@ -141,6 +141,8 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 				proposals.add(new CompletionProposal(data[1] + "()", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "()'", null, null));
 			else if ("ReturnUndef".equals(data[0]))
 				proposals.add(new MoveToTopProposal(Integer.parseInt(data[1]), IconManager.getIcon("/icons/editor/bullet.gif")));
+			else if ("ReturnResult".equals(data[0]))
+				proposals.add(new CompletionProposal(":=", start, end - start, end - start, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with ':='", null, null));
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);

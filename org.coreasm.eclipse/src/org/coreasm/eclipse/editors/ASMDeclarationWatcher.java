@@ -14,6 +14,7 @@ import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
+import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -212,11 +213,14 @@ public class ASMDeclarationWatcher implements Observer {
 	public static class DerivedFunctionDeclaration extends Declaration {
 		private List<String> params = new ArrayList<String>();
 		private String comment;
+		private String returnExpression;
 		
 		private DerivedFunctionDeclaration(DerivedFunctionNode node, String comment) {
 			super(node.getNameSignatureNode().getFirst().getToken());
 			for (ASTNode param = node.getNameSignatureNode().getFirst().getNext(); param != null; param = param.getNext()) 
 				params.add(param.getToken());
+			if (node.getFirst().getNext() instanceof ReturnRuleNode)
+				returnExpression = node.getFirst().getNext().getFirst().unparseTree().replace("  ", " ");
 			this.comment = comment;
 		}
 		
@@ -226,6 +230,14 @@ public class ASMDeclarationWatcher implements Observer {
 			if (declaration.startsWith("("))
 				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
 			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0 && declaration.charAt(indexOfNewLine + 1) != '\n') {
+				int beginIndex = indexOfNewLine + "\nreturns".length();
+				indexOfNewLine = declaration.indexOf('\n', beginIndex);
+				if (indexOfNewLine >= 0)
+					returnExpression = declaration.substring(beginIndex, indexOfNewLine);
+				else
+					returnExpression = declaration.substring(beginIndex);
+			}
 			if (indexOfNewLine >= 0)
 				comment = declaration.substring(indexOfNewLine + 2);
 		}
@@ -253,6 +265,8 @@ public class ASMDeclarationWatcher implements Observer {
 				declaration += param;
 			}
 			declaration = (declaration + ")").replace("()", "");
+			if (returnExpression != null)
+				declaration += "\nreturns" + returnExpression;
 			if (comment != null)
 				declaration += "\n\n" + comment;
 			return declaration;
@@ -261,6 +275,7 @@ public class ASMDeclarationWatcher implements Observer {
 	public static class RuleDeclaration extends Declaration {
 		private List<String> params = new ArrayList<String>();
 		private String comment;
+		private String returnExpression;
 		
 		private RuleDeclaration(ASTNode node, String comment) {
 			super(node.getFirst().getFirst().getToken());
@@ -268,6 +283,8 @@ public class ASMDeclarationWatcher implements Observer {
 				throw new IllegalArgumentException("Illegal GrammarRule: " + node.getGrammarRule());
 			for (ASTNode param = node.getFirst().getFirst().getNext(); param != null; param = param.getNext())
 				params.add(param.getToken());
+			if (node.getFirst().getNext() instanceof ReturnRuleNode)
+				returnExpression = node.getFirst().getNext().getFirst().unparseTree().replace("  ", " ");
 			this.comment = comment;
 		}
 		
@@ -277,6 +294,14 @@ public class ASMDeclarationWatcher implements Observer {
 			if (declaration.startsWith("("))
 				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
 			int indexOfNewLine = declaration.indexOf('\n');
+			if (indexOfNewLine >= 0 && declaration.charAt(indexOfNewLine + 1) != '\n') {
+				int beginIndex = indexOfNewLine + "\nreturns".length();
+				indexOfNewLine = declaration.indexOf('\n', beginIndex);
+				if (indexOfNewLine >= 0)
+					returnExpression = declaration.substring(beginIndex, indexOfNewLine);
+				else
+					returnExpression = declaration.substring(beginIndex);
+			}
 			if (indexOfNewLine >= 0)
 				comment = declaration.substring(indexOfNewLine + 2);
 		}
@@ -295,6 +320,10 @@ public class ASMDeclarationWatcher implements Observer {
 			return params;
 		}
 		
+		public boolean hasReturn() {
+			return returnExpression != null;
+		}
+		
 		@Override
 		public String toString() {
 			String declaration = "Rule: " + name + "(";
@@ -304,6 +333,8 @@ public class ASMDeclarationWatcher implements Observer {
 				declaration += param;
 			}
 			declaration = (declaration + ")").replace("()", "");
+			if (returnExpression != null)
+				declaration += "\nreturns" + returnExpression;
 			if (comment != null)
 				declaration += "\n\n" + comment;
 			return declaration;

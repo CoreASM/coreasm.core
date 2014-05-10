@@ -16,7 +16,8 @@ import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.NumberOfArgumentsWarningRecognizer;
-import org.coreasm.eclipse.editors.warnings.ReturnRuleWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.ReturnResultWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.ReturnUndefWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -60,7 +61,8 @@ public class ErrorManager implements Observer
 		addErrorRecognizer(new CoreASMErrorRecognizer(asmEditor));
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
 		addWarningRecognizer(new NumberOfArgumentsWarningRecognizer(asmEditor));
-		addWarningRecognizer(new ReturnRuleWarningRecognizer());
+		addWarningRecognizer(new ReturnUndefWarningRecognizer());
+		addWarningRecognizer(new ReturnResultWarningRecognizer(asmEditor));
 		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
 	}
 	
