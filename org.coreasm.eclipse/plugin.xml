@@ -153,6 +153,30 @@
       </page>
    </extension>
    <extension
+         point="org.eclipse.ui.preferencePages">
+      <page 
+      		class="org.coreasm.eclipse.preferences.ASMTemplatePreferencePage"
+      		id="org.coreasm.eclipse.ASMTemplatePreferencePage" 
+      		name="Templates"
+      		category="org.coreasm.eclipse.ASMPreferencePage"> 
+	  </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType 
+      		class="org.coreasm.eclipse.editors.contentassist.ASMTemplateContextType" 
+      		id="coreasm"
+      		name="CoreASM Templates">
+	  </contextType>
+
+	  <include 
+	  		file="coreasm-templates.xml" 
+	  		translations="coreasm-templates.xml">
+	  </include>
+   </extension>
+   
+   <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.coreasm.eclipse.editors.ASMEditor"

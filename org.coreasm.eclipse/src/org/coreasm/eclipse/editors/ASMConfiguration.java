@@ -1,11 +1,14 @@
 package org.coreasm.eclipse.editors;
 
 
+import org.coreasm.eclipse.editors.contentassist.TemplateAssistProcessor;
 import org.coreasm.eclipse.editors.hover.ASMTextHover;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.tools.ColorManager;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
@@ -19,7 +22,7 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 /**
  * This class contains the configuration for the SourceViewer of the ASMEditor.
- * @author	Markus Müller
+ * @author	Markus MÃ¼ller
  * @see		org.eclipse.jface.text.source.SourceViewer
  * @see		org.eclipse.jface.text.source.SourceViewerConfiguration
  */
@@ -53,6 +56,24 @@ extends TextSourceViewerConfiguration
 			ASMPartitionScanner.ASM_DEFAULT,
 			ASMPartitionScanner.ASM_COMMENT
 		};
+	}
+	
+	/**
+	 * @return	Returns the content assist which is used for the templates
+	 */
+	@Override
+	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+		ContentAssistant assistant = new ContentAssistant();
+
+		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+		assistant.setContentAssistProcessor(new TemplateAssistProcessor(), ASMEditor.PARTITION_CODE);
+
+		assistant.enableAutoActivation(true);
+		assistant.setAutoActivationDelay(500);
+		assistant.setProposalPopupOrientation(IContentAssistant.CONTEXT_INFO_BELOW);
+		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_BELOW);
+
+		return assistant;
 	}
 	
 	@Override

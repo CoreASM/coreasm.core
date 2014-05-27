@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>	
+
+<template id="rule" name="rule" description="rule definition (CoreASM)" context="coreasm" enabled="true">rule ${name} = ${cursor}</template>
+
+<template id="skip" name="skip" description="skip (CoreASM)" context="coreasm" enabled="true">skip</template>
+
+<template id="if" name="if" description="if condition (CoreASM)" context="coreasm" deleted="false" enabled="true">if ${condition} then</template>
+
+<template id="import" name="import" description="import (CoreASM)" context="coreasm" enabled="true">import ${name} do</template>
+
+<template id="forall" name="forall" description="forall (CoreASM)" context="coreasm" enabled="true">forall ${name} in ${collection} do</template>
+
+<template id="function" name="function" description="function definition (CoreASM)" context="coreasm" enabled="true">function ${name}: ${input} -> ${output}</template>
+
+<template id="derived" name="derived" description="derived function definition (CoreASM)" context="coreasm" enabled="true">derived ${name} = ${cursor}</template>
+
+<template id="use" name="use" description="use plugin (CoreASM)" context="coreasm" enabled="true">use ${plugin}</template>
+
+<template id="universe" name="universe" description="universe definition (CoreASM)" context="coreasm" enabled="true">universe ${name} = ${cursor}</template>
+
+<template id="enum" name="enum" description="enum definition (CoreASM)" context="coreasm" enabled="true">enum ${name} = ${cursor}</template>
+
+<template id="let" name="let" description="let variable definition (CoreASM)" context="coreasm" enabled="true">let ${name} = ${value} in</template>
+
+</templates>

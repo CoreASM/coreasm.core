@@ -95,6 +95,10 @@ implements IDocumentListener
 		LOGGER_UI_DEBUG.setVisible(false);
 	}
 	
+	public AbstractContentPage getOutlinePage() {
+		return outlinePage;
+	}
+	
 	public ASMEditor()
 	{
 		super();

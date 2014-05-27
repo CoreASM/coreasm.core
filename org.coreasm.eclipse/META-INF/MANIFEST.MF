@@ -8,10 +8,15 @@ Bundle-Vendor: coreasm.org
 Require-Bundle: org.eclipse.ui, org.eclipse.core.runtime, org.eclipse.debug.ui, org.eclipse.jface.text, org.eclipse.ui.console, org.eclipse.ui.editors, org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: ., target/lib/org.coreasm.engine.jar
-Import-Package: org.eclipse.ui.dialogs, org.eclipse.ui.views.contentoutline
+Import-Package: org.eclipse.ui.dialogs,
+ org.eclipse.ui.texteditor.templates,
+ org.eclipse.ui.views.contentoutline
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 1.0.3.qualifier
-Export-Package: org.coreasm.util,
- org.coreasm.util.odf,
+Export-Package: org.coreasm.eclipse.editors,
+ org.coreasm.eclipse.editors.outlining,
+ org.coreasm.eclipse.editors.ui,
+ org.coreasm.eclipse.util,
+ org.coreasm.util,
  org.coreasm.util.information,
- org.coreasm.eclipse.util
+ org.coreasm.util.odf

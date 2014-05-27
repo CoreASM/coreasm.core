@@ -4,7 +4,6 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.IconManager;
-import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.NodeType;
 import org.coreasm.eclipse.editors.outlining.ParsedContentProvider.DisplayModeOrder;
 import org.coreasm.eclipse.editors.outlining.ParsedContentProvider.DisplayModeStructure;
 import org.eclipse.jface.action.Action;
@@ -21,13 +20,13 @@ import org.eclipse.ui.IActionBars;
 /**
  * This content page shows an outline view for CoreASM specifications based on
  * the syntax tree which was created by the parser.
- * @author Markus Müller
+ * @author Markus MÃ¼ller
  */
 public class ParsedOutlinePage 
 extends AbstractContentPage {
 
 	ParsedContentProvider contentProvider;
-	
+
 	// The double click listener listens for double clicks onto outline nodes.
 	IDoubleClickListener dcl = null;
 
@@ -42,6 +41,10 @@ extends AbstractContentPage {
 		this.contentProvider.setOutlinePage(this);
 	}
 
+	public ParsedContentProvider getContentProvider() {
+		return contentProvider;
+	}
+	
 	/**
 	 * This method sets up a DoubleClickListener which reacts on double clicking
 	 * a node for an include statement and tries to open a new editor for the
@@ -64,7 +67,7 @@ extends AbstractContentPage {
 						if ( !(last instanceof OutlineTreeNode) )
 							continue;
 						OutlineTreeNode node = (OutlineTreeNode) last;
-						if (node.type != NodeType.INCLUDE_NODE)
+						if (!(node instanceof OutlineTreeNode.IncludeTreeNode))
 							continue;
 						String filename = node.suffix;	// suffix contains the filename relative to the project
 						FileManager.openEditor(filename, ((ASMEditor) parentEditor).getInputFile().getProject());	
@@ -87,7 +90,7 @@ extends AbstractContentPage {
 		if (element instanceof OutlineTreeNode)
 		{
 			OutlineTreeNode node = (OutlineTreeNode) element;
-			if (node.type == NodeType.GROUP_NODE)
+			if (node instanceof GroupOutlineTreeNode)
 				return;
 
 			int index = node.index;
