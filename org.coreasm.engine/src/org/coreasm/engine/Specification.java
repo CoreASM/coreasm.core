@@ -35,6 +35,7 @@ import java.util.Set;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.RuleElement;
+import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
@@ -744,10 +745,14 @@ public class Specification {
 		/** whether this function is modifiable or not */
 		public final boolean isModifiable;
 		
+		/** the signature of this function */
+		public final Signature signature;
+		
 		public FunctionInfo(String plugin, String name, FunctionElement f) {
 			this.plugin = plugin;
 			this.name = name;
 			this.isModifiable = f.isModifiable();
+			this.signature = f.getSignature();
 		}
 	}
 

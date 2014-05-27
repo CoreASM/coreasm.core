@@ -64,10 +64,10 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 								if (declaration instanceof FunctionDeclaration) {
 									FunctionDeclaration functionDeclaration = (FunctionDeclaration)declaration;
 									if (!frNode.hasArguments()) {
-										if (functionDeclaration.getDomain().length > 0 && !isEnvironmentVariable(frNode) && !isLocalFunction(frNode))
+										if (functionDeclaration.getDomain().size() > 0 && !isEnvironmentVariable(frNode) && !isLocalFunction(frNode))
 											warnings.add(new NumberOfArgumentsWarning(frNode.getName(), 0, frNode, document));
 									}
-									else if (functionDeclaration.getDomain().length != frNode.getArguments().size())
+									else if (functionDeclaration.getDomain().size() != frNode.getArguments().size())
 										warnings.add(new NumberOfArgumentsWarning(frNode.getName(), frNode.getArguments().size(), frNode, document));
 								}
 								else if (declaration instanceof UniverseDeclaration || declaration instanceof EnumerationDeclaration) {

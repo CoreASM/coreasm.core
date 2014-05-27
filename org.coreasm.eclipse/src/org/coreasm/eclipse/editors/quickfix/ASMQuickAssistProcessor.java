@@ -115,7 +115,7 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 						}
 						else if (declaration instanceof FunctionDeclaration) {
 							FunctionDeclaration functionDeclaration = (FunctionDeclaration)declaration;
-							if (functionDeclaration.getDomain().length > 0)
+							if (functionDeclaration.getDomain().size() > 0)
 								proposals.add(new CompletionProposal(declaration.getName() + "()", start, end - start, declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
 							else
 								proposals.add(new CompletionProposal(declaration.getName(), start, end - start, declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));

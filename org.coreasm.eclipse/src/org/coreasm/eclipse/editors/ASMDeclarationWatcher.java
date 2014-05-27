@@ -7,6 +7,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
+import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
@@ -59,46 +60,44 @@ public class ASMDeclarationWatcher implements Observer {
 		}
 	}
 	public static class FunctionDeclaration extends Declaration {
-		private final String[] domain;
-		private final String range;
+		private final Signature signature;
 		private String comment;
 		
 		private FunctionDeclaration(FunctionNode node, String comment) {
 			super(node.getName());
-			this.domain = node.getDomain().toArray(new String[node.getDomain().size()]);
-			this.range = node.getRange();
+			this.signature = new Signature();
+			this.signature.setDomain(node.getDomain());
+			this.signature.setRange(node.getRange());
 			this.comment = comment;
 		}
 		
 		private FunctionDeclaration(String declaration) {
 			super(declaration.substring(0, declaration.indexOf(':')));
 			int index = declaration.indexOf("->");
-			String declarationDomain = declaration.substring(name.length() + 3, index - 2);
-			String[] domain = declarationDomain.split(", ");
-			if (domain[0].length() > 0)
-				this.domain = domain;
-			else
-				this.domain = new String[0];
+			String declarationDomain = declaration.substring(name.length() + 2, index - 1);
+			String[] domain = declarationDomain.split(" x ");
+			signature = new Signature();
+			signature.setDomain(domain);
 			int indexOfNewLine = declaration.indexOf('\n');
 			if (indexOfNewLine >= 0) {
 				comment = declaration.substring(indexOfNewLine + 2);
-				range = declaration.substring(index + 3, indexOfNewLine);
+				signature.setRange(declaration.substring(index + 3, indexOfNewLine));
 			}
 			else
-				range = declaration.substring(index + 3);
+				signature.setRange(declaration.substring(index + 3));
 		}
 		
-		public String[] getDomain() {
-			return domain;
+		public List<String> getDomain() {
+			return signature.getDomain();
 		}
 
 		public String getRange() {
-			return range;
+			return signature.getRange();
 		}
 		
 		@Override
 		public String toString() {
-			return "Function: " + name + ": " + Arrays.toString(domain) + " -> " + range + (comment != null ? "\n\n" + comment : "");
+			return "Function: " + name + ": " + signature + (comment != null ? "\n\n" + comment : "");
 		}
 	}
 	public static class UniverseDeclaration extends Declaration {

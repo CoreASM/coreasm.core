@@ -209,7 +209,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
 							if (pluginFunction != null)
-								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
+								return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (pluginFunction.signature != null ? ": " + pluginFunction.signature : "") + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							String declaration = getDeclaration(document, frNode.getName());
 							if (declaration == null)
 								return new HoverInfo("Plugin: " + frNode.getPluginName() + "\nParser Info: " + frNode);
@@ -220,7 +220,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						RuleOrFuncElementNode ruleOrFuncElementNode = (RuleOrFuncElementNode)node;
 						FunctionInfo pluginFunction = getPluginFunction(ruleOrFuncElementNode.getElementName());
 						if (pluginFunction != null)
-							return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + "\nParser Info: " + ruleOrFuncElementNode);
+							return new HoverInfo("Plugin Function: " + pluginFunction.plugin + "." + pluginFunction.name + (pluginFunction.signature != null ? ": " + pluginFunction.signature : "") + "\nParser Info: " + ruleOrFuncElementNode);
 						String declaration = getDeclaration(document, ruleOrFuncElementNode.getElementName());
 						if (declaration == null)
 							return new HoverInfo("Plugin: " + ruleOrFuncElementNode.getPluginName() + "\nParser Info: " + ruleOrFuncElementNode);
