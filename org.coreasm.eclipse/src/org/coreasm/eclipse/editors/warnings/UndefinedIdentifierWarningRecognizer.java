@@ -381,8 +381,11 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		IProject project = parentEditor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode) {
-				for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(project.getFile(relativePath.append(((IncludeNode)node).getFilename())), true))
-					declaredNames.add(declaration.getName());
+				try {
+					for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(project.getFile(relativePath.append(((IncludeNode)node).getFilename())), true))
+						declaredNames.add(declaration.getName());
+				} catch (IllegalArgumentException e) {
+				}
 			}
 		}
 		return declaredNames;

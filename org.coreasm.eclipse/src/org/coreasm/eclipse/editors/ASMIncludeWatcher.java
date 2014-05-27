@@ -64,11 +64,14 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 				IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
 				if (includeMarker.length > 0) {
 					for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
-						IFile includedFile = project.getFile(include);
-						if (!includedFiles.contains(includedFile)) {
-							includedFiles.add(includedFile);
-							if (transitive)
-								collectIncludedFiles(includedFile, transitive, includedFiles);
+						try {
+							IFile includedFile = project.getFile(include);
+							if (!includedFiles.contains(includedFile)) {
+								includedFiles.add(includedFile);
+								if (transitive)
+									collectIncludedFiles(includedFile, transitive, includedFiles);
+							}
+						} catch (IllegalArgumentException e) {
 						}
 					}
 				}

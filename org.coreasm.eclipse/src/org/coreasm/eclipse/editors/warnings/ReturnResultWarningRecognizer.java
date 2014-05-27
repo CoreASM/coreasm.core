@@ -76,9 +76,12 @@ public class ReturnResultWarningRecognizer implements IWarningRecognizer {
 		IProject project = parentEditor.getInputFile().getProject();
 		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
 			if (node instanceof IncludeNode) {
-				for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(project.getFile(relativePath.append(((IncludeNode)node).getFilename())), true)) {
-					if (declaration instanceof RuleDeclaration && declaration.getName().equals(ruleName))
-						return (RuleDeclaration)declaration;
+				try {
+					for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(project.getFile(relativePath.append(((IncludeNode)node).getFilename())), true)) {
+						if (declaration instanceof RuleDeclaration && declaration.getName().equals(ruleName))
+							return (RuleDeclaration)declaration;
+					}
+				} catch (IllegalArgumentException e) {
 				}
 			}
 		}
