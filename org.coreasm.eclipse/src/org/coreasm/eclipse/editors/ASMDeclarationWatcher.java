@@ -77,7 +77,8 @@ public class ASMDeclarationWatcher implements Observer {
 			String declarationDomain = declaration.substring(name.length() + 2, index - 1);
 			String[] domain = declarationDomain.split(" x ");
 			signature = new Signature();
-			signature.setDomain(domain);
+			if (domain.length > 0 && !domain[0].isEmpty())
+				signature.setDomain(domain);
 			int indexOfNewLine = declaration.indexOf('\n');
 			if (indexOfNewLine >= 0) {
 				comment = declaration.substring(indexOfNewLine + 2);
