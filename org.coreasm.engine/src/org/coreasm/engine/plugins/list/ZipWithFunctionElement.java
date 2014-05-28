@@ -45,7 +45,7 @@ public class ZipWithFunctionElement extends ListFunctionElement {
 	@Override
 	public Element getValue(List<? extends Element> args) {
 		if (!checkArguments(args))
-			throw new CoreASMError("Illegal arguments for zipwith.");
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
 		List<? extends Element> list0 = ((AbstractListElement) args.get(0)).getList();
 		List<? extends Element> list1 = ((AbstractListElement) args.get(1)).getList();
 		FunctionElement f = (FunctionElement)args.get(2);

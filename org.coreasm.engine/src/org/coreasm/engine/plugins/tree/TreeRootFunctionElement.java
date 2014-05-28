@@ -13,6 +13,7 @@ package org.coreasm.engine.plugins.tree;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -44,16 +45,15 @@ public class TreeRootFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			TreeNodeElement node = (TreeNodeElement) args.get(0);
-			TreeNodeElement root = node.getRoot();
-			if(root != null)
-				result = root;
-		} // if
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + TREE_ROOT_FUNC_NAME + ".");
 		
-		return result;
-	} // getValue
+		TreeNodeElement node = (TreeNodeElement) args.get(0);
+		TreeNodeElement root = node.getRoot();
+		if(root != null)
+			return root;
+		return Element.UNDEF;
+	}
 
 	@Override
 	public Signature getSignature() {

@@ -15,6 +15,7 @@ package org.coreasm.network.plugins.graph;
 import java.util.List;
 import java.util.Set;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -57,23 +58,21 @@ public class ConnectedSetFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 2 && args.get(0) instanceof GraphElement)) 
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 2) 
-			if (args.get(0) instanceof GraphElement) {
-				Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
-				Element v = args.get(1);
+		Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
+		Element v = args.get(1);
+		
+		ConnectivityInspector<Element, Element> inspector = inspectorCache.getInspector(g);
 				
-				ConnectivityInspector<Element, Element> inspector = inspectorCache.getInspector(g);
-						
-				if (inspector != null) {
-					Set<Element> conSet = inspector.connectedSetOf(v);
-					if (conSet != null)
-						result = new SetElement(conSet);
-				}
-			}
+		if (inspector != null) {
+			Set<Element> conSet = inspector.connectedSetOf(v);
+			if (conSet != null)
+				return new SetElement(conSet);
+		}
 		
-		return result;
+		return Element.UNDEF;
 	}
 
 }

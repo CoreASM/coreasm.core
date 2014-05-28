@@ -14,6 +14,7 @@ package org.coreasm.network.plugins.graph;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -50,22 +51,17 @@ public class DijkstraShortestPathFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 3 && args.get(0) instanceof GraphElement))
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 3) 
-			if (args.get(0) instanceof GraphElement) {
-				GraphElement ge = (GraphElement)args.get(0);
-				Element start = args.get(1);
-				Element end = args.get(2);
-				
-				List<Element> shortestPath = DijkstraShortestPath.findPathBetween(ge.getGraph(), start, end);
-				if (shortestPath != null)
-					result = new ListElement(shortestPath);
-				else
-					result = new ListElement();
-			}
+		GraphElement ge = (GraphElement)args.get(0);
+		Element start = args.get(1);
+		Element end = args.get(2);
 		
-		return result;
+		List<Element> shortestPath = DijkstraShortestPath.findPathBetween(ge.getGraph(), start, end);
+		if (shortestPath != null)
+			return new ListElement(shortestPath);
+		return new ListElement();
 	}
 
 }

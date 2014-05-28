@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.engine.ControlAPI;
-import org.coreasm.engine.absstorage.AbstractStorage;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.Enumerable;
@@ -47,35 +46,32 @@ public class ToMapFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			Enumerable s = (Enumerable)args.get(0);
-			Map<Element, Element> map = new HashMap<Element, Element>();
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		Enumerable s = (Enumerable)args.get(0);
+		Map<Element, Element> map = new HashMap<Element, Element>();
+		
+		// go over all the elements of the enumerable and also
+		// check that all the elements are pairs of size two 
+		// and no two key values are equal
+		for (Element e: s.enumerate()) {
+			// if all the elements are not tuples return undef
+			if (!(e instanceof AbstractListElement)) 
+				throw new CoreASMError("Not all elements provided to " + NAME + " are tuples.");
+			List<? extends Element> pair = ((AbstractListElement)e).getList();
 			
-			// go over all the elements of the enumerable and also
-			// check that all the elements are pairs of size two 
-			// and no two key values are equal
-			for (Element e: s.enumerate()) {
-				// if all the elements are not tuples return undef
-				if (!(e instanceof AbstractListElement)) 
-					return result;
-				List<? extends Element> pair = ((AbstractListElement)e).getList();
-				
-				// if all the elements are not pairs (tuples of size 2) return undef
-				if (pair.size() != 2)
-					return result;
-				Element k = pair.get(0);
-				Element v = pair.get(1);
-				
-				// if there are two tuples with the same key, return undef
-				if (map.get(k) != null)
-					return result;
-				
-				map.put(k, v);
-			}
-			result = new MapElement(map);
+			// if all the elements are not pairs (tuples of size 2) return undef
+			if (pair.size() != 2)
+				throw new CoreASMError("Not all elements provided to " + NAME + " are pairs.");
+			Element k = pair.get(0);
+			Element v = pair.get(1);
+			
+			// if there are two tuples with the same key, return undef
+			if (map.put(k, v) != null)
+				throw new CoreASMError("Duplicate key encountered by " + NAME + ": " + k);
 		}
-		return result;
+		return new MapElement(map);
 	}
 
 	@Override

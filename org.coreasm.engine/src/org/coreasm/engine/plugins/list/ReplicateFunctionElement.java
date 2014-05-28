@@ -44,7 +44,8 @@ public class ReplicateFunctionElement extends ListFunctionElement {
 	@Override
 	public Element getValue(List<? extends Element> args) {
 		if (!checkArguments(args))
-			throw new CoreASMError("Illegal arguments for replicate.");
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
 		NumberElement n = (NumberElement)args.get(1);
 		return new ListElement(replicate(args.get(0), n));
 	}

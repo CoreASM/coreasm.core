@@ -15,6 +15,7 @@ package org.coreasm.network.plugins.graph;
 import java.util.List;
 import java.util.Set;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -57,22 +58,20 @@ public class FindCyclesFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 2 && args.get(0) instanceof GraphElement))
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 2) 
-			if (args.get(0) instanceof GraphElement) {
-				Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
-				Element v = args.get(1);
-				CycleDetector<Element, Element> detector = detectorCache.getCycleDetector(g);
-						
-				if (detector != null) {
-					Set<Element> cycleSet = detector.findCyclesContainingVertex(v);
-					if (cycleSet != null)
-						result = new SetElement(cycleSet);
-				}
-			}
+		Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
+		Element v = args.get(1);
+		CycleDetector<Element, Element> detector = detectorCache.getCycleDetector(g);
+				
+		if (detector != null) {
+			Set<Element> cycleSet = detector.findCyclesContainingVertex(v);
+			if (cycleSet != null)
+				return new SetElement(cycleSet);
+		}
 		
-		return result;
+		return Element.UNDEF;
 	}
 
 }

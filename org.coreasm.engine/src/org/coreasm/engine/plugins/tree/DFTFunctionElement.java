@@ -15,11 +15,10 @@ package org.coreasm.engine.plugins.tree;
 
 import java.util.List;
 
-
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
-import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.plugins.list.ListBackgroundElement;
 import org.coreasm.engine.plugins.list.ListElement;
 
@@ -52,19 +51,17 @@ public class DFTFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			TreeNodeElement node = (TreeNodeElement) args.get(0);
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + (valuesOnly ? DFT_FUNC_NAME : DFT_NODES_FUNC_NAME) + ".");
+		
+		TreeNodeElement node = (TreeNodeElement) args.get(0);
 
-			// Enumeration
-			if(valuesOnly)
-				result = new ListElement(node.DFT());
-			else
-				result = new ListElement(node.DFTNodes());
-			
-		} // if checkarguments
-		return result;
-	} // getValue
+		// Enumeration
+		if(valuesOnly)
+			return new ListElement(node.DFT());
+		else
+			return new ListElement(node.DFTNodes());
+	}
 
 	@Override
 	public Signature getSignature() {

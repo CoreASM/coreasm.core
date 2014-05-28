@@ -15,9 +15,10 @@ package org.coreasm.engine.plugins.map;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -46,15 +47,14 @@ public class MapToPairsFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			final MapElement m = (MapElement)args.get(0);
-			final Set<Element> set = new HashSet<Element>();
-			for (Entry<Element, Element> e: m.getMap().entrySet())
-				set.add(new ListElement(e.getKey(), e.getValue()));
-			result = new SetElement(set);
-		}
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		final MapElement m = (MapElement)args.get(0);
+		final Set<Element> set = new HashSet<Element>();
+		for (Entry<Element, Element> e: m.getMap().entrySet())
+			set.add(new ListElement(e.getKey(), e.getValue()));
+		return new SetElement(set);
 	}
 
 	@Override

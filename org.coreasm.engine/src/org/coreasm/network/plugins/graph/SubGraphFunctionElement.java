@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -54,23 +55,20 @@ public class SubGraphFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 2 && args.get(0) instanceof GraphElement && args.get(1) instanceof Enumerable))
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 2) 
-			if (args.get(0) instanceof GraphElement && args.get(1) instanceof Enumerable) {
-				GraphElement ge = (GraphElement)args.get(0);
-				Collection<? extends Element> vs = ((Enumerable)args.get(1)).enumerate();
-				Set<Element> vset = new HashSet<Element>(vs);
+		GraphElement ge = (GraphElement)args.get(0);
+		Collection<? extends Element> vs = ((Enumerable)args.get(1)).enumerate();
+		Set<Element> vset = new HashSet<Element>(vs);
 
-				if (ge.isDirected()) {
-					result = new DirectedGraphElement(new DirectedSubgraph<Element, Element>(
-							(DirectedGraph<Element, Element>)ge.getGraph(), vset, null));
-				} else {
-					Logger.log(Logger.WARNING, Logger.plugins, "subgraph is not supported on undirected graphs.");
-				}
-			}
+		if (ge.isDirected()) {
+			return new DirectedGraphElement(new DirectedSubgraph<Element, Element>(
+					(DirectedGraph<Element, Element>)ge.getGraph(), vset, null));
+		} else
+			Logger.log(Logger.WARNING, Logger.plugins, "subgraph is not supported on undirected graphs.");
 		
-		return result;
+		return Element.UNDEF;
 	}
 
 }

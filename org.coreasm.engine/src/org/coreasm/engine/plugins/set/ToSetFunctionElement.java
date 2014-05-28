@@ -15,11 +15,12 @@ package org.coreasm.engine.plugins.set;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.Enumerable;
-import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.Signature;
 
 /** 
  * Converts {@link Enumerable}s to {@link SetElement}s.
@@ -53,11 +54,10 @@ public class ToSetFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (args.size() == 1 && args.get(0) instanceof Enumerable) {
-			result = new SetElement(((Enumerable)args.get(0)).enumerate());
-		}
-		return result;
+		if (!(args.size() == 1 && args.get(0) instanceof Enumerable))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		return new SetElement(((Enumerable)args.get(0)).enumerate());
 	}
 
 }

@@ -15,6 +15,8 @@ package org.coreasm.engine.plugins.list;
 
 
 import java.util.List;
+
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -50,15 +52,12 @@ public class NthFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			AbstractListElement list = (AbstractListElement)args.get(0);
-			NumberElement n = (NumberElement)args.get(1);
-			
-			result = list.get(n);
-		}
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
 		
-		return result;
+		AbstractListElement list = (AbstractListElement)args.get(0);
+		NumberElement n = (NumberElement)args.get(1);
+		return list.get(n);
 	}
 
 	public Signature getSignature() {

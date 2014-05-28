@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -52,21 +53,20 @@ public class SetNthFunctionElement extends ListFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			ListElement list = (ListElement) args.get(0);
-			NumberElement n = (NumberElement)args.get(1);
-			if (n.getValue() <= list.size() + 1) {
-				List<Element> resultValues = new ArrayList<Element>();
-				for (Element e: list.enumerate()) 
-					resultValues.add(e);
-				resultValues.set((int)n.getValue()-1, args.get(2));
-				
-				result = new ListElement(resultValues);
-			}
-		}
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
 		
-		return result;
+		ListElement list = (ListElement) args.get(0);
+		NumberElement n = (NumberElement)args.get(1);
+		if (n.getValue() >= list.size())
+			throw new CoreASMError("Index out of range for setnth.");
+		
+		List<Element> resultValues = new ArrayList<Element>();
+		for (Element e: list.enumerate()) 
+			resultValues.add(e);
+		resultValues.set((int)n.getValue()-1, args.get(2));
+		
+		return new ListElement(resultValues);
 	}
 
 	public Signature getSignature() {

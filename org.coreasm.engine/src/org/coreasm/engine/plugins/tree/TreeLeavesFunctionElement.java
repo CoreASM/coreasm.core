@@ -15,10 +15,10 @@ package org.coreasm.engine.plugins.tree;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
-import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.plugins.list.ListBackgroundElement;
 import org.coreasm.engine.plugins.list.ListElement;
 
@@ -46,15 +46,12 @@ public class TreeLeavesFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			TreeNodeElement node = (TreeNodeElement) args.get(0);
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + TREE_LEAVES_FUNC_NAME + ".");
 		
-			result = new ListElement(node.getLeaves());
-			
-		} // if checkarguments
-		return result;
-	} // getValue
+		TreeNodeElement node = (TreeNodeElement) args.get(0);
+		return new ListElement(node.getLeaves());
+	}
 
 	@Override
 	public Signature getSignature() {

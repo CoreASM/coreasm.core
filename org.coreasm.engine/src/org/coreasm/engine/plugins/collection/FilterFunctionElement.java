@@ -67,7 +67,7 @@ public class FilterFunctionElement extends CollectionFunctionElement {
 	@Override
 	public Element getValue(List<? extends Element> args) {
 		if (!checkArguments(args))
-			throw new CoreASMError("Illegal arguments for filter.");
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
 		
 		Collection<? extends Element> values = ((Enumerable)args.get(0)).enumerate();
 		FunctionElement f = (FunctionElement)args.get(1);

@@ -14,6 +14,7 @@ package org.coreasm.network.plugins.graph;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -49,18 +50,16 @@ public class AsUndirectedFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 1 && args.get(0) instanceof GraphElement))
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 1) 
-			if (args.get(0) instanceof GraphElement) {
-				GraphElement ge = (GraphElement)args.get(0);
-				if (ge instanceof DirectedGraphElement)
-					result = new UndirectedGraphElement((DirectedGraph<Element, Element>)ge.getGraph());
-				if (ge instanceof UndirectedGraphElement)
-					result = ge;
-			}
+		GraphElement ge = (GraphElement)args.get(0);
+		if (ge instanceof DirectedGraphElement)
+			return new UndirectedGraphElement((DirectedGraph<Element, Element>)ge.getGraph());
+		if (ge instanceof UndirectedGraphElement)
+			return ge;
 		
-		return result;
+		return Element.UNDEF;
 	}
 
 }

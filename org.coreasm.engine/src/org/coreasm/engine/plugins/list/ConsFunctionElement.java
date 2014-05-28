@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.list;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -38,13 +39,11 @@ public class ConsFunctionElement extends FunctionElement {
 	
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			List<Element> newData = new ArrayList<Element>(((AbstractListElement)args.get(1)).getList());
-			newData.add(0, args.get(0));
-			result = new ListElement(newData);
-		}
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		List<Element> newData = new ArrayList<Element>(((AbstractListElement)args.get(1)).getList());
+		newData.add(0, args.get(0));
+		return new ListElement(newData);
 	}
 	
 	public Signature getSignature() {

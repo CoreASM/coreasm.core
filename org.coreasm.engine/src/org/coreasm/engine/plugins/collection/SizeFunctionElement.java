@@ -15,6 +15,7 @@ package org.coreasm.engine.plugins.collection;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -41,16 +42,13 @@ public class SizeFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			Enumerable e = (Enumerable)args.get(0);
-			
-			if (e instanceof AbstractMapElement)
-				result = NumberElement.getInstance(((AbstractMapElement)e).size());
-			else
-				result = NumberElement.getInstance(e.enumerate().size());
-		}
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		Enumerable e = (Enumerable)args.get(0);
+		
+		if (e instanceof AbstractMapElement)
+			return NumberElement.getInstance(((AbstractMapElement)e).size());
+		return NumberElement.getInstance(e.enumerate().size());
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {

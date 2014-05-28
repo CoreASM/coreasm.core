@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.plugins.collection.AbstractListElement;
@@ -44,24 +45,22 @@ public class TakeFunctionElement extends NthFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			AbstractListElement list = (AbstractListElement)args.get(0);
-			NumberElement n = (NumberElement)args.get(1);
-			List<Element> newValues = new ArrayList<Element>();
-			
-			int i = 1;
-			while (i <= (int)n.getValue()) {
-				if (i > list.size())
-					break;
-				newValues.add(list.get(NumberElement.getInstance(i)));
-				i++;
-			}
-			
-			result = new ListElement(newValues);
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		AbstractListElement list = (AbstractListElement)args.get(0);
+		NumberElement n = (NumberElement)args.get(1);
+		List<Element> newValues = new ArrayList<Element>();
+		
+		int i = 1;
+		while (i <= (int)n.getValue()) {
+			if (i > list.size())
+				break;
+			newValues.add(list.get(NumberElement.getInstance(i)));
+			i++;
 		}
 		
-		return result;
+		return new ListElement(newValues);
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {

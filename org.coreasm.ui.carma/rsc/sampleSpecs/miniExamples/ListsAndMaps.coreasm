@@ -45,7 +45,7 @@ rule TestAll =
 
 	    // the 'fold' function
 		let l = ["a", "b", "c"] in
-			print "fold( " + l + " , concat, \" it goes \") is: \"" + fold(l, @folder, "it goes ") + "\""
+			print "fold( " + l + " , concat, \"it goes\") is: \"" + fold(l, @folder, "it goes") + "\""
 		
 		let l = cons(1, ["m"]) in
 			print l + " is [" + head(l) + " | " + tail(l) + "]  and nth([m, 1], 2) = " + nth(l, 2) 
@@ -58,7 +58,7 @@ rule TestAll =
 			print "  size(l) : " + size(l)
 			print "  last(l) : " + last(l)
 			print "  reverse(l) : " + reverse(l)
-			print "  indexes(2, l) : " + indexes("a", l)
+			print "  indexes(l, a) : " + indexes(l, "a")
 		endseqblock
 		
 		// terminate after one step

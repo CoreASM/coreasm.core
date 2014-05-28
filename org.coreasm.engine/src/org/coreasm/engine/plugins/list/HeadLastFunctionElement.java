@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.list;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -45,16 +46,11 @@ public class HeadLastFunctionElement extends ListFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			AbstractListElement list = (AbstractListElement)args.get(0);
-			if (isHead) {
-				result = list.head();
-			} else {
-				result = list.last();
-			}
-		}
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + (isHead ? HEAD_FUNC_NAME : LAST_FUNC_NAME) + ".");
+		
+		AbstractListElement list = (AbstractListElement)args.get(0);
+		return (isHead ? list.head() : list.last());
 	}
 
 	@Override

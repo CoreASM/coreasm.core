@@ -14,6 +14,7 @@ package org.coreasm.network.plugins.graph;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.BooleanBackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
@@ -54,19 +55,16 @@ public class HasCyclesFunctionElement extends FunctionElement {
 
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF; 
+		if (!(args.size() == 1 && args.get(0) instanceof GraphElement))
+			throw new CoreASMError("Illegal arguments for " + FUNCTION_NAME + ".");
 		
-		if (args.size() == 1) 
-			if (args.get(0) instanceof GraphElement) {
-				Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
-				CycleDetector<Element, Element> detector = detectorCache.getCycleDetector(g);
-						
-				if (detector != null) {
-					result = BooleanElement.valueOf(detector.detectCycles());
-				}
-			}
+		Graph<Element, Element> g = ((GraphElement)args.get(0)).getGraph();
+		CycleDetector<Element, Element> detector = detectorCache.getCycleDetector(g);
+				
+		if (detector != null)
+			return BooleanElement.valueOf(detector.detectCycles());
 		
-		return result;
+		return Element.UNDEF;
 	}
 
 }

@@ -636,7 +636,7 @@ public abstract class MathFunction extends FunctionElement {
 		if (result instanceof NumberElement) {
 			double number = ((NumberElement)result).getNumber();
 			if (number == Double.NaN)
-				result = Element.UNDEF;
+				return Element.UNDEF;
 		}
 		
 		return result;

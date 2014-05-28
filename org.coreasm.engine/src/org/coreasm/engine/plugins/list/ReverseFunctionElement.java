@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -46,21 +47,19 @@ public class ReverseFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			AbstractListElement list = (AbstractListElement)args.get(0);
-			ArrayList<Element> resultValues = new ArrayList<Element>();
-			
-			int i = list.size();
-			while (i > 0) {
-				resultValues.add(list.get(NumberElement.getInstance(i)));
-				i--;
-			}
-
-			result = new ListElement(resultValues);
-			
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		AbstractListElement list = (AbstractListElement)args.get(0);
+		ArrayList<Element> resultValues = new ArrayList<Element>();
+		
+		int i = list.size();
+		while (i > 0) {
+			resultValues.add(list.get(NumberElement.getInstance(i)));
+			i--;
 		}
-		return result;
+
+		return new ListElement(resultValues);
 	}
 
 	protected boolean checkArguments(List<? extends Element> args) {

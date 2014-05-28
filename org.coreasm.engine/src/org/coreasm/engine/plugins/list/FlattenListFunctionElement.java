@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.list;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -52,11 +53,10 @@ public class FlattenListFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (args.size() == 1 && args.get(0) instanceof AbstractListElement) {
-			result = new ListElement(flattenList(((AbstractListElement) args.get(0)).getList()));
-		}
-		return result;
+		if (!(args.size() == 1 && args.get(0) instanceof AbstractListElement))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		
+		return new ListElement(flattenList(((AbstractListElement) args.get(0)).getList()));
 	}
 	
 	/*

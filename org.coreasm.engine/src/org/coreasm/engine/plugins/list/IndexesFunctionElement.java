@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.list;
 import java.util.List;
 
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -49,13 +50,11 @@ public class IndexesFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) {
-			AbstractListElement list = (AbstractListElement)args.get(0);
-			result = new ListElement(list.indexesOf(args.get(1)));
-		} 
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
 		
-		return result;
+		AbstractListElement list = (AbstractListElement)args.get(0);
+		return new ListElement(list.indexesOf(args.get(1)));
 	}
 
 	public Signature getSignature() {

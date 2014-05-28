@@ -15,10 +15,10 @@ package org.coreasm.engine.plugins.number;
 
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.plugins.number.NumberElement;
 
 /** 
  * Impelements the 'size' function.
@@ -39,10 +39,9 @@ public class SizeFunctionElement extends FunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		Element result = Element.UNDEF;
-		if (checkArguments(args)) 
-			result = getValue((Enumerable)args.get(0));
-		return result;
+		if (!checkArguments(args))
+			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		return getValue((Enumerable)args.get(0));
 	}
 
 	/**
@@ -52,12 +51,9 @@ public class SizeFunctionElement extends FunctionElement {
 	 * @param e an {@link Enumerable}
 	 */
 	public Element getValue(Enumerable e) {
-		Element result = Element.UNDEF;
 		if (e.size() == Long.MAX_VALUE)
-			result = NumberElement.POSITIVE_INFINITY;
-		else
-			result = NumberElement.getInstance(e.size());
-		return result;
+			return NumberElement.POSITIVE_INFINITY;
+		return NumberElement.getInstance(e.size());
 	}
 	
 	protected boolean checkArguments(List<? extends Element> args) {
