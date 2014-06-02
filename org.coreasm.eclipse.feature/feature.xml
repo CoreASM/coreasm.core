@@ -2,7 +2,7 @@
 <feature
       id="org.coreasm.eclipse.feature"
       label="CoreASM Eclipse Plugin"
-      version="1.0.3.qualifier"
+      version="1.1.0.qualifier"
       provider-name="CoreASM Group">
 
    <description url="https://github.com/CoreASM/coreasm.core">
@@ -40,6 +40,6 @@ CoreASM is one of the few ASM tools that is implemented as an open framework. Co
          id="org.coreasm.eclipse"
          download-size="0"
          install-size="0"
-         version="1.0.3.qualifier"/>
+         version="1.1.0.qualifier"/>
 
 </feature>
