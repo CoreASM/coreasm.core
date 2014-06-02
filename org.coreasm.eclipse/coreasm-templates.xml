@@ -1,26 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>	
+<template id="coreasm" name="CoreASM" description="title line of a CoreASM specification (CoreASM)" context="coreasm" enabled="true">CoreASM ${specification_name}</template>
+<template id="coreasm1" name="CoreASM" description="default header of a CoreASM specification (CoreASM)" context="coreasm" enabled="true">CoreASM ${specification_name}
 
-<template id="rule" name="rule" description="rule definition (CoreASM)" context="coreasm" enabled="true">rule ${name} = ${cursor}</template>
+//use standard plugins
+use Standard
+
+//set program for the executing agent
+init ${Start}
+
+rule ${Start} = ${skip}</template>
+<template id="coremodule" name="CoreModule" description="title line of a CoreASM module specification (CoreASM)" context="coreasm" enabled="true">CoreModule ${specification_name}</template>
+<template id="coremodule1" name="CoreModule" description="default header of a CoreASM module specification (CoreASM)" context="coreasm" enabled="true">CoreModule ${module_name}
+
+//use standard plugins
+use Standard
+
+${cursor}</template>
+
+<template id="rule" name="rule" description="rule definition (CoreASM" context="coreasm" enabled="true">rule ${name}(${}) = ${cursor}</template>
 
 <template id="skip" name="skip" description="skip (CoreASM)" context="coreasm" enabled="true">skip</template>
 
-<template id="if" name="if" description="if condition (CoreASM)" context="coreasm" deleted="false" enabled="true">if ${condition} then</template>
+<template id="par" name="par" description="par block (CoreASM)" context="coreasm" enabled="true">par
+	${cursor}
+endpar</template>
 
-<template id="import" name="import" description="import (CoreASM)" context="coreasm" enabled="true">import ${name} do</template>
+<template id="seq" name="seq" description="seq next (CoreASM)" context="coreasm" enabled="true">seq
+	${cursor}
+next
+	${cursor}</template>
+<template id="seq" name="seq block" description="seq block (CoreASM)" context="coreasm" enabled="true">seqblock
+	${cursor}
+endseqblock</template>
 
-<template id="forall" name="forall" description="forall (CoreASM)" context="coreasm" enabled="true">forall ${name} in ${collection} do</template>
+<template id="if" name="if then" description="if condition (CoreASM)" context="coreasm" deleted="false" enabled="true">if ${condition} then ${cursor}</template>
+<template id="if1" name="if then else" description="if then else condition (CoreASM)" context="coreasm" deleted="false" enabled="true">if ${condition} then ${skip} else ${skip}</template>
 
-<template id="function" name="function" description="function definition (CoreASM)" context="coreasm" enabled="true">function ${name}: ${input} -> ${output}</template>
+<template id="while" name="while" description="while loop (CoreASM)" context="coreasm" deleted="false" enabled="true">while (${condition}) do ${cursor}</template>
 
-<template id="derived" name="derived" description="derived function definition (CoreASM)" context="coreasm" enabled="true">derived ${name} = ${cursor}</template>
+<template id="iterate" name="iterate" description="iterate (CoreASM)" context="coreasm" enabled="true">iterate ${rule_block}</template>
+
+<template id="forall" name="forall" description="forall (CoreASM)" context="coreasm" enabled="true">forall ${element} in ${collection} do ${cursor}</template>
+<template id="forall1" name="forall with guard" description="forall with guard (CoreASM)" context="coreasm" enabled="true">forall ${element} in ${collection} with ${condition} do ${cursor}</template>
+
+<template id="choose" name="choose" description="choose (CoreASM)" context="coreasm" enabled="true">choose ${element} in ${collection} do ${cursor}</template>
+<template id="choose1" name="choose with guard" description="choose with guard (CoreASM)" context="coreasm" enabled="true">choose ${element} in ${collection} with ${condition} do ${cursor}</template>
+
+<template id="pick" name="pick" description="pick and return a value from a colletion (CoreASM)" context="coreasm" enabled="true">pick ${element} in ${collection}</template>
+<template id="pick1" name="pick with guard" description="pick with guard (CoreASM)" context="coreasm" enabled="true">pick ${element} in ${collection} with ${condition}</template>
+
+<template id="import" name="import" description="import (CoreASM)" context="coreasm" enabled="true">import ${element} do ${cursor}</template>
+
+<template id="extend" name="extend" description="extend (CoreASM)" context="coreasm" enabled="true">extend ${universe} with ${element} do ${cursor}</template>
+
+<template id="case" name="case" description="case rule (CoreASM)" context="coreasm" enabled="true">case ${element} of ${value_1} : ${rule_block_1} endcase</template>
+
+<template id="function" name="function" description="function definition (CoreASM)" context="coreasm" enabled="true">function ${name}: ${universe_name} -> ${universe_name}</template>
+<template id="function1" name="function" description="monitored function definition (CoreASM)" context="coreasm" enabled="true">function monitored ${name}: ${universe_name} -> ${universe_name}</template>
+<template id="function2" name="function" description="controlled function definition (CoreASM)" context="coreasm" enabled="true">function controlled ${name}: ${universe_name} -> ${universe_name}</template>
+<template id="function3" name="function" description="derived function definition (CoreASM)" context="coreasm" enabled="true">derived ${name}(${}) = ${cursor}</template>
+<template id="derived" name="derived" description="derived function definition (CoreASM)" context="coreasm" enabled="true">derived ${name}(${}) = ${cursor}</template>
+
+<template id="return" name="return" description="return block (CoreASM)" context="coreasm" enabled="true">return ${res} in ${cursor}</template>
+<template id="local" name="local" description="local block (CoreASM)" context="coreasm" enabled="true">local ${var} in ${cursor}</template>
+
+<template id="let" name="let" description="let variable definition (CoreASM)" context="coreasm" enabled="true">let ${var} = ${value} in ${cursor}</template>
 
 <template id="use" name="use" description="use plugin (CoreASM)" context="coreasm" enabled="true">use ${plugin}</template>
 
-<template id="universe" name="universe" description="universe definition (CoreASM)" context="coreasm" enabled="true">universe ${name} = ${cursor}</template>
+<template id="universe" name="universe" description="universe definition (CoreASM)" context="coreasm" enabled="true">universe ${name}</template>
+<template id="universe1" name="universe" description="universe definition with initial elements(CoreASM)" context="coreasm" enabled="true">universe ${name} = {${list_of_elements}}</template>
 
 <template id="enum" name="enum" description="enum definition (CoreASM)" context="coreasm" enabled="true">enum ${name} = ${cursor}</template>
+<template id="enum1" name="enum" description="enum definition with initial elements (CoreASM)" context="coreasm" enabled="true">enum ${name} = {${list_of_elements}}</template>
 
-<template id="let" name="let" description="let variable definition (CoreASM)" context="coreasm" enabled="true">let ${name} = ${value} in</template>
+<template id="print" name="print" description="print a string (CoreASM)" context="coreasm" enabled="true">print ${cursor}</template>
 
 </templates>
