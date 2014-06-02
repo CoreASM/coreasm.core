@@ -115,7 +115,7 @@ public class ASMNewWizard extends Wizard implements INewWizard {
 		IContainer container = (IContainer) resource;
 		final IFile file = container.getFile(new Path(fileName));
 		try {
-			InputStream stream = openContentStream();
+			InputStream stream = openContentStream(fileName);
 			if (file.exists()) {
 				file.setContents(stream, true, true, monitor);
 			} else {
@@ -142,11 +142,23 @@ public class ASMNewWizard extends Wizard implements INewWizard {
 	
 	/**
 	 * We will initialize file contents with a sample text.
+	 * 
+	 * @param containerName
 	 */
 
-	private InputStream openContentStream() {
-		String contents =
-			"/* CoreASM specification */\n\n";
+	private InputStream openContentStream(String fileName) {
+		String specification = "Specification";
+		if (fileName != null && !fileName.isEmpty())
+			if (fileName.indexOf(".") != -1)
+				specification = fileName.substring(0, fileName.indexOf("."));
+			else
+				specification = fileName;
+		String contents = "CoreASM " + specification + "\n\n"
+				+ "//use standard plugins\n"
+				+ "use Standard\n\n"
+				+ "//set program for the executing agent\n"
+				+ "init Start\n\n"
+				+ "rule Start = skip";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 
