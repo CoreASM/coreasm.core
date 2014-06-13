@@ -44,21 +44,14 @@ public class UpdateRuleNode extends ASTNode {
 	 * @return the LHS node of the assignment
 	 */
 	public Node getLHS() {
-		return this.getFirst();
+		return this.getChildNode("alpha");
 	}
 
 	/**
 	 * @return the RHS node of the assignment
 	 */
 	public Node getRHS() {
-		return this.getFirst();
-	}
-
-	/**
-	 * @return the RHS node of the assignment
-	 */
-	public Node getTerm() {
-		return getRHS();
+		return this.getChildNode("beta");
 	}
 
 }
