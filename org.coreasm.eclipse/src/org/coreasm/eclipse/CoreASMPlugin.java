@@ -1,5 +1,13 @@
 package org.coreasm.eclipse;
 
+/**
+ * @mainpage Eclipse-Plugin for CoreASM
+ * 
+ * 
+ *           This is the Activator class of the CoreASM Eclipse Plugin. The
+ *           sources and the CoreASM wiki are hosted on
+ *           https://github.com/CoreASM/coreasm.core
+ */
 
 import java.io.File;
 import java.net.URL;
