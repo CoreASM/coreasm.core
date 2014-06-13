@@ -2,9 +2,15 @@ package org.coreasm.eclipse.editors;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPositionCategoryException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.Position;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.Specification;
@@ -13,14 +19,12 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.util.Logger;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 
 /**
  * The ASMDocument class represents a CoreASM specification as a document of an
  * Eclipse CoreASM editor.
  * 
- * @author Markus M�ller, Michael Stegmaier
+ * @author Markus Müller, Michael Stegmaier, Marcel Dausend
  */
 public class ASMDocument
 extends Document
@@ -317,4 +321,104 @@ extends Document
 			//this.token = token;
 		}
 	}
+	//@{
+	/**
+	 * Avoid ConcurrentModificationExceptions in case of document accesses. The
+	 * method has to be synchronized due to a bug in Eclipse.
+	 */
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	protected synchronized Map getDocumentManagedPositions()
+	{
+		return super.getDocumentManagedPositions();
+	}
+
+	@Override
+	public synchronized void addPosition(String category, Position position)
+			throws BadLocationException, BadPositionCategoryException
+	{
+		super.addPosition(category, position);
+	}
+
+	@Override
+	public synchronized void addPositionCategory(String category)
+	{
+		super.addPositionCategory(category);
+	}
+
+	@Override
+	public synchronized boolean containsPosition(String category, int offset,
+			int length)
+	{
+		return super.containsPosition(category, offset, length);
+	}
+
+	@Override
+	public synchronized boolean containsPositionCategory(String category)
+	{
+		return super.containsPositionCategory(category);
+	}
+
+	@Override
+	public synchronized int computeIndexInCategory(String category, int offset)
+			throws BadLocationException, BadPositionCategoryException
+	{
+		return super.computeIndexInCategory(category, offset);
+	}
+
+	@Override
+	public synchronized Position[] getPositions(String category)
+			throws BadPositionCategoryException
+	{
+		return super.getPositions(category);
+	}
+
+	@Override
+	public synchronized String[] getPositionCategories()
+	{
+		return super.getPositionCategories();
+	}
+
+	@Override
+	public synchronized void removePosition(Position position)
+	{
+		super.removePosition(position);
+	}
+
+	@Override
+	public synchronized void removePosition(String category, Position position)
+			throws BadPositionCategoryException
+	{
+		super.removePosition(category, position);
+	}
+
+	@Override
+	public synchronized void removePositionCategory(String category)
+			throws BadPositionCategoryException
+	{
+		super.removePositionCategory(category);
+	}
+
+	@Override
+	protected synchronized void completeInitialization()
+	{
+		super.completeInitialization();
+	}
+
+	@Override
+	public synchronized void addPosition(Position position)
+			throws BadLocationException
+	{
+		super.addPosition(position);
+	}
+
+	@Override
+	public synchronized Position[] getPositions(String category, int offset,
+			int length, boolean canStartBefore, boolean canEndAfter)
+			throws BadPositionCategoryException
+	{
+		return super.getPositions(category, offset, length, canStartBefore, canEndAfter);
+	}
+	//@}
 }
