@@ -53,14 +53,27 @@ public class SetNthFunctionElement extends ListFunctionElement {
 	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
-		if (!checkArguments(args))
-			throw new CoreASMError("Illegal arguments for " + NAME + ".");
+		String exception ="";
+		if (args.size() != 3)
+			exception = "Illegal number of arguments. "+NAME+" requires three arguments";
+		else if (!(args.get(0) instanceof ListElement))
+			exception = "Illegal argument: First argument of "+NAME+" must be a list.";
+		else if (!(args.get(1) instanceof NumberElement))
+			exception = "Illegal argument: Second argument of "+NAME+" must be a positive number.";
+		else if (args.get(2) == null)
+			exception = "Illegal argument: Thrid argument of " + NAME + " should be an element.";
+		if (!exception.isEmpty())
+			throw new CoreASMError(exception);
 		
 		ListElement list = (ListElement) args.get(0);
 		NumberElement n = (NumberElement)args.get(1);
-		if (n.getValue() >= list.size())
-			throw new CoreASMError("Index out of range for setnth.");
-		
+		if (n.getValue() <= 0)
+			throw new CoreASMError("Index out of range for " + NAME + ". Second parameter must be a positive number.");
+		else if (n.getValue() > list.size())
+			throw new CoreASMError(
+					"Index out of range for " + NAME
+							+ ". Second parameter must be a number which is at most the number of list elements.");
+
 		List<Element> resultValues = new ArrayList<Element>();
 		for (Element e: list.enumerate()) 
 			resultValues.add(e);
@@ -69,16 +82,9 @@ public class SetNthFunctionElement extends ListFunctionElement {
 		return new ListElement(resultValues);
 	}
 
+	@Override
 	public Signature getSignature() {
 		return signature;
-	}
-	
-	protected boolean checkArguments(List<? extends Element> args) {
-		return (args.size() == 3) 
-				&& (args.get(0) instanceof ListElement)
-				&& (args.get(1) instanceof NumberElement)
-				&& (((NumberElement)args.get(1)).isNatural())
-				&& (args.get(2) != null);
 	}
 }
 
