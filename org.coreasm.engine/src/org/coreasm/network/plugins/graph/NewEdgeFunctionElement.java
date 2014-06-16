@@ -43,13 +43,11 @@ public class NewEdgeFunctionElement extends FunctionElement {
 
 	@Override
 	public Set<? extends Element> getRange() {
-		// TODO Auto-generated method stub
 		return super.getRange();
 	}
 
 	@Override
 	public Signature getSignature() {
-		// TODO Auto-generated method stub
 		return super.getSignature();
 	}
 

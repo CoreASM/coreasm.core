@@ -2,7 +2,6 @@ package org.coreasm.eclipse.editors.quickfix;
 
 import java.util.ArrayList;
 
-import org.coreasm.eclipse.editors.ASMEditor;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -18,6 +17,8 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+
+import org.coreasm.eclipse.editors.ASMEditor;
 
 public class ASMMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 
@@ -47,7 +48,6 @@ public class ASMMarkerResolutionGenerator implements IMarkerResolutionGenerator 
 							((ITextEditor)editor).selectAndReveal(start, end - start);
 						}
 					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}

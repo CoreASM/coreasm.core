@@ -91,10 +91,8 @@ public final class Utilities {
 				MarkerUtilities.setCharEnd(attributes, start + length);
 				MarkerUtilities.createMarker(((IFileEditorInput)editor.getEditorInput()).getFile(), attributes, markerType);
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

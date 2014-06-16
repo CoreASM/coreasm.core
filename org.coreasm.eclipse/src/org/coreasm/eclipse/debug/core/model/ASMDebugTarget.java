@@ -1,9 +1,5 @@
 package org.coreasm.eclipse.debug.core.model;
 
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
-import org.coreasm.eclipse.engine.driver.EngineDriver.EngineDriverStatus;
-import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
-import org.coreasm.engine.CoreASMError;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
@@ -18,6 +14,11 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.eclipse.engine.driver.EngineDriver.EngineDriverStatus;
+import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
+import org.coreasm.engine.CoreASMError;
 
 /**
  * Implementation of the ASM debug target
@@ -101,19 +102,16 @@ public class ASMDebugTarget extends ASMDebugElement implements IDebugTarget {
 	@Override
 	public void breakpointAdded(IBreakpoint breakpoint) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

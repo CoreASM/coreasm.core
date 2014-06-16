@@ -8,24 +8,25 @@ import java.util.List;
  * (org.codehaus.jparsec.DefaultSourceLocator).
  * 
  * The class DefaultSourceLocator from JParsec 2.0 was called DefaultPositionMap
- * in the old JParsec parser. In JParsec 2.0 however the visibility of this class
- * was reduced to a package scoped visibility, and the class was declared as final.
+ * in the old JParsec parser. In JParsec 2.0 however the visibility of this
+ * class was reduced to a package scoped visibility, and the class was declared
+ * as final.
  * The class is not accessible from CoreASM any more, and because we want to use
  * an unmodified JParsec library we needed to copy its code into PositionMap.
  * 
- * TODO: JParsed is licensed under the Apache License, Version 2.0,
- * CoreASM uses the Academic Free License version 3.0, so we have to 
- * describe properly that we're using this code here. 
+ * JParsed is licensed under the Apache License, Version 2.0,
+ * CoreASM uses the Academic Free License version 3.0, so we have to describe
+ * properly that we're using this code here.
  * 
  * There are several modifications of the original DefaultSourceLocator:
  * <ul>
- * <li>The interface SourceLocator was removed, because its visibility was also reduced,
- * however, we don't need the interface here.</li>
+ * <li>The interface SourceLocator was removed, because its visibility was also
+ * reduced, however, we don't need the interface here.</li>
  * <li>The type of the internal integer list was changed from JParsec's own
  * IntList class to java.util.ArrayList.</li>
  * <li>For storing line-column-based positions the class now uses CoreASM's
- * CharacterPosition class instead of JParsec's Location class, since
- * both classes do the same and have a very similar interface.</li>
+ * CharacterPosition class instead of JParsec's Location class, since both
+ * classes do the same and have a very similar interface.</li>
  * </ul>
  * 
  */

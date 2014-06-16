@@ -3,6 +3,14 @@ package org.coreasm.eclipse.editors.outlining;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.eclipse.jface.text.BadPositionCategoryException;
+import org.eclipse.jface.text.DefaultPositionUpdater;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IPositionUpdater;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.AstTools;
@@ -12,13 +20,6 @@ import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.UnavailableTreeNode
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugins.modularity.IncludeNode;
-import org.eclipse.jface.text.BadPositionCategoryException;
-import org.eclipse.jface.text.DefaultPositionUpdater;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IPositionUpdater;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 
 /**
  * Content provider for ParsedOutlinePage
@@ -234,7 +235,6 @@ public class ParsedContentProvider implements ITreeContentProvider
 				//IFile file = FileManager.getFile(iNode.getFilename(), FileManager.getActiveProject());
 				filenameFromProj = FileManager.getFilenameRelativeToProject(iNode.getFilename(), editor.getInputFile());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
 

@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
@@ -33,7 +34,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -66,13 +66,13 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	 */
 	@Override
 	public void initialize() {
-		// TODO Auto-generated method stub
 
 	}
 
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ParserPlugin#getKeywords()
 	 */
+	@Override
 	public String[] getKeywords() {
 		return keywords;
 	}
@@ -80,6 +80,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ParserPlugin#getOperators()
 	 */
+	@Override
 	public String[] getOperators() {
 		return operators;
 	}
@@ -96,6 +97,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		return dependencies;
 	}
 
+	@Override
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();
 	}
@@ -103,6 +105,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ParserPlugin#getParser(java.lang.String)
 	 */
+	@Override
 	public Parser<Node> getParser(String nonterminal) {
 		if (nonterminal.equals("MapTerm"))
 			return refMapTermParser.lazy();
@@ -113,6 +116,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ParserPlugin#getParsers()
 	 */
+	@Override
 	public Map<String, GrammarRule> getParsers() {
 		if (parsers == null) {
 			parsers = new HashMap<String, GrammarRule>();
@@ -134,6 +138,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
+						@Override
 						public Node map(Object... vals) {
 							ASTNode node = new MapletNode((Node)vals[0]);
 							addChildren(node, vals);
@@ -153,6 +158,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
+						@Override
 						public Node map(Object... vals) {
 							Node node = new MapTermNode((Node)vals[0]);
 							addChildren(node, vals);
@@ -174,10 +180,12 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.VersionInfoProvider#getVersionInfo()
 	 */
+	@Override
 	public VersionInfo getVersionInfo() {
 		return VERSION_INFO;
 	}
 
+	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
 		if (pos instanceof MapletNode) {
 			if (!pos.getFirst().isEvaluated())
@@ -205,10 +213,12 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		return pos;
 	}
 
+	@Override
 	public Set<String> getBackgroundNames() {
 		return getBackgrounds().keySet();
 	}
 
+	@Override
 	public Map<String, BackgroundElement> getBackgrounds() {
 		if (bkgs == null) {
 			bkgs = new HashMap<String, BackgroundElement>();
@@ -217,10 +227,12 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		return bkgs;
 	}
 
+	@Override
 	public Set<String> getFunctionNames() {
 		return getFunctions().keySet();
 	}
 
+	@Override
 	public Map<String, FunctionElement> getFunctions() {
 		if (functions == null) {
 			functions = new HashMap<String, FunctionElement>();
@@ -230,18 +242,22 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		return functions;
 	}
 
+	@Override
 	public Set<String> getRuleNames() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public Map<String, RuleElement> getRules() {
 		return Collections.emptyMap();
 	}
 
+	@Override
 	public Set<String> getUniverseNames() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public Map<String, UniverseElement> getUniverses() {
 		return Collections.emptyMap();
 	}

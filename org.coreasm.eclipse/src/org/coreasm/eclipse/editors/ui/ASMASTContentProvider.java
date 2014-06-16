@@ -3,9 +3,6 @@ package org.coreasm.eclipse.editors.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.eclipse.editors.ASMParser;
-import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.Node.NameNodeTuple;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
@@ -13,6 +10,10 @@ import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+
+import org.coreasm.eclipse.editors.ASMParser;
+import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.Node.NameNodeTuple;
 
 public class ASMASTContentProvider implements ITreeContentProvider 
 {
@@ -47,7 +48,6 @@ public class ASMASTContentProvider implements ITreeContentProvider
 			try {
 				throw new Exception("wrong initialization of SystaxOutlineContentProvider ");
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -56,7 +56,6 @@ public class ASMASTContentProvider implements ITreeContentProvider
 	@Override
 	public void dispose() 
 	{
-		// TODO Auto-generated method stub
 
 	}
 

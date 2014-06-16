@@ -18,18 +18,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
-import java.util.Vector;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.plugins.number.NumberElement;
-import org.coreasm.engine.absstorage.Enumerable;
-import org.coreasm.util.HashMultiset;
 
 
 // implements Enumerable
@@ -115,6 +111,7 @@ public class TreeNodeElement extends Element implements Enumerable {
 		return TreePlugin.getAbstractStorage();
 	} // getAbstractStorage
 	
+	@Override
 	public boolean equals(Object o) {
 		return (o instanceof TreeNodeElement && o==this);
 	} // equals
@@ -983,13 +980,11 @@ public class TreeNodeElement extends Element implements Enumerable {
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
 		return enumerate().size();
 	}
 
 	@Override
 	public boolean supportsIndexedView() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -1091,6 +1086,7 @@ public class TreeNodeElement extends Element implements Enumerable {
 		return res;
 	} // valueToString
 
+	@Override
 	public String toString() {
 		String str = "";
 

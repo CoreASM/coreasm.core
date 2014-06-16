@@ -3,8 +3,6 @@ package org.coreasm.eclipse.debug.ui.views;
 
 import java.util.ArrayList;
 
-import org.coreasm.eclipse.CoreASMPlugin;
-import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.ui.DebugUITools;
@@ -30,6 +28,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.part.ViewPart;
 
+import org.coreasm.eclipse.CoreASMPlugin;
+import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
+
 /**
  * Implementation of the ASM Compare View
  * @author Michael Stegmaier
@@ -46,11 +47,14 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 	private final Image IMAGE = CoreASMPlugin.getImageDescriptor("icons/CoreASM-Logo.png").createImage();
 
 	class ViewContentProvider implements IStructuredContentProvider {
+		@Override
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
+		@Override
 		public void dispose() {
 			viewer = null;
 		}
+		@Override
 		public Object[] getElements(Object parent) {
 			if (elements == null)
 				return new Object[0];
@@ -58,9 +62,11 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 		}
 	}
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+		@Override
 		public String getColumnText(Object obj, int index) {
 			return getText(obj);
 		}
+		@Override
 		public Image getColumnImage(Object obj, int index) {
 			return getImage(obj);
 		}
@@ -94,6 +100,7 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 		});
 	}
 
+	@Override
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new ViewContentProvider());
@@ -161,6 +168,7 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 
 	private void makeActions() {
 		showDifferencesOnlyAction = new Action() {
+			@Override
 			public void run() {
 				differencesOnly = !differencesOnly;
 				showDifferencesOnlyAction.setChecked(differencesOnly);
@@ -189,6 +197,7 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 //		});
 //	}
 	
+	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
@@ -208,7 +217,6 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 						variables[selectedSteps] = frame.getVariables();
 					}
 					catch (DebugException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					selectedSteps++;
@@ -225,7 +233,6 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 								variableNames.add(variableNames.indexOf(prevVariableName) + 1, name);
 							prevVariableName = name;
 						} catch (DebugException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -246,7 +253,6 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 					}
 					compareViewElements[i] = new ASMCompareViewElement(name, values);
 				} catch (DebugException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

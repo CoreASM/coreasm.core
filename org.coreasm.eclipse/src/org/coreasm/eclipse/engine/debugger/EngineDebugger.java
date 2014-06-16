@@ -10,6 +10,16 @@ import java.util.Stack;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.error.ParserException;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugEvent;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IBreakpoint;
+import org.eclipse.swt.widgets.Display;
+
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.debug.core.model.ASMDebugTarget;
 import org.coreasm.eclipse.debug.core.model.ASMLineBreakpoint;
@@ -49,15 +59,6 @@ import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.engine.plugins.turboasm.SeqBlockRuleNode;
 import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugEvent;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.IBreakpoint;
-import org.eclipse.swt.widgets.Display;
 
 /**
  * This is the main class of the the debugger. It controls the engine and provides access to it's state.
@@ -490,7 +491,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 						return true;
 					}
 				} catch (CoreException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -508,7 +508,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				if (breakpoint instanceof ASMLineBreakpoint && new Path(((ASMLineBreakpoint) breakpoint).getSpecName()).equals(new Path(sourceName)) && ((ASMLineBreakpoint) breakpoint).getLineNumber() == lineNumber)
 					return true;
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -606,7 +605,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 							break;
 						}
 					} catch (CoreException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -640,7 +638,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 							onBreakpointHit(pos);
 							break;
 						} catch (CoreException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}

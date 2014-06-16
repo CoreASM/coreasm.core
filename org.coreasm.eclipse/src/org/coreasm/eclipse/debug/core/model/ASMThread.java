@@ -1,10 +1,11 @@
 package org.coreasm.eclipse.debug.core.model;
 
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 
 /**
  * This class is needed by the eclipse debug framework. Incoming calls are redirected to the debug target.
@@ -151,7 +152,7 @@ public class ASMThread extends ASMDebugElement implements IThread {
 	
 	@Override
 	public IBreakpoint[] getBreakpoints() {
-		// TODO Auto-generated method stub
+		// TODO getBreakPoints()
 		return null;
 	}
 }

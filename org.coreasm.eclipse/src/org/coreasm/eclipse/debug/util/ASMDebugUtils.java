@@ -3,15 +3,6 @@ package org.coreasm.eclipse.debug.util;
 import java.io.File;
 import java.util.HashMap;
 
-import org.coreasm.eclipse.debug.ui.views.ASMUpdateViewElement;
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
-import org.coreasm.engine.ControlAPI;
-import org.coreasm.engine.Specification;
-import org.coreasm.engine.absstorage.Update;
-import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.ScannerInfo;
-import org.coreasm.engine.parser.CharacterPosition;
-import org.coreasm.engine.parser.Parser;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -22,6 +13,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+
+import org.coreasm.eclipse.debug.ui.views.ASMUpdateViewElement;
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.Specification;
+import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.engine.parser.CharacterPosition;
+import org.coreasm.engine.parser.Parser;
 
 /**
  * Utilities for the ASM debugger
@@ -158,7 +159,6 @@ public class ASMDebugUtils {
 					}
 				}
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -202,7 +202,6 @@ public class ASMDebugUtils {
 					IDE.openEditor(page, marker);
 					marker.delete();
 				} catch (CoreException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
