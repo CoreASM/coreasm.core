@@ -77,4 +77,12 @@ endseqblock</template>
 
 <template id="print" name="print" description="print a string (CoreASM)" context="coreasm" enabled="true">print ${cursor}</template>
 
+<template id="pop" name="pop" description="pop element from stack (CoreASM)" context="coreasm" enabled="true">pop ${element} from ${stack}</template>
+
+<template id="push" name="push" description="push element on stack (CoreASM)" context="coreasm" enabled="true">push ${element} into ${stack}</template>
+
+<template id="peek" name="peek" description="return the top element of stack without changing the stack (CoreASM)" context="coreasm" enabled="true">peek(${element})</template>
+
+
+
 </templates>
