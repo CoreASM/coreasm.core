@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -80,7 +80,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	public static final String PLUGIN_NAME = TurboASMPlugin.class.getSimpleName();
 
 	/* work copies of a tree */
-	private ThreadLocal<Map<ASTNode, Stack<ASTNode>>> workCopies;
+	private ThreadLocal<Map<ASTNode, ASTNode>> workCopies;
 	
 	/* composed updates cache */
 	private ThreadLocal<Map<ASTNode,UpdateMultiset>> composedUpdatesMap;
@@ -105,16 +105,16 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	
 	@Override
 	public void initialize() {
-		workCopies = new ThreadLocal<Map<ASTNode,Stack<ASTNode>>>() {
+		workCopies = new ThreadLocal<Map<ASTNode,ASTNode>>() {
 			@Override
-			protected Map<ASTNode, Stack<ASTNode>> initialValue() {
-				return new HashMap<ASTNode, Stack<ASTNode>>();
+			protected Map<ASTNode, ASTNode> initialValue() {
+				return new IdentityHashMap<ASTNode, ASTNode>();
 			}
 		};
 		composedUpdatesMap = new ThreadLocal<Map<ASTNode,UpdateMultiset>>() {
 			@Override
 			protected Map<ASTNode, UpdateMultiset> initialValue() {
-				return new HashMap<ASTNode, UpdateMultiset>();
+				return new IdentityHashMap<ASTNode, UpdateMultiset>();
 			}
 		};
 		logger.debug("TurboASM is loaded!");
@@ -130,7 +130,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	/*
 	 * Returns the work copy cache for this thread
 	 */
-	private Map<ASTNode, Stack<ASTNode>> getThreadWorkCopy() {
+	private Map<ASTNode, ASTNode> getThreadWorkCopy() {
 		return workCopies.get();
 	}
 	
@@ -566,22 +566,13 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		exArgs.add(loc);
 		exParams.add(RESULT_KEYWORD);
 		
-		Map<ASTNode, Stack<ASTNode>> workCopy = getThreadWorkCopy();
+		Map<ASTNode, ASTNode> workCopy = getThreadWorkCopy();
 
-		// Using a stack of workcopies because copyTreeSub returns an equal copy of the rule body
-		Stack<ASTNode> wCopyStack = workCopy.get(pos);
-		if (wCopyStack == null) {
-			wCopyStack = new Stack<ASTNode>();
-			workCopy.put(pos, wCopyStack);
-		}
-		ASTNode wCopy = null;
-		// if the current pos is the parent of the workcopy on the top of the stack we have already evaluated the rulecall
-		if (!wCopyStack.isEmpty() && pos == wCopyStack.peek().getParent())
-			wCopy = wCopyStack.peek();
+		ASTNode wCopy = workCopy.get(pos);
 		// If there is no work copy created for this rule call
 		if (wCopy == null) {
 			wCopy = interpreter.copyTreeSub(rule.getBody(), exParams, exArgs);
-			wCopyStack.push(wCopy);
+			workCopy.put(pos, wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, interpreter.getSelf());
 			return wCopy; // as new value of 'pos'
@@ -592,10 +583,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			// to throw this copy out! :)
 			wCopy.dipose();
 
-			wCopyStack.pop();
-			if (wCopyStack.isEmpty())
-				workCopy.remove(pos);
-			
+			workCopy.remove(pos);
 			notifyOnRuleExit(rule, args, pos, interpreter.getSelf());
 			return pos;
 		}

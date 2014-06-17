@@ -13,7 +13,7 @@
  
 package org.coreasm.engine.plugins.caserule;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.coreasm.engine.interpreter.ASTNode;
@@ -57,7 +57,7 @@ public class CaseRuleNode extends ASTNode {
      * @throws Exception 
      */
     public Map<ASTNode, ASTNode> getCaseMap() {
-    	Map<ASTNode, ASTNode> caseMap = new HashMap<ASTNode, ASTNode>();
+    	Map<ASTNode, ASTNode> caseMap = new IdentityHashMap<ASTNode, ASTNode>();
          
         ASTNode current = (ASTNode)getChildNode("beta");
         

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,10 +35,9 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -85,7 +85,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
         remained = new ThreadLocal<Map<ASTNode, List<Element>>>() {
 			@Override
 			protected Map<ASTNode, List<Element>> initialValue() {
-				return new HashMap<ASTNode, List<Element>>();
+				return new IdentityHashMap<ASTNode, List<Element>>();
 			}
         };
     }

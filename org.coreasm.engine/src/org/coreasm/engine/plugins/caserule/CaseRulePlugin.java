@@ -15,9 +15,10 @@ package org.coreasm.engine.plugins.caserule;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -30,7 +31,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -130,7 +130,7 @@ public class CaseRulePlugin extends Plugin
             	// return the case term for evaluation
             	return caseNode.getCaseTerm();
             } else {
-            	Map<ASTNode, ASTNode> caseMap = new HashMap<ASTNode, ASTNode>();
+            	Map<ASTNode, ASTNode> caseMap = new IdentityHashMap<ASTNode, ASTNode>();
             	caseMap = caseNode.getCaseMap();
             	
             	// evaluate all case guards

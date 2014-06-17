@@ -2,6 +2,7 @@ package org.coreasm.eclipse.editors.errors;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 /**
  * Checks an ASMDocument for the correct usage of rule declaration.
  * It checks if several rules have the same name.
- * @author Markus Müller, Michael Stegmaier
+ * @author Markus Mï¿½ller, Michael Stegmaier
  */
 public class RuleErrorRecognizer 
 implements ITreeErrorRecognizer
@@ -150,7 +151,7 @@ implements ITreeErrorRecognizer
 	 * The rules are renamed by adding an integer to them
 	 * (rule -> rule, rule_1, rule_2, ...)
 	 * 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_MultiName_Rename
 	extends AbstractQuickFix
@@ -182,7 +183,7 @@ implements ITreeErrorRecognizer
 			
 				// create a new name for each rule declaration and store it
 				int counter = 0;
-				Map<ASTNode, String> newnames = new HashMap<ASTNode, String>();
+				Map<ASTNode, String> newnames = new IdentityHashMap<ASTNode, String>();
 				for (ASTNode rulenode: rulenodes) {
 					Node idnode = AstTools.findIdNode(rulenode);
 					String name = idnode.getToken();

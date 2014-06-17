@@ -1,7 +1,7 @@
 package org.coreasm.eclipse.engine.debugger;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -645,7 +645,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 		}
-		ruleArgs = new HashMap<ASTNode, String>();
+		ruleArgs = new IdentityHashMap<ASTNode, String>();
 		if (rule.getParam() != null) {
 			int i = 0;
 			for (String param : rule.getParam())

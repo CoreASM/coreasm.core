@@ -145,7 +145,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 		logmsg.append("parsed: ").append(filename).append(" ... ");
 
 		ASMDocument doc = (ASMDocument) documentProvider.getDocument(parentEditor.getInput());
-		if (doc.get().isEmpty())
+		if (doc == null || doc.get().isEmpty())
 			return;
 		ParsingResult result = null;
 

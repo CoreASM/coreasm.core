@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class InterpreterImp implements Interpreter {
 	private final Map<String,Stack<Element>> envMap;
 	
 	/** Work copy of a tree */
-	private final Map<ASTNode,Stack<ASTNode>> workCopy;
+	private final Map<ASTNode,ASTNode> workCopy;
 	
 	/** Link to the abstract storage module */
 	private final AbstractStorage storage;
@@ -100,7 +101,7 @@ public class InterpreterImp implements Interpreter {
 		this.capi = capi;
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
-		this.workCopy = new HashMap<ASTNode,Stack<ASTNode>>();
+		this.workCopy = new IdentityHashMap<ASTNode,ASTNode>();
 		interpreters.set(this);
 	}
 	
@@ -868,16 +869,7 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
-		// Using a stack of workcopies because copyTreeSub returns an equal copy of the rule body
-		Stack<ASTNode> wCopyStack = workCopy.get(pos);
-		if (wCopyStack == null) {
-			wCopyStack = new Stack<ASTNode>();
-			workCopy.put(pos, wCopyStack);
-		}
-		ASTNode wCopy = null;
-		// if the current pos is the parent of the workcopy on the top of the stack we have already evaluated the rulecall
-		if (!wCopyStack.isEmpty() && pos == wCopyStack.peek().getParent())
-			wCopy = wCopyStack.peek();
+		ASTNode wCopy = workCopy.get(pos);
 		// If there is no work copy created for this rule call
 		if (wCopy == null) {
 			// checking the parameters and the arguments
@@ -889,7 +881,7 @@ public class InterpreterImp implements Interpreter {
 				return pos;
 			}
 			wCopy = copyTreeSub(rule.getBody(), rule.getParam(), args);
-			wCopyStack.push(wCopy);
+			workCopy.put(pos, wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, self);
 			return wCopy; // as new value of 'pos'
@@ -903,9 +895,7 @@ public class InterpreterImp implements Interpreter {
 			// to throw this copy out! :)
 			wCopy.dipose();
 			
-			wCopyStack.pop();
-			if (wCopyStack.isEmpty())
-				workCopy.remove(pos);
+			workCopy.remove(pos);
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
 			return pos;

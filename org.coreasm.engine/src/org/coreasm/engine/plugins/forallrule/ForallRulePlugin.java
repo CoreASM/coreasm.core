@@ -17,9 +17,11 @@ package org.coreasm.engine.plugins.forallrule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -35,7 +37,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -57,7 +58,7 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
 	private final String[] keywords = {"forall", "in", "with", "do", "endforall"};
 	private final String[] operators = {};
 	
-    private ThreadLocal<Map<Node,List<Element>>> remains;
+    private ThreadLocal<Map<Node,Stack<List<Element>>>> remains;
     private ThreadLocal<Map<Node,UpdateMultiset>> updates;
     
     private Map<String, GrammarRule> parsers;
@@ -65,21 +66,21 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
     @Override
     public void initialize() {
         //considered = new HashMap<Node,ArrayList<Element>>();
-        remains = new ThreadLocal<Map<Node, List<Element>>>() {
+        remains = new ThreadLocal<Map<Node, Stack<List<Element>>>>() {
 			@Override
-			protected Map<Node, List<Element>> initialValue() {
-				return new HashMap<Node, List<Element>>();
+			protected Map<Node, Stack<List<Element>>> initialValue() {
+				return new IdentityHashMap<Node, Stack<List<Element>>>();
 			}
         };
         updates= new ThreadLocal<Map<Node,UpdateMultiset>>() {
 			@Override
 			protected Map<Node, UpdateMultiset> initialValue() {
-				return new HashMap<Node, UpdateMultiset>(); 
+				return new IdentityHashMap<Node, UpdateMultiset>(); 
 			}
         };
     }
  
-    private Map<Node, List<Element>> getRemainsMap() {
+    private Map<Node, Stack<List<Element>>> getRemainsMap() {
     	return remains.get();
     }
 
@@ -133,14 +134,19 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
         if (pos instanceof ForallRuleNode) {
             ForallRuleNode forallNode = (ForallRuleNode) pos;
             
-            Map<Node, List<Element>> remains = getRemainsMap();
+            Map<Node, Stack<List<Element>>> remains = getRemainsMap();
             Map<Node, UpdateMultiset> updates = getUpdatesMap();
             
             if (!forallNode.getDomain().isEvaluated()) {
                 
                 // SPEC: considered := {beta}
                 //considered.put(forallNode.getDomain(),new ArrayList<Element>());
-                remains.remove(forallNode.getDomain());
+            	Stack<List<Element>> stack = remains.get(forallNode.getDomain());
+            	if (stack == null) {
+            		stack = new Stack<List<Element>>();
+            		remains.put(forallNode.getDomain(), stack);
+            	}
+            	stack.push(null);
                 
                 // SPEC: [pos] := {undef,{},undef}
                 updates.put(pos,new UpdateMultiset());
@@ -158,14 +164,15 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
                     // s.removeAll(considered.get(forallNode.getDomain()));
                 	// 
                 	// changed to the following to improve performance:
-        			List<Element> s = remains.get(forallNode.getDomain());
+        			List<Element> s = remains.get(forallNode.getDomain()).peek();
                 	if (s == null) {
             			Enumerable domain = (Enumerable)forallNode.getDomain().getValue();
             			if (domain.supportsIndexedView())
             				s = new ArrayList<Element>(domain.getIndexedView());
             			else
             				s = new ArrayList<Element>(((Enumerable) forallNode.getDomain().getValue()).enumerate());
-                		remains.put(forallNode.getDomain(), s);
+            			remains.get(forallNode.getDomain()).pop();
+                		remains.get(forallNode.getDomain()).push(s);
                 	}
                     
                     if (s.size() > 0) {

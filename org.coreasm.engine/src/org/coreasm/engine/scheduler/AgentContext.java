@@ -12,7 +12,7 @@
 
 package org.coreasm.engine.scheduler;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.coreasm.engine.absstorage.Element;
@@ -28,7 +28,7 @@ public class AgentContext {
 	public final Element agent;
 	public Interpreter interpreter = null;
 	
-	public Map<ASTNode, ASTNode> nodeCopyCache = new HashMap<ASTNode, ASTNode>();
+	public Map<ASTNode, ASTNode> nodeCopyCache = new IdentityHashMap<ASTNode, ASTNode>();
 
 	public AgentContext(Element agent) {
 		this.agent = agent;

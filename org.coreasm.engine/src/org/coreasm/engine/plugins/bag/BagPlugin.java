@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -133,19 +134,19 @@ public class BagPlugin extends Plugin
 		tobeConsidered = new ThreadLocal<Map<ASTNode,Collection<Element>>>() {
 			@Override
 			protected Map<ASTNode, Collection<Element>> initialValue() {
-				return new HashMap<ASTNode, Collection<Element>>();
+				return new IdentityHashMap<ASTNode, Collection<Element>>();
 			}
 		};
 		tobeConsideredAdv = new ThreadLocal<Map<ASTNode,Collection<Map<String,Element>>>>() {
 			@Override
 			protected Map<ASTNode, Collection<Map<String, Element>>> initialValue() {
-				return new HashMap<ASTNode, Collection<Map<String,Element>>>();
+				return new IdentityHashMap<ASTNode, Collection<Map<String,Element>>>();
 			}
 		};
 		newBags = new ThreadLocal<Map<ASTNode, Collection<Element>>>() {
 			@Override
 			protected Map<ASTNode, Collection<Element>> initialValue() {
-				return new HashMap<ASTNode, Collection<Element>>();
+				return new IdentityHashMap<ASTNode, Collection<Element>>();
 			}
 		};
 		bagBackground = new BagBackgroundElement();
