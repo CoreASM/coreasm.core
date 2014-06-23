@@ -16,8 +16,8 @@ package org.coreasm.engine;
 
 import java.util.Stack;
 
-import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.engine.parser.ParserException;
@@ -79,6 +79,16 @@ public class CoreASMIssue extends Error {
 		this.spec = spec;
 	}
 	
+	public CharacterPosition getPos() {
+		if (pos == null && node != null && node.getScannerInfo() != null && parser != null) 
+			return node.getScannerInfo().getPos(parser.getPositionMap());
+		return pos;
+	}
+	
+	public Specification getSpec() {
+		return spec;
+	}
+	
 	/**
 	 * Creates and returns a string representation of this issue.
 	 */
@@ -92,14 +102,10 @@ public class CoreASMIssue extends Error {
 		else
 			buf.append(message);
 		
-		CharacterPosition tempPos = pos;
-		if (tempPos == null && node != null && parser != null) 
-			try {
-				tempPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			} catch (NullPointerException e) {/* it's ok */}
-		
 		if (buf.charAt(buf.length()-1) == '\n')
 			buf.deleteCharAt(buf.length() - 1);
+		
+		CharacterPosition tempPos = getPos();
 		
 		if (tempPos != null && spec != null) {
 			final String posStr = tempPos.toString(spec);

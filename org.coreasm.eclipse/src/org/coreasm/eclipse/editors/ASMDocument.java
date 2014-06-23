@@ -7,11 +7,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.BadPositionCategoryException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.Position;
-
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -19,6 +14,10 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.util.Logger;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPositionCategoryException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.Position;
 
 /**
  * The ASMDocument class represents a CoreASM specification as a document of an
@@ -143,32 +142,15 @@ public class ASMDocument
 	}
 
 	/**
-	 * Returns the position of the specified Node or CharacterPosition in this
-	 * document
+	 * Returns the position of the specified Node in this document
 	 * 
-	 * @param node
-	 *            Node to return position of
-	 * @return
+	 * @param node Node to return position of
+	 * @return position of the specified node
 	 */
 	public int getNodePosition(Node node) {
-		return getNodePosition(node, null);
-	}
-
-	/**
-	 * Returns the position of the specified Node or CharacterPosition in this
-	 * document
-	 * 
-	 * @param node
-	 *            Node to return position of
-	 * @param charPos
-	 *            CharacterPosition to return position of
-	 * @return
-	 */
-	public int getNodePosition(Node node, CharacterPosition charPos) {
 		if (capi != null) {
 			Parser parser = capi.getParser();
-			if (charPos == null && node != null && node.getScannerInfo() != null)
-				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			CharacterPosition charPos = node.getScannerInfo().getPos(parser.getPositionMap());
 			if (charPos != null && charPos != CharacterPosition.NO_POSITION) {
 				Specification spec = capi.getSpec();
 				try {
@@ -183,6 +165,27 @@ public class ASMDocument
 		}
 		if (node != null)
 			return node.getScannerInfo().charPosition;
+		return 0;
+	}
+	
+	/**
+	 * Returns the position of the specified CharacterPosition in this document
+	 * 
+	 * @param charPos CharacterPosition to return position of
+	 * @param spec Specification of the CharacterPosition
+	 * @return position of the specified CharacterPosition
+	 */
+	public int getCharPosition(CharacterPosition charPos, Specification spec) {
+		if (charPos != null && charPos != CharacterPosition.NO_POSITION) {
+			try {
+				int line = charPos.line;
+				if (spec != null)
+					line = spec.getLine(charPos.line).line;
+				return getLineOffset(line - 1) + charPos.column - 1;
+			}
+			catch (BadLocationException e) {
+			}
+		}
 		return 0;
 	}
 
