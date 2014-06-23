@@ -973,7 +973,18 @@ public class InterpreterImp implements Interpreter {
 						result.addChild(child.name, copyTreeSub(child.node, params, args, result));
 				}
 				result.setParent(parent);
-			} else { 
+			} else {
+				if (args != null && a instanceof ASTNode 
+					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
+					&& ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
+					&& ast.getChildNode("lambda") == null) {
+					for (ASTNode arg : args) {
+						if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
+					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
+					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
+							capi.warning(Kernel.PLUGIN_NAME, ast.getFirst().getToken() + " collides with the argument passed as parameter " + params.get(args.indexOf(arg)) + ".", ast, this);
+					}
+				}
 				result = a.duplicate();
 				result.setParent(parent);
 				for (NameNodeTuple child: a.getChildNodesWithNames())
