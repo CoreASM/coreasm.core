@@ -31,9 +31,7 @@ import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.MapFunction;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -44,7 +42,6 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
-import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
@@ -97,7 +94,6 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 
 	private Map<String, FunctionElement> functions;
 	private FunctionElement resultFunction;
-	private Location resultLocation = new Location(RESULT_KEYWORD, ElementList.NO_ARGUMENT);
 
 	private final String[] keywords = {"seq", "next", "seqblock", "endseqblock", "iterate", "while", 
 			"local", "in", "return", "result"};
@@ -566,51 +562,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		exArgs.add(loc);
 		exParams.add(RESULT_KEYWORD);
 		
-		Map<ASTNode, ASTNode> workCopy = getThreadWorkCopy();
-
-		ASTNode wCopy = workCopy.get(pos);
-		// If there is no work copy created for this rule call
-		if (wCopy == null) {
-			wCopy = interpreter.copyTreeSub(rule.getBody(), exParams, exArgs);
-			workCopy.put(pos, wCopy);
-			wCopy.setParent(pos);
-			notifyOnRuleCall(rule, args, pos, interpreter.getSelf());
-			return wCopy; // as new value of 'pos'
-		} else { // if there already is a work copy
-			pos.setNode(null, wCopy.getUpdates(), wCopy.getValue());
-
-			// making it easier for the garbage collector 
-			// to throw this copy out! :)
-			wCopy.dipose();
-
-			workCopy.remove(pos);
-			notifyOnRuleExit(rule, args, pos, interpreter.getSelf());
-			return pos;
-		}
-	}
-	
-	/**
-	 * Notifies the listeners on rule call.
-	 * @param rule the rule that is being called
-	 * @param args the arguments being passed with the call
-	 * @param pos the node of the rule
-	 * @param agent the executing agent
-	 */
-	private void notifyOnRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
-		for (InterpreterListener listener : capi.getInterpreterListeners())
-			listener.onRuleExit(rule, args, pos, agent);
-	}
-	
-	/**
-	 * Notifies the listeners on rule exit.
-	 * @param rule the rule that is being exited
-	 * @param args the arguments that have been passed with the call
-	 * @param pos the node of the rule
-	 * @param agent the executing agent
-	 */
-	private void notifyOnRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
-		for (InterpreterListener listener : capi.getInterpreterListeners())
-			listener.onRuleCall(rule, args, pos, agent);
+		return interpreter.ruleCall(rule, exParams, exArgs, pos);
 	}
 
 	public VersionInfo getVersionInfo() {

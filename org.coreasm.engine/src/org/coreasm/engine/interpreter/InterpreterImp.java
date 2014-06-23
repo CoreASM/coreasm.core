@@ -549,7 +549,7 @@ public class InterpreterImp implements Interpreter {
 						
 						// check the arity of the rule
 						if (theRule.getParam().size() == 0) 
-							pos = ruleCall(theRule, null, pos);
+							pos = ruleCall(theRule, theRule.getParam(), null, pos);
 						else if (pos instanceof MacroCallRuleNode)
 							capi.error("The number of arguments passed to '" + x  + 
 									"' does not match its signature.", pos, this);
@@ -560,7 +560,7 @@ public class InterpreterImp implements Interpreter {
 						
 						if (theRule != null) {
 							if (theRule.getParam().size() == frNode.getArguments().size())
-								pos = ruleCall(theRule, frNode.getArguments(), pos);
+								pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
 							else
 								capi.error("The number of arguments passed to '" + x  + 
 										"' does not match its signature.", pos, this);
@@ -861,10 +861,11 @@ public class InterpreterImp implements Interpreter {
 	 * Handles a call to a rule.
 	 * 
 	 * @param rule rule element
+	 * @param params parameters
 	 * @param args arguments
 	 * @param pos current node being interpreted
 	 */
-	public synchronized ASTNode ruleCall(RuleElement rule, List<ASTNode> args, ASTNode pos) {
+	public synchronized ASTNode ruleCall(RuleElement rule, List<String> params, List<ASTNode> args, ASTNode pos) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
@@ -875,12 +876,11 @@ public class InterpreterImp implements Interpreter {
 			// checking the parameters and the arguments
 			// as their number should match
 			ruleCallStack.push(new CallStackElement(rule));
-			if ((rule.getParam() != null) && (args != null) 
-					&& (args.size() != rule.getParam().size())) {  
+			if (params != null && args != null && args.size() != params.size()) {  
 				capi.error("Number of arguments does not match the number of parameters.", pos, this);
 				return pos;
 			}
-			wCopy = copyTreeSub(rule.getBody(), rule.getParam(), args);
+			wCopy = copyTreeSub(rule.getBody(), params, args);
 			workCopy.put(pos, wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, self);

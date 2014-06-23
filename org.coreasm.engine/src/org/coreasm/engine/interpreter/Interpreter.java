@@ -119,12 +119,12 @@ public interface Interpreter {
 	 * Handles a call to a rule.
 	 * 
 	 * @param rule rule element
+	 * @param params parameters
 	 * @param args arguments
 	 * @param pos current node being interpreted
-	 * 
 	 * @return a node to be interpreted next
 	 */
-	public ASTNode ruleCall(RuleElement rule, List<ASTNode> args, ASTNode pos);
+	public ASTNode ruleCall(RuleElement rule, List<String> params, List<ASTNode> args, ASTNode pos);
 
 	/**
 	 * Creates a new scope for the environment variable
