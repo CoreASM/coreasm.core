@@ -49,12 +49,9 @@ public class WatchExpressionAPI implements ControlAPI {
 		this.capi = capi;
 	}
 	
-	public Element evaluateExpression(ASTNode expression, Element agent, ASMStorage storage) throws InterpreterException {
+	public synchronized Element evaluateExpression(ASTNode expression, Element agent, ASMStorage storage) throws InterpreterException {
 		if (Thread.holdsLock(capi.getInterpreter().getInterpreterInstance()))
 			throw new InterpreterException(new CoreASMError("The current thread already holds a lock on the interpreter instance!"));
-//		FIXME Find a better way to determine if the current thread is an eclipse thread
-//		if (!Thread.currentThread().isDaemon())
-//			throw new InterpreterException(new CoreASMError("This method may only be called from an Eclipse Thread!"));
 		this.storage = storage;
 		copyOprRegFromCapi();
 		
@@ -64,20 +61,25 @@ public class WatchExpressionAPI implements ControlAPI {
 			interpreter.addEnv(environmentVariable.getKey(), environmentVariable.getValue());
 		
 		bindPlugins();
+		storage.applyStackedUpdates();
 		
 		interpreter.setSelf(agent);
 		interpreter.setPosition(expression);
 		
 		lastError = null;
 		
-		do {
-			interpreter.executeTree();
-		} while (!(interpreter.isExecutionComplete() || hasErrorOccurred()));
+		try {
+			do {
+				interpreter.executeTree();
+			} while (!(interpreter.isExecutionComplete() || hasErrorOccurred()));
+		}
+		finally {
+			unbindPlugins();
+			storage.discardStackedUpdates();
+		}
 		
 		if (hasErrorOccurred())
 			throw new InterpreterException(lastError);
-		
-		unbindPlugins();
 		
 		return interpreter.getPosition().getValue();
 	}

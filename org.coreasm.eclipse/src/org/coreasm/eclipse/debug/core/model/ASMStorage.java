@@ -17,7 +17,7 @@ import org.coreasm.engine.absstorage.HashStorage;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.NameConflictException;
 import org.coreasm.engine.absstorage.RuleElement;
-import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
+import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 
@@ -79,26 +79,27 @@ public class ASMStorage extends HashStorage {
 	
 	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		this.pos = pos;
-		this.lastSelectedAgents = new HashSet<Element>();
-		this.lastSelectedAgents.addAll(lastSelectedAgents);
+		this.lastSelectedAgents = new HashSet<Element>(lastSelectedAgents);
 		this.envVars = envVars;
 		this.stackedUpdates = ((HashStorage)storage).getStackedUpdates();
 		this.updates = updates;
 		this.callStack = callStack;
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
-		
-		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet()) {
-			FunctionElement function = getFunction(stackedUpdate.getKey().name);
-			if (function == null)
-				envVars.put(stackedUpdate.getKey().name, stackedUpdate.getValue());
-			else {
-				try {
-					function.setValue(stackedUpdate.getKey().args, stackedUpdate.getValue());
-				} catch (UnmodifiableFunctionException e) {
-				}
-			}
-		}
+	}
+	
+	public void applyStackedUpdates() {
+		if (getStackedUpdates().isEmpty())
+			pushState();
+		HashSet<Update> updates = new HashSet<Update>();
+		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet())
+			updates.add(new Update(stackedUpdate.getKey(), stackedUpdate.getValue(), Update.UPDATE_ACTION, (Element)null, null));
+		apply(updates);
+	}
+	
+	public void discardStackedUpdates() {
+		if (stackedUpdates != null && !stackedUpdates.isEmpty())
+			popState();
 	}
 	
 	public int getStep() {

@@ -245,7 +245,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	
 	private String getExpressionValue(IDocument doc, String expression) {
-		if (EngineDebugger.getRunningInstance() != null) {
+		if (EngineDebugger.getRunningInstance() != null && selectedState != null) {
 			try {
 				Element value = EngineDebugger.getRunningInstance().evaluateExpression(expression, selectedState);
 				if (value instanceof Enumerable && value.toString().isEmpty())
