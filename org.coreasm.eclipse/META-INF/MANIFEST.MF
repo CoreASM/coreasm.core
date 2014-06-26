@@ -13,10 +13,9 @@ Import-Package: org.eclipse.ui.dialogs,
  org.eclipse.ui.views.contentoutline
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 1.1.0.qualifier
-Export-Package: org.coreasm.eclipse.editors,
- org.coreasm.eclipse.editors.outlining,
+Export-Package: org.coreasm.eclipse.editors.outlining.util,
+ org.coreasm.eclipse.editors,
  org.coreasm.eclipse.editors.ui,
  org.coreasm.eclipse.util,
  org.coreasm.util,
- org.coreasm.util.information,
- org.coreasm.util.odf
+ org.coreasm.util.information

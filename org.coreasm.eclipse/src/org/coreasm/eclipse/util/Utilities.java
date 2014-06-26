@@ -18,7 +18,7 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
 import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
-import org.coreasm.eclipse.editors.outlining.RootOutlineTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.RootOutlineTreeNode;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
 
 public final class Utilities {

@@ -6,6 +6,9 @@ import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.outlining.ParsedContentProvider.DisplayModeOrder;
 import org.coreasm.eclipse.editors.outlining.ParsedContentProvider.DisplayModeStructure;
+import org.coreasm.eclipse.editors.outlining.util.GroupOutlineTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.OutlineTreeNode;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;

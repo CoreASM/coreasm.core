@@ -15,8 +15,11 @@ import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.AstTools;
 import org.coreasm.eclipse.editors.FileManager;
-import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.OutdatedTreeNode;
-import org.coreasm.eclipse.editors.outlining.OutlineTreeNode.UnavailableTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.GroupOutlineTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.OutlineTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.OutlineTreeNode.OutdatedTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.OutlineTreeNode.UnavailableTreeNode;
+import org.coreasm.eclipse.editors.outlining.util.RootOutlineTreeNode;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugins.modularity.IncludeNode;
@@ -27,12 +30,12 @@ import org.coreasm.engine.plugins.modularity.IncludeNode;
  */
 public class ParsedContentProvider implements ITreeContentProvider 
 {
-	static enum DisplayModeStructure {
+	public static enum DisplayModeStructure {
 		FLAT,			// All nodes should be added as children of the "CoreASM id" rootnode, without groups.
 		STRUCTURED		// All nodes of a certain type should be structured in their own group.
 	}
 	
-	static enum DisplayModeOrder {
+	public static enum DisplayModeOrder {
 		UNSORTED,		// The nodes within a group should be in the same order as in the specification. 
 		ALPHABETICAL	// The nodes within a group should be sorted alphabetically.
 	}

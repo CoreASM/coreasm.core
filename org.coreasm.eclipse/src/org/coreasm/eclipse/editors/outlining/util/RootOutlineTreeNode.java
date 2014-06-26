@@ -1,4 +1,4 @@
-package org.coreasm.eclipse.editors.outlining;
+package org.coreasm.eclipse.editors.outlining.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,14 +10,14 @@ import org.coreasm.eclipse.editors.outlining.ParsedContentProvider.DisplayModeOr
 /**
  * @author Tobias
  *
- * Class which represents a root node in the outline
+ *         Class which represents a root node in the outline
  */
 public class RootOutlineTreeNode extends OutlineTreeNode {
-	
+
 	// group nodes
-	private LinkedHashMap<String, GroupOutlineTreeNode> groupNodes = 
+	private LinkedHashMap<String, GroupOutlineTreeNode> groupNodes =
 			new LinkedHashMap<String, GroupOutlineTreeNode>();
-	
+
 	// all nodes
 	private ArrayList<OutlineTreeNode> allNodesUnsorted = new ArrayList<OutlineTreeNode>();
 	private ArrayList<OutlineTreeNode> allNodesSorted = new ArrayList<OutlineTreeNode>();
@@ -30,51 +30,56 @@ public class RootOutlineTreeNode extends OutlineTreeNode {
 	public Collection<GroupOutlineTreeNode> getGroupNodes() {
 		return groupNodes.values();
 	}
-	
+
 	/**
-	 * @param outlineOrder	The order of the outline
-	 * @return				Nodes depening on order
+	 * @param outlineOrder
+	 *            The order of the outline
+	 * @return Nodes depening on order
 	 */
 	public ArrayList<OutlineTreeNode> getAllNodes(DisplayModeOrder outlineOrder) {
-		if (outlineOrder == DisplayModeOrder.ALPHABETICAL) 
+		if (outlineOrder == DisplayModeOrder.ALPHABETICAL)
 			return allNodesSorted;
 		else
 			return allNodesUnsorted;
 	}
 
 	/**
-	 * @param oNode		Node which is added
+	 * @param oNode
+	 *            Node which is added
 	 * 
-	 * Adds note to allNodes and GroupNodes
+	 *            Adds note to allNodes and GroupNodes
 	 */
 	public void addNode(OutlineTreeNode oNode) {
 		// add to all nodes
 		allNodesSorted.add(oNode);
 		allNodesUnsorted.add(oNode);
 		Collections.sort(allNodesSorted);
-		
+
 		// add to group nodes
-		if (!groupNodes.containsKey(oNode.group) )
+		if (!groupNodes.containsKey(oNode.group))
 			addGroup(oNode, oNode.group);
-		
+
 		groupNodes.get(oNode.group).addChild(oNode);
 	}
-	
+
 	/**
-	 * @param oNode		Node which is added
-	 * @param group		Name of the group the node should belong to
+	 * @param oNode
+	 *            Node which is added
+	 * @param group
+	 *            Name of the group the node should belong to
 	 * 
-	 * Adds a group to groupNodes, checks if oNode is a UseTreeNode 
-	 * because its a special group
+	 *            Adds a group to groupNodes, checks if oNode is a UseTreeNode
+	 *            because its a special group
 	 */
 	private void addGroup(OutlineTreeNode oNode, String group) {
 		GroupOutlineTreeNode groupNode = null;
 		if (oNode instanceof UseTreeNode) {
 			groupNode = new GroupOutlineTreeNode.UseGroupTreeNode(group);
-		} else {
+		}
+		else {
 			groupNode = new GroupOutlineTreeNode(group);
 		}
-		
+
 		groupNodes.put(group, groupNode);
 	}
 }

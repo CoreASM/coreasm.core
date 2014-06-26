@@ -1,6 +1,8 @@
 package org.coreasm.eclipse.editors.outlining;
 
 import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.editors.outlining.util.OutlineTreeNode;
+
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
