@@ -15,7 +15,7 @@
    	  		contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
    	  		default="false"
    	  		extensions="casm,coreasm"
-   	  		icon="icons/icon16x16.gif"
+			icon="icons/CoreASM-Logo.png"
    	  		id="org.coreasm.eclipse.ASMEditor"
    	  		name="CoreASMEditor">
    	  </editor>
@@ -118,7 +118,7 @@
          <action
                allowLabelUpdate="true"
                class="org.coreasm.eclipse.actions.CoreASMAboutAction"
-               icon="icons/icon16.gif"
+               icon="icons/CoreASM-Logo.png"
                id="org.coreasm.eclipse.aboutAction"
                label="About CoreASM"
                menubarPath="org.coreasm.eclipse.mainmenu/CoreASMGroup"
