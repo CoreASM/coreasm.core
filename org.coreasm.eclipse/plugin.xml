@@ -210,13 +210,6 @@
             id="org.coreasm.eclipse.CoreASM">
       </category>
       <view
-            name="CoreASM View"
-            icon="icons/sample.gif"
-            category="org.coreasm.eclipse.CoreASM"
-            class="org.coreasm.eclipse.views.ASMView"
-            id="org.coreasm.eclipse.views.ASMView">
-      </view>
-      <view
             name="CoreASM AST Tree View"
             icon="icons/CoreASM-Logo.png"
             category="org.coreasm.eclipse.CoreASM"
