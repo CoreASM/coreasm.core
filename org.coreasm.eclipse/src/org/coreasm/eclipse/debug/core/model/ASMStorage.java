@@ -11,12 +11,16 @@ import org.coreasm.eclipse.engine.debugger.WatchExpressionAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.absstorage.HashStorage;
 import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.MapFunction;
 import org.coreasm.engine.absstorage.NameConflictException;
 import org.coreasm.engine.absstorage.RuleElement;
+import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
@@ -71,6 +75,18 @@ public class ASMStorage extends HashStorage {
 		this.envVars = envVars;
 		this.updates = updates;
 		this.agents.addAll(agents);
+		for (Element agent : agents) {
+			MapFunction f = new MapFunction();
+			try {
+				f.setValue(ElementList.NO_ARGUMENT, agent);
+			} catch (UnmodifiableFunctionException e) {
+			}
+			f.setFClass(FunctionClass.fcStatic);
+			try {
+				addFunction(agent.denotation(), new ASMFunctionElement(agent.denotation(), f));
+			} catch (NameConflictException e) {
+			}
+		}
 		this.callStack.addAll(callStack);
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
