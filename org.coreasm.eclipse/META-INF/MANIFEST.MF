@@ -14,8 +14,6 @@ Import-Package: org.eclipse.ui.dialogs,
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 1.1.1.qualifier
 Export-Package: org.coreasm.eclipse.editors.outlining.util,
- org.coreasm.eclipse.editors,
- org.coreasm.eclipse.editors.ui,
  org.coreasm.eclipse.util,
  org.coreasm.util,
  org.coreasm.util.information

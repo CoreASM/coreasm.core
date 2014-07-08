@@ -48,8 +48,8 @@ public class ParsedContentProvider implements ITreeContentProvider
 	private DisplayModeStructure outlineStructure;	// how should the tree be structured?
 	private DisplayModeOrder outlineOrder;			// how should the tree be sorted?
 	private ParsedOutlinePage outlinePage;
-	private ArrayList<Object> lastRootList;			// last root list is displayed when parsing fails
-	private ArrayList<Object> externRootList;		// root list which contains root nodes from plugins
+	private ArrayList<OutlineTreeNode> lastRootList;			// last root list is displayed when parsing fails
+	private ArrayList<OutlineTreeNode> externRootList;		// root list which contains root nodes from plugins
 	
 	
 	public ParsedContentProvider(IDocumentProvider documentProvider,
@@ -61,7 +61,7 @@ public class ParsedContentProvider implements ITreeContentProvider
 		this.parser = editor.getParser();
 		this.outlineStructure = DisplayModeStructure.STRUCTURED;
 		this.outlineOrder = DisplayModeOrder.UNSORTED;
-		externRootList = new ArrayList<Object>();
+		externRootList = new ArrayList<OutlineTreeNode>();
 		lastRootList = null;
 	}
 	
@@ -77,6 +77,10 @@ public class ParsedContentProvider implements ITreeContentProvider
 	 */
 	public void removeRootNode(RootOutlineTreeNode rootNode) {
 		externRootList.remove(rootNode);
+	}
+	
+	public void clearExternRootList() {
+		externRootList.clear();
 	}
 	
 	void setOutlinePage(ParsedOutlinePage outlinePage)
@@ -152,7 +156,7 @@ public class ParsedContentProvider implements ITreeContentProvider
 		// ensure the current page has a double click listener
 		outlinePage.setupListener();
 		
-		ArrayList<Object> rootList = new ArrayList<Object>();
+		ArrayList<OutlineTreeNode> rootList = new ArrayList<OutlineTreeNode>();
 		
 		Node n = parser.getRootNode();
 		if (n == null && lastRootList == null) {
@@ -184,7 +188,7 @@ public class ParsedContentProvider implements ITreeContentProvider
 			// add root and extern root to list
 			rootList.add(oRootNode);
 			rootList.addAll(externRootList);
-			lastRootList = new ArrayList<Object>(rootList);
+			lastRootList = new ArrayList<OutlineTreeNode>(rootList);
 			
 			outlinePage.enableActions(true);
 		}

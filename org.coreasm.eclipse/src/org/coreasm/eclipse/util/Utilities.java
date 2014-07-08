@@ -46,6 +46,21 @@ public final class Utilities {
 	}
 	
 	/**
+	 * Clears the externRootList from the Outline
+	 */
+	public static void clearExternOutlineRootList() {
+		ASMEditor editor = getCurrentEditor();
+		
+		if (editor != null) {
+			AbstractContentPage outlinePage = editor.getOutlinePage();
+			if (outlinePage instanceof ParsedOutlinePage) {
+				ParsedOutlinePage parsedOutlinePage = (ParsedOutlinePage) outlinePage;
+				parsedOutlinePage.getContentProvider().clearExternRootList();
+			}
+		}
+	}
+	
+	/**
 	 * @param rootNode	Node which has to be removed to the outline
 	 * 
 	 * Removes a root node from the outline
