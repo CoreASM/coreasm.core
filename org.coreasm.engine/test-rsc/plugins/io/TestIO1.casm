@@ -1,0 +1,13 @@
+CoreASM TestIO1
+
+/*
+ * @require "TestIO1\n"
+ */
+
+use Number
+use String
+use IO
+
+init TestIO1
+
+rule TestIO1 = print "TestIO1"
