@@ -982,7 +982,7 @@ public class InterpreterImp implements Interpreter {
 						if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
 					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
 					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
-							capi.warning(Kernel.PLUGIN_NAME, ast.getFirst().getToken() + " collides with the argument passed as parameter " + params.get(args.indexOf(arg)) + ".", ast, this);
+							capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
 					}
 				}
 				result = a.duplicate();
