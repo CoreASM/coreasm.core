@@ -130,6 +130,8 @@
       </actionSet>
    </extension>
    <extension
+         id="org.coreasm.eclipse.newwizards"
+         name="%NewWizards.Category.CoreASM"
          point="org.eclipse.ui.newWizards">
       <category
             id="org.coreasm.eclipse.wizard"
@@ -138,7 +140,7 @@
       <wizard
             category="org.coreasm.eclipse.wizard"
             class="org.coreasm.eclipse.wizards.ASMNewWizard"
-            icon="icons/icon16x16.gif"
+            icon="icons/CoreASM-Logo.png"
             id="org.coreasm.eclipse.newFileWizard"
             name="CoreASM Specification">
       </wizard>
@@ -231,31 +233,88 @@
             name="CoreASM Compare View">
       </view>
    </extension>
+    <extension
+          id="org.coreasm.eclipse.perspective"
+          name="CoreASM"
+          point="org.eclipse.ui.perspectives">
+       <perspective
+             class="org.coreasm.eclipse.perspective.PerspectiveFactory"
+             icon="icons/CoreASM-Logo.png"
+             id="org.coreasm.eclipse.perspective"
+             name="CoreASM">
+       </perspective>
+    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.eclipse.ui.resourcePerspective">
-         <view
-               ratio="0.5"
-               relative="org.eclipse.ui.views.TaskList"
-               relationship="right"
-               id="org.coreasm.eclipse.views.ASMView">
-         </view>
-      </perspectiveExtension>
       <perspectiveExtension
             targetID="org.eclipse.debug.ui.DebugPerspective">
          <view
                id="org.coreasm.eclipse.views.ASMUpdateView"
                minimized="false"
                relationship="stack"
-               relative="org.eclipse.ui.views.ContentOutline">
+               relative="org.eclipse.ui.views.ContentOutline"
+               visible="true">
          </view>
          <view
                id="org.coreasm.eclipse.views.ASMCompareView"
                minimized="false"
                relationship="stack"
-               relative="org.eclipse.ui.views.ContentOutline">
+               relative="org.eclipse.ui.views.ContentOutline"
+               visible="true">
          </view>
+         <view
+               id="org.eclipse.debug.ui.ExpressionView"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.debug.ui.BreakpointView"
+               visible="true">
+         </view>
+         <actionSet
+               id="org.coreasm.eclipse.actionSet">
+         </actionSet>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.coreasm.eclipse.perspective">
+         <view
+               id="org.eclipse.ui.navigator.ProjectExplorer"
+               minimized="false"
+               relationship="stack"
+               relative="left">
+         </view>
+         <view
+               id="org.eclipse.ui.views.ProblemView"
+               minimized="false"
+               relationship="stack"
+               relative="bottom">
+         </view>
+         <view
+               id="org.eclipse.ui.views.ContentOutline"
+               minimized="false"
+               relationship="stack"
+               relative="right">
+         </view>
+         <actionSet
+               id="org.eclipse.debug.ui.launchActionSet">
+         </actionSet>
+         <view
+               id="org.eclipse.ui.console.ConsoleView"
+               minimized="false"
+               relationship="stack"
+               relative="bottom">
+         </view>
+         <view
+               id="org.coreasm.eclipse.views.ASMAstTreeView"
+               minimized="false"
+               relationship="stack"
+               relative="right"
+               visible="false">
+         </view>
+         <newWizardShortcut
+               id="org.coreasm.eclipse.newFileWizard">
+         </newWizardShortcut>
+         <actionSet
+               id="org.coreasm.eclipse.actionSet">
+         </actionSet>
       </perspectiveExtension>
    </extension>
    <extension
