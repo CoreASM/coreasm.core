@@ -168,12 +168,12 @@ rule ReleaseChange =
 			if (change(c) > 0)  then
 				print change(c) + " of " + c + " cent coin" 
 
-rule Largest(set) = 
+derived Largest(set) =
 	return largest in
 		choose x in set with (forall y in temp holds x >= y) do
 			largest := x
 			
-rule Min(a,b) = 
+derived Min(a,b) =
 	return min in 
 		if a <= b then 		
 			min := a
@@ -194,7 +194,7 @@ rule SettleAccount =
 /**
   * converts a name to a product
   */
-rule toProduct(s) = 
+derived toProduct(s) =
 	return product in 
 		choose x in PRODUCT with toString(x) = s do
 			product := x

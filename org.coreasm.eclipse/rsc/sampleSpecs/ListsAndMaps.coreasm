@@ -7,7 +7,7 @@ CoreASM ListsAndMaps
 use Standard
 use Math
 
-derived foo(a) = 
+derived foo(a) =
 	return powers in
 		seq
 			powers := {}

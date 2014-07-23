@@ -74,7 +74,7 @@ rule SignalOpen =
 	if dir = close and safeToOpen then
 		dir := open
 
-rule safeToOpen = 
+derived safeToOpen =
     return (forall tx in Track holds trackStatus(tx) = empty or (now + dopen) < deadline(tx)) in skip
 
 

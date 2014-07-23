@@ -67,7 +67,7 @@ rule StopEating =
 
 
 // return a random BOOLEAN
-rule flip =
+derived flip =
 	return b in
 		choose c in BOOLEAN do
 			b := c

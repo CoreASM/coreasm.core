@@ -133,13 +133,13 @@ rule SendMessage(user, play, msg) =
 		print "(" + user + ", game #" + playId(play) + ") ->  " + msg
 	
 /* Random Bump */
-rule winning = 
+derived winning =
 	return value in 
 		choose x in BOOLEAN do
 			value := x
 
 /* Play Owner Lookup */
-rule userOfPlay(play) =
+derived userOfPlay(play) =
 	return uofp in
 		choose u in USER with (play memberof userPlays(u)) do
 			uofp := u

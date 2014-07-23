@@ -32,7 +32,7 @@ rule MainProgram =
       endpar
 
 // Returns a random number between 1 and 100 inclusive
-rule RandomGuess = 
+derived RandomGuess =
    return rand in
       choose x in [ 1 .. 100 ] do
          rand := x
