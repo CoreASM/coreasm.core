@@ -97,6 +97,10 @@ public class ASMDeclarationWatcher implements Observer {
 			return signature.getRange();
 		}
 		
+		public Signature getSignature() {
+			return signature;
+		}
+		
 		@Override
 		public String toString() {
 			return "Function: " + name + ": " + signature + (comment != null ? "\n\n" + comment : "");

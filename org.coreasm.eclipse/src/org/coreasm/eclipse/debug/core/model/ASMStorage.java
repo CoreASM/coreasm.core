@@ -6,8 +6,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.codehaus.jparsec.Parser;
 import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.eclipse.engine.debugger.WatchExpressionAPI;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
@@ -23,7 +25,11 @@ import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.InterpreterException;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
+import org.coreasm.engine.parser.ParserTools;
+import org.coreasm.engine.plugin.ParserPlugin;
 
 /**
  * Wrapper class for ASM storages. It is needed for the history functionality.
@@ -46,6 +52,10 @@ public class ASMStorage extends HashStorage {
 	
 	public ASMStorage(ASMStorage storage) {
 		this(storage.wapi, storage.storage, storage.step, storage.lastSelectedAgents, storage.envVars, storage.updates, storage.agents, storage.callStack, storage.sourceName, storage.lineNumber);
+	}
+	
+	public ASMStorage(WatchExpressionAPI wapi, ControlAPI capi) {
+		this(wapi, capi.getStorage(), capi.getStepCount(), capi.getLastSelectedAgents(), capi.getInterpreter().getInterpreterInstance().getEnvVars(), ASMUpdate.wrapUpdateSet(capi), capi.getAgentSet(), capi.getInterpreter().getInterpreterInstance().getCurrentCallStack(), null, -1);
 	}
 	
 	public ASMStorage(WatchExpressionAPI wapi, AbstractStorage storage, int step, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Set<? extends Element> agents, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
@@ -102,6 +112,15 @@ public class ASMStorage extends HashStorage {
 		this.callStack = callStack;
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
+	}
+	
+	public Element evaluateExpression(ControlAPI capi, String expression) throws InterpreterException {
+		ParserTools parserTools = ParserTools.getInstance(capi);
+		Parser<Node> termParser = ((ParserPlugin)capi.getPlugin("Kernel")).getParser("Term");
+		Parser<Node> parser = termParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
+		Element[] lastSelectedAgents = this.lastSelectedAgents.toArray(new Element[this.lastSelectedAgents.size()]);
+		
+		return wapi.evaluateExpression((ASTNode)parser.parse(expression), lastSelectedAgents[0], this);
 	}
 	
 	public void applyStackedUpdates() {
