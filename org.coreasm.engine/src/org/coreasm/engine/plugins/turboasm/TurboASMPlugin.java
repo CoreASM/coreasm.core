@@ -278,12 +278,16 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					new GrammarRule("LocalRule", "'local' ID (',' ID)* 'in' Rule", 
 							localRuleParser, PLUGIN_NAME));
 			
-			// TurboASMRules : SeqRule | IterateRule | WhileRule | ReturnResultRule | ReturnRule | LocalRule
+			// TurboASMRules : SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule
 			parsers.put("Rule", new GrammarRule("TurboASMRules", 
-					"SeqBlockRule | SeqRule | IterateRule | WhileRule | ReturnResultRule | ReturnRule | LocalRule",
+					"SeqBlockRule | SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule",
 					Parsers.or(seqBlockRuleParser, seqRuleParser, iterateRuleParser, whileRuleParser, 
 							retResRuleParser, 
-							returnRuleParser, localRuleParser), PLUGIN_NAME));
+							localRuleParser), PLUGIN_NAME));
+			
+			parsers.put("BasicTerm", 
+					new GrammarRule("TurboASMRules", "ReturnRule",
+							returnRuleParser, PLUGIN_NAME));
 			
 			// ResultLocation : 'result'
 			Parser<Node> resultLocationParser = //Parsers.map("ResultLocation",

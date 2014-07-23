@@ -31,7 +31,7 @@ public class ReturnRuleNode extends ASTNode {
 	public ReturnRuleNode(ScannerInfo info) {
 		super(
 				TurboASMPlugin.PLUGIN_NAME,
-				ASTNode.RULE_CLASS,
+				ASTNode.EXPRESSION_CLASS,
 				"ReturnRule",
 				null,
 				info);

@@ -53,7 +53,11 @@ public class StandardPlugins extends Plugin implements PackagePlugin {
 		names.add("AbstractionPlugin");
 		names.add("CaseRulePlugin");
 		names.add("OptionsPlugin");
-		names.add("KernelExtensionsPlugin");
+		
+		//Removed KernelExtensionsPlugin, as it currently doesn't work as documented
+		//in the user manual (also, its functionality is implemented in the kernel now)
+		//Markus Brenner 23.07.2014
+		//names.add("KernelExtensionsPlugin");
 	}
 	
 	/**
