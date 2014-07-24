@@ -65,7 +65,7 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
     
     @Override
     public void initialize() {
-        //considered = new HashMap<Node,ArrayList<Element>>();
+        //considered = new IdentityHashMap<Node,ArrayList<Element>>();
         remains = new ThreadLocal<Map<Node, Stack<List<Element>>>>() {
 			@Override
 			protected Map<Node, Stack<List<Element>>> initialValue() {

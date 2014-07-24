@@ -62,7 +62,7 @@ public class CaseRulePlugin extends Plugin
         matchingRules = new ThreadLocal<Map<Node, Set<ASTNode>>>() {
 			@Override
 			protected Map<Node, Set<ASTNode>> initialValue() {
-				return new HashMap<Node, Set<ASTNode>>();
+				return new IdentityHashMap<Node, Set<ASTNode>>();
 			}
         };
     }

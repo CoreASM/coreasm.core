@@ -14,6 +14,7 @@ package org.coreasm.network.plugins.signals;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -97,7 +97,7 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
         signals = new ThreadLocal<Map<Node, SignalElement>>() {
 			@Override
 			protected Map<Node, SignalElement> initialValue() {
-				return new HashMap<Node, SignalElement>();
+				return new IdentityHashMap<Node, SignalElement>();
 			}
         };
     	// reset functions and as the result reset inbox values

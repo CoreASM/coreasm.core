@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.kernelextensions;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 	public KernelExtensionsPlugin() {
 		terms = new ThreadLocal<Map<Node,Node>>() {
 			protected Map<Node, Node> initialValue() {
-				return new HashMap<Node, Node>();
+				return new IdentityHashMap<Node, Node>();
 			}
 		};
 	}

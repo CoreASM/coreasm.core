@@ -17,6 +17,7 @@ package org.coreasm.engine.plugins.chooserule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +37,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -71,7 +71,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
         remained = new ThreadLocal<Map<Node, List<Element>>>() {
 			@Override
 			protected Map<Node, List<Element>> initialValue() {
-				return new HashMap<Node, List<Element>>();
+				return new IdentityHashMap<Node, List<Element>>();
 			}
         };
     }
