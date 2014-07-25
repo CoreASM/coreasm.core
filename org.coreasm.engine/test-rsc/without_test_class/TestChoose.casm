@@ -1,0 +1,20 @@
+CoreASM TestChoose
+
+use Standard
+
+init TestChoose
+
+/*
+ * @require "3\n3\nnone a:1 b:undef\n3\n3\nnone a:undef b:undef c:undef\nundef undef\n"
+*/
+rule TestChoose =
+seqblock
+	choose a in [1], b in [2] do print a+b
+	choose a in [1], b in [2] do print a+b ifnone print "none"
+	choose a in [1], b in [] do print a+b
+	choose a in [1], b in [] do print a+b ifnone print "none" + " a:" + a + " b:" + b
+	choose a in [1,2], b in [1,2] with a < b do print a+b
+	choose a in [1,2], b in [1,2] with a < b do print a+b ifnone print "none"
+	choose a in [1,2], b in [1,2], c in [1,2] with a < b and b < c do print a+b+c ifnone print "none" + " a:" + a + " b:" + b + " c:" + c
+	print a + " " + b
+endseqblock

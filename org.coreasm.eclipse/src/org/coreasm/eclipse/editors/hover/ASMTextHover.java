@@ -425,7 +425,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	
 	private boolean isChooseVariable(FunctionRuleTermNode frNode) {
 		for (ChooseRuleNode chooseRuleNode = getParentChooseRuleNode(frNode); chooseRuleNode != null; chooseRuleNode = getParentChooseRuleNode(chooseRuleNode)) {
-			if (chooseRuleNode.getVariable().getToken().equals(frNode.getName()))
+			if (chooseRuleNode.getVariableMap().containsKey(frNode.getName()))
 				return true;
 		}
 		return false;

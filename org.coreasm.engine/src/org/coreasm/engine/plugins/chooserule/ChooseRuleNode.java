@@ -14,6 +14,10 @@
  
 package org.coreasm.engine.plugins.chooserule;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -39,21 +43,23 @@ public class ChooseRuleNode extends ASTNode {
 				null, 
 				scannerInfo);
 	}
+	
+	/**
+     * Returns a map of the variable names to the nodes which
+     * represent the domains that variable should be taken from
+     * @throws CoreASMError 
+     */
+    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
+    	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
+        
+        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+            if (variableMap.put(current.getToken(),current.getNext()) != null)
+            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in choose rule.", this);
+        }
+        
+        return variableMap;
+    }
 
-    /**
-     * Returns the node representing the bound variable of the choose rule
-     */
-    public ASTNode getVariable() {
-        return getFirst();
-    }
-    
-    /**
-     * Returns the node representing the domain of the choose rule
-     */
-    public ASTNode getDomain() {
-        return getVariable().getNext();
-    }
-    
     /**
      * Returns the node representing the 'do' part of the choose rule.
      */

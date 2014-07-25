@@ -231,7 +231,7 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 	
 	private boolean isChooseVariable(FunctionRuleTermNode frNode) {
 		for (ChooseRuleNode chooseRuleNode = getParentChooseRuleNode(frNode); chooseRuleNode != null; chooseRuleNode = getParentChooseRuleNode(chooseRuleNode)) {
-			if (chooseRuleNode.getVariable().getToken().equals(frNode.getName()))
+			if (chooseRuleNode.getVariableMap().containsKey(frNode.getName()))
 				return true;
 		}
 		return false;
