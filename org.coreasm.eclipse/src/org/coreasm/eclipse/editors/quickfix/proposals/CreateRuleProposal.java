@@ -24,8 +24,8 @@ public class CreateRuleProposal implements ICompletionProposal {
 		this(name, arguments, null, null, null);
 	}
 	
-	public CreateRuleProposal(String name, int argumentss, Image image) {
-		this(name, argumentss, image, null, null);
+	public CreateRuleProposal(String name, int arguments, Image image) {
+		this(name, arguments, image, null, null);
 	}
 	
 	public CreateRuleProposal(String name, int arguments, Image image, IContextInformation contextInformation, String additionalProposalInfo) {

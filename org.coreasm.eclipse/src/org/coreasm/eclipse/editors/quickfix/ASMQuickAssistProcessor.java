@@ -6,6 +6,28 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.FunctionDeclaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
+import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.editors.SlimEngine;
+import org.coreasm.eclipse.editors.errors.AbstractError;
+import org.coreasm.eclipse.editors.errors.AbstractQuickFix;
+import org.coreasm.eclipse.editors.errors.PluginErrorRecognizer;
+import org.coreasm.eclipse.editors.errors.RuleErrorRecognizer;
+import org.coreasm.eclipse.editors.errors.SimpleError;
+import org.coreasm.eclipse.editors.errors.SyntaxError;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.MoveToTopProposal;
+import org.coreasm.eclipse.editors.quickfix.proposals.UsePluginProposal;
+import org.coreasm.engine.Specification.FunctionInfo;
+import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.plugin.ParserPlugin;
+import org.coreasm.engine.plugin.Plugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -20,23 +42,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.MarkerUtilities;
-
-import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
-import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
-import org.coreasm.eclipse.editors.ASMDeclarationWatcher.FunctionDeclaration;
-import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
-import org.coreasm.eclipse.editors.IconManager;
-import org.coreasm.eclipse.editors.SlimEngine;
-import org.coreasm.eclipse.editors.errors.AbstractError;
-import org.coreasm.eclipse.editors.errors.AbstractQuickFix;
-import org.coreasm.eclipse.editors.errors.RuleErrorRecognizer;
-import org.coreasm.eclipse.editors.errors.SimpleError;
-import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.MoveToTopProposal;
-import org.coreasm.engine.Specification.FunctionInfo;
 
 /**
  * The ASMQuickAssistProcessor handles quick fixes.
@@ -146,33 +151,73 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);
-			if (error instanceof SimpleError && RuleErrorRecognizer.NOT_A_RULE_NAME.equals(((SimpleError)error).getErrorID())) {
-				try {
-					String undefinedRule = error.getDocument().get(error.getPosition(), error.getLength());
-					for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
-						if (declaration instanceof RuleDeclaration) {
-							if (isSimilar(undefinedRule, declaration.getName())) {
-								RuleDeclaration ruleDeclaration = (RuleDeclaration)declaration;
-								if (ruleDeclaration.getParams().size() > 0)
-									proposals.add(new CompletionProposal(declaration.getName() + "()", error.getPosition(), error.getLength(), declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
-								else
-									proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+			if (error instanceof SimpleError) {
+				SimpleError simpleError = (SimpleError)error;
+				if (RuleErrorRecognizer.NOT_A_RULE_NAME.equals(simpleError.getErrorID())) {
+					try {
+						String undefinedRule = error.getDocument().get(error.getPosition(), error.getLength());
+						for (Plugin plugin : SlimEngine.getFullEngine().getPlugins()) {
+							if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
+								ParserPlugin parserPlugin = (ParserPlugin)plugin;
+								for (String keyword : parserPlugin.getKeywords()) {
+									if (keyword.equals(undefinedRule))
+										proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
+								}
 							}
 						}
+						for (Declaration declaration : ASMDeclarationWatcher.getDeclarations((IFile)marker.getResource(), true)) {
+							if (declaration instanceof RuleDeclaration) {
+								if (isSimilar(undefinedRule, declaration.getName())) {
+									RuleDeclaration ruleDeclaration = (RuleDeclaration)declaration;
+									if (ruleDeclaration.getParams().size() > 0)
+										proposals.add(new CompletionProposal(declaration.getName() + "()", error.getPosition(), error.getLength(), declaration.getName().length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "()'", null, null));
+									else
+										proposals.add(new CompletionProposal(declaration.getName(), error.getPosition(), error.getLength(), declaration.getName().length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + declaration.getName() + "'", null, null));
+								}
+							}
+						}
+						proposals.add(new CreateRuleProposal(undefinedRule, 0, IconManager.getIcon("/icons/editor/bullet.gif")));
+					} catch (BadLocationException e) {
 					}
-					proposals.add(new CreateRuleProposal(undefinedRule, 0, IconManager.getIcon("/icons/editor/bullet.gif")));
-				} catch (BadLocationException e) {
+				}
+				else if (RuleErrorRecognizer.NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH.equals(simpleError.getErrorID())) {
+					try {
+						String ruleName = error.getDocument().get(error.getPosition(), error.getLength());
+						if (Integer.parseInt(error.get("NumberOfArguments")) == 0)
+							proposals.add(new CompletionProposal(ruleName + "()", error.getPosition(), error.getLength(), ruleName.length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + ruleName + "()'", null, null));
+					} catch (BadLocationException e) {
+					}
+				}
+				else if (PluginErrorRecognizer.NO_PLUGIN.equals(simpleError.getErrorID())) {
+					try {
+						String undefinedPluginName = error.getDocument().get(error.getPosition(), error.getLength());
+						int indexOfPluginSuffix = undefinedPluginName.indexOf("Plugin");
+						if (indexOfPluginSuffix >= 0)
+							undefinedPluginName = undefinedPluginName.substring(0, indexOfPluginSuffix);
+						for (Plugin plugin : SlimEngine.getFullEngine().getPlugins()) {
+							if (Kernel.PLUGIN_NAME.equals(plugin.getName()))
+								continue;
+							String pluginName = plugin.getName().substring(0, plugin.getName().indexOf("Plugin"));
+							if (isSimilar(undefinedPluginName, pluginName))
+								proposals.add(new CompletionProposal(pluginName, error.getPosition(), error.getLength(), pluginName.length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + pluginName + "'", null, null));
+						}
+					} catch (BadLocationException e) {
+					}
 				}
 			}
-			else if (error instanceof SimpleError && RuleErrorRecognizer.NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH.equals(((SimpleError)error).getErrorID())) {
-				try {
-					String ruleName = error.getDocument().get(error.getPosition(), error.getLength());
-					if (Integer.parseInt(error.get("NumberOfArguments")) == 0)
-						proposals.add(new CompletionProposal(ruleName + "()", error.getPosition(), error.getLength(), ruleName.length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + ruleName + "()'", null, null));
-				} catch (BadLocationException e) {
+			else if (error instanceof SyntaxError) {
+				SyntaxError syntaxError = (SyntaxError)error;
+				for (Plugin plugin : SlimEngine.getFullEngine().getPlugins()) {
+					if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
+						ParserPlugin parserPlugin = (ParserPlugin)plugin;
+						for (String keyword : parserPlugin.getKeywords()) {
+							if (keyword.equals(syntaxError.getEncountered()))
+								proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
+						}
+					}
 				}
 			}
-			else if (error != null) {
+			if (error != null) {
 				for (AbstractQuickFix fix : error.getQuickFixes())
 					fix.collectProposals(error, proposals);
 			}
