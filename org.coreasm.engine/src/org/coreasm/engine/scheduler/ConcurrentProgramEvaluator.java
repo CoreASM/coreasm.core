@@ -151,12 +151,12 @@ public class ConcurrentProgramEvaluator extends FJTask {
 		Element program = null;
 		ASTNode rootNode = null;
 		
-		inter.setSelf(agent);
 		program = storage.getChosenProgram(agent);
 		if (program.equals(Element.UNDEF)) 
 			throw new EngineException("Program of agent " + agent.denotation() + " is undefined.");
 		if (!(program instanceof RuleElement)) 
 			throw new EngineException("Program of agent " + agent.denotation() + " is not a rule element.");
+		inter.setSelf(agent);
 		
 		ASTNode ruleNode = ((RuleElement)program).getBody();
 		rootNode = context.nodeCopyCache.get(ruleNode);
