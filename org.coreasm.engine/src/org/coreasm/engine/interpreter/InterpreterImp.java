@@ -364,15 +364,6 @@ public class InterpreterImp implements Interpreter {
 						else {
 							// If this 'x' refers to a function in the state...
 							final FunctionElement f = storage.getFunction(x);
-							if (f != null && f.isModifiable() || isUndefined(x)) {
-								try {
-									if (storage.getValue(new Location(x, ElementList.NO_ARGUMENT)) instanceof RuleElement)
-										return pos;	// let interpretRules handle it
-								} catch (InvalidLocationException e) {
-									throw new EngineError("Location is invalid in 'interpretRules()'." + 
-											"This cannot happen!");
-								}
-							}
 //							if (storage.isFunctionName(x)) {
 							if (f != null) {
 								final Location l = new Location(x, ElementList.NO_ARGUMENT, f.isModifiable());
@@ -392,16 +383,6 @@ public class InterpreterImp implements Interpreter {
 						
 						// If this 'x' refers to a function in the state...
 						final FunctionElement f = storage.getFunction(x);
-						if (f != null && f.isModifiable() || isUndefined(x)) {
-							try {
-								Element e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
-								if (e instanceof RuleElement)
-									return pos;	// let interpretRules handle it
-							} catch (InvalidLocationException e) {
-								throw new EngineError("Location is invalid in 'interpretRules()'." + 
-										"This cannot happen!");
-							}
-						}
 						if (f != null) {
 							final List<ASTNode> args = frNode.getArguments();
 							// look for the parameter that needs to be evaluated
@@ -535,7 +516,9 @@ public class InterpreterImp implements Interpreter {
 					theRule = ruleValue(x);
 				else {
 					try {
-						Element e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+						Element e = getEnv(x);
+						if (e == null)
+							storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
 						if (e instanceof RuleElement)
 							theRule = (RuleElement)e;
 						else if (pos instanceof MacroCallRuleNode)
@@ -547,28 +530,22 @@ public class InterpreterImp implements Interpreter {
 				}
 				
 				if (theRule != null) {
-				
-					// If the current node is of the form 'x' with no arguments
-					if (!frNode.hasArguments()) {
-						
-						// check the arity of the rule
+					if (!frNode.hasArguments()) { // If the current node is of the form 'x' with no arguments
 						if (theRule.getParam().size() == 0) 
 							pos = ruleCall(theRule, theRule.getParam(), null, pos);
 						else if (pos instanceof MacroCallRuleNode)
 							capi.error("The number of arguments passed to '" + x  + 
 									"' does not match its signature.", pos, this);
-						else	// treat rules like RuleOrFuncElementNode if they aren't a MacroRuleCallNode
+						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
 							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
-					
 					} else { // if current node is 'x(...)' (with arguments)
-						
-						if (theRule != null) {
-							if (theRule.getParam().size() == frNode.getArguments().size())
-								pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
-							else
-								capi.error("The number of arguments passed to '" + x  + 
-										"' does not match its signature.", pos, this);
-						}
+						if (theRule.getParam().size() == frNode.getArguments().size())
+							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
+						else if (pos instanceof MacroCallRuleNode)
+							capi.error("The number of arguments passed to '" + x  + 
+									"' does not match its signature.", pos, this);
+						else
+							capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
 					}
 				}
 			}

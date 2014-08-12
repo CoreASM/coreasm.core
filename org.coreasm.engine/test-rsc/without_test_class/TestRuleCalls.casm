@@ -1,0 +1,24 @@
+CoreASM TestRuleCalls
+
+use Standard
+
+init TestRuleCalls
+
+rule X = print "x"
+rule Y(a) = print a
+
+/*
+ * @require "x\nx\ny\ny\n"
+*/
+rule CALL(macrodirect, macroindirect, macrodirectwitharg, macroindirectwitharg) =
+seqblock
+	macrodirect
+	macroindirect
+	macrodirectwitharg("y")
+	macroindirectwitharg("y")
+endseqblock
+
+rule TestRuleCalls = {
+	let tmpX = @X, tmpY = @Y in
+		CALL(@X, tmpX, @Y, tmpY)
+}
