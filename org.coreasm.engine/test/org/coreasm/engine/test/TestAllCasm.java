@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
@@ -47,17 +48,19 @@ public class TestAllCasm {
 	private final static PrintStream origError = System.err;
 
 	public static List<String> getFilteredOutput(File file, String filter) {
-		List<String> requiredOutputList = new LinkedList<String>();
+		List<String> filteredOutputList = new LinkedList<String>();
 		BufferedReader input = null;
+		Pattern pattern = Pattern.compile(filter + ".*");
 		try {
 			input = new BufferedReader(new FileReader(file));
 			String line = null; //not declared within while loop
 			while ((line = input.readLine()) != null) {
-				if (Pattern.matches(".*" + filter + ".*", line)) {
-					int first = line.indexOf("\"");
-					int last = line.lastIndexOf("\"");
-					if (first >= 0 && last > first)
-						requiredOutputList.add(Tools.convertFromEscapeSequence(line.substring(first + 1, last)));
+				Matcher matcher = pattern.matcher(line);
+				if (matcher.find()) {
+					int first = line.indexOf("\"", matcher.start()) + 1;
+					int last = line.indexOf("\"", first);
+					if (last > first)
+						filteredOutputList.add(Tools.convertFromEscapeSequence(line.substring(first, last)));
 				}
 			}
 			input.close();
@@ -68,7 +71,7 @@ public class TestAllCasm {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		return requiredOutputList;
+		return filteredOutputList;
 	}
 
 	protected static void getTestFile(List<File> testFiles, File file, Class<?> clazz) {

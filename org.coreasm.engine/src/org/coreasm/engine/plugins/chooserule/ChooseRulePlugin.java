@@ -649,12 +649,21 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
         				s = new ArrayList<Element>(domain.getIndexedView());
         			else 
         				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-                	remained.put(variable.getValue(), s);
                 	if (s.isEmpty()) {
+                		if (chooseNode.getIfnoneRule() == null) {
+                			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
+            	    			if (remained.remove(var.getValue()) != null)
+            	    				interpreter.removeEnv(var.getKey());
+            	    		}
+            				// [pos] := (undef,{},undef)
+                			chooseNode.setNode(null, new UpdateMultiset(), null);
+            	            return chooseNode;
+            			}
                 		// pos := delta
                         pos = chooseNode.getIfnoneRule();
                         interpreter.addEnv(variable.getKey(), Element.UNDEF);
                 	}
+                	remained.put(variable.getValue(), s);
                 	shouldChoose = true;
                 }
                 else if (shouldChoose)
@@ -683,6 +692,11 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
     		shouldChoose = false;
 		}
 		if (shouldChoose) {
+			if (chooseNode.getIfnoneRule() == null) {
+				// [pos] := (undef,{},undef)
+				chooseNode.setNode(null, new UpdateMultiset(), null);
+	            return chooseNode;
+			}
 			// pos := delta
             pos = chooseNode.getIfnoneRule();
 		}

@@ -131,7 +131,7 @@ public class InterpreterImp implements Interpreter {
 					logger.debug("Interpreting node {} @ {}.", pos.toString(), pos.getContext(capi.getParser(), capi.getSpec()));
 				}
 				
-				
+				ASTNode prevPos = pos;
 				if (pName != null && !pName.equals(Kernel.PLUGIN_NAME)) {
 					logger.debug("Using plugin {}.", pName);
 					Plugin p = capi.getPlugin(pName);
@@ -141,11 +141,15 @@ public class InterpreterImp implements Interpreter {
 						throw new InterpreterException("Pluging '" + p.getName() + "' is not an interpreter plugin.");
 					}
 				} else {
-					ASTNode prevPos = pos;
 					pos = kernelInterpreter(pos);
 					// Prevent infinite loop
 					if (pos == prevPos && !pos.isEvaluated())
 						capi.error("Failed to interpret node.", pos, this);
+				}
+				
+				if (pos == null) {
+					pos = prevPos;
+					capi.error("Plugin '" + pName + "' returned null while interpreting node of type '" + prevPos.getClass().getSimpleName() + "'", pos, this);
 				}
 	
 				// TODO Deviating from the spec (needs to be handled properly)
