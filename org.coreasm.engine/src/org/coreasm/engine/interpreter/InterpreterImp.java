@@ -531,11 +531,13 @@ public class InterpreterImp implements Interpreter {
 				
 				if (theRule != null) {
 					if (!frNode.hasArguments()) { // If the current node is of the form 'x' with no arguments
-						if (theRule.getParam().size() == 0) 
-							pos = ruleCall(theRule, theRule.getParam(), null, pos);
-						else if (pos instanceof MacroCallRuleNode)
-							capi.error("The number of arguments passed to '" + x  + 
-									"' does not match its signature.", pos, this);
+						if (pos instanceof MacroCallRuleNode) {
+							if (theRule.getParam().size() == 0) 
+								pos = ruleCall(theRule, theRule.getParam(), null, pos);
+							else
+								capi.error("The number of arguments passed to '" + x  + 
+										"' does not match its signature.", pos, this);
+						}
 						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
 							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
 					} else { // if current node is 'x(...)' (with arguments)
