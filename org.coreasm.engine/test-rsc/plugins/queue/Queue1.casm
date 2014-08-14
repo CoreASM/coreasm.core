@@ -14,8 +14,8 @@ use Queue
  * @require "person 2 enters the queue and is waiting. The actual queue is [1, 2]\n"
  * @require "person 3 enters the queue and is waiting. The actual queue is [1, 2, 3]\n"
  * @require "person 1 reaches his seat. Persons still waiting [2, 3]\n"
- * @require "person 1 reaches his seat. Persons still waiting [3]\n"
- * @require "person 1 reaches his seat. Persons still waiting []\n"
+ * @require "person 2 reaches his seat. Persons still waiting [3]\n"
+ * @require "person 3 reaches his seat. Persons still waiting []\n"
  */
 rule Start =
 	seqblock

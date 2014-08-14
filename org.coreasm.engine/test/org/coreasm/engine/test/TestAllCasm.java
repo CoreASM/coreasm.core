@@ -18,11 +18,11 @@ import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 
+import org.coreasm.util.Tools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.coreasm.util.Tools;
 
 public class TestAllCasm {
 
@@ -203,6 +203,7 @@ public class TestAllCasm {
 					if (outContent.toString().contains(requiredOutput))
 						requiredOutputList.remove(requiredOutput);
 				}
+				//TODO
 				if (requiredOutputList.isEmpty())
 					break;
 			}

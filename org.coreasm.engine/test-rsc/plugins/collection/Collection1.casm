@@ -19,6 +19,9 @@ init Start
  * @require "{2, 8}\n"
  * @require "{hello, true}\n"
  */
+ // This is not running because foldl(wordList,@getLength,0) with 
+ // derived getLength(x, y) = strlen(toString(x)) + strlen(toString(y))
+ // gives the result 8, but 26 is expected. I don't know why.
 rule Start =
 	seqblock
 		numberRange := [-2..2 step 1]

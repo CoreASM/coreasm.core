@@ -22,6 +22,9 @@ init Start
  * @require "DEBUG INFO (ch2): step: 2\n"
  * @require "DEBUG INFO (ch2): step: 3\n"
  */
+ // This could be not running because debuginfo releases the output different to print.
+ // Running this with the coreASM plugin gives the correct output after a maximum of 8 steps. Note that
+ // the failure occurs because the TestDriver evaluates the whole required output already after the first step.
 rule Start =
 	seqblock
 		if(mode = undef) then

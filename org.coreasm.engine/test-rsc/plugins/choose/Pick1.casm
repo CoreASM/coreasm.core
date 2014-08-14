@@ -18,6 +18,8 @@ init Pick1
  * @require "Test 4 undef\n"
  * @require "Test 5 RuleOne\n"
  */
+ // Running this with the coreASM plugin gives the correct output after a maximum of 5 steps. Note that
+ // the failure occurs because the TestDriver evaluates the whole required output already after the first step.
 rule Pick1 =
 	seqblock
 		numberRange:= [-2..1 step 1]

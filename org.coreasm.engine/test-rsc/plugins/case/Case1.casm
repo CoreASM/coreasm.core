@@ -19,6 +19,9 @@ init Start
  * @require "undef\n"
  * @require "FirstRule\n"
  */
+ // This is not running correctly, because matching rules will always return true.
+ // In this particular example FirstRule = SecondRule should be false (Line 47-48), but
+ // it is true.
 rule Start =
 	seqblock
 		numbers := [-1..1 step 1]
