@@ -1,0 +1,41 @@
+CoreASM Stack1
+
+use Standard
+use Stack
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "pushed 3 on the stack. [3, 2, 1]\n"
+ * @require "popped first element from stack[2, 1] into loc. 3\n"
+ * @require "peeked first element into loc: 1. Stack is still full: [1]\n"
+ * @require "popped first element from stack[] into loc. 1\n"
+ * @require "peeked from an empty stack. loc: undef stack: []\n"
+ */
+rule Start =
+	seqblock
+		stack:=[]
+		print " --stack-- "+stack
+		loc:=0
+		count:=0
+		while(count<3) do
+			seqblock
+				loc:= 1 + count
+				push loc into stack
+				print "pushed " +loc+ " on the stack. " +stack
+				count:= count+1
+			endseqblock
+		pop loc from stack
+		print "popped first element from stack" +stack+ " into loc. " +loc
+		pop loc from stack
+		print "popped first element from stack" +stack+ " into loc. " +loc
+		loc := peek(stack)
+		print "peeked first element into loc: "+loc+". Stack is still full: " +stack
+		pop loc from stack
+		print "popped first element from stack" +stack+ " into loc. " +loc
+		loc := peek([])
+		print "peeked from an empty stack. loc: "+loc+" stack: " +stack
+	endseqblock

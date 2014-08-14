@@ -1,0 +1,35 @@
+CoreASM Let1
+
+use Standard
+use LetRule
+
+init Let1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "RuleOne 6\n"
+ * @require "RuleTwo 1 h sentence\n"
+ * @require "RuleThree undef\n"
+ * @require "RuleFive 1.0..3.0:2.0\n"
+ * @require "RuleSix executed undef\n"
+ */
+rule Let1 =
+	seqblock
+		// three numbers
+		let x = 1, y = 2, z = 3 in RuleOne
+		// three different types
+		let x = 1, y = "h", z = "sentence" in RuleTwo
+		// x referring to y
+		let x = y, y = 2 in RuleThree
+		// variable is a NumberRange
+		let x = [1..3 step 2] in RuleFive
+		// variable is a Rule
+		let x = RuleOne in RuleSix
+	endseqblock
+rule RuleOne = print "RuleOne "+(x+y+z)
+rule RuleTwo = print "RuleTwo "+ x +" "+ y + " " + z
+rule RuleThree = print "RuleThree "+(x+y)
+rule RuleFive = print "RuleFive "+x
+rule RuleSix = print "RuleSix executed " + x

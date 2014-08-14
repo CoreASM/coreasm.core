@@ -1,0 +1,27 @@
+CoreASM Map3_add
+
+use Standard
+use Map
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "{3->c, 2->b, 1->a, 4->d}\n"
+ * @require "{2->b, 1->a}\n"
+ * @require "{3->z, 2->b, 1->a}\n"
+ */
+rule Start =
+	seqblock
+		map5 := {1->"a",2->"b"}
+		map6 := {3-> "c", 4->"d"}
+		map7 := {1-> "x", 2->"y", 3->"z"}
+		map1 := {->}
+		add map5 to map6
+		add map1 to map5
+		add map5 to map7
+		print map6
+		print map5
+		print map7
+	endseqblock

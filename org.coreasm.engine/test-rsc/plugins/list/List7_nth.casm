@@ -1,0 +1,22 @@
+CoreASM List7_nth
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "8\n"
+ * @require "2\n"
+ * @require "undef\n"
+ */
+rule Start =
+	seqblock
+		print nth([7,8,9],2)
+		print nth(cons(1,[nth([4,3,2],3)]),2)
+		print nth([],1)
+	endseqblock

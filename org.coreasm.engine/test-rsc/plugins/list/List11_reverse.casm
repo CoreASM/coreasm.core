@@ -1,0 +1,22 @@
+CoreASM List11_reverse
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[2, 9, 8, 6]\n"
+ * @require "[]\n"
+ * @require "[1,2,3,4]\n"
+ */
+rule Start =
+	seqblock
+		print reverse([6,8,9,2])
+		print reverse([])
+		print reverse(reverse([1,2,3,4]))
+	endseqblock

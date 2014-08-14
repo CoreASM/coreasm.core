@@ -1,0 +1,26 @@
+CoreASM List4_tail
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[]\n"
+ * @require "[]\n"
+ * @require "[[10]]\n"
+ * @require "[[10]]\n"
+ */
+rule Start =
+	seqblock
+		print tail([])
+		print tail([1])
+		//Tail operation that includes a tail operation
+		print tail([ tail([ [8],[9] ]),[10] ])
+		//Tail operation that includes a tail operation on a toList operation
+		print tail([ tail(toList({ [8],[9] })),[10] ])
+	endseqblock

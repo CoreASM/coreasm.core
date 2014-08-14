@@ -1,0 +1,23 @@
+CoreASM PredicateLogic4_not_notEqual
+
+use Standard
+
+init Start
+use PredicateLogicPlugin
+use PredicateLogic
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "false\n"
+ *
+ * @require "true\n"
+ */
+rule Start =
+	seqblock
+		if(true = not false) then print "true" else print "false"
+		if(true != false) then print "true" else print "false"
+		// this shows that "not" isn't the same as !=
+		if(5 = not true) then print "false" else print "true"
+		if(5 != true) then print "true" else print "false"
+	endseqblock

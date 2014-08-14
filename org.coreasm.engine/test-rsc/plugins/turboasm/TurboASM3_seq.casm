@@ -1,0 +1,32 @@
+CoreASM TurboASM3_seq
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 4
+ * @maxsteps 4
+ *
+ * @refuse " WorldHello\n"
+ *
+ * @require "Hello World\n"
+ */
+rule Start =
+	seqblock
+		string1 := "Hello"
+		string2 := " World"
+		sentence := ""
+		Seq01(sentence)
+	endseqblock
+// putting seq in parallelblock. Output will still always be "Hello World" an never " WorldHello"
+rule Seq01(sentence) =
+	seqblock
+		par
+			seq
+				sentence:= sentence+ string1
+			next
+				sentence:= sentence+ string2
+		endpar
+		print sentence
+	endseqblock

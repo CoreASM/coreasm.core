@@ -1,0 +1,24 @@
+CoreASM PredicateLogic3_forallHold
+
+use Standard
+
+init Start
+use PredicateLogicPlugin
+use PredicateLogic
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "just numbers\n"
+ * @refuse "something's false\n"
+ *
+ * @require "no there is a letter in between\n"
+ * @require "all values are true\n"
+ */
+rule Start =
+	seqblock
+		list:= [1,2,3,4,"a",6,7,8,9]
+		if (forall x in list holds true = matches(x,"[a-z]+")) then print "just numbers" else print "no there is a letter in between"
+		// this a definition thing. an empty set does'nt evaluate "false", so it leads to true.
+		if (forall x in {} holds x = true) then print "all values are true" else print "something's false"
+	endseqblock

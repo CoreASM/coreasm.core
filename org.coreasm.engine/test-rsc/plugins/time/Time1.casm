@@ -1,0 +1,20 @@
+CoreASM Time1
+
+use Standard
+use Time
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 3
+ *
+ * @require "Time:\n"
+ * @require "Computation step: 2\n"
+ */
+rule Start =
+	seqblock
+		print "Time:"
+		print now
+		print "Computation step: "+stepcount
+	endseqblock

@@ -1,0 +1,34 @@
+CoreASM List16_adding_removing
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[1, 2, 3, 4, -3, -2.0..2.0, []]\n"
+ * @require "[1, 2, 3, 4]\n"
+ * @require "[1, 2, 3, 4]\n"
+ */
+rule Start =
+	seqblock
+		list1 := [1,2,3,4]
+		list2 := []
+		//Adding a Number, NumberRange and a Set from a List
+		add -3 to list1
+		add [-2..2 step 1] to list1
+		add list2 to list1
+		print list1
+		//Removing a Number, NumberRange and a Set from a List
+		remove -3 from list1
+		remove [-2..2 step 1] from list1
+		remove list2 from list1
+		print list1
+		//Removing something that isnt there
+		remove 5 from list1
+		print list1
+	endseqblock

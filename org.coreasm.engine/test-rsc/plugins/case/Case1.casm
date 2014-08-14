@@ -1,0 +1,54 @@
+CoreASM Case1
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 2
+ * @maxsteps 10
+ *
+ * @refuse "b\n"
+ * @refuse "matched string with undef\n"
+ * @refuse "SecondRule\n"
+ * @refuse "AnyRule\n"
+ *
+ * @require "SomeRule 0\n"
+ * @require "-1\n"
+ * @require "Hallo\n"
+ * @require "undef\n"
+ * @require "FirstRule\n"
+ */
+rule Start =
+	seqblock
+		numbers := [-1..1 step 1]
+		x := pick y in numbers
+		// comparing numbers/string
+		case x of -1 : print -1
+				   1 : skip
+				   0 : SomeRule(x)
+				   "b" : print "b"
+		endcase
+		// comparing String values
+		y:= "Hallo"
+		case y of "Hallo" : print "Hallo"
+				   undef  : print "matched string with undef"
+		endcase
+		// comparing undef
+		z:= undef
+		case z of undef  : print "undef"
+		endcase
+		// comparing Rules
+		// comparing rules is always true! This should be handled like any other value.
+		// If rule1 matches rule2 then true should be returned, else false.
+		z:= FirstRule
+		case z of SecondRule  : print "SecondRule"
+				  FirstRule   : print "FirstRule"
+				  AnyRule	  : print "AnyRule"
+				  5			  : print "that would be weird"
+		endcase
+	endseqblock
+rule SomeRule(x) = print "SomeRule "+ x
+rule FirstRule = print 5
+rule SecondRule = skip
+rule AnyRule = skip

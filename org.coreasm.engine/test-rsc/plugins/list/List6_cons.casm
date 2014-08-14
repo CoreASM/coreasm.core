@@ -1,0 +1,22 @@
+CoreASM List6_cons
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[1, 7, 8, 9]\n"
+ * @require "[1, 2, 3, 7, 8, 9]\n"
+ * @require "[1, 2, 3]\n"
+ */
+rule Start =
+	seqblock
+		print cons(1,[7,8,9])
+		print cons(1,cons(2,cons(3,[7,8,9])))
+		print cons(1,cons(2,cons(3,[])))
+	endseqblock

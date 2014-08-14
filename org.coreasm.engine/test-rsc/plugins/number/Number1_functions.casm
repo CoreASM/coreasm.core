@@ -1,0 +1,61 @@
+CoreASM Number1_functions
+
+use Standard
+use Time
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "Infinity\n"
+ * @require "undef\n"
+ * @require "isNaturalNumber true\n"
+ * @require "isNaturalNumber false\n"
+ * @require "isNaturalNumber false\n"
+ * @require "isIntegerNumber true\n"
+ * @require "isIntegerNumber false\n"
+ * @require "isIntegerNumber true\n"
+ * @require "isRealNumber true\n"
+ * @require "isRealNumber false\n"
+ * @require "isRealNumber true\n"
+ * @require "isEvenNumber true\n"
+ * @require "isEvenNumber false\n"
+ * @require "isEvenNumber false\n"
+ * @require "isEvenNumber true\n"
+ * @require "isOddNumber false\n"
+ * @require "isOddNumber false\n"
+ * @require "isOddNumber true\n"
+ * @require "isOddNumber true\n"
+ * @require "size 10\n"
+ * @require "size 0\n"
+ * @require "size 4\n"
+ */
+rule Start =
+	seqblock
+		print infinity
+		print toNumber("a")
+		//this works
+		//print toNumber(input("type in a number"))
+		print "isNaturalNumber " + isNaturalNumber(2)
+		print "isNaturalNumber " + isNaturalNumber("a")
+		print "isNaturalNumber " + isNaturalNumber(-2)
+		print "isIntegerNumber " + isIntegerNumber(2)
+		print "isIntegerNumber " + isIntegerNumber("a")
+		print "isIntegerNumber " + isIntegerNumber(-2)
+		print "isRealNumber " + isRealNumber(2/3)
+		print "isRealNumber " + isRealNumber("a")
+		print "isRealNumber " + isRealNumber(3.142)
+		print "isEvenNumber " + isEvenNumber(2)
+		print "isEvenNumber " + isEvenNumber("a")
+		print "isEvenNumber " + isEvenNumber(-1)
+		print "isEvenNumber " + isEvenNumber(-2)
+		print "isOddNumber " + isOddNumber(2)
+		print "isOddNumber " + isOddNumber("a")
+		print "isOddNumber " + isOddNumber(-3)// --> negative oddNumbers aren't recognised
+		print "isOddNumber " + isOddNumber(1)
+		print "size " + size([0..9 step 1])
+		print "size " + size([])
+		print "size " + size({1,2,3,4})
+	endseqblock

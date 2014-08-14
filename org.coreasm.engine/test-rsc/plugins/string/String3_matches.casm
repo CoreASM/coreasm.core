@@ -1,0 +1,27 @@
+CoreASM String3_matches
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "true\n"
+ * @require "true\n"
+ * @require "false\n"
+ * @require "false\n"
+ * @require "false\n"
+ */
+rule Start =
+	seqblock
+		agent := pick a in Agents
+		word := "secondThing"
+		bool := true
+		number := 587
+		rul:= Ruletest
+		elements := {agent, word, bool, number, rul}
+		forall x in elements do print matches(toString(x),"[a-z]+")
+	endseqblock
+rule Ruletest = skip

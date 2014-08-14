@@ -1,0 +1,44 @@
+CoreASM Pick1
+
+use Standard
+use List
+use Number
+use ForallRulePlugin
+
+init Pick1
+
+/*
+ * @minsteps 2
+ * @maxsteps 5
+ *
+ * @require "Test 1 -1\n"
+ * @require "Test 1 -2\n"
+ * @require "Test 2 0\n"
+ * @require "Test 3 undef\n"
+ * @require "Test 4 undef\n"
+ * @require "Test 5 RuleOne\n"
+ */
+rule Pick1 =
+	seqblock
+		numberRange:= [-2..1 step 1]
+		numberSet  := {-2,-1,0,1}
+		numberList := [-2,-1,0,1]
+		rules      := {RuleOne, RuleTwo}
+		// pick one from a numberRange
+		res := pick x in numberRange with x < 0
+		print "Test 1 " + res
+		// pick a specific one from a set
+		res := pick x in numberSet with x = 0
+		print "Test 2 " + res
+		// try to pick one from a list -> guard points out of range
+		res := pick x in numberList with x > 5
+		print "Test 3 " + res
+		// pick from an empty list
+		res := pick x in []
+		print "Test 4 " + res
+		// pick a set of rules (--> picks always the first)
+		res := pick x in rules
+		if(res = RuleOne) then print "Test 5 RuleOne" else print "Test 5 RuleTwo"
+	endseqblock
+rule RuleOne = skip
+rule RuleTwo = skip

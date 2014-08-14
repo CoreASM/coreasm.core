@@ -1,0 +1,20 @@
+CoreASM Modularity1
+
+use Standard
+use Modularity
+
+include "ModularityTest.txt"
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "8\n"
+ * @require "yeah\n"
+ * @require "4.732050807568877\n"
+ */
+rule Start =
+	seqblock
+		Testrule
+	endseqblock

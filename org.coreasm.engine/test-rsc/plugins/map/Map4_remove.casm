@@ -1,0 +1,36 @@
+CoreASM Map4_remove
+
+use Standard
+use Map
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "{3->z, 2->y}\n"
+ * @require "{3->z, 2->y}\n"
+ * @require "{6->f, 5->e}\n"
+ * @require "{6->f, 5->e}\n"
+ * @require "{2->y}\n"
+ * @require "{2->y}\n"
+ */
+rule Start =
+	seqblock
+		map5 := {1->"a",2->"b"}
+		map6 := {3-> "c", 4->"d", 5 ->"e", 6-> "f"}
+		map7 := {1-> "a", 2->"y", 3->"z"}
+		map1 := {->}
+		remove map5 from map7
+		print map7
+		remove map6 from map7
+		print map7
+		remove {3,4,9,10002,-123123} from map6
+		print map6
+		remove {} from map6
+		print map6
+		remove 3 from map7
+		print map7
+		remove y from map7
+		print map7
+	endseqblock

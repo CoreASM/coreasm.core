@@ -1,0 +1,19 @@
+CoreASM Number2_numberRange
+
+use Standard
+use Time
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "1.0..9.0\n"
+ * @require "1.0..9.0:3.0\n"
+ */
+rule Start =
+	seqblock
+		print [1..9 step 1]
+		print [1..9 step 3]
+	endseqblock

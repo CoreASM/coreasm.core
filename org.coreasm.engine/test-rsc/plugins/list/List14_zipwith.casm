@@ -1,0 +1,23 @@
+CoreASM List14_zipwith
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[4, 4, 6]\n"
+ * @require "[]\n"
+ * @require "[3, 5, 3]\n"
+ */
+rule Start =
+	seqblock
+		print zipwith([1,4,3],[4,2,6,7], @maximum)
+		print zipwith([],[4,2,6,7], @maximum)
+		print zipwith(zipwith([1,2,3],[3,2,-7,1], @maximum), [-1,5,-2,8], @maximum)
+	endseqblock
+derived maximum(x,y) = return a in if(x>y) then a:= x else a := y

@@ -1,0 +1,26 @@
+CoreASM Signature2_derivedFunctions
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "8\n"
+ * @require "yeah\n"
+ * @require "4.732050807568877\n"
+ */
+rule Start =
+	seqblock
+		print simpleMath(2,4)
+		print returnValue(1,2,3)
+		//function calls a function
+		print mathCeption(2,3)
+	endseqblock
+derived simpleMath(x, y) = x*2+y
+derived returnValue(x, y, z) = return a in if(x > z or z > y) then a := "yeah" else a := "oh no"
+derived mathCeption(x, y) = return a in if( x > y) then a := math(x) else a := otherMath(y)
+derived math(x) = x^2-x
+derived otherMath(x) = x^(1/2)+x

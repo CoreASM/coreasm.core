@@ -1,0 +1,18 @@
+CoreASM List3_flattenList
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n"
+ */
+rule Start =
+	seqblock
+		print (flattenList([ [1,2,3],toList([4..6 step 1]),7,toList({ [ [8],[9] ],[10] }) ]))
+	endseqblock

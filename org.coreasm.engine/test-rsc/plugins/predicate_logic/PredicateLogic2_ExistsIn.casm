@@ -1,0 +1,23 @@
+CoreASM PredicateLogic2_ExistsIn
+
+use Standard
+
+init Start
+use PredicateLogicPlugin
+use PredicateLogic
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "no letter inside\n"
+ * @refuse "there is the truth\n"
+ *
+ * @require "found a letter\n"
+ * @require "false everywhere\n"
+ */
+rule Start =
+	seqblock
+		list:= [1,2,3,4,"a",6,7,8,9]
+		if (exists x in list with true = matches(x,"[a-z]+")) then print "found a letter" else print "no letter inside"
+		if (exists x in {} with x = true) then print "there is the truth" else print "false everywhere"
+	endseqblock

@@ -1,0 +1,37 @@
+CoreASM TurboASM1_iterate
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "While x = 2"
+ * @require "While x = 3"
+ * @require "While x = 4"
+ * @require "Iterate x = 2"
+ * @require "Iterate x = 3"
+ * @require "Iterate x = 4"
+ */
+rule Start =
+	seqblock
+		x:=1
+		Sequence
+		x:=1
+		Iterate
+	endseqblock
+rule Sequence =
+	while (x < 4) do
+		seqblock
+			x:=x+1
+			print "While x = "+x
+		endseqblock
+rule Iterate =
+	iterate
+		if (x < 4) then
+		seqblock
+			x:=x+1
+			print "Iterate x = "+x
+		endseqblock

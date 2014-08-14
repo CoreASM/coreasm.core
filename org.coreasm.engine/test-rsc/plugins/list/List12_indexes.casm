@@ -1,0 +1,25 @@
+CoreASM List12_indexes
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[2]\n"
+ * @require "[]\n"
+ * @require "[]\n"
+ * @require "[1]\n"
+ */
+rule Start =
+	seqblock
+		print indexes([6,8,9,2],8)
+		print indexes([6,8,9,2],7)
+		print indexes([],8)
+		// search for index while concatenate a list with a resultlist from the indexes operation
+		print indices(indices([6,8,9,2],6)+[2,3,4],1)
+	endseqblock

@@ -1,0 +1,23 @@
+CoreASM If1
+
+use Standard
+
+init If1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "false\n"
+ */
+rule If1 =
+	seqblock
+		if(0 > 2) then print "false" else print "true"
+		if(-2 > -4) then print "true"
+		if(-2 < -4) then print "false"
+		if(0 = b) then print "false" else print "true"
+		if(false and true) then print "false" else print "true"
+		if(2 > 0 and true and (false or 1 < -100 or (true and true))) then print "true" else print "false"
+		if(2 > 0 and true and false or 1 < -100 or true and true) then print "true" else print "false"
+		if(true or false xor -1000000000 < -10000000001) then print "true" else print "false"
+	endseqblock

@@ -1,0 +1,42 @@
+CoreASM TurboASM2_seqblock
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "Adding x,y,z in PARALLELblock = 5\n"
+ *
+ * @require "Adding x,y,z in SEQUENCEblock = 5\n"
+ * @require "Adding x,y,z in PARALLELblock = 3\n"
+ * @require "After finishing PARALLELblock (x+y+z) = 5\n"
+ */
+rule Start =
+	seqblock
+		x:=1
+		y:=1
+		z:=1
+		SequenceAdding(x,y,z)
+		x:=1
+		y:=1
+		z:=1
+		ParAdding(x,y,z)
+		print "After finishing PARALLELblock (x+y+z) = "+ (x+y+z)
+	endseqblock
+rule SequenceAdding(x,y,z) =
+		seqblock
+			x:= x+2
+			y:= y+1
+			z:= z-1
+			print "Adding x,y,z in SEQUENCEblock = "+ (x+y+z)
+		endseqblock
+rule ParAdding(x,y,z) =
+		par
+			x:= x+2
+			y:= y+1
+			z:= z-1
+			print "Adding x,y,z in PARALLELblock = "+ (x+y+z)
+		endpar

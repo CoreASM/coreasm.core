@@ -1,0 +1,53 @@
+CoreASM Forall1
+
+use Standard
+use ForallRule
+use String
+
+init Forall1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "Test 4\n"
+ * @refuse "Test 5\n"
+ * @refuse "Test 6\n"
+ * @refuse "Test 7\n"
+ *
+ * @require "Test 1 -1\n"
+ * @require "Test 2 1\n"
+ * @require "Test 3 0\n"
+ */
+rule Forall1 =
+	seqblock
+		numbers     := [-1..1 step 1]
+		numberset   := {-1,0,1}
+		numberslist := [-1,0,1]
+		rules := {RuleOne, RuleTwo}
+		// output all numbers that are smaller then x
+		forall x in numberset with x < 0 do
+			print "Test 1 "+x
+		// output all numbers that are bigger then x
+		forall x in numberslist with x > 0 do
+			print "Test 2 "+x
+		// output all numbers that are equal to x
+		forall x in numbers with x = 0 do
+			print "Test 3 "+x
+		// guard points out of range
+		forall x in numbers with x > 1 do
+			print "Test 4"
+		// non comparable types
+		forall x in numbers with x = b do
+			print "Test 5"
+		// forall with empty set
+		forall x in {} with x > 0 do
+			print "Test 6"
+		// forall with rules = RuleThree doesnt exist.
+		// comparing rules is always true! This should be handled like any other value.
+		// If rule1 matches rule2 then true should be returned, else false.
+		forall x in rules with x = RuleThree do
+			print "Test 7"
+	endseqblock
+rule RuleOne = skip
+rule RuleTwo = print "RuleTwo"

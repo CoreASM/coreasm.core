@@ -1,0 +1,28 @@
+CoreASM Kernel1
+
+use Standard
+use KernelExtensions
+use Time
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "Adding a & b results to = 5\n"
+ * @require "Multiplying a & b results to = 6\n"
+ * @require "Printing something\n"
+ */
+rule Start =
+	seqblock
+		x(1) := @Add
+		x(2) := @Multiply
+		x(3) := @Print
+		call x(1)(2,3)
+		call x(2)(2,3)
+		call x(3)()
+	endseqblock
+rule Add(a,b) = print "Adding a & b results to = " + (a+b)
+rule Multiply(a,b) = print "Multiplying a & b results to = " + (a*b)
+rule Print = print "Printing something"

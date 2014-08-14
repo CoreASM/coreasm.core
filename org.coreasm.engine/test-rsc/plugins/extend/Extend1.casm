@@ -1,0 +1,52 @@
+CoreASM Extend1
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 8
+ *
+ * @require "Agent added by extending:\n"
+ * @require "Agent added with Agent := true:\n"
+ * @require "Agent removed with Agent := false:\n"
+ */
+rule Start =
+	seqblock
+		sequencenumber := 1
+		program(self)  := @Extend1
+	endseqblock
+rule Extend1 =
+	seqblock
+		print "------Step "+sequencenumber+"-------"
+		forall a in Agents do print a
+		choose x in {true,false} do bool := x
+		AddAgent
+		AgentControl(bool)
+		sequencenumber:=sequencenumber+1
+	endseqblock
+// adding with extend rule
+rule AddAgent =
+	extend Agents with x do
+		seqblock
+			print "Agent added by extending: "
+			print x
+		endseqblock
+// adding per import value
+rule AgentControl(value) =
+	import x do
+		if(value) then
+			seqblock
+				print "Agent added with Agent := true:"
+				print x
+				Agents(x) := value
+			endseqblock
+		else
+		// removing agents
+			seqblock
+				y := pick x in Agents with toString(x) != "InitAgent"
+				print "Agent removed with Agent := false:"
+				print y
+				Agents(y) := value
+			endseqblock

@@ -1,0 +1,26 @@
+CoreASM Map2_toMap
+
+use Standard
+use Map
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "{ -> }\n"
+ * @require "{3->{ -> }, 2->World, 1->Hello}\n"
+ * @require "{3->1, 2->1, 1->Hello}\n"
+ * @require "{b->2, c->{3->{ -> }, 2->World, 1->Hello}, a->{3->4, 1->2}}\n"
+ */
+rule Start =
+	seqblock
+		map1 := {->}
+		map2 := {1->"Hello", 2->"World", 3 -> map1}
+		map3 := toMap({[1,"Hello"],[2,1],[3,1]})
+		map4 := {"a" -> toMap({[1,2],[3,4]}),"b" -> 2, "c" -> map2}
+		print map1
+		print map2
+		print map3
+		print map4
+	endseqblock

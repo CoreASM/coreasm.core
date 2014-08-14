@@ -1,0 +1,24 @@
+CoreASM List13_zip
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[[1, 4], [2, 5], [3, 6]]\n"
+ * @require "[[1, 4], [2, 5]]\n"
+ * @require "[]\n"
+ * @require "[[[1, 5], 9], [[2, 6], 10]]\n"
+ */
+rule Start =
+	seqblock
+		print zip([1,2,3],[4,5,6])
+		print zip([1,2,3,4],[4,5])
+		print zip([],[4,5])
+		print zip(zip([1,2,3,4],[5,6,7,8]),[9,10])
+	endseqblock

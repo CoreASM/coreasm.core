@@ -1,0 +1,27 @@
+CoreASM List5_last
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "undef\n"
+ * @require "1\n"
+ * @require "[10]\n"
+ * @require "[10]\n"
+ */
+rule Start =
+	seqblock
+		// Last of empty list (= undef) and list with just one element
+		print last([])
+		print last([1])
+		//Last operation that includes a last operation
+		print last([ last([ [8],[9] ]),[10] ])
+		//Last operation that includes a last operation on a toList operation
+		print last([ last(toList({ [8],[9] })),[10] ])
+	endseqblock

@@ -1,0 +1,44 @@
+CoreASM TurboASM5_local
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "6\n"
+ * @require "-100000\n"
+ */
+rule Start =
+	seqblock
+		a:=5
+		b:=6
+		maximum:= -100000
+		maximum <- Rule01(a,b)
+		print maximum
+		c:=5
+		d:=6
+		maximum:= -100000
+		maximum <- Rule02(c,d)
+		print maximum
+	endseqblock
+rule Rule01(x,y) =
+	local funct in
+		seqblock
+			if(x >= y) then
+				funct(x,y) := x
+			else
+				funct(x,y) := y
+			maximum := funct(x,y)
+		endseqblock
+rule Rule02(x,y) =
+	local funct, maximum in
+		seqblock
+			if(x >= y) then
+				funct(x,y) := x
+			else
+				funct(x,y) := y
+			maximum := funct(x,y)
+		endseqblock

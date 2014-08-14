@@ -1,0 +1,22 @@
+CoreASM List8_setnth
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "[6, 7, 9]\n"
+ * @require "[3, 4, 5]\n"
+ * @require "[2]\n"
+ */
+rule Start =
+	seqblock
+		print setnth([6,8,9],2,7)
+		print setnth(setnth([4,3,5],2,4),1,3)
+		print setnth([1],1,2)
+	endseqblock

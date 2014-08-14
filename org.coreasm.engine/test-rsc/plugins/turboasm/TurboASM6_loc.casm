@@ -1,0 +1,40 @@
+CoreASM TurboASM6_loc
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "Returned Value is: 4\n"
+ *
+ * @require "Correct GGT is: 4\n"
+ * @require "Returned Value is: 0\n"
+ */
+rule Start =
+	seqblock
+		a:=44
+		b:=8
+		// the function returns the value of result and not the correct GGT
+		y <- GGT(a,b)
+		print "Returned Value is: "+ y
+	endseqblock
+rule GGT(a,b) =
+	seqblock
+		// Function will always return 0, although a has the correct GGT
+		while (b != 0) do
+			if (a > b) then
+				seqblock
+					result := a - b
+					a := result
+				endseqblock
+			 else
+			 //result will be 0 when while condition breaks
+				seqblock
+					result := b - a
+					b := result
+				endseqblock
+		print "Correct GGT is: "+ a
+	endseqblock

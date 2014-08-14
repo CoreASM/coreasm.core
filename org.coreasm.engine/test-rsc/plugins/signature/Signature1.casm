@@ -1,0 +1,60 @@
+CoreASM Signature1
+
+use Standard
+use Signature
+
+universe JuicyFruit = {orange, banana, apple}
+
+enum Fruit = {melon, mango, strawberry}
+enum Yummy = {enormous, good}
+
+function howYummyIsIt : Fruit -> Yummy
+function happiness : Yummy -> String
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 10
+ *
+ * @refuse "Drinking this applejuice is awesome.\n"
+ * @refuse "Drinking this bananajuice is awesome.\n
+ * @refuse "Eating a melon makes me realy happy\n"
+ *
+ * @require "Drinking this orangejuice is awesome.\n"
+ * @require "I like orangejuice more, but this applejuice is stil cool.\n"
+ * @require "I like orangejuice more, but this bananajuice is stil cool.\n"
+ * @require "Eating a mango makes me realy happy\n"
+ * @require "Eating a melon makes me stil happy\n"
+ * @require "Eating a strawberry makes me realy happy\n"
+ */
+rule Start =
+	seqblock
+		choose x in JuicyFruit do
+			Drink(x)
+		print "Let's now eat a fruit!!!"
+		choose x in Fruit do
+			Eating(x)
+	endseqblock
+rule Eating(fruit) =
+	seqblock
+			Taste(fruit)
+			Feeling(fruit)
+	endseqblock
+rule Taste(fruit) =
+	seqblock
+			if fruit = melon then howYummyIsIt(fruit) := good
+			if fruit = mango then howYummyIsIt(mango) := enormous
+			if fruit = strawberry then howYummyIsIt(strawberry) := enormous
+	endseqblock
+rule Feeling(fruit) =
+	seqblock
+		if(howYummyIsIt(fruit) = enormous) then happiness(fruit) := "realy happy"
+			else happiness(fruit) := "stil happy"
+		print "Eating a " + fruit + " makes me " + happiness(fruit)
+	endseqblock
+rule Drink(juicyFruit) =
+	seqblock
+		if(juicyFruit = orange) then print "Drinking this " + juicyFruit + "juice is awesome."
+			else print "I like orangejuice more, but this " + juicyFruit + "juice is stil cool."
+	endseqblock

@@ -1,0 +1,50 @@
+CoreASM List17_shift
+
+use Standard
+use ListPlugin
+use List
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "list: [2, 3, 4] loc:1\n"
+ * @require "list: [] loc:3\n"
+ * @require "list: [9, -2] loc: 3\n"
+ * @require "list: [-2] loc: 9\n"
+ * @require "list: [] loc: -2\n"
+ * @require "list: [3, 9] loc: -2\n"
+ * @require "list: [3] loc: 9\n"
+ * @require "list: [] loc: 3\n"
+ */
+rule Start =
+	seqblock
+		list1 := [1,2,3,4]
+		loc:=0
+		shift left list1 into loc
+		print "list: "+list1 + " loc:" +loc
+		list1 := [3]
+		loc:=5
+		shift left list1 into loc
+		print "list: "+list1 + " loc:" +loc
+		list1 := [3,9,-2]
+		loc:=0
+		count :=3
+		while(count>0) do
+			seqblock
+				shift left list1 into loc
+				print "list: "+list1 + " loc: " +loc
+				count:= count-1
+			endseqblock
+		list1 := [3,9,-2]
+		loc:=0
+		count :=3
+		while(count>0) do
+			seqblock
+				shift right list1 into loc
+				print "list: "+list1 + " loc: " +loc
+				count:= count-1
+			endseqblock
+	endseqblock

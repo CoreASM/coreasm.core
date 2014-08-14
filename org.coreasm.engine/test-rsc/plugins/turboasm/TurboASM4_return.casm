@@ -1,0 +1,39 @@
+CoreASM TurboASM4_return
+
+use TurboASMPlugin
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "Bankmanager says: Yeah thats a lot.\n"
+ * @require "After paying taxes you have left: 227476.8\n"
+ * @require "Bankmanager says: Work harder!\n"
+ * @require "After paying taxes you have left: 1590.3999999999999\n"
+ */
+rule Start =
+	seqblock
+		x := transferToBankAccount(379128)
+		print x
+		print "After paying taxes you have left: " + payingTaxes(379128)
+		print " "
+		y := transferToBankAccount(2272)
+		print y
+		print "After paying taxes you have left: " + payingTaxes(2272)
+	endseqblock
+derived transferToBankAccount(money) =
+	return res in
+		if(money > 100000) then res:= "Bankmanager says: Yeah thats a lot." else res := "Bankmanager says: Work harder!"
+// function calls other functions
+derived payingTaxes(money) =
+	return res in
+		if(money > 100000) then res:= richTaxes(money) else res := taxes(money)
+derived richTaxes(money) =
+	return res in
+		if(money > 1000000) then res:= money*0.5 else res := money*0.6
+derived taxes(money) =
+	return res in
+		if(money > 100) then res:= money*0.7 else res := money*0.8

@@ -1,0 +1,43 @@
+CoreASM Debug1
+
+use Standard
+use DebugInfo
+use Options
+
+option DebugInfo.activeChannels ALL
+//option DebugInfo.activeChannels "ch1,ch2,ch3"
+
+init Start
+
+/*
+ * @minsteps 3
+ * @maxsteps 8
+ *
+ * @refuse "b\n"
+ * @refuse "matched string with undef\n"
+ *
+ * @require "DEBUG INFO (ch1): -- start --\n"
+ * @require "DEBUG INFO (ch3): Warning: You're falling under a critical value!\n"
+ * @require "DEBUG INFO (ch2): step: 1\n"
+ * @require "DEBUG INFO (ch2): step: 2\n"
+ * @require "DEBUG INFO (ch2): step: 3\n"
+ */
+rule Start =
+	seqblock
+		if(mode = undef) then
+			seqblock
+				debuginfo ch1 "-- start --"
+				mode := "counting"
+				counter := 0
+			endseqblock
+		else
+			seqblock
+				counter := counter +1
+				debuginfo ch2 "step: "+counter
+			endseqblock
+		choose x in [-10..20 step 1] do
+			seqblock
+				if(x<1) then
+					debuginfo ch3 "Warning: You're falling under a critical value!"
+			endseqblock
+	endseqblock

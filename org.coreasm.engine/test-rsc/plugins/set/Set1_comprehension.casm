@@ -1,0 +1,38 @@
+CoreASM Set1_comprehension
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "{0, -6, 6, 2, -2, 10, -10, -4, 4, 8, -8}\n"
+ * @require "{}\n"
+ * @require "{}\n"
+ * @require "{14, 12, 2, 10, 8, 28, 30, 6, 24, 26, 20, 22, 4, 16, 18}\n"
+ * @require "{14, 12, 2, 10, 8, 28, 30, 6, 24, 26, 20, 22, 4, 16, 18}\n"
+ * @require "{6, 2, 10, 4, 8}\n"
+ */
+rule Start =
+	seqblock
+		// numberRange inside set-comprehension
+		set1 := {x is a | a in [-10..10 step 1] with isEvenNumber(a)}
+		print set1
+		// empty set
+		set2 := {x is a | a in {} with isEvenNumber(a)}
+		print set2
+		//no result possible
+		set3 := {x is a | a in {1,2,3,4} with x > 10000}
+		print set3
+		// set-comprehension inside set-comprehension
+		set4 := {x is a | a in {y is b^(1/2) | b in [1..1000 step 1]} with isEvenNumber(a)}
+		print set4
+		// set-comprehension inside set-comprehension with basic derived math function sqrt -> doesnt work
+		set5 := {x is a | a in {y is sqrt(b) | b in [1..1000 step 1]} with isEvenNumber(a)}
+		print set5
+		// handling values from two different sets
+		set6 := {x is a | a in set1, b in set4 with a = b }
+		print set6
+	endseqblock

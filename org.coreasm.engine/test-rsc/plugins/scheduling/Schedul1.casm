@@ -1,0 +1,31 @@
+CoreASM Schedul1
+
+use Standard
+use SchedulingPolicies
+use Time
+
+init Start
+
+/*
+ * @minsteps 6
+ * @maxsteps 6
+ *
+ * @refuse "---step 5---/n"
+ *
+ * @require "Terminate Agent:\n"
+ */
+rule Start =
+	seqblock
+	print "---step "+stepcount+"---"
+	forall x in Agents do
+		print x
+	if(stepcount > 2) then
+		seqblock
+			y := pick x in Agents with toString(x) != "InitAgent"
+			print "Terminate Agent:"
+			print y
+		endseqblock
+		if stepcount = 4 then shutdown
+	else
+		extend Agents with x do skip
+	endseqblock

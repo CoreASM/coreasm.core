@@ -1,0 +1,40 @@
+CoreASM PredicateLogic1_binaryOperations
+
+use Standard
+
+init Start
+use PredicateLogicPlugin
+use PredicateLogic
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @refuse "false\n"
+ *
+ * @require "true\n"
+ */
+rule Start =
+	seqblock
+		if(true or false) then print "true" else print "false"
+		if(false or false) then print "false" else print "true"
+		if(true or true) then print "true" else print "false"
+		if(false or true) then print "true" else print "false"
+		if(true and false) then print "false" else print "true"
+		if(false and false) then print "false" else print "true"
+		if(true and true) then print "true" else print "false"
+		if(false and true) then print "false" else print "true"
+		if(true xor false) then print "true" else print "false"
+		if(false xor false) then print "false" else print "true"
+		if(true xor true) then print "false" else print "true"
+		if(false xor true) then print "true" else print "false"
+		if(true implies false) then print "false" else print "true"
+		if(false implies false) then print "true" else print "false"
+		if(true implies true) then print "true" else print "false"
+		if(false implies true) then print "true" else print "false"
+		if(true memberof [true,false]) then print "true" else print "false"
+		if(false memberof [true,true]) then print "false" else print "true"
+		if(false memberof []) then print "false" else print "true"
+		if(true notmemberof [true,false]) then print "false" else print "true"
+		if(false notmemberof [true,true]) then print "true" else print "false"
+		if(false notmemberof []) then print "true" else print "false"
+	endseqblock

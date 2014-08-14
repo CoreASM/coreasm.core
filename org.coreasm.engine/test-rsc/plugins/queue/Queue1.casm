@@ -1,0 +1,41 @@
+CoreASM Queue1
+
+use Standard
+
+init Start
+use Queue
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require " --queue-- []\n"
+ * @require "person 1 enters the queue and is waiting. The actual queue is [1]\n"
+ * @require "person 2 enters the queue and is waiting. The actual queue is [1, 2]\n"
+ * @require "person 3 enters the queue and is waiting. The actual queue is [1, 2, 3]\n"
+ * @require "person 1 reaches his seat. Persons still waiting [2, 3]\n"
+ * @require "person 1 reaches his seat. Persons still waiting [3]\n"
+ * @require "person 1 reaches his seat. Persons still waiting []\n"
+ */
+rule Start =
+	seqblock
+		queue:=[]
+		print " --queue-- "+queue
+		loc:=0
+		count:=0
+		print "--- queue increasing infront of cinema ---"
+		while(count<3) do
+			seqblock
+				loc:= 1 + count
+				enqueue loc into queue
+				print "person " +loc+ " enters the queue and is waiting. The actual queue is " +queue
+				count:= count+1
+			endseqblock
+		print "--- doors open and queue is decreasing ---"
+		while(count>0) do
+			seqblock
+				dequeue loc from queue
+				print "person " +loc+ " reaches his seat. Persons still waiting " +queue
+				count:= count-1
+			endseqblock
+	endseqblock

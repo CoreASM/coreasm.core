@@ -1,0 +1,28 @@
+CoreASM String2_strlen
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "11\n"
+ * @require "9\n"
+ * @require "5\n"
+ * @require "4\n"
+ * @require "3\n"
+ */
+rule Start =
+	seqblock
+		agent := pick a in Agents
+		word := "secondThing"
+		bool := true
+		number := 587
+		rul:= Ruletest
+		elements := {agent, word, bool, number, rul}
+		// toString(rule) = undef -> evaluates to length 5
+		forall x in elements do print strlen(toString(x))
+	endseqblock
+rule Ruletest = skip

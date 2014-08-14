@@ -1,0 +1,27 @@
+CoreASM String1_toString
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "InitAgent\n"
+ * @require "undef\n"
+ * @require "true\n"
+ * @require "secondThing\n"
+ * @require "587\n"
+ */
+rule Start =
+	seqblock
+		agent := pick a in Agents
+		word := "secondThing"
+		bool := true
+		number := 587
+		rul:= Ruletest
+		elements := {agent, word, bool, number, rul}
+		forall x in elements do print toString(x)
+	endseqblock
+rule Ruletest = skip
