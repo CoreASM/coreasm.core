@@ -73,6 +73,31 @@ public class TestAllCasm {
 		}
 		return filteredOutputList;
 	}
+	
+	public static int getParameter(File file, String name) {
+		int value = -1;
+		BufferedReader input = null;
+		Pattern pattern = Pattern.compile("@" + name + "\\s*(\\d+)");
+		try {
+			input = new BufferedReader(new FileReader(file));
+			String line = null;
+			while ((line = input.readLine()) != null) {
+				Matcher matcher = pattern.matcher(line);
+				if (matcher.find()) {
+					value = Integer.parseInt(matcher.group(1));
+					break;
+				}
+			}
+			input.close();
+		}
+		catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return value;
+	}
 
 	protected static void getTestFile(List<File> testFiles, File file, Class<?> clazz) {
 		if (!testFiles.isEmpty())
@@ -151,24 +176,12 @@ public class TestAllCasm {
 
 		List<String> requiredOutputList = getFilteredOutput(testFile, "@require");
 		List<String> refusedOutputList = getFilteredOutput(testFile, "@refuse");
-		List<String> minStepsList = getFilteredOutput(testFile, "@minsteps");
-		List<String> maxStepsList = getFilteredOutput(testFile, "@maxsteps");
-		int minSteps = 1;
-		if (!minStepsList.isEmpty()) {
-			try {
-				minSteps = Integer.parseInt(minStepsList.get(0));
-			}
-			catch (NumberFormatException e) {
-			}
-		}
-		int maxSteps = minSteps;
-		if (!maxStepsList.isEmpty()) {
-			try {
-				maxSteps = Integer.parseInt(maxStepsList.get(0));
-			}
-			catch (NumberFormatException e) {
-			}
-		}
+		int minSteps = getParameter(testFile, "minsteps");
+		if (minSteps <= 0)
+			minSteps = 1;
+		int maxSteps = getParameter(testFile, "maxsteps");
+		if (maxSteps < minSteps)
+			maxSteps = minSteps;
 		TestEngineDriver td = null;
 		String failMessage = "";
 		int steps = 0;
@@ -184,7 +197,7 @@ public class TestAllCasm {
 			for (steps = minSteps; steps <= maxSteps; steps++) {
 				td.executeSteps(minSteps);
 				minSteps = 1;
-				//test if no error has been occured and maybe output error message
+				//test if no error has occurred and maybe output error message
 				if (!errContent.toString().isEmpty()) {
 					failMessage = "An error occurred in " + testFile.getName() + ":" + errContent;
 					return new TestReport(testFile, failMessage, steps, false);
@@ -203,7 +216,6 @@ public class TestAllCasm {
 					if (outContent.toString().contains(requiredOutput))
 						requiredOutputList.remove(requiredOutput);
 				}
-				//TODO
 				if (requiredOutputList.isEmpty())
 					break;
 			}

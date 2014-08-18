@@ -6,7 +6,7 @@
  * @require ": proposing "
  * @require ": clearing proposals {["
  * @require ": updating best candidate "
- * @maxsteps "10"
+ * @maxsteps 10
  */
 
 CoreASM LeaderElection

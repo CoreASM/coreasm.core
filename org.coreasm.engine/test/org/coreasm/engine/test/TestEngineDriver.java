@@ -18,6 +18,7 @@ import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.plugin.PluginServiceInterface;
+import org.coreasm.engine.plugins.debuginfo.DebugInfoPlugin.DebugInfoPSI;
 import org.coreasm.engine.plugins.io.IOPlugin.IOPluginPSI;
 import org.coreasm.util.CoreASMGlobal;
 import org.coreasm.util.Logger;
@@ -36,20 +37,13 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	private TestEngineDriverStatus status = TestEngineDriverStatus.stopped;
 
 	private boolean updateFailed;
-	private String stepFailedMsg;
 	protected CoreASMError lastError;
 	private int stepsLimit;
 	private boolean stopOnEmptyUpdates;
 	private boolean stopOnStableUpdates;
 	private boolean stopOnEmptyActiveAgents;
 	private boolean stopOnFailedUpdates;
-	private boolean stopOnError;
 	private boolean stopOnStepsLimit;
-	private boolean dumpUpdates;
-	private boolean dumpState;
-	private boolean dumpFinal;
-	private boolean markSteps;
-	private boolean printAgents;
 	private boolean shouldStop;
 	private boolean shouldPause;
 
@@ -82,6 +76,9 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		PluginServiceInterface pi = engine.getPluginInterface("IOPlugin");
 		if (pi != null)
 			((IOPluginPSI)pi).setOutputStream(outputStream);
+		pi = engine.getPluginInterface("DebugInfoPlugin");
+		if (pi != null)
+			((DebugInfoPSI)pi).setOutputStream(outputStream);
 	}
 
 	public void setDefaultConfig()
@@ -91,14 +88,8 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		stopOnStableUpdates = false;
 		stopOnEmptyActiveAgents = true;
 		stopOnFailedUpdates = false;
-		stopOnError = false;
 		stopOnStepsLimit = false; 	// TODO this should probably be false
 		stepsLimit = -1; //means infinite steps
-		dumpUpdates = false;
-		dumpState = false;
-		dumpFinal = false;
-		markSteps = false;
-		printAgents = false;
 	}
 
 	public Engine getEngine() {
@@ -175,14 +166,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 					engine.waitWhileBusy();
 
 					updates = engine.getUpdateSet(0);
-					if (markSteps)
-						System.out.println("#--- end of step " + step);
-					if (dumpUpdates)
-						System.out.println("Updates at step " + step + ": " + updates);
-					if (dumpState)
-						System.out.println("State at step " + step + ":\n" + engine.getState());
-					if (printAgents)
-						System.out.println("Last selected agents: " + engine.getLastSelectedAgents());
 					if (terminated(step, updates, prevupdates))
 						break;
 					prevupdates = updates;
@@ -204,20 +187,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 
 				if (exception != null)
 					System.err.println("[!] Run is terminated with exception " + exception);
-
-				if (dumpFinal && step > 0) {
-					System.out.println("--------------------FINISHED---------------------");
-					System.out.println("Final engine mode was " + this.engine.getEngineMode());
-					if (lastError != null)
-						System.out.println("Last error was " + lastError);
-					if (stepFailedMsg != null)
-						System.out.println("Step failed reason was " + stepFailedMsg);
-					System.out.println("Final state was:\n" + this.engine.getState());
-
-					// Repeating 
-					if (exception != null)
-						System.err.println("[!] Run is terminated with exception " + exception);
-				}
 
 				this.engine.terminate();
 				this.engine.hardInterrupt();
@@ -309,8 +278,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 			return true;
 		if (stopOnFailedUpdates && updateFailed)
 			return true;
-		if (stopOnError && lastError != null)
-			return true;
 		if (stopOnStepsLimit && stepsLimit <= 0 && shouldStop)
 			return true;
 		return false;
@@ -321,10 +288,8 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 
 		// Looking for StepFailed
 		if (event instanceof StepFailedEvent) {
-			StepFailedEvent sEvent = (StepFailedEvent) event;
 			synchronized (this) {
 				updateFailed = true;
-				stepFailedMsg = sEvent.reason;
 			}
 		}
 
@@ -347,7 +312,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		showErrorDialog("CoreASM Engine Error", message);
 
 		lastError = null;
-		stepFailedMsg = null;
 		engine.recover();
 		engine.waitWhileBusy();
 	}
