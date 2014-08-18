@@ -13,7 +13,7 @@ init Let1
  * @require "RuleTwo 1 h sentence\n"
  * @require "RuleThree undef\n"
  * @require "RuleFive 1.0..3.0:2.0\n"
- * @require "RuleSix executed undef\n"
+ * @require "RuleSix executed @RuleOne\n"
  */
 rule Let1 =
 	seqblock

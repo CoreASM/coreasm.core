@@ -53,7 +53,7 @@ rule Start =
 		print "isEvenNumber " + isEvenNumber(-2)
 		print "isOddNumber " + isOddNumber(2)
 		print "isOddNumber " + isOddNumber("a")
-		print "isOddNumber " + isOddNumber(-3)// --> negative oddNumbers aren't recognised
+		print "isOddNumber " + isOddNumber(-3)
 		print "isOddNumber " + isOddNumber(1)
 		print "size " + size([0..9 step 1])
 		print "size " + size([])

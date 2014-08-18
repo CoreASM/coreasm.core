@@ -19,9 +19,6 @@ init Forall1
  * @require "Test 2 1\n"
  * @require "Test 3 0\n"
  */
- // This is not running correctly, because matching rules will always return true.
- // In this particular example RuleThree = RuleOne || RuleThree = RuleTwo. This should
- // output false.
 rule Forall1 =
 	seqblock
 		numbers     := [-1..1 step 1]

@@ -8,23 +8,23 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{-3, -10.0..10.0, {14, 12, 2, 10, 8, 28, 6, 30, 24, 26, 20, 22, 4, 16, 18}}\n"
+ * @require "{-3, -10.0..10.0, [14, 12, 2, 10, 8, 28, 30, 6, 24, 26, 20, 22, 4, 16, 18]}\n"
  * @require "{}\n"
  */
 rule Start =
 	seqblock
 		set := {}
-		set2:= {14, 12, 2, 10, 8, 28, 30, 6, 24, 26, 20, 22, 4, 16, 18}
+		list:= [14, 12, 2, 10, 8, 28, 30, 6, 24, 26, 20, 22, 4, 16, 18]
 		set3:= {-33}
 		//adding a number, numberRange and a set from a set
 		add -3 to set
 		add [-10..10 step 1] to set
-		add set2 to set
+		add list to set
 		print set
 		//removing a number, numberRange and a set from a set
 		remove -3 from set
 		remove [-10..10 step 1] from set
-		remove set2 from set
+		remove list from set
 		//removing something that isnt there
 		remove set3 from set
 		print set

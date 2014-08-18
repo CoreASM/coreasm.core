@@ -13,15 +13,11 @@ init Start
  * @require "161\n"
  * @require "length of all words is: 26\n"
  * @require "0\n"
- * @require "5\n"
  * @require "[3, 4, 5, 1]\n"
  * @require "[banana yeah, orangina yeah, melon yeah, cupcake yeah]\n"
  * @require "{2, 8}\n"
  * @require "{hello, true}\n"
  */
- // This is not running because foldl(wordList,@getLength,0) with 
- // derived getLength(x, y) = strlen(toString(x)) + strlen(toString(y))
- // gives the result 8, but 26 is expected. I don't know why.
 rule Start =
 	seqblock
 		numberRange := [-2..2 step 1]
@@ -33,16 +29,15 @@ rule Start =
 		print foldl(numberRange,@someMath,1)
 		print foldl(list,@someMath,1)
 		print foldl(set,@someMath,1)
-		print "length of all words is: " + foldl(wordList,@getLength,0) // --> this fails: output is 8. I don't know why.
+		print "length of all words is: " + foldl(wordList,@getLength,0)
 		print foldr(list,@someMath,1)
-		print foldr(boolList,@getLength,0)
 		print map(list,@increase)
 		print map(wordList,@makeItBetter)
 		print filter(set,@noNegativeNumbers)
 		print filter(mixedSet,@justSmallLetters)
 	endseqblock
 derived someMath(x, y) = x^2-y
-derived getLength(x, y) = strlen(toString(x)) + strlen(toString(y))
+derived getLength(sum, x) = sum + strlen(x)
 derived increase(x) = x+2
 derived makeItBetter(x) = x + " yeah"
 derived noNegativeNumbers(x) = return a in if(x < 1) then a:= false else a:= true

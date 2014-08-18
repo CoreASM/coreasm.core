@@ -12,8 +12,6 @@ init Start
  * @require "Agent added with Agent := true:\n"
  * @require "Agent removed with Agent := false:\n"
  */
- // Running this with the coreASM plugin gives the correct output after a maximum of 8 steps. Note that
- // the failure occurs because the TestDriver evaluates the whole required output already after the first step.
 rule Start =
 	seqblock
 		sequencenumber := 1
@@ -32,7 +30,7 @@ rule Extend1 =
 rule AddAgent =
 	extend Agents with x do
 		seqblock
-			print "Agent added by extending: "
+			print "Agent added by extending:"
 			print x
 		endseqblock
 // adding per import value

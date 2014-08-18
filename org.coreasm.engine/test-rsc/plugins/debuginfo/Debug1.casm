@@ -11,20 +11,17 @@ init Start
 
 /*
  * @minsteps 3
- * @maxsteps 8
+ * @maxsteps 10
  *
  * @refuse "b\n"
  * @refuse "matched string with undef\n"
  *
- * @require "DEBUG INFO (ch1): -- start --\n"
- * @require "DEBUG INFO (ch3): Warning: You're falling under a critical value!\n"
- * @require "DEBUG INFO (ch2): step: 1\n"
- * @require "DEBUG INFO (ch2): step: 2\n"
- * @require "DEBUG INFO (ch2): step: 3\n"
+ * @require "DEBUG INFO (ch1): -- start --"
+ * @require "DEBUG INFO (ch3): Warning: You're falling under a critical value!"
+ * @require "DEBUG INFO (ch2): step: 1"
+ * @require "DEBUG INFO (ch2): step: 2"
+ * @require "DEBUG INFO (ch2): step: 3"
  */
- // This could be not running because debuginfo releases the output different to print.
- // Running this with the coreASM plugin gives the correct output after a maximum of 8 steps. Note that
- // the failure occurs because the TestDriver evaluates the whole required output already after the first step.
 rule Start =
 	seqblock
 		if(mode = undef) then

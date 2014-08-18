@@ -9,7 +9,7 @@ init Start
  * @maxsteps 1
  *
  * @require "InitAgent\n"
- * @require "undef\n"
+ * @require "@Ruletest\n"
  * @require "true\n"
  * @require "secondThing\n"
  * @require "587\n"
