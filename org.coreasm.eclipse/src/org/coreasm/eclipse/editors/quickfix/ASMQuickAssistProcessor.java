@@ -22,7 +22,6 @@ import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
-import org.coreasm.eclipse.editors.quickfix.proposals.MoveToTopProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.UsePluginProposal;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.kernel.Kernel;
@@ -144,10 +143,6 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 			}
 			else if ("NumberOfAgruments".equals(data[0]) && Integer.parseInt(data[2]) == 0)
 				proposals.add(new CompletionProposal(data[1] + "()", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "()'", null, null));
-			else if ("ReturnUndef".equals(data[0]))
-				proposals.add(new MoveToTopProposal(Integer.parseInt(data[1]), IconManager.getIcon("/icons/editor/bullet.gif")));
-			else if ("ReturnResult".equals(data[0]))
-				proposals.add(new CompletionProposal(":=", start, end - start, end - start, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with ':='", null, null));
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);

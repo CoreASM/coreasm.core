@@ -11,6 +11,8 @@ import java.util.Stack;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.DerivedFunctionDeclaration;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.FunctionDeclaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
@@ -21,6 +23,7 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
+import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
@@ -38,6 +41,7 @@ implements ITreeErrorRecognizer
 	private static String CLASSNAME = RuleErrorRecognizer.class.getCanonicalName();
 	private static String MULTI_NAME = "MultiName"; 
 	public static final String NOT_A_RULE_NAME = "NotARuleName";
+	public static final String NOT_A_DERIVED_FUNCTION = "NotAderivedFunction";
 	public static final String NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH = "NumberOfArgumentsDoesNotMatch";
 	
 	public RuleErrorRecognizer(ASMEditor parentEditor) {
@@ -58,9 +62,12 @@ implements ITreeErrorRecognizer
 		}
 		
 		HashMap<String, RuleDeclaration> ruleDeclarations = new HashMap<String, RuleDeclaration>();
+		HashSet<String> functionDeclarations = new HashSet<String>();
 		for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(parentEditor.getInputFile(), true)) {
 			if (declaration instanceof RuleDeclaration)
 				ruleDeclarations.put(declaration.getName(), (RuleDeclaration)declaration);
+			else if (declaration instanceof DerivedFunctionDeclaration || declaration instanceof FunctionDeclaration)
+				functionDeclarations.add(declaration.getName());
 		}
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
 		for (ASTNode declarationNode = ((ASTNode)document.getRootnode()).getFirst(); declarationNode != null; declarationNode = declarationNode.getNext()) {
@@ -90,9 +97,25 @@ implements ITreeErrorRecognizer
 										errors.add(error);
 									}
 								}
-								else
+								else {
+									RuleDeclaration parentRule = ruleDeclarations.get(declarationNode.getFirst().getFirst().getToken());
+									if (!parentRule.getParams().contains(frNode.getName()) && !functionDeclarations.contains(frNode.getName()))
+										errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
+								}
+							}
+						}
+						else if (node instanceof ReturnResultNode) {
+							ASTNode ruleNode = ((ReturnResultNode)node).getRuleNode();
+							if (ruleNode instanceof FunctionRuleTermNode) {
+								FunctionRuleTermNode frNode = (FunctionRuleTermNode)ruleNode;
+								if (frNode.hasName() && !ruleDeclarations.containsKey(frNode.getName()))
 									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
 							}
+						}
+						else if (node instanceof FunctionRuleTermNode && !(node.getParent() instanceof MacroCallRuleNode) && !(node.getParent() instanceof ReturnResultNode)) {
+							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+							if (frNode.hasName() && frNode.hasArguments() && ruleDeclarations.containsKey(frNode.getName()))
+								errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a derived function", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_DERIVED_FUNCTION));
 						}
 						fringe.addAll(node.getAbstractChildNodes());
 					}
