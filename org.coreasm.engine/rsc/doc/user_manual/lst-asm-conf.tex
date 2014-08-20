@@ -1,0 +1,206 @@
+\usepackage{listings}
+\usepackage{lstautogobble}
+%TODO should be language dependent
+%\crefname{listing}{spec.}{specs.}
+%\Crefname{Listing}{Spec.}{Specs.}
+
+\renewcommand*\lstlistingname{Specification}
+\renewcommand\lstlistlistingname{Specifications}
+\providecommand*{\lstlistingautorefname}{spec.}
+\providecommand*{\lstnumberautorefname}{line}
+
+\lstset{numberbychapter=false}
+\lstset{xleftmargin=0.66cm} %line numbers take some additional place
+\lstset{xrightmargin=0.18cm} %no linenumbers used
+\lstset{captionpos=b}
+\lstset{numbers=left}
+\lstset{basicstyle=\small\ttfamily}
+\lstset{numberstyle=\tiny\ttfamily}
+\lstset{tabsize=4}
+%\lstset{showstringspaces=true}
+
+\makeatletter
+\newcounter{asmcounter}[section]
+%\renewcommand{\theasmcounter}{\thechapter.\arabic{asmcounter}}
+\renewcommand{\theasmcounter}{\arabic{asmcounter}} 
+
+\lstnewenvironment{lstasm}[2][]{
+	\renewcommand*\lstlistingname{Specification}
+	\renewcommand\lstlistlistingname{Specs.}
+	\renewcommand*{\lstlistingautorefname}{spec.}
+	\renewcommand*{\lstnumberautorefname}{line}
+	\let\c@lstlisting=\c@asmcounter
+	\let\thelstlisting=\theasmcounter
+	\lstset{language=ASM, #1}
+} {}
+
+\newcommand\includelst[1][]{
+	\renewcommand*\lstlistingname{Specification}
+	\renewcommand\lstlistlistingname{specs.}
+	\renewcommand*{\lstlistingautorefname}{spec.}
+	\renewcommand*{\lstnumberautorefname}{line}
+	\let\c@lstlisting=\c@asmcounter
+	\let\thelstlisting=\theasmcounter
+	\expandafter\lstinputlisting\expandafter[language=ASM, #1]
+}
+\makeatother
+
+% % % Code-Formatierungen & Farben % % %
+\definecolor{lightlightgray}{gray}{0.9}
+%http://colorschemedesigner.com/#0941Qqau-w0w0
+\definecolor{primary}{HTML}{F7542D} %orange
+\definecolor{secondary}{HTML}{F7932D} %brown
+\definecolor{tertiary}{HTML}{207F9A} %blue
+\definecolor{fourth}{HTML}{008000} %green
+\definecolor{fifth}{HTML}{800000} %red
+
+%Formatierung von Schlüsselwörtern und/oder stehenden Begriffen
+\newcommand{\aspectj}[1]{\textit{#1}}
+\newcommand{\aoasm}[1]{\textsf{#1}}
+\newcommand{\java}[1]{\textemdash{#1}}
+\newcommand{\uml}[1]{\textsl{#1}}
+
+\newcommand{\asm}[1]{\lstinline[mathescape]|#1|}
+%can only be used within math environment or \asm command content
+\newcommand{\asmtag}[1]{\flq$#1$\frq}
+
+%\newcommand{\asmlstkeyword}{\color{primary}\bfseries}
+\newcommand{\asmlstkeyword}{\color{fifth}\bfseries}
+\newcommand{\asmlstrule}{\ttfamily}
+\newcommand{\asmlstdomain}{\scshape\normalsize}
+%\newcommand{\asmlstfunction}{\color{tertiary}\rmfamily}
+\newcommand{\asmlstfunction}{\rmfamily}
+\newcommand{\asmlstpredicate}{\asmlstfunction \itshape}
+\newcommand{\asmlstderived}{\asmlstfunction \slshape}
+\newcommand{\asmlstvariable}{\ttfamily}
+%\newcommand{\asmlstconstant}{\asmlstvariable\scriptsize}
+\newcommand{\asmlstconstant}{\em}
+\newcommand{\asmstring}{\color{fourth}\ttfamily}
+\newcommand{\asmlstcommentstyle}{\rmfamily\color{gray}}
+
+%removes tree whitespaces at the beginning of each line
+%useful for includes from files
+%\usepackage{lstautogobble}
+\lstset{autogobble=true}
+
+\lstset{
+	aboveskip=1.2em,
+	belowskip=1.2em,
+	framexleftmargin=5pt,
+	columns=fullflexible, keepspaces, %if non monospaced font is choosen, preserve whitespaces after replaced literals
+	frame=b,
+	inputencoding={utf8}, extendedchars=false,
+%	basicstyle=\small\rmfamily,
+	literate=%
+    %* {0}{{{\color{tertiary}0}}}1
+    %{1}{{{\color{tertiary}1}}}1
+    %{2}{{{\color{tertiary}2}}}1
+    %{3}{{{\color{tertiary}3}}}1
+    %{4}{{{\color{tertiary}4}}}1
+    %{5}{{{\color{tertiary}5}}}1
+    %{6}{{{\color{tertiary}6}}}1
+    %{7}{{{\color{tertiary}7}}}1
+    %{8}{{{\color{tertiary}8}}}1
+    %{9}{{{\color{tertiary}9}}}1
+%    {Ö}{{\"O}}1
+%    {Ä}{{\"A}}1
+%    {Ü}{{\"U}}1
+%    {ß}{{\ss}}1
+%    {ü}{{\"u}}1
+%    {ä}{{\"a}}1
+%    {ö}{{\"o}}1
+%    {~}{{\textasciitilde}}1
+    {,}{{$,$}}1
+    {.}{{$.$}}1
+    {[}{{$[$}}1
+    {]}{{$]$}}1
+    {|}{{$|$}}1
+    {-}{{$-$}}1
+    {+}{{$+$}}1
+    {*}{{$*$}}1
+    {=}{{$=$}}1
+    {:=}{{$\:=$}}1
+    {:}{{$:$}}1
+    {!=}{{$\neq$}}1
+    {>}{{$>$}}1
+    {<}{{$<$}}1
+    {<=}{{$\leq$}}1
+    {>=}{{$\geq$}}1
+    {<>}{{$\neq$}}1
+    {(|}{{$(\hspace{0.09em}\mathllap{|}$}}1
+    {|)}{{$\mathrlap{|}\hspace{0.09em})$}}1
+    {\{|}{{$\{\hspace{0.07em}\mathllap{|}$}}1
+    {|\}}{{$\mathrlap{|}\hspace{0.07em}\}$}}1
+    {[[}{{$[\hspace{0.09em}\mathllap{[}$}}1
+    %{[[}{{$\textlbrackdbl$}}1
+    {]]}{{$\mathrlap{]}\hspace{0.09em}]$}}1
+    %{]]}{{$\textrbrackdbl$}}1
+    {<-}{{$\leftarrow$}}1
+    {->}{{$\rightarrow$}}1
+    {times}{{$\times$}}1
+    %{memberof}{{$\in$}}1
+    ,
+	 commentstyle=\asmlstcommentstyle,
+	 sensitive=true,
+	 morecomment=[s]{/*}{*/},
+	 morecomment=[is]{/i}{ i/}, %invisible comment
+	 morecomment=[l]{//},
+	 escapeinside={/@}{@/},
+	 stringstyle=\asmstring,
+	 showstringspaces=false,
+	 morestring=[b]"",
+	 morestring=[b]",
+	 backgroundcolor=\color{white},
+	 mathescape=true,
+	 breaklines=true,
+	 breakatwhitespace=true,
+	 linewidth=\textwidth,
+	 frame=l,
+	 float=ht,
+	 numbers=none,
+	 numberstyle=\tiny,   % Stil der Zeilennummern
+	 %stepnumber=2,    % Abstand zwischen den Zeilennummern
+	 numbersep=10pt,    % Abstand der Nummern zum Text
+	 captionpos=b,
+	 tabsize=3,
+	 tab=\smash{\rule[-.2\baselineskip]{.4pt}{\baselineskip}\kern.5em},
+	 keywordstyle=[1]{\asmlstkeyword}, % ASM keywords - lowercase
+	 morekeywords=[1]{
+	 abstract, rule, enum, function, derived, local, shared, universe, call, case, choose, CoreASM, CoreModule, of, if, ifnone, implies, import, then, else, with, exists, extend, remove, from, add, to, seq, memberof, next, iterate, skip, forall, in, do, enditerate, endchoose, endcase, endforall, endif, is, return, result, print, before, around, after, undef, true, false, initially, init, and, or, not, pick, par, endpar,self, seqblock, endseqblock, let, holds, use, @, ?, :, xor,while, shift, left, right, into, enquene, dequeue, push, pop
+	 }, 
+	 keywordstyle=[2]{\asmlstrule}, %ASM rules - upper case camel cased
+	 morekeywords=[2]{
+	 }, 
+	 keywordstyle=[3]{\asmlstdomain}, %ASM domains - upercase camel cased
+	 morekeywords=[3]{
+	 	Agents, Number, Number_Range, Boolean, Element, String, Function, Set, List, Map
+	 },
+	 keywordstyle=[4]{\asmlstpredicate},%PREDICATES - upper came cased
+	 morekeywords=[4]{
+	 },
+	 keywordstyle=[5]{\asmlstfunction}, %FUNCTIONS - lower camel cased
+	 morekeywords=[5]{
+		program, head, tail, nth, size,cons
+	 },
+	 keywordstyle=[6]{\asmlstderived}, %DERIVED FUNCTIONS - lower camel cased
+	 morekeywords=[6]{
+	 subset, union, intersect, diff
+	 },
+	 keywordstyle=[7]{\asmlstvariable}, %VARIABLES lower camel cased
+	 morekeywords=[7]{
+	 },
+	 keywordstyle=[8]{\asmlstconstant}, %CONSTATNTS VALUES / ENUM VALUES lower camel cased
+	 morekeywords=[8]{
+	 id, loc, value, guard, function, bin-op, expression
+	 }
+}
+\newcommand{\AsmKeyword}[1]{\lstset{morekeywords=[1]{#1}}}
+\newcommand{\AsmRule}[1]{\lstset{morekeywords=[2]{#1}}}
+\newcommand{\AsmDomain}[1]{\lstset{morekeywords=[3]{#1}}}
+\newcommand{\AsmPredicate}[1]{\lstset{morekeywords=[4]{#1}}}
+\newcommand{\AsmFunction}[1]{\lstset{morekeywords=[5]{#1}}}
+\newcommand{\AsmDerivedFunction}[1]{\lstset{morekeywords=[6]{#1}}}
+\newcommand{\AsmVariable}[1]{\lstset{morekeywords=[7]{#1}}}
+\newcommand{\AsmConstantOrEnum}[1]{\lstset{morekeywords=[8]{#1}}}
+
+\newcommand{\asmboxed}[1]{\fontsize{7}{8.4}\ensuremath{\boxed{\hspace{-.175em}#1\hspace{-.175em}}}}
