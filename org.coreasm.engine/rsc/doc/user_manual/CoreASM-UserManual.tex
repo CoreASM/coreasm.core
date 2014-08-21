@@ -45,21 +45,9 @@
 \setlength{\textwidth}{5.8in}
 \addtolength{\parskip}{0.07in}
 
-\input{./files/ASMTeXCommands}
-\input{./files/misc-commands}
-\input{./files/CoreASMCommands}
-
-% ----------------- CoreASM Spec Float
-\floatstyle{boxed}
-\newfloat{coreasmbox}{thp}{los}[section]
-\floatname{coreasmbox}{CoreASM Spec}
-\floatstyle{plain}
-
 \makeindex
 
 \pagestyle{fancy}
-%\renewcommand{\chaptermark}[1]{
-%	\markboth{\thechapter.\ #1}{}}
 \lhead{{\small \leftmark}}
 \rhead{{\small \CoreASM\ {\scshape Language User Manual}}}
 % You need to turn the 'twoside' option on, 
@@ -68,64 +56,36 @@
 %\fancyhead[LO,RE]{{\small \leftmark}}
 %\fancyhead[RO,LE]{{\small \CoreASM Execution Engine}}
 
-
-
 % ----------------- Commands
-\newcommand{\hlight}[1]{\textcolor{blue}{\textbf{#1}}}
-\newcommand{\edit}[1]{\textcolor[rgb]{0, 0.5, 0}{#1}}
-\newcommand{\new}[1]{1}%\edit{#1}}
-%\newcommand{\comment}[1]{\textcolor[rgb]{0, 0, 0.5}{Comment: #1}}
-\newcommand{\incorrect}[1]{\textcolor[rgb]{0.5, 0, 0}{#1}}
-
-%\newcommand{\asm}[1]{\xspace{\bf \code{#1}}\xspace}
-%\newcommand{\asm}[1]{\asm{#1}}
+\newcommand{\CoreASM}{{\sffamily CoreASM}\xspace}
+\newcommand{\JASMine}{{\sffamily JASMine}\xspace}
+\newcommand{\Carma}{{\sffamily Carma}\xspace}
 
 \newcommand{\codecom}[1]{\textcolor[gray]{0.5}{// #1}}
-%\newcommand{\ruleform}[1]{\vspace*{4mm} \noindent \framebox{\sffamily \footnotesize \bfseries R} #1 \vspace{1mm}}
 \newcommand{\ruleform}[2]{\pform{$\blacktriangleright$}{#1}{#2}}
 \newcommand{\funcform}[2]{\pform{$\blacklozenge$}{#1}{#2}}
 \newcommand{\opform}[2]{\pform{$\vartriangleright$}{#1}{#2}}
 \newcommand{\pform}[3]{\vspace*{4mm} \noindent #1 #2 \vspace{1mm}\textcolor[gray]{0.7}{\dotfill}\mbox{{\sffamily \footnotesize #3}}}
-%\newcommand{\bExample}{\begin{quote}\ttfamily}
-%\newcommand{\eExample}{\end{quote}}
-\newcommand{\bExample}{\begin{small} \vspace{0.3cm} \begin{tabular}{|l} \begin{minipage}{0.85\textwidth} \vspace{0.2cm} \ttfamily}
-\newcommand{\eExample}{\vspace{0.2cm} \end{minipage} \end{tabular} \vspace{0.3cm} \end{small}}
-\newenvironment{spec}{\ttfamily}{}
-%\newcommand{\optional}[1]{\raisebox{-4mm}{$\stackrel{\underline{\mbox{#1}}}{\mbox{\footnotesize optional}}$}}
 \newcommand{\optional}[1]{$\underset{optional}{\underline{\mbox{#1}}}$}
-%\newcommand{\optional}[1]{$\underbrace{\mbox{#1}}_{optional}$}
-%\newcommand{\optional}[1]{$[\mbox{\code{#1}}]$}
-%\renewcommand{\asm{id}}{{\em id}\xspace}
-%\renewcommand{\asm{loc}}{{\em loc}\xspace}
-%\newcommand{\asm{value}}{{\em value}\xspace}
-%\newcommand{\asm{rule}}{{\em rule}\xspace}
-%\newcommand{\asm{guard}}{{\em guard}\xspace}
-\newcommand{\rulei}[1]{{\em rule}$_{#1}$\xspace}
-%\newcommand{\asm{id}i}[1]{{\em id}$_{#1}$\xspace}
-%\newcommand{\asm{value}uei}[1]{{\em value}$_{#1}$\xspace}
-%\newcommand{\asm{value}uepi}[1]{{\em value}$'_{#1}$\xspace}
-%\newcommand{\asm{loc}i}[1]{{\em loc}$_{#1}$\xspace}
-%\newcommand{\tab}{$~~~~$}
-\newcommand{\tab}{\textcolor[gray]{1}{MMM}}
-%\newcommand{\tab}{\code{\hspace*{1em}}}
-\newcommand{\specref}[1]{Spec~\ref{spec:#1}}
+
 \newcommand{\indexrule}[1]{\index{#1 rule@\asm{#1} rule}}
 \newcommand{\indexexp}[1]{\index{#1 expression@\asm{#1} expression}}
-\newcommand{\indexfunc}[1]{\index{#1 function@\code{#1} function}}
+\newcommand{\indexfunc}[1]{\index{#1 function@\asm{#1} function}}
 
-% ----------------- Commands: Copyright Notice 
+\newcommand{\Rfun}[1]{\mbox{\it #1}}
+\newcommand{\Rdom}[1]{\ensuremath{\mbox{\scshape\small #1}}\xspace}
+
 \newcommand{\copyrightNotice}[1]{{Copyright \copyright\ #1}}
-%\newcommand{\revision}{{\footnotesize Document \mbox{$Revision: #1 $}}}
 
-
-% ----------------- Title and Abstract
-
-\renewcommand{\url}[1]{\href{http://#1}{{\ttfamily #1}}}
 
 \usepackage{hyperref}
+\usepackage{menukeys}
 
+%asm listing configuration
 \input{lst-asm-conf.tex}
+
 \begin{document}
+% ----------------- Title and Abstract
 
 \title{\huge \CoreASM Language User Manual \\ {\Large engine version \version} \\ {\large \url{github.com/CoreASM/}}}
 
@@ -140,7 +100,6 @@
 \newpage
 
 % ----------------- Main Body
-%\PScommands
 
 \section{Installing \CoreASM}
 
@@ -189,35 +148,38 @@ You need to have Eclipse 3.5 or newer installed on your machine.
 
 \subsubsection{Installing \CoreASM Eclipse Plugin}
 
-To install the latest development version of the \CoreASM Eclipse plugin using the update site, 
-run Eclipse and follow these steps:
+This version of the CoreASM Eclipse Plugin has been developed and tested under
 
-\newcommand{\menulink}{$\rightarrow$}
-\newcommand{\menunav}[1]{{\sl #1}}
+	Ubuntu Linux 64bit v14.10 \&
+	Windows 7 and 8.1
+    with
+    Kepler Service Release 2 64 bit \&
+    Luna Eclipse Standard 4.4 64 bit
+    Oracle Java SE JDK 6u45
 
-\begin{enumerate}
-    \item Uninstall and remove any previously installed \CoreASM Eclipse plugin version 0.4.x or older.
-    
-	\item Under \menunav{Help \menulink Install New Software\ldots} add an update site with the following information:
-	\begin{quote}
-        {\em Name:} CoreASM Eclipse Plugin trunk
+The Plugin can be installed either from the Eclipse Marketplace or by perfoming the following steps:
 
-        {\em URL:} \url{http://www.coreasm.org/eclipse/update-trunk}
-	\end{quote}
-	
-	\item Select the ``CoreASM Eclipse Plugin Features'' category and continue with the installation. 
-\end{enumerate}
+\begin{itemize}
+\item Open the \menu{Help}-menu inside Eclipse
+\item Select the menu item \menu[,]{Help, Install New Software...}
+\item Paste the url of this site \url{http://webcoreasm.informatik.uni-ulm.de/coreasm-repository} into the field "work with" and press \keys{ENTER}
+\item Next press \keys{Select All}- and afterwards \keys{Next}-button
+\item Confirm the selection of the "CoreASM Eclipse Plugin" for installation by pressing the \keys{Next}-button
+\item Accept the license and start the installation by pressing the \keys{Finish}-button
+\item When the warning appears that you are installing unsigned content, you have to press the \keys{Okay}-button to continue
+\item Last, you have to restart Eclipse so that the "CoreASM Eclipse Plugin" becomes available to you
+\end{itemize}
 
-The development version of the \CoreASM Eclipse plugin is tested on Eclipse 3.5.
+If you like, you can build CoreASM by your own using the sources on github. The sources and our wiki are available at \url{https://github.com/CoreASM/coreasm.core}.
 
 \subsubsection{Using \CoreASM Eclipse Plugin}
 
 \paragraph{Creating a New Project} ~
 
 \begin{enumerate}
-    \item From the Eclipse menu choose: \menunav{File \menulink New \menulink Project\ldots}
-    \item Choose \menunav{General \menulink Project} from the ``New Project'' dialog. Click \menunav{Next}.
-    \item Give the project a name. Click \menunav{Finish}. 
+    \item From the Eclipse menu choose: \menu[,]{File, New, Project\ldots}
+    \item Choose \menu[,]{General, Project} from the "New Project'' dialog. Click \keys{Next}.
+    \item Give the project a name. Click \keys{Finish}. 
 \end{enumerate}
 
 \paragraph{Creating a New \CoreASM Specification} ~
@@ -225,19 +187,19 @@ The development version of the \CoreASM Eclipse plugin is tested on Eclipse 3.5.
 \noindent {\em Method 1:}
 
 \begin{enumerate}
-	\item From the Eclipse menu choose: \menunav{File \menulink New \menulink Other\ldots}
-	\item In the New dialog choose \menunav{CoreASM \menulink CoreASM Specification}. Click \menunav{Next}.
+	\item From the Eclipse menu choose: \menu[,]{File, New, Other\ldots}
+	\item In the New dialog choose \menu[,]{CoreASM, CoreASM Specification}. Click \keys{Next}.
     \item Choose the project container for the specification.
     \item Enter the name of the new \CoreASM specification file. The file must have the extension {\ttfamily .casm} or {\ttfamily .coreasm}. 
-	\item Click \menunav{Finish}. 
+	\item Click keys{Finish}. 
 \end{enumerate}
 
 \noindent {\em Method 2:}
 
 \begin{enumerate}
-    \item File the Eclipse menu choose: \menunav{File \menulink New \menulink File\ldots}
+    \item File the Eclipse menu choose: \menu[,]{File, New, File\ldots}
     \item In the new file dialog choose a project container for the new file and enter a name for the new file. Again, The file must have the extension {\ttfamily .casm} or {\ttfamily .coreasm}.
-    \item Click \menunav{Finish}. 
+    \item Click \keys{Finish}. 
 \end{enumerate}
 
 \paragraph{Running a \CoreASM Specification} ~
@@ -248,7 +210,7 @@ Shortcut method for running a specification with default configuration:
 
 \begin{enumerate}
     \item In the Eclipse window, right click on a \CoreASM specification file.
-    \item In the context menu choose: \menunav{Run as \menulink CoreASM Specification} 
+    \item In the context menu choose: \menu[,]{Run as\ldots, CoreASM Specification} 
 \end{enumerate}
 
 \noindent {\em Method 2:}
@@ -257,15 +219,15 @@ If you need more control of the parameters for repeated execution,
 you can create a specific \CoreASM Launch Configuration as follows:
 
 \begin{enumerate}
-    \item From the Eclipse menu choose: \menunav{Run \menulink Run\ldots}
+    \item From the Eclipse menu choose: \menu[,]{Run, Run\ldots}
 	\item In the ``Run'' dialog, choose the ``ASM Specification'' launch configuration
-group and create a new ASM launch configuration (right click then select \menunav{New}, or
+group and create a new ASM launch configuration (right click then select \menu{New}, or
 click the New launch configuration button on the tool bar).
     \item Enter a name for the launch configuration.
     \item Enter the project and specification file to be run. This can be done via the browse buttons.
     \item Configure the ``Termination Conditions'' and ``Output Verbosity'' options as desired.
-    \item Click \menunav{Apply}.
-    \item Click \menunav{Run} to run the specification. 
+    \item Click \keys{Apply}.
+    \item Click \keys{Run} to run the specification. 
 \end{enumerate}
 
 Once the configuration has been launched once, it can be run again through the Run Button/Drop down menu in the main Eclipse toolbar.
@@ -305,7 +267,7 @@ A sample \CoreASM specification is presented in \hyperref[spec:thisiscoreasm]{Co
 \AsmKeyword{CoreASM}
 \begin{figure}
 \begin{center}
-\begin{minipage}{0.55\textwidth}
+\begin{minipage}{0.65\textwidth}
 \begin{tcolorbox}
 \small
 \asm{CoreASM SpecificationName}\\\\
@@ -342,8 +304,8 @@ two engine drivers available:
 
 	\item \Carma is a command-line \CoreASM engine driver. To run a specification using 
 		\Carma simply run \Carma on the command line and pass it the name of the specification 
-		file as an argument. Make sure to specify a termination condition (e.g., \code{--steps 20}
-		or \code{--empty-updates}) for the run.
+		file as an argument. Make sure to specify a termination condition (e.g., \asm{--steps 20}
+		or \asm{--empty-updates}) for the run.
 		Run \Carma with \asm{--help} for a complete list of options that controls its behavior.  
 
 		The following command runs \asm{MySpec} using \Carma and stops after 30 steps, or after
@@ -351,7 +313,7 @@ two engine drivers available:
 
 		\begin{quote}\asm{carma --steps 30 --empty-updates --dump-final-state MySpec.coreasm} \end{quote} 
 
-		Alternatively, to run the specification of \specref{thisiscoreasm}, one can use the following options which would make \Carma to mark the end of each step and stop after 30 steps or when there is no agent with a defined program:
+		Alternatively, to run the specification of \hyperref[spec:thisiscoreasm]{CoreASM-Says-Hello example}, one can use the following options which would make \Carma to mark the end of each step and stop after 30 steps or when there is no agent with a defined program:
 
 		\begin{quote}\asm{carma --marksteps --steps 30 --no-agent ThisIsCoreASM.coreasm} \end{quote} 
 
@@ -416,9 +378,7 @@ This is the equality operator\index{equality operator}\index{=@=|see{equality op
 \AsmVariable{id}
 \opform{\asm{ruleelement id}}{Kernel}\index{ruleelement@\asm{ruleelement}}
 
-This operator returns the rule element of a rule with the given name (\asm{id}). \new{Rule element is an element in the CoreASM state
-that represents a rule defined in the specification.} It is useful in 
-assigning rules to programs of agents. In the following example, \asm{Main} is the name 
+This operator returns the rule element of a rule with the given name (\asm{id}). Rule element is an element in the CoreASM state that represents a rule defined in the specification. It is useful in  assigning rules to programs of agents. In the following example, \asm{Main} is the name 
 of a rule:
 
 \begin{lstlisting}
@@ -723,7 +683,7 @@ This Boolean expression holds if there exists at least one element in \asm{value
 		\asm{value$_1$ != value$_2$}
 	}{Predicate Logic Plugin}
 	\index{not-equal operator}
-	\index{not equal@\asm{!=} operator|see{not-equal operator}}
+%	\index{not-equal@\asm{!=}|see{not-equal operators}} %cannot be compiled?!
 
 This is the not-equal operator which is defined on all elements. The semantics of 
 this operator is equivalent to "\asm{not (value$_1$ = value$_2$)}". 
@@ -749,7 +709,7 @@ on Boolean values:
 \index{membership operators}
 \index{memberof@\asm{memberof} operator|see{membership operators}} 
 
-\opform{\asm{not} \asm{value}}{Predicate Logic Plugin}\index{not@\asm{not} operator}
+\opform{\asm{not value}}{Predicate Logic Plugin}\index{not@\asm{not} operator}
 
 This is the negation operator which is defined on Boolean values.
 
@@ -773,7 +733,7 @@ a valuable set of functions and expression forms.
 
 Performs binary operations on number values. Currently supported operators are
 
-\begin{quote}\asm{+ - * / div \% > >= < <= }\end{quote}
+\begin{quote}\asm{+ - * / div \% > >= < <= = }\end{quote}
 
 which result in Number or Boolean values.
 
@@ -1111,7 +1071,7 @@ iterate
 \index{<- rule@\asm{<-} rule|see{return result rule}}
 
 Replaces all the occurrences of \asm{result} in \asm{rule} with \asm{loc} and
-evaluates the rule. \new{In the ASM book this is written as "\asm{loc <- rule}".}
+evaluates the rule. In the ASM book this is written as "\asm{loc <- rule}".
 In the following example, the evaluation of
 \asm{MainProgram} assigns the value of 5 divided by 2 (i.e., 2.5) to
 \asm{division}:
@@ -1433,7 +1393,7 @@ use List
 	\asm{]}
 }{List Plugin}
 \index{list element}
-\index{[]@\asm{[\ldots]}|see{list element}}
+\index{[]@\asm{[...]}|see{list element}}
 
 Creates a list element that includes \asm{value$_1$} to \asm{value$_n$} in the given order.\footnote{The old form of \asm{<<x1,... ,xn>>} still works but it is deprecated and may not be supported in future releases of the \CoreASM engine.}
 List elements are enumerable. The index of the first element is 1.
@@ -1708,7 +1668,7 @@ use Map
 	\asm{\{} \asm{->} \asm{\}}
 }{Map Plugin}
 \index{map element}
-\index{[]@\asm{[\ldots]}|see{map element}}
+\index{[]@\asm{[...]}|see{map element}}
 
 Creates an empty map.
 
@@ -1718,7 +1678,7 @@ Creates an empty map.
 	\asm{\}}
 }{Map Plugin}
 \index{map element}
-\index{[]@\asm{[\ldots]}|see{map element}}
+\index{[]@\asm{[...]}|see{map element}}
 
 Creates a map with the given key-value pairs. Map elements are enumerable; every map can be viewed as a set of pairs  
 which are represented by lists of size 2.
@@ -1865,30 +1825,26 @@ Depending on the properties of the engine (see the Options Plugin, Section~\ref{
 	\item {\bf Unknown identifiers:} if the ``\asm{Signature.NoUndefinedId}'' property is set to ``\asm{warning}'', ``\asm{strict}'' or ``\asm{on}'', the Signature Plugin issues a warning (in case of ``\asm{warning}'') or stops the execution of the engine with an error (in case of ``\asm{strict}'' or ``\asm{on}'') if a function name is used and its signature is not defined in the header of the specification. This feature helps in identifying typos in the specification. 
 \end{itemize}
 
-%TODO continue here
 \section{Additional Plugins}
 \label{additional}
 
 The plugins listed in this section are currently not part of any plugin packages.
-
 % -------------------------------- MODULARITY
 \subsection{Modularity}
 \label{Modularity}
 
 The Modularity plugin\index{Modularity plugin} can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} Modularity
-\eExample
+\begin{lstlisting}
+use Modularity
+\end{lstlisting}
 
-This plugin allows one to break the specification into separate files or {\em modules}. As its current version, 
-the functionality provided is limited to introducing an \asm{include} keyword that would load another file 
-into the current specification. 
+This plugin allows one to break the specification into separate files or {\em modules}. As its current version, the functionality provided is limited to introducing an \asm{include} keyword that would load another file into the current specification. 
+\AsmConstantOrEnum{filename}
+\begin{quote} \asm{include "filename"} \end{quote}
+\index{include@\asm{include}}
 
-%\begin{quote} \asm{ \asm{include} {\em filename}} \end{quote}\index{include@\asm{include}}
-\fxnote{removed}
-Included files can themselves have other \asm{include} clauses to further break down 
-the specification.
+Included files can themselves have other \asm{include} clauses to further break down the specification.
 
 % -------------------------------- OPTIONS
 \subsection{Options}
@@ -1896,18 +1852,17 @@ the specification.
 
 The Options plugin\index{Options plugin} can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} Options
-\eExample
+\begin{lstlisting}
+use Options
+\end{lstlisting}
 
-\noindent The Options plugin extends the header section of \CoreASM
-specifications (see Figure~\ref{fig:specStructure}) to provide the following syntax i
-to set values of engine properties: 
+\noindent The Options plugin extends the header section of \CoreASM specifications (see Figure~\ref{fig:specStructure}) to provide the following syntax to set values of engine properties: 
 
-%\begin{quote} \asm{ \asm{option} {\em property} {\em value} } \end{quote}\index{option@\asm{option}}
-\fxnote{removed}
-Other plugins (such as the Signature Plugin, see Section~\ref{signature}) can use these options to 
-customize their behavior.
+\AsmConstantOrEnum{property}
+\begin{quote} \asm{option property value}\end{quote}
+\index{option@\asm{option}}
+
+Other plugins (such as the Signature Plugin, see Section~\ref{signature}) can use these options to customize their behavior.
 
 % -------------------------------- SCHEDULING
 \subsection{Scheduling Policies}
@@ -1915,45 +1870,53 @@ customize their behavior.
 
 The Scheduling Policies plugin\index{Scheduling Policies plugin} can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} SchedulingPolicies
-\eExample
+\begin{lstlisting}
+use SchedulingPolicies
+\end{lstlisting}
 
-This plugin provides alternative scheduling policies for simulation of multi-agent specifications. 
-For any specification (for any run), only one scheduling policy can be defined, using the following option:
+This plugin provides alternative scheduling policies for simulation of multi-agent specifications. For any specification (for any run), only one scheduling policy can be defined, using the following option:
+\AsmConstantOrEnum{polic, policyname}
+\begin{quote} \asm{option SchedulingPolicies.polic policyname} \end{quote}
 
-%\begin{quote} \asm{ \asm{option} \asm{SchedulingPolicies.policy} {\em policyname} } \end{quote}
-\fxnote{removed}
 Currently, there are two scheduling policies provided by this plugin:
+\AsmConstantOrEnum{allfirst, onebyone}
 \begin{itemize}
-  \item \asm{allfirst} Tries executing all the agents in every computation step. If this fails at any step,
-	the policy falls back to the engine's default scheduling policy.
+  \item \asm{allfirst} Tries executing all the agents in every computation step. If this fails at any step,	the policy falls back to the engine's default scheduling policy.
 
-  \item \asm{onebyone} Executes only one agent in every step. It tries to be {\em fair} by not executing an 
-	agent more than once unless all other agents have been given a chance to execute.
+  \item \asm{onebyone} Executes only one agent in every step. It tries to be {\em fair} by not executing an agent more than once unless all other agents have been given a chance to execute.
 
 \end{itemize}
 
 The following rules are also provided by this plugin to control the execution of agents during a simulation.
 
-\ruleform{\asm{suspend} \asm{value}}{SchedulingPolicies Plugin}\indexrule{suspend}
+\ruleform{
+	\asm{suspend value}
+}{SchedulingPolicies Plugin}
+\indexrule{suspend}
 
-If \asm{value} is an agent, this rule {\em suspends} the execution of that agent from the next computation step.
-The suspended agents will not be chosen by the engine for execution.  
+If \asm{value} is an agent, this rule \asm{suspends} the execution of that agent from the next computation step. The suspended agents will not be chosen by the engine for execution.  
 
-\ruleform{\asm{resume} \asm{value}}{SchedulingPolicies Plugin}\indexrule{resume}
+\ruleform{
+	\asm{resume value}
+}{SchedulingPolicies Plugin}
+\indexrule{resume}
 
 If \asm{value} is an agent which has been suspended, this rule {\em resumes} the execution of that agent from the next computation step;
 i.e., the agent will be available for execution from the next step.
 
-\ruleform{\asm{terminate} \asm{value}}{SchedulingPolicies Plugin}\indexrule{terminate}
+\ruleform{
+	\asm{terminate value}
+}{SchedulingPolicies Plugin}
+\indexrule{terminate}
 
 If \asm{value} is an agent, it will no longer be available for scheduling for the rest of the current run of the machine. 
 
-\ruleform{\asm{shutdown}}{SchedulingPolicies Plugin}\indexrule{shutdown}
+\ruleform{
+	\asm{shutdown}
+}{SchedulingPolicies Plugin}
+\indexrule{shutdown}
 
-Clears the \asm{Agents} universe, such that there will be no agent available to contribute to the 
-next computation step.  Depending on the parameters of the run, this can stop the execution of the engine.
+Clears the \asm{Agents} universe, such that there will be no agent available to contribute to the next computation step.  Depending on the parameters of the run, this can stop the execution of the engine.
 
 % -------------------------------- TIME
 \subsection{Time}
@@ -1961,17 +1924,25 @@ next computation step.  Depending on the parameters of the run, this can stop th
 
 The Time plugin\index{Time plugin} can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} Time
-\eExample
+\begin{lstlisting}
+use Time
+\end{lstlisting}
 
 \noindent This plugin provides the following monitored function: 
 
-\funcform{$ \mbox{\asm{now}} : \rightarrow \Rdom{Number}$}{Time Plugin}\index{now function@\asm{now} function}
+\AsmDerivedFunction{now}
+\funcform{
+	\asm{now: -> Number}
+}{Time Plugin}
+\index{now function@\asm{now} function}
 
 Returns a value representing the current time of the system. Of course, given a step, the value of now is fixed.
 
-\funcform{$ \mbox{\asm{stepcount}} : \rightarrow \Rdom{Number}$}{Time Plugin}\index{stepcount function@\asm{stepcount} function}
+\AsmDerivedFunction{stepcount}
+\funcform{
+	\asm{stepcount: -> Number}
+}{Time Plugin}
+\index{stepcount function@\asm{stepcount} function}
 
 Returns the number of computation steps performed so far by the engine excluding the current step.
 
@@ -1982,42 +1953,68 @@ Returns the number of computation steps performed so far by the engine excluding
 DebugInfo plugin is a \CoreASM plugin to maintain logging information for debugging purposes and it 
 can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} DebugInfo
-\eExample
+\begin{lstlisting}
+use DebugInfo
+\end{lstlisting}
 
 The plugin adds the following rule to the \CoreASM language:
 
-\ruleform{\asm{debuginfo} \asm{id}\ \asm{value}}{DebugInfo Plugin}\indexrule{debuginfo}
+\AsmDerivedFunction{debuginfo}
+\ruleform{
+	\asm{debuginfo id value}
+}{DebugInfo Plugin}
+\indexrule{debuginfo}
 
 \noindent which, upon evaluation, adds the string representation of the given \asm{value} to the logging channel identified by the given \asm{id}. 
 
-The set of active channels are to be defined as a space-separated list of channel ids, set as the value
-\asm{DebugInfo.activeChannels} engine property. This can be done either through the Options plugin or 
-by setting the values directly from the engine driver (e.g., \Carma). For example, using the Options plugin one can add the following
-line to a spec to turn the logging on for channels {\em warning} and {\em error}:
+\AsmConstantOrEnum{activeChannels}
+The set of active channels are to be defined as a space-separated list of channel ids, set as the value \asm{DebugInfo.activeChannels} engine property. This can be done either through the Options plugin or by setting the values directly from the engine driver (e.g., \Carma). For example, using the Options plugin one can add the following line to a spec to turn the logging on for channels {\em warning} and {\em error}:
 
-\begin{coreasm}
-  \clkeyword{option} DebugInfo.activeChannels "warning, error"
-\end{coreasm}
+\begin{lstlisting}
+option DebugInfo.activeChannels "warning, error"
+\end{lstlisting}
 
 \noindent In order to turn all channels on, one can use the special channel id {\em ALL}:
 
-\begin{coreasm}
- \clkeyword{option} DebugInfo.activeChannels ALL \clcomment{// or "ALL"}
-\end{coreasm}
 
-Since this rule is only used for debugging purposes, 
-the evaluation of \asm{debuginfo} results in an empty update set and a print out of the debugging information (if the corresponding 
-channel is active) to the standard output, whether or not the updates of the enclosing rule block is discarded by the engine or not. 
-Applications of the engine can set redirect the output of 
-this plugin using the plugin's service interface (see \asm{org.coreasm.engine.plugin.Plugin\#getPluginInterface()}). 
+\begin{lstlisting}
+option DebugInfo.activeChannels  ALL // or "ALL"
+\end{lstlisting}
+
+Since this rule is only used for debugging purposes, the evaluation of \asm{debuginfo} results in an empty update set and a print out of the debugging information (if the corresponding channel is active) to the standard output, whether or not the updates of the enclosing rule block is discarded by the engine or not. Applications of the engine can set redirect the output of this plugin using the plugin's service interface (see \asm{org.coreasm.engine.plugin.Plugin\#getPluginInterface()}). 
 
 \subsubsection*{Example}
 
-\begin{coreasm}
-\input{specs/DebugInfoExample}
-\end{coreasm}
+\AsmVariable{mode, counter, ch1, ch2}
+\AsmRule{R1}
+\begin{lstlisting}
+CoreASM DebugInfoExample
+
+use Standard
+use DebugInfo
+use Options
+
+option DebugIinfo.activeChannels ALL
+//option DebugIinfo.activeChannels "ch1  ch2"
+//option DebugIinfo.activeChannels "ch1, ch2"
+//option DebugIinfo.activeChannels ch1
+//option DebugIinfo.activeChannels NONE
+
+init R1
+
+/@\rulekeywd@/ R1 =
+	if mode = undef then
+		par
+			debuginfo ch1 "initializing."
+			mode := "counting"
+			counter := 0
+		endpar
+	else
+		par
+			debuginfo ch2 mode
+			counter := counter + 1
+		endpar
+\end{lstlisting}
 
 
 % -------------------------------- MATH
@@ -2026,9 +2023,9 @@ this plugin using the plugin's service interface (see \asm{org.coreasm.engine.pl
 
 The Math plugin\index{Math plugin} can be loaded by the following \asm{use} phrase:
 
-\bExample
-	\asm{use} Math
-\eExample
+\begin{lstlisting}
+use Math
+\end{lstlisting}
 
 \noindent Math Plugin extends the \CoreASM engine to provide some basic mathematical functions. Most of these functions are equivalent of their Java counterparts in \asm{java.lang.Math}. For such functions, the following descriptions are basically taken from the {\em Java 2 Platform Standard Edition 5.0 API Specification}. 
 
@@ -2042,7 +2039,8 @@ The Math plugin\index{Math plugin} can be loaded by the following \asm{use} phra
 
 \subsubsection{Basic Derived Functions}
 
-%\begin{tabular}{l|l}
+\AsmDerivedFunction{abs, acos, asin, atan, atan2, cuberoot, cbrt, ceil, cos, cosh, exp, expm1, floor, hypot, IEEEremainder, log, log10, log1p, max, min, pow, random, round, signum, sin, sinh, sqrt, tan, tanh, toDegrees, toRadians }
+\AsmVariable{v, v1, v2}
 \begin{itemize}
 \item {\bf \asm{abs(v)} }   Returns the absolute value of $v$.
 \item {\bf \asm{acos(v)} }   Returns the arc cosine of an angle, in the range of $0$ through $\pi$.
@@ -2063,11 +2061,7 @@ The Math plugin\index{Math plugin} can be loaded by the following \asm{use} phra
 \item {\bf \asm{log10(v)} }   Returns the base $10$ logarithm of $v$.
 \item {\bf \asm{log1p(v)} }   Returns the natural logarithm of the sum of the argument and 1; i.e., $ln(v + 1)$.
 \item {\bf \asm{max(v1, v2)} }   Returns the greater of two values.
-%\item {\bf \asm{max(\{v_1, \ldots, v_n\})} }  Returns the maximum value in a collection of numbers. 
-%												 If there is one non-number in the collection, it returns \Rundef.
 \item {\bf \asm{min(v1, v2)} }   Returns the smaller of two values.
-%\item {\bf \asm{min(\{v_1, \ldots, v_n\})} }  Returns the minimum value in a collection of numbers.
-%												 If there is one non-number in the collection, it returns \Rundef.
 \item {\bf \asm{pow(x, y)} }   Returns the value of the first argument raised to the power of the second argument.
 \item {\bf \asm{random()} }   Returns a random value with a positive sign, greater than or equal to $0.0$ and less than $1.0$.
 \item {\bf \asm{round(v)} }   Returns the closest mathematical integer to the argument.
@@ -2079,83 +2073,71 @@ The Math plugin\index{Math plugin} can be loaded by the following \asm{use} phra
 \item {\bf \asm{tanh(v)} }   Returns the hyperbolic tangent of $v$.
 \item {\bf \asm{toDegrees(v)} }   Converts an angle measured in radians to an approximately equivalent angle measured in degrees.
 \item {\bf \asm{toRadians(v)} }   Converts an angle measured in degrees to an approximately equivalent angle measured in radians.
-%\item {\bf \asm{sum(\{v_1, \ldots, v_n\})} }   This function returns the sum of a collection of numbers. If there is one non-number in the collection, it returns \Rundef.
-\end{itemize}
-%\end{tabular}
 
+\end{itemize}
 \subsubsection{Special Derived Functions}
 
 \begin{itemize}
-
+\AsmDerivedFunction{powerset, max, min, sum}
 \item {\bf \asm{powerset(set)} }  Computes the powerset of the given set. 
 
-\item {\bf \asm{max(\{v1,...,vn\})} }  Returns the maximum value in a collection of numbers. 
-	If there is one non-number in the collection, it returns \Rundef.
+\item {\bf \asm{powerset(\{e1,...,en\})} } This function returns the powerset of the given set of elements.
 
-%\item {\bf \asm{max(\{v1,\ldots, vn\}, @f)} }  Returns the maximum value in a collection of numbers, 
-%	after applying function {\bf \asm{f}} to the values in the collection. If there is one non-number 
-%	in the collection, it returns \Rundef.
+\item {\bf \asm{max(\{v1,...,vn\})} }  Returns the maximum value in a collection of numbers. 
+	If there is one non-number in the collection, it returns \asm{undef}.
 
 \item {\bf \asm{min(\{v1,...,vn\})} }  Returns the minimum value in a collection of numbers.
-	If there is one non-number in the collection, it returns \Rundef.
-
-%\item {\bf \asm{min(\{v1,\ldots, vn\}, @f)} }  Returns the minimum value in a collection of numbers, 
-%	after applying function {\bf \asm{f}} to the values in the collection. If there is one non-number 
-%	in the collection, it returns \Rundef.
+	If there is one non-number in the collection, it returns \asm{undef}.
 
 \item {\bf \asm{sum(\{v1,...,vn\})} }   This function returns the sum of a collection of numbers. 
-	If there is one non-number in the collection, it returns \Rundef.
+	If there is one non-number in the collection, it returns \asm{undef}.
 
 \item {\bf \asm{sum(\{v1,...,vn\}, @f)} }   This function returns the sum of a collection of numbers, 
 	after applying function {\bf \asm{f}} to the values in the collection. If there is one non-number 
-	in the collection, it returns \Rundef.
-
-\item {\bf \asm{powerset(\{e1,...,en\})} } This function returns the powerset of the given set of elements.
+	in the collection, it returns \asm{undef}.
 
 \end{itemize}
 
 \subsubsection{An Example}
 
-\begin{coreasmbox}
-	\begin{spec}
-	\CoreASM MathPluginExample\\
-	\\
-	\asm{use} StandardPlugins\\
-	\asm{use} MathPlugin\\
-	\\
-	\asm{init} Init\\
-	\\
-	\asm{rule} Init = \\
-	\asm{par}\\
-	\tab program(self) := @Main\\
-	\tab a(1) := 5\\
-	\tab a(2) := 10\\
-	\tab a(100) := 500\\
-	\asm{endpar}\\
-	\\
-	\asm{rule} Main = \\
-	\tab \asm{let} e = MathE \asm{in}\\
-	\tab \asm{par}\\
-	\tab \tab \asm{print} "'e' = " + e\\
-	\tab \tab \asm{print}print "log(e) = " + log(e)\\
-	\tab \tab \asm{print} "sin(30) = " + round( sin( toRadians(30) ) * 10 ) / 10\\
-	\tab \tab \asm{print} "asin(0.5) = " + round( toDegrees( asin(0.5) ) )\\
-	\tab \tab \asm{print} "min(51, 43) = " + min(51, 43)\\
-	\tab \tab \asm{print} "sum( \{1, 2, 100\} ) = " + sum(\{1, 2, 100\})\\
-	\tab \tab \asm{print} "sum( \{1, 2, 100\}, @a ) = " + sum(\{1, 2, 100\}, @a)\\
-    %\tab \tab \asm{print} "\{2, 3\} is in P(\{1, 2, 3\}) = " + (\{2, 3\} memberof powerset(\{1,2,3\})) \\
-    \tab \tab \asm{choose} x \asm{in} powerset(\{1, 2, 3, 4\}) \asm{do} \\
-    \tab \tab \tab \asm{if} x \asm{memberof} powerset(\{1, 2, 3\}) \asm{then} \\
-    \tab \tab \tab \tab \asm{print} x + " is a member of powerset(\{1, 2, 3\})"\\
-    \tab \tab \tab \asm{else}\\ 
-    \tab \tab \tab \tab \asm{print} x + " is not a member of powerset(\{1, 2, 3\})"\\
-	\tab \asm{endpar}\\
-	\end{spec}
-	\caption{Using Math Plugin}
-	\label{spec:mathexample}
-\end{coreasmbox}
+\begin{tcolorbox}[boxrule=0.0pt,colback=gray!5!white,title={Using Math Plugin},label={spec:mathexample}]
+\begin{lstlisting}[backgroundcolor=\color{gray!5!white},frame=none]
+CoreASM MathPluginExample
 
-As an example, the output of the \CoreASM Spec~\ref{spec:mathexample} would be the following:
+use StandardPlugin
+use MathPlugin
+
+init Init
+
+/@\rulekeywd@/ Init =
+	par
+		program(self) := @Main
+		a(1) := 5
+		a(2) := 10
+		a(100) := 500
+	endpar
+
+/@\rulekeywd@/ Main =
+	let e = MathE in
+		par
+			print "'e' = " + e
+			print "log(e) = " + log(e)
+			print "sin(30) = " + round( sin( toRadians(30) ) * 10 ) / 10
+			print "asin(0.5) = " + round( toDegrees( asin(0.5) ) )
+			print "min(51, 43) = " + min(51, 43)
+			print "sum( {1, 2, 100} ) = " + sum({1, 2, 100})
+			print "sum( {1, 2, 100}, @a ) = " + sum({1, 2, 100}, @a)
+			print "{2, 3} is in P({1, 2, 3}) = " + ({2, 3} memberof powerset({1,2,3}))
+			choose x in powerset({1, 2, 3, 4}) do
+				if x memberof powerset({1, 2, 3}) then
+					print x + " is a member of powerset({1, 2, 3})"
+				else
+					print x + " is not a member of powerset({1, 2, 3})"
+		endpar
+\end{lstlisting}
+\end{tcolorbox}
+
+As an example, the output of the \CoreASM Spec~\hyperref[spec:mathexample]{MathPluginExample} would be the following:
 
 \definecolor{shellgray}{rgb}{0.2,0.2,0.2}
 \definecolor{black}{rgb}{0,0,0}
