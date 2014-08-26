@@ -1526,7 +1526,7 @@ The function \asm{zip} takes two lists and returns a list of corresponding pairs
 }{List Plugin}
 \indexfunc{zipwith}
 
-The function \asm{zipwith} generalises zip by zipping with the function given as the last argument, instead of a tupling function. For example, \asm{zipwith (l1, l2, @Sum)}  is applied to two lists to produce a list of corresponding maximums, where \asm{derived Sum(x, y) = x + y}.
+The function \asm{zipwith} generalises zip by zipping with the function given as the last argument, instead of a tupling function. For example, \asm{zipwith (l1, l2, @max)} is applied to two lists to produce a list of corresponding maximums (requires \asm{use Math}).
 
 \AsmDerivedFunction{replicate}
 \funcform{
