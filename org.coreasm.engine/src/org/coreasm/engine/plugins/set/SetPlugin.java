@@ -541,21 +541,21 @@ public class SetPlugin extends Plugin
 					new GrammarRule("SetEnumerate",
 							"'{' Term (',' Term)* '}'", setEnumerateParser, PLUGIN_NAME));
 			
-			// SetComprehension: '{' Term ( 'is' Term )? '|' ID 'in' Term 
+			// SetComprehension: '{' FunctionTerm ( 'is' Term )? '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? '}'
 			Parser<Node> setComprehensionParser = Parsers.array(
 					new Parser[] {
 						pTools.getOprParser("{"),
-						termParser,
-						pTools.seq(
+						idParser,
+						Parsers.array(
 								pTools.getKeywParser("is", PLUGIN_NAME),
 								termParser).optional(),
 						pTools.getOprParser("|"),
-						pTools.csplus(pTools.seq(
+						pTools.csplus(Parsers.array(
 								idParser,
 								pTools.getKeywParser("in", PLUGIN_NAME),
 								termParser)),
-						pTools.seq(
+						Parsers.array(
 								pTools.getKeywParser("with", PLUGIN_NAME),
 								guardParser).optional(),
 						pTools.getOprParser("}")

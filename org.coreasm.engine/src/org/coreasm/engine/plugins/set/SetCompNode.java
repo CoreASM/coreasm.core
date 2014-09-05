@@ -49,7 +49,7 @@ public class SetCompNode extends ASTNode {
 	 */
 	public String getSpecifierVar() {
 		// as the variable node is a TERM, we need to go two step down
-		return this.getFirst().getFirst().getToken();
+		return this.getFirst().getToken();
 	}
 	
 	/**

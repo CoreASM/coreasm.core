@@ -53,7 +53,7 @@ public class SetAdvancedCompNode extends ASTNode {
 	 * @return the first occurrence of the specifier variable
 	 */
 	public String getSpecifierVar() {
-		return this.getFirst().getFirst().getToken();
+		return this.getFirst().getToken();
 	}
 	
 	/**

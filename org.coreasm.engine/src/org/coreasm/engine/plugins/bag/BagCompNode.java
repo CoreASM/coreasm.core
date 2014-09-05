@@ -48,8 +48,7 @@ public class BagCompNode extends ASTNode {
 	 * @return the first occurrence of the specifier variable
 	 */
 	public String getSpecifierVar() {
-		// as the variable node is a TERM, we need to go two step down
-		return this.getFirst().getFirst().getToken();
+		return this.getFirst().getToken();
 	}
 	
 	/**

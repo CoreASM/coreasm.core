@@ -539,20 +539,21 @@ public class BagPlugin extends Plugin
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? '>>'
 			Parser<Node> bagComprehensionParser = Parsers.array(
 					new Parser[] {
-						pTools.getOprParser(BAG_OPEN_SYMBOL),
-						termParser,
-						pTools.seq(
+							pTools.getOprParser(BAG_OPEN_SYMBOL),
+							idParser,
+							Parsers.array(
 								pTools.getKeywParser("is", PLUGIN_NAME),
 								termParser).optional(),
-						pTools.getOprParser("|"),
-						pTools.csplus(pTools.seq(
-								idParser,
-								pTools.getKeywParser("in", PLUGIN_NAME),
-								termParser)),
-						pTools.seq(
-								pTools.getKeywParser("with", PLUGIN_NAME),
-								guardParser).optional(),
-						pTools.getOprParser(BAG_CLOSE_SYMBOL)
+								pTools.getOprParser("|"),
+								pTools.csplus(Parsers.array(
+									idParser,
+									pTools.getKeywParser("in", PLUGIN_NAME),
+									termParser)
+								),
+								Parsers.array(
+									pTools.getKeywParser("with", PLUGIN_NAME),
+									guardParser).optional(),
+									pTools.getOprParser(BAG_CLOSE_SYMBOL)
 					}).map(
 					new BagComprehensionParseMap());
 			parsers.put("BagComprehension", 
