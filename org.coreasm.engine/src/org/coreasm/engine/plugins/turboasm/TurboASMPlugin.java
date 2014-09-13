@@ -95,9 +95,9 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	private Map<String, FunctionElement> functions;
 	private FunctionElement resultFunction;
 
-	private final String[] keywords = {"seq", "next", "seqblock", "endseqblock", "iterate", "while", 
+	private final String[] keywords = {"seq", "next", "endseq", "seqblock", "endseqblock", "iterate", "while", 
 			"local", "in", "return", "result"};
-	private final String[] operators = {",", "<-"};
+	private final String[] operators = {",", "<-", "[", "]"};
 	
 	@Override
 	public void initialize() {
@@ -163,36 +163,21 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			ParserTools pTools = ParserTools.getInstance(capi);
 			Parser<Node> idParser = pTools.getIdParser();
 	
-			// SeqRule : 'seq' Rule ('next')? Rule
-			Parser<Node> seqRuleParser = Parsers.array(
-					new Parser[] {
-						pTools.getKeywParser("seq", PLUGIN_NAME),
-						ruleParser,
-						pTools.getKeywParser("next", PLUGIN_NAME).optional(),
-						ruleParser
-					}).map(
-					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object... vals) {
-							Node node = new SeqRuleNode(((Node)vals[0]).getScannerInfo());
-							addChildren(node, vals);
-							return node;
-						}
-			});
+			// SeqRule : 'seq' Rule ('next' Rule)+ | 'seq' (Rule)+ 'endseq'
+			Parser<Node> seqRuleParser = Parsers.array(new Parser[] {
+					Parsers.or(
+							Parsers.array(pTools.getKeywParser("seq", PLUGIN_NAME),
+									ruleParser,
+									pTools.plus(Parsers.array(pTools.getKeywParser("next", PLUGIN_NAME), ruleParser))),
+							Parsers.array(Parsers.or(pTools.getKeywParser("seq", PLUGIN_NAME), pTools.getKeywParser("seqblock", PLUGIN_NAME), pTools.getOprParser("[")),
+									pTools.plus(ruleParser),
+									Parsers.or(pTools.getKeywParser("endseq", PLUGIN_NAME), pTools.getKeywParser("endseqblock", PLUGIN_NAME), pTools.getOprParser("]"))))
+				}).map(
+					new SeqRuleParseMap());
 			parsers.put("SeqRule",
-					new GrammarRule("SeqRule", "'seq' Rule ('next')? Rule", 
+					new GrammarRule("SeqRule", "'seq' Rule ('next' Rule)+ | 'seq' (Rule)+ 'endseq'", 
 							seqRuleParser, PLUGIN_NAME));
 
-			// SeqRule : 'seq' Rule ... 'endseq'
-			Parser<Node> seqBlockRuleParser = Parsers.array(new Parser[] { 
-					pTools.getKeywParser("seqblock", this.getName()),
-					pTools.plus(ruleParser),
-					pTools.getKeywParser("endseqblock", getName())
-				}).map(
-					new SeqBlockRuleParseMap());
-			parsers.put("SeqBlockRule",
-					new GrammarRule("SeqBlockRule", "'seq' Rule+ 'endseq'", 
-							seqBlockRuleParser, PLUGIN_NAME));
-			
 			// IterateRule : 'iterate' Rule
 			Parser<Node> iterateRuleParser = Parsers.array(
 					new Parser[] {
@@ -280,8 +265,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			
 			// TurboASMRules : SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule
 			parsers.put("Rule", new GrammarRule("TurboASMRules", 
-					"SeqBlockRule | SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule",
-					Parsers.or(seqBlockRuleParser, seqRuleParser, iterateRuleParser, whileRuleParser, 
+					"SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule",
+					Parsers.or(seqRuleParser, iterateRuleParser, whileRuleParser, 
 							retResRuleParser, 
 							localRuleParser), PLUGIN_NAME));
 			
@@ -625,14 +610,15 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		
 	}
 	
-	public static class SeqBlockRuleParseMap extends ArrayParseMap {
+	public static class SeqRuleParseMap extends ArrayParseMap {
 
-		public SeqBlockRuleParseMap() {
+		public SeqRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
 		
 		public Node map(Object... vals) {
-			SeqBlockRuleNode node = new SeqBlockRuleNode(((Node)vals[0]).getScannerInfo());
+			vals = (Object[])vals[0];
+			SeqRuleNode node = new SeqRuleNode(((Node)vals[0]).getScannerInfo());
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			int i = unpackChildren(nodes, vals);
 			addSeqChildren(node, nodes, i);
@@ -656,7 +642,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			return astCount;
 		}
 		
-		private void addSeqChildren(SeqBlockRuleNode root, List<Node> children, int astCount) {
+		private void addSeqChildren(SeqRuleNode root, List<Node> children, int astCount) {
 			int i = 1;
 			for (Node child: children) {
 				if (child instanceof ASTNode) {
@@ -670,7 +656,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 							if (i == astCount) 
 								root.addChild(child);
 							else {
-								SeqBlockRuleNode newRoot = new SeqBlockRuleNode(child.getScannerInfo());
+								SeqRuleNode newRoot = new SeqRuleNode(child.getScannerInfo());
 								newRoot.addChild(child);
 								root.addChild(newRoot);
 								root = newRoot;
@@ -683,13 +669,13 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			}
 		}
 		
-		private SeqBlockRuleNode addSeqChild(SeqBlockRuleNode root, Node child) {
-			SeqBlockRuleNode newRoot = root;
+		private SeqRuleNode addSeqChild(SeqRuleNode root, Node child) {
+			SeqRuleNode newRoot = root;
 			if (child instanceof ASTNode) {
 				if (root.getFirst() == null)
 					root.addChild(child);
 				else {
-					newRoot = new SeqBlockRuleNode(child.getScannerInfo());
+					newRoot = new SeqRuleNode(child.getScannerInfo());
 					newRoot.addChild(child);
 					root.addChild(newRoot);
 				}

@@ -47,7 +47,6 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugins.number.NumberElement;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.string.StringElement;
-import org.coreasm.engine.plugins.turboasm.SeqBlockRuleNode;
 import org.coreasm.engine.plugins.turboasm.SeqRuleNode;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -163,7 +162,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		stepReturnPos = stepOverPos;
 		while (stepReturnPos != null && stepReturnPos.getParent() instanceof SeqRuleNode) {
 			stepReturnPos = stepReturnPos.getParent();
-			if (stepReturnPos instanceof SeqBlockRuleNode && stepReturnPos.getFirstASTNode() != stepReturnPos.getFirstCSTNode())
+			// If the first CSTNode is not an ASTNode this is the top of the seqblock, breaking here avoids stepping out of more than one seqblock at a time
+			if (stepReturnPos instanceof SeqRuleNode && !(stepReturnPos.getFirstCSTNode() instanceof ASTNode))
 				break;
 		}
 	}
@@ -546,7 +546,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			
 //			handle line breakpoints
 			if (ASTNode.RULE_CLASS.equals(pos.getGrammarClass())) {
-				if  (!(pos.getParent() instanceof SeqRuleNode) || !(pos instanceof SeqBlockRuleNode)) {	// if parent is SeqRuleNode -> pos may not be SeqBlockRuleNode (this avoids breaking twice on seqblock children)
+				if  (!(pos.getParent() instanceof SeqRuleNode) || !(pos instanceof SeqRuleNode)) {	// if parent is SeqRuleNode -> pos may not be SeqRuleNode (this avoids breaking twice on seqblock children)
 					if (isLineBreakpointHit()) {
 						onBreakpointHit(pos);
 						return;
@@ -554,8 +554,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 				
 //				handle stepping on seq rules
-				if (pos.getParent() instanceof SeqRuleNode && (!(pos instanceof SeqBlockRuleNode) || pos.getFirstASTNode() != pos.getFirstCSTNode()) // if parent is SeqRuleNode AND pos is SeqBlockRuleNode -> pos must be keyword 'seqblock'
-				|| pos instanceof SeqBlockRuleNode && pos.getFirstASTNode() != pos.getFirstCSTNode()) { // OR if pos is keyword 'seqblock' (first CSTNode will be the keyword)
+				if (pos.getParent() instanceof SeqRuleNode && (!(pos instanceof SeqRuleNode) || pos.getFirstASTNode() != pos.getFirstCSTNode()) // if parent is SeqRuleNode AND pos is SeqRuleNode -> pos must be keyword 'seq'
+				|| pos instanceof SeqRuleNode && pos.getFirstASTNode() != pos.getFirstCSTNode()) { // OR if pos is keyword 'seq' (first CSTNode will be the keyword)
 					if (!shouldStepOver && !shouldStepReturn) {
 						if (shouldStep)
 							updateState(pos);
