@@ -77,25 +77,30 @@ public class PluginErrorRecognizer implements ITextErrorRecognizer
 		}
 		for (String pluginName : usedPlugins) {
 			Plugin p = SlimEngine.getFullEngine().getPlugin(pluginName);
-			String missingDependencies = checkPluginDependency(usedPlugins, p);
-			if (!missingDependencies.isEmpty())
-				errors.add(new SimpleError("Plugin Dependency Error", pluginName + " requires " + missingDependencies, usePositions.get(pluginName), lengths.get(pluginName), CLASSNAME, DEPENDENCY));
+			Set<String> missingDependencies = checkPluginDependency(usedPlugins, p);
+			if (!missingDependencies.isEmpty()) {
+				String descr = "";
+				for (String missingDependency : missingDependencies) {
+					if (!descr.isEmpty())
+						descr += ", ";
+					descr += missingDependency;
+				}
+				descr = pluginName + " requires " + descr;
+				errors.add(new SimpleError("Plugin Dependency Error", descr, usePositions.get(pluginName), lengths.get(pluginName), CLASSNAME, DEPENDENCY));
+			}
 		}
 	}
 	
-	private String checkPluginDependency(Collection<String> usedPlugins, Plugin p) {
+	private Set<String> checkPluginDependency(Collection<String> usedPlugins, Plugin p) {
 		Map<String, VersionInfo> depends = p.getDependencies();
-		String missingDependencies = "";
+		Set<String> missingDependencies = new HashSet<String>();
 
 		if (depends != null) {
 			for (String name : depends.keySet()) {
 				if (!usedPlugins.contains(name)) {
-					if (!missingDependencies.isEmpty())
-						missingDependencies += ", ";
-					missingDependencies += name;
-					String transitiveMissingDependencies = checkPluginDependency(usedPlugins, SlimEngine.getFullEngine().getPlugin(name));
-					if (!transitiveMissingDependencies.isEmpty())
-						missingDependencies += ", " + transitiveMissingDependencies;
+					missingDependencies.add(name);
+					Set<String> transitiveMissingDependencies = checkPluginDependency(usedPlugins, SlimEngine.getFullEngine().getPlugin(name));
+					missingDependencies.addAll(transitiveMissingDependencies);
 				}
 			}
 		}

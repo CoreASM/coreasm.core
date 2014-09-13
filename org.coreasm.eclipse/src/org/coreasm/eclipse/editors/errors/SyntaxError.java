@@ -15,7 +15,7 @@ import java.util.Map;
  * <li>Encountered: The token which was found, which is illegal at this position</li>
  * <li>Expected: A list of grammar elements which are allowed at this position</li>
  * </ul>
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public class SyntaxError 
 extends AbstractError 
@@ -102,12 +102,14 @@ extends AbstractError
 		List<AbstractQuickFix> replaceFixes = new LinkedList<AbstractQuickFix>();
 		List<AbstractQuickFix> insertFixes = new LinkedList<AbstractQuickFix>();
 		
-		fixes.add(new AbstractQuickFix.QF_Replace("Delete", "", true));
+		if (!"EOF".equals(getEncountered()))
+			fixes.add(new AbstractQuickFix.QF_Replace("Delete", "", true));
 		
 		for (String e : getExpected()) {
 			// don't show fixes for EOF and terminal tokens.
 			if (!(e.equals("EOF") || e.equals("IDENTIFIER") || e.equals("DECIMAL") || e.equals("string literal"))) {
-				replaceFixes.add(new AbstractQuickFix.QF_Replace("Replace with '" + e + "'", e, true));
+				if (!"EOF".equals(getEncountered()))
+					replaceFixes.add(new AbstractQuickFix.QF_Replace("Replace with '" + e + "'", e, true));
 				insertFixes.add(new AbstractQuickFix.QF_Replace("Insert '" + e + "'", e, false));
 			}
 		}
