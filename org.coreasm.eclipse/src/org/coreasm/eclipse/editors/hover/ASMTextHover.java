@@ -30,6 +30,7 @@ import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
+import org.coreasm.engine.plugins.list.ListCompNode;
 import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
@@ -309,6 +310,8 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			return true;
 		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
+		if (isListComprehensionConstrainerVariable(frNode))
+			return true;
 		if (isImportRuleVariable(frNode))
 			return true;
 		return false;
@@ -471,6 +474,23 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			setCompNode = setCompNode.getParent();
 		if (setCompNode instanceof SetCompNode)
 			return (SetCompNode)setCompNode;
+		return null;
+	}
+	
+	private boolean isListComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+		for (ListCompNode listCompNode = getParentListCompNode(frNode); listCompNode != null; listCompNode = getParentListCompNode(listCompNode)) {
+			if (listCompNode.getConstrainerVar().equals(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private ListCompNode getParentListCompNode(ASTNode node) {
+		ASTNode listCompNode = node.getParent();
+		while (listCompNode != null && !(listCompNode instanceof ListCompNode))
+			listCompNode = listCompNode.getParent();
+		if (listCompNode instanceof ListCompNode)
+			return (ListCompNode)listCompNode;
 		return null;
 	}
 	

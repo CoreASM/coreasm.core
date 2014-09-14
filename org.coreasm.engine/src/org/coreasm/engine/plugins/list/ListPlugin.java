@@ -18,16 +18,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
+import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.RuleElement;
@@ -76,6 +79,15 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 //			LIST_REMOVE_ACTION};
 	
 	public static final String LIST_CONCAT_OP = "+";
+	
+	/* keeps track of to-be-considered values in a list comprehension */
+	private ThreadLocal<Map<ASTNode, List<Element>>> tobeConsidered;
+	
+	/* keeps track of to-be-considered values in an advanced list comprehension */
+	private ThreadLocal<Map<ASTNode, List<Map<String,Element>>>> tobeConsideredAdv;
+	
+	/* keeps new lists created on a list comprehension node */
+	private ThreadLocal<Map<ASTNode, List<Element>>> newList;
 	
 	private Map<String, GrammarRule> parsers = null;
 	private List<OperatorRule> operatorRules = null;
@@ -130,7 +142,46 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	 */
 	@Override
 	public void initialize() {
+		tobeConsidered= new ThreadLocal<Map<ASTNode,List<Element>>>() {
+			@Override
+			protected Map<ASTNode, List<Element>> initialValue() {
+				return new IdentityHashMap<ASTNode, List<Element>>();
+			}
+		};
+		tobeConsideredAdv= new ThreadLocal<Map<ASTNode,List<Map<String,Element>>>>() {
+			@Override
+			protected Map<ASTNode, List<Map<String, Element>>> initialValue() {
+				return new IdentityHashMap<ASTNode, List<Map<String,Element>>>();
+			}
+		};
+		newList= new ThreadLocal<Map<ASTNode,List<Element>>>() {
+			@Override
+			protected Map<ASTNode, List<Element>> initialValue() {
+				return new IdentityHashMap<ASTNode, List<Element>>();
+			}
+		};
 		listBackground = new ListBackgroundElement();
+	}
+	
+	/*
+	 * Returns the instance of 'tobeConsidered' map for this thread.
+	 */
+	private Map<ASTNode, List<Element>> getToBeConsideredMap() {
+		return tobeConsidered.get();
+	}
+	
+	/*
+	 * Returns the instance of 'tobeConsideredAdv' map for this thread.
+	 */
+	private Map<ASTNode, List<Map<String, Element>>> getToBeConsideredAdvMap() {
+		return tobeConsideredAdv.get();
+	}
+	
+	/*
+	 * Returns the instance of 'newList' map for this thread.
+	 */
+	private Map<ASTNode, List<Element>> getNewListMap() {
+		return newList.get();
 	}
 
 	@Override
@@ -141,10 +192,37 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					.getPluginInterface();
 
 			Parser<Node> termParser = kernel.getTermParser();
+			Parser<Node> guardParser = kernel.getGuardParser();
 
 			ParserTools pTools = ParserTools.getInstance(capi);
+			Parser<Node> idParser = pTools.getIdParser();
 			
 			Parser<Object[]> csTerms = pTools.csplus(termParser);
+			
+			// ListComprehension: '[' FunctionTerm ( 'is' Term )? '|' ID 'in' Term 
+			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? ']'
+			Parser<Node> listComprehensionParser = Parsers.array(
+					new Parser[] {
+						pTools.getOprParser("["),
+						idParser,
+						Parsers.array(
+								pTools.getKeywParser("is", PLUGIN_NAME),
+								termParser).optional(),
+						pTools.getOprParser("|"),
+						pTools.csplus(Parsers.array(
+								idParser,
+								pTools.getKeywParser("in", PLUGIN_NAME),
+								termParser)),
+						Parsers.array(
+								pTools.getKeywParser("with", PLUGIN_NAME),
+								guardParser).optional(),
+						pTools.getOprParser("]")
+					}).map(
+					new ListComprehensionParseMap());
+			parsers.put("ListComprehension", 
+					new GrammarRule("ListComprehension",
+							"'[' Term ( 'is' Term )? '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? ']'", 
+							listComprehensionParser, PLUGIN_NAME));
 			
 			// [ Term, ..., Term ]
 			Parser<Object[]> listTermParser1 = pTools.seq(
@@ -187,12 +265,12 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 						}
 						
 					});
-			refListTermParser.set(listtermParser);
+			refListTermParser.set(Parsers.or(listtermParser, listComprehensionParser));
 			parsers.put("ListTerm", new GrammarRule("ListTerm",
 					"'[' ( Term ( ',' Term )* )? ']'", refListTermParser.lazy(), PLUGIN_NAME));
 			
 			parsers.put("BasicTerm", new GrammarRule("ListBasicTerm", 
-					"ListTerm", refListTermParser.lazy(), PLUGIN_NAME));
+					"ListTerm | ListComprehension", refListTermParser.lazy(), PLUGIN_NAME));
 
 			// ShiftRule: 'shift' ('left'|'right') Term 'into' Term
 			Parser<Node> shiftParser = Parsers.array(
@@ -228,6 +306,9 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
 //		AbstractStorage storage = capi.getStorage();
+		Map<ASTNode, List<Element>> tobeConsidered = getToBeConsideredMap();
+		Map<ASTNode, List<Map<String, Element>>> tobeConsideredAdv = getToBeConsideredAdvMap();
+		Map<ASTNode, List<Element>> newList = getNewListMap();
 		
 		if (pos instanceof ListTermNode) {
 			ListTermNode node = (ListTermNode)pos;
@@ -248,60 +329,306 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 				}
 			
 			pos.setNode(null, null, new ListElement(values));
-		} else 
-			if (pos instanceof ShiftRuleNode) {
-				ShiftRuleNode node = (ShiftRuleNode)pos;
-				
-				if (!pos.getFirst().isEvaluated())
-					return pos.getFirst();
-				if (!pos.getFirst().getNext().isEvaluated())
-					return pos.getFirst().getNext();
-				Element e = node.getListNode().getValue();
-				Location loc = node.getLocationNode().getLocation();
-				if (e != null && e instanceof ListElement) {
-					ListElement list = (ListElement)e; 
-					if (node.getListNode().getLocation() != null) {
-						if (loc != null)  {
-							if (list.intSize() > 0) {
-								UpdateMultiset updates = new UpdateMultiset();
-								ArrayList<Element> listData = new ArrayList<Element>(list.enumerate());
-								Element shifted = Element.UNDEF;
-								
-								if (node.isLeft) {
-									shifted = listData.remove(0);
-								} else {
-									shifted = listData.remove(((ListElement)list).intSize()-1);
-								}
-								
-								Update u1 = new Update(loc, 
-										shifted, 
-										Update.UPDATE_ACTION, 
-										interpreter.getSelf(),
-										pos.getScannerInfo());
-								Update u2 = new Update(node.getListNode().getLocation(), 
-										new ListElement(listData), 
-										Update.UPDATE_ACTION, 
-										interpreter.getSelf(),
-										pos.getScannerInfo());
-								
-								updates.add(u1);
-								updates.add(u2);
+		}
+		else if (pos instanceof ShiftRuleNode) {
+			ShiftRuleNode node = (ShiftRuleNode)pos;
+			
+			if (!pos.getFirst().isEvaluated())
+				return pos.getFirst();
+			if (!pos.getFirst().getNext().isEvaluated())
+				return pos.getFirst().getNext();
+			Element e = node.getListNode().getValue();
+			Location loc = node.getLocationNode().getLocation();
+			if (e != null && e instanceof ListElement) {
+				ListElement list = (ListElement)e; 
+				if (node.getListNode().getLocation() != null) {
+					if (loc != null)  {
+						if (list.intSize() > 0) {
+							UpdateMultiset updates = new UpdateMultiset();
+							ArrayList<Element> listData = new ArrayList<Element>(list.enumerate());
+							Element shifted = Element.UNDEF;
+							
+							if (node.isLeft) {
+								shifted = listData.remove(0);
+							} else {
+								shifted = listData.remove(((ListElement)list).intSize()-1);
+							}
+							
+							Update u1 = new Update(loc, 
+									shifted, 
+									Update.UPDATE_ACTION, 
+									interpreter.getSelf(),
+									pos.getScannerInfo());
+							Update u2 = new Update(node.getListNode().getLocation(), 
+									new ListElement(listData), 
+									Update.UPDATE_ACTION, 
+									interpreter.getSelf(),
+									pos.getScannerInfo());
+							
+							updates.add(u1);
+							updates.add(u2);
 
-								pos.setNode(null, updates, null);
-							} else
-								capi.error("Cannot shift an empty list.", node.getListNode(), interpreter);
-								
+							pos.setNode(null, updates, null);
 						} else
-							capi.error("Cannot shift to a non-location.", node.getLocationNode(), interpreter);
+							capi.error("Cannot shift an empty list.", node.getListNode(), interpreter);
+							
 					} else
-						capi.error("Cannon shift a non-location.", node.getListNode(), interpreter);
+						capi.error("Cannot shift to a non-location.", node.getLocationNode(), interpreter);
 				} else
-					capi.error("Cannont shift a non-list element.", node.getListNode(), interpreter);
+					capi.error("Cannon shift a non-location.", node.getListNode(), interpreter);
+			} else
+				capi.error("Cannont shift a non-list element.", node.getListNode(), interpreter);
+		}
+		else if (pos instanceof ListCompNode) {
+			ListCompNode node = (ListCompNode)pos;
+			String variable = node.getSpecifierVar();
+			
+			// if nothing is evaluated yet
+			if (!node.getDomain().isEvaluated()) {
+				// if x = x_1 
+				if (node.getConstrainerVar().equals(variable)) {
+					tobeConsidered.remove(pos); // to make its to-be-considered value null
+					newList.put(pos, new ArrayList<Element>());
+					return node.getDomain();
+				} else
+					capi.error("Constrainer variable must have same name as specifier variable (" 
+							+ variable + " vs. " + node.getConstrainerVar() + ").", node, interpreter);
 			}
+			// if the domain is evaluated 
+			else if (!node.getGuard().isEvaluated()) {
+				if (!(node.getDomain().getValue() instanceof Enumerable)) 
+					capi.error("Free variables may only be bound to enumerable elements.", node.getDomain(), interpreter);
+				else {
+					if (tobeConsidered.get(pos) == null) {
+						Enumerable domain = (Enumerable)node.getDomain().getValue();
+						tobeConsidered.put(pos, new ArrayList<Element>(domain.enumerate()));
+					}
+					List<Element> domain = tobeConsidered.get(pos);
+					
+					if (domain.isEmpty()) {
+						pos.setNode(null, null, new ListElement(newList.get(pos)));
+						return pos;
+					} else {
+						Element e = domain.remove(0);
+						interpreter.addEnv(variable, e);
+						return node.getGuard();
+					}
+				}
+			}
+			// if everything is evaluated
+			else {
+				if (node.getGuard().getValue().equals(BooleanElement.TRUE)) 
+					newList.get(pos).add(interpreter.getEnv(variable));
+				interpreter.removeEnv(variable);
+				interpreter.clearTree(node.getGuard());
+				return pos;
+			}
+		}
+		else if (pos instanceof ListAdvancedCompNode) {
+			ListAdvancedCompNode node = (ListAdvancedCompNode)pos;
+			Map<String,ASTNode> bindings = null;
+			
+			// get variable to domain bindings
+			try {
+				bindings = node.getVarBindings();
+			} catch (EngineException e) {
+				// "No two constrainer variables may have the same name."
+				capi.error(e);
+			}
+			ASTNode guard = node.getGuard();
+			ASTNode expression = node.getListFunction();
+
+			if (!guard.isEvaluated()) {
+ 				if (bindings.size() >= 1) {
+					if (bindings.containsKey(node.getSpecifierVar())) 
+						capi.error("Constrainer variable cannot have same name as specifier.", node, interpreter);
+					
+					// evaluate all the domains
+					for (ASTNode domain: bindings.values())
+						if (!domain.isEvaluated()) 
+							return domain;
+					
+					// if all domains are evaluated
+					for (ASTNode domain: bindings.values()) {
+						if (!(domain.getValue() instanceof Enumerable)) {
+							capi.error("Constrainer variables may only be bound to enumerable elements.", domain, interpreter);
+							return pos;
+						} else 
+							// if any domain is empty, the whole result is also empty
+							if (((Enumerable)domain.getValue()).enumerate().size() == 0) { 
+								pos.setNode(null, null, new ListElement());
+								return pos;
+							}
+					}
+					
+					// create the resulting list
+					newList.put(pos, new ArrayList<Element>());
+					
+					// List of all possible bindings
+					ArrayList<Map<String,Element>> possibleBindings = new ArrayList<Map<String,Element>>();
+					
+					// List of all variables
+					ArrayList<String> allVariables = new ArrayList<String>(bindings.keySet());
+					
+					// Map of all possible values for variables 
+					Map<String,ArrayList<Element>> possibleValues = new HashMap<String,ArrayList<Element>>();
+					for (String var: bindings.keySet()) {
+						Enumerable set = (Enumerable)(bindings.get(var).getValue());
+						possibleValues.put(var, new ArrayList<Element>(set.enumerate()));
+					}
+
+					// create all possible combination of values for variables
+					createAllPossibleBindings(
+							allVariables, possibleValues, allVariables.size() - 1, possibleBindings, new HashMap<String,Element>());
+
+					// set the superlist of values
+					tobeConsideredAdv.put(pos, possibleBindings);
+					
+					// pick the first combination
+					Map<String,Element> firstBinding = possibleBindings.iterator().next();
+					
+					// bind the combination to the variables
+					bindVariables(interpreter, firstBinding);
+					
+					// remove the already chosen combination
+					possibleBindings.remove(firstBinding);
+					
+					return guard;
+					
+				} else
+					capi.error("At least one constrainer variable must be present.", node, interpreter);
+			} 
+			
+			// if guard is evaluated but the expression is not
+			else if (!expression.isEvaluated()) {
+				if (guard.getValue().equals(BooleanElement.TRUE)) 
+					return expression;
+				else {
+					// remove previous bindings
+					unbindVariables(interpreter, bindings.keySet());
+
+					// get the remaining combinations
+					Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+					
+					// if there is more combination to be tried...
+					if (possibleBindings.size() > 0) {
+
+						// pick the next combination
+						Map<String,Element> nextBinding = possibleBindings.iterator().next();
+						
+						// bind the combination to the variables
+						bindVariables(interpreter, nextBinding);
+						
+						// remove the already chosen combination
+						possibleBindings.remove(nextBinding);
+						
+						// clear the guard
+						interpreter.clearTree(guard);
+						
+						return guard;
+					} else {
+						pos.setNode(null, null, new ListElement(newList.get(pos)));
+					}
+				}
+			} 
+			
+			// if everything is evaluated
+			else {
+				// remove previous bindings
+				unbindVariables(interpreter, bindings.keySet());
+
+				List<Element> result = newList.get(pos);
+				result.add(expression.getValue());
+				// get the remaining combinations
+				Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+				if (possibleBindings.size() > 0) {
+
+					// pick the first combination
+					Map<String,Element> nextBinding = possibleBindings.iterator().next();
+					
+					// bind the combination to the variables
+					bindVariables(interpreter, nextBinding);
+					
+					// remove the already chosen combination
+					possibleBindings.remove(nextBinding);
+
+					// clear the guard and the expression
+					interpreter.clearTree(guard);
+					interpreter.clearTree(expression);
+					
+					return guard;
+				} else {
+					pos.setNode(null, null, new ListElement(newList.get(pos)));
+					return pos;
+				}
+			}
+			
+			return pos;
+		}
+		else if (pos instanceof TrueGuardNode) {
+			pos.setNode(null, null, BooleanElement.TRUE);
+			return pos;
+		}
 		
 		return pos;
 	}
 
+	/*
+	 * This recursive method creates all the possible combinations of values
+	 * for variables. 
+	 */
+	private void createAllPossibleBindings(
+			ArrayList<String> allVariables, 
+			Map<String,ArrayList<Element>> possibleValues, 
+			int index, 
+			ArrayList<Map<String,Element>> possibleBindings, 
+			Map<String,Element> currentBinding) {
+
+		// get possible values for this particular variable
+		String var = allVariables.get(index);
+		ArrayList<Element> values = new ArrayList<Element>(possibleValues.get(var));
+		
+		while (values.size() > 0) {
+			// get the first element of those values
+			Element value = values.get(0);
+			
+			// put it as a possible binding
+			currentBinding.put(var, value);
+			
+			// if this is not the last variable in the list
+			if (index > 0) {
+				// get all the possible values for the remaining variables
+				createAllPossibleBindings(
+						allVariables, possibleValues, index-1, possibleBindings, currentBinding);
+			} 
+			
+			// if this is the last variable
+			else {
+				// currentBinding is a draft copy that keeps changing, so you want
+				// to add a new map to the set
+				possibleBindings.add(new HashMap<String,Element>(currentBinding));
+			}
+			values.remove(0);
+		}
+	}
+	
+	/*
+	 * Binds values to variables.
+	 */
+	private void bindVariables(Interpreter interpreter, Map<String,Element> binding) {
+		for (String var: binding.keySet()) {
+			interpreter.addEnv(var, binding.get(var));
+		}
+	}
+	
+	/*
+	 * Unbinds environment variables.
+	 */
+	private void unbindVariables(Interpreter interpreter, Set<String> variables) {
+		for (String var: variables){
+			interpreter.removeEnv(var);
+		}
+	}
 
 	@Override
 	public Collection<OperatorRule> getOperatorRules() {
@@ -444,6 +771,25 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	@Override
 	public Map<String, UniverseElement> getUniverses() {
 		return null;
+	}
+	
+	public static class ListComprehensionParseMap extends ParserTools.ArrayParseMap {
+
+		public ListComprehensionParseMap() {
+			super(PLUGIN_NAME);
+		}
+		
+		public Node map(Object... vals) {
+			Node node = null;
+			// if there is an 'is' clause
+			if (vals[2] != null && vals[2] instanceof Object[])  
+				node = new ListAdvancedCompNode(((Node)vals[0]).getScannerInfo());
+			else
+				node = new ListCompNode(((Node)vals[0]).getScannerInfo());
+			addChildren(node, vals);
+			return node;
+		}
+		
 	}
 
 	/*
