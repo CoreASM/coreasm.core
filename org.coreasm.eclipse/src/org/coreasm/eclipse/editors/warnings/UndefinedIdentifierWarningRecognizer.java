@@ -177,7 +177,7 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	
 	private boolean isForallRuleVariable(FunctionRuleTermNode frNode) {
 		for (ForallRuleNode forallRuleNode = getParentForallRuleNode(frNode); forallRuleNode != null; forallRuleNode = getParentForallRuleNode(forallRuleNode)) {
-			if (forallRuleNode.getVariable().getToken().equals(frNode.getName()))
+			if (forallRuleNode.getVariableMap().containsKey(frNode.getName()))
 				return true;
 		}
 		return false;

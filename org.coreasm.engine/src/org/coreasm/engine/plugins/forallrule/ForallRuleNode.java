@@ -12,6 +12,10 @@
  
 package org.coreasm.engine.plugins.forallrule;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -46,17 +50,19 @@ public class ForallRuleNode extends ASTNode {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Returns the node representing the bound variable of the forall rule
+     * Returns a map of the variable names to the nodes which
+     * represent the domains that variable should be taken from
+     * @throws CoreASMError 
      */
-    public ASTNode getVariable() {
-        return getFirst();
-    }
-    
-    /**
-     * Returns the node representing the domain of the forall rule
-     */
-    public ASTNode getDomain() {
-        return getVariable().getNext();
+    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
+    	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
+        
+        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+            if (variableMap.put(current.getToken(),current.getNext()) != null)
+            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in forall rule.", this);
+        }
+        
+        return variableMap;
     }
     
     /**
@@ -66,6 +72,12 @@ public class ForallRuleNode extends ASTNode {
         return (ASTNode)getChildNode("rule");   
     }
     
+    /**
+     * Returns the node representing the 'ifnone' part of the forall rule.
+     */
+    public ASTNode getIfnoneRule() {
+        return (ASTNode)getChildNode("ifnone");
+    }
     
     /**
      * Returns the node representing the 'with' part of the forall rule.

@@ -1,0 +1,27 @@
+CoreASM Forall2
+
+use Standard
+
+init TestForall2
+
+/*
+ * @require "[1] + [2] = 3\n[1] + [] = none a:1 b:undef\n[1] + [2] = 3\n[1,2] + [1,2] = 3 with 1 < 2\n[1] > [2] = none\n[1] > [] = none a:1 b:undef\n[1,2] < [1,2] < [1,2] = none a:undef b:undef c:undef\n[1,2] + [1,2] = 3 with 1 < 2\nundef undef\n"
+*/
+rule TestForall2 =
+seqblock
+	forall a in [1], b in [2] do print "[1] + [2] = " + (a+b)
+	forall a in [1], b in [] do print "[1] + [] = undef"	// @refuse "[1] + [] = undef"
+	
+	forall a in [1], b in [] do print "[1] + [] = " + (a+b) ifnone print "[1] + [] = none" + " a:" + a + " b:" + b
+	forall a in [1], b in [2] do print "[1] + [2] = " + (a+b) ifnone print "[1] + [2] = none"	// @refuse "[1] + [2] = none"
+	
+	forall a in [1,2], b in [1,2] with a < b do print "[1,2] + [1,2] = " + (a+b) + " with " + a + " < " + b
+	forall a in [1], b in [2] with a > b do print "[1] > [2] a:" + a + "b:" + b	// @refuse "[1] > [2] a:"
+	forall a in [1], b in [] with a > b do print "[1] > [] a:" + a + "b:" + b	// @refuse "[1] > [] a:"
+	
+	forall a in [1], b in [2] with a > b do print "[1] > [2]" ifnone print "[1] > [2] = none"
+	forall a in [1], b in [] with a > b do print "[1] > []" ifnone print "[1] > [] = none" + " a:" + a + " b:" + b
+	forall a in [1,2], b in [1,2], c in [1,2] with a < b and b < c do print a+b+c ifnone print "[1,2] < [1,2] < [1,2] = none" + " a:" + a + " b:" + b + " c:" + c
+	forall a in [1,2], b in [1,2] with a < b do print "[1,2] + [1,2] = " + (a+b) + " with " + a + " < " + b ifnone print "[1,2] + [1,2] = none with [1,2] < [1,2]"	// @refuse "[1,2] + [1,2] = none with [1,2] < [1,2]"
+	print a + " " + b
+endseqblock
