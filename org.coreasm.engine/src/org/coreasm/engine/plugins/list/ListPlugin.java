@@ -81,17 +81,13 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	public static final String LIST_CONCAT_OP = "+";
 	
 	/* keeps track of to-be-considered values in a list comprehension */
-	private ThreadLocal<Map<ASTNode, List<Element>>> tobeConsidered;
-	
-	/* keeps track of to-be-considered values in an advanced list comprehension */
-	private ThreadLocal<Map<ASTNode, List<Map<String,Element>>>> tobeConsideredAdv;
+	private ThreadLocal<Map<ASTNode, List<Map<String,Element>>>> tobeConsidered;
 	
 	/* keeps new lists created on a list comprehension node */
 	private ThreadLocal<Map<ASTNode, List<Element>>> newList;
 	
 	private Map<String, GrammarRule> parsers = null;
 	private List<OperatorRule> operatorRules = null;
-	private ListBackgroundElement listBackground; 
 	private HashSet<String> depencyList = new HashSet<String>();
 	
 	Parser.Reference<Node> refListTermParser = Parser.newReference();
@@ -142,13 +138,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	 */
 	@Override
 	public void initialize() {
-		tobeConsidered= new ThreadLocal<Map<ASTNode,List<Element>>>() {
-			@Override
-			protected Map<ASTNode, List<Element>> initialValue() {
-				return new IdentityHashMap<ASTNode, List<Element>>();
-			}
-		};
-		tobeConsideredAdv= new ThreadLocal<Map<ASTNode,List<Map<String,Element>>>>() {
+		tobeConsidered= new ThreadLocal<Map<ASTNode,List<Map<String,Element>>>>() {
 			@Override
 			protected Map<ASTNode, List<Map<String, Element>>> initialValue() {
 				return new IdentityHashMap<ASTNode, List<Map<String,Element>>>();
@@ -160,21 +150,13 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 				return new IdentityHashMap<ASTNode, List<Element>>();
 			}
 		};
-		listBackground = new ListBackgroundElement();
 	}
 	
 	/*
 	 * Returns the instance of 'tobeConsidered' map for this thread.
 	 */
-	private Map<ASTNode, List<Element>> getToBeConsideredMap() {
+	private Map<ASTNode, List<Map<String, Element>>> getToBeConsideredMap() {
 		return tobeConsidered.get();
-	}
-	
-	/*
-	 * Returns the instance of 'tobeConsideredAdv' map for this thread.
-	 */
-	private Map<ASTNode, List<Map<String, Element>>> getToBeConsideredAdvMap() {
-		return tobeConsideredAdv.get();
 	}
 	
 	/*
@@ -199,33 +181,28 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			
 			Parser<Object[]> csTerms = pTools.csplus(termParser);
 			
-			// ListComprehension: '[' FunctionTerm ( 'is' Term )? '|' ID 'in' Term 
+			// ListComprehension: '[' Term '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? ']'
-			Parser<Node> listComprehensionParser = Parsers.array(
-					new Parser[] {
-						pTools.getOprParser("["),
-						idParser,
-						Parsers.array(
-								pTools.getKeywParser("is", PLUGIN_NAME),
-								termParser).optional(),
-						pTools.getOprParser("|"),
-						pTools.csplus(Parsers.array(
-								idParser,
-								pTools.getKeywParser("in", PLUGIN_NAME),
-								termParser)),
-						Parsers.array(
-								pTools.getKeywParser("with", PLUGIN_NAME),
-								guardParser).optional(),
-						pTools.getOprParser("]")
-					}).map(
-					new ListComprehensionParseMap());
+			Parser<Node> listComprehensionParser = Parsers.array(new Parser[] {
+				pTools.getOprParser("["),
+				termParser,
+				pTools.getOprParser("|"),
+				pTools.csplus(Parsers.array(
+					idParser,
+					pTools.getKeywParser("in", PLUGIN_NAME),
+					termParser)),
+				Parsers.array(
+					pTools.getKeywParser("with", PLUGIN_NAME),
+					guardParser).optional(),
+				pTools.getOprParser("]")
+			}).map(new ListComprehensionParseMap());
 			parsers.put("ListComprehension", 
 					new GrammarRule("ListComprehension",
-							"'[' Term ( 'is' Term )? '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? ']'", 
+							"'[' Term '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? ']'", 
 							listComprehensionParser, PLUGIN_NAME));
 			
 			// [ Term, ..., Term ]
-			Parser<Object[]> listTermParser1 = pTools.seq(
+			Parser<Object[]> listTermParser1 = Parsers.array(
 					pTools.getOprParser(LIST_OPEN_SYMBOL_1),
 					csTerms.optional(),
 					pTools.getOprParser(LIST_CLOSE_SYMBOL_1));
@@ -249,7 +226,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new ListTermNode();
 							addChildren(node, vals);
 							node.setScannerInfo(node.getFirstCSTNode());
@@ -286,7 +263,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							boolean isLeft = ((Node)vals[1]).getToken().equals("left");
 							Node node = new ShiftRuleNode(((Node)vals[0]).getScannerInfo(), isLeft);
 							addChildren(node, vals);
@@ -306,8 +283,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
 //		AbstractStorage storage = capi.getStorage();
-		Map<ASTNode, List<Element>> tobeConsidered = getToBeConsideredMap();
-		Map<ASTNode, List<Map<String, Element>>> tobeConsideredAdv = getToBeConsideredAdvMap();
+		Map<ASTNode, List<Map<String, Element>>> tobeConsidered = getToBeConsideredMap();
 		Map<ASTNode, List<Element>> newList = getNewListMap();
 		
 		if (pos instanceof ListTermNode) {
@@ -381,51 +357,6 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		}
 		else if (pos instanceof ListCompNode) {
 			ListCompNode node = (ListCompNode)pos;
-			String variable = node.getSpecifierVar();
-			
-			// if nothing is evaluated yet
-			if (!node.getDomain().isEvaluated()) {
-				// if x = x_1 
-				if (node.getConstrainerVar().equals(variable)) {
-					tobeConsidered.remove(pos); // to make its to-be-considered value null
-					newList.put(pos, new ArrayList<Element>());
-					return node.getDomain();
-				} else
-					capi.error("Constrainer variable must have same name as specifier variable (" 
-							+ variable + " vs. " + node.getConstrainerVar() + ").", node, interpreter);
-			}
-			// if the domain is evaluated 
-			else if (!node.getGuard().isEvaluated()) {
-				if (!(node.getDomain().getValue() instanceof Enumerable)) 
-					capi.error("Free variables may only be bound to enumerable elements.", node.getDomain(), interpreter);
-				else {
-					if (tobeConsidered.get(pos) == null) {
-						Enumerable domain = (Enumerable)node.getDomain().getValue();
-						tobeConsidered.put(pos, new ArrayList<Element>(domain.enumerate()));
-					}
-					List<Element> domain = tobeConsidered.get(pos);
-					
-					if (domain.isEmpty()) {
-						pos.setNode(null, null, new ListElement(newList.get(pos)));
-						return pos;
-					} else {
-						Element e = domain.remove(0);
-						interpreter.addEnv(variable, e);
-						return node.getGuard();
-					}
-				}
-			}
-			// if everything is evaluated
-			else {
-				if (node.getGuard().getValue().equals(BooleanElement.TRUE)) 
-					newList.get(pos).add(interpreter.getEnv(variable));
-				interpreter.removeEnv(variable);
-				interpreter.clearTree(node.getGuard());
-				return pos;
-			}
-		}
-		else if (pos instanceof ListAdvancedCompNode) {
-			ListAdvancedCompNode node = (ListAdvancedCompNode)pos;
 			Map<String,ASTNode> bindings = null;
 			
 			// get variable to domain bindings
@@ -440,9 +371,6 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 
 			if (!guard.isEvaluated()) {
  				if (bindings.size() >= 1) {
-					if (bindings.containsKey(node.getSpecifierVar())) 
-						capi.error("Constrainer variable cannot have same name as specifier.", node, interpreter);
-					
 					// evaluate all the domains
 					for (ASTNode domain: bindings.values())
 						if (!domain.isEvaluated()) 
@@ -482,7 +410,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 							allVariables, possibleValues, allVariables.size() - 1, possibleBindings, new HashMap<String,Element>());
 
 					// set the superlist of values
-					tobeConsideredAdv.put(pos, possibleBindings);
+					tobeConsidered.put(pos, possibleBindings);
 					
 					// pick the first combination
 					Map<String,Element> firstBinding = possibleBindings.iterator().next();
@@ -508,7 +436,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					unbindVariables(interpreter, bindings.keySet());
 
 					// get the remaining combinations
-					Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+					Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 					
 					// if there is more combination to be tried...
 					if (possibleBindings.size() > 0) {
@@ -540,7 +468,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 				List<Element> result = newList.get(pos);
 				result.add(expression.getValue());
 				// get the remaining combinations
-				Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+				Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 				if (possibleBindings.size() > 0) {
 
 					// pick the first combination
@@ -779,13 +707,8 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
-			Node node = null;
-			// if there is an 'is' clause
-			if (vals[2] != null && vals[2] instanceof Object[])  
-				node = new ListAdvancedCompNode(((Node)vals[0]).getScannerInfo());
-			else
-				node = new ListCompNode(((Node)vals[0]).getScannerInfo());
+		public Node map(Object[] vals) {
+			Node node = new ListCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
 		}

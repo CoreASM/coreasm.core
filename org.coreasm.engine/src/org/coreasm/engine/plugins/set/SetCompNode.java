@@ -1,7 +1,7 @@
 /*	
- * SetCompNode.java 	1.0 	$Revision: 243 $
+ * SetAdvancedCompNode.java 	1.0 	$Revision: 243 $
  * 
- * Copyright (C) 2006-2007  Roozbeh Farahbod
+ * Copyright (C) 2006-2007 Roozbeh Farahbod
  *
  * Last modified by $Author: rfarahbod $ on $Date: 2011-03-29 02:05:21 +0200 (Di, 29 Mrz 2011) $.
  *
@@ -13,11 +13,15 @@
  
 package org.coreasm.engine.plugins.set;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
 /** 
- * Set comprehension node.
+ * Set advanced comprehension node.
  *   
  * @author  Roozbeh Farahbod
  * 
@@ -27,9 +31,10 @@ public class SetCompNode extends ASTNode {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2L;
-
+	private static final long serialVersionUID = 1L;
+	
 	private ASTNode dummyGuard = null;
+	private Map<String,ASTNode> varMapCache = null;
 	
 	public SetCompNode(ScannerInfo info) {
 		super(
@@ -43,34 +48,49 @@ public class SetCompNode extends ASTNode {
 	public SetCompNode(SetCompNode node) {
 		super(node);
 	}
-
-	/**
-	 * @return the first occurrence of the specifier variable
-	 */
-	public String getSpecifierVar() {
-		// as the variable node is a TERM, we need to go two step down
-		return this.getFirst().getToken();
-	}
 	
 	/**
-	 * @return the constrainer variable
+	 * @return the specifier function
 	 */
-	public String getConstrainerVar() {
-		return this.getFirst().getNext().getToken();
+	public ASTNode getSetFunction() {
+		return this.getFirst();
 	}
 	
-	/**
-	 * @return the node referring to the domain of the set comprehension
-	 */
-	public ASTNode getDomain() {
-		return this.getFirst().getNext().getNext();
+	public Map<String,ASTNode> getVarBindings() throws EngineException {
+		if (varMapCache == null) {
+			ASTNode curVar = getSetFunction().getNext();
+			ASTNode curDomain = curVar.getNext();
+			varMapCache = new HashMap<String,ASTNode>();
+			
+			while (curDomain != null) {
+				if (varMapCache.containsKey(curVar)) 
+					throw new EngineException("No two constrainer variables may have the same name.");
+				
+				varMapCache.put(curVar.getToken(), curDomain);
+				curVar = curDomain.getNext();
+				if (curVar == null)
+					curDomain = null;
+				else
+					curDomain = curVar.getNext();
+			}
+		}
+		
+		return varMapCache;
 	}
 	
 	/**
 	 * @return the guard node
 	 */
 	public ASTNode getGuard() {
-		ASTNode guard = this.getDomain().getNext();
+		// starting from the fist variable binding
+		ASTNode guard = getSetFunction().getNext();
+		
+		while (guard != null && guard.getNext() != null) {
+			// bypassing variable bindings couples
+			guard = guard.getNext().getNext();
+		}
+		
+		// guard is optional, so it may be null
 		if (guard != null)
 			return guard;
 		else {
@@ -79,4 +99,5 @@ public class SetCompNode extends ASTNode {
 	    	return dummyGuard;
 		}
 	}
+
 }

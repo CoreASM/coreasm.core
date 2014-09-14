@@ -18,6 +18,7 @@ import org.coreasm.eclipse.editors.ASMIncludeWatcher;
 import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
@@ -310,7 +311,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 			return true;
 		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
-		if (isListComprehensionConstrainerVariable(frNode))
+		if (isListComprehensionVariable(frNode))
 			return true;
 		if (isImportRuleVariable(frNode))
 			return true;
@@ -462,8 +463,13 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	
 	private boolean isSetComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
 		for (SetCompNode setCompNode = getParentSetCompNode(frNode); setCompNode != null; setCompNode = getParentSetCompNode(setCompNode)) {
-			if (setCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (setCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -477,10 +483,15 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 		return null;
 	}
 	
-	private boolean isListComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+	private boolean isListComprehensionVariable(FunctionRuleTermNode frNode) {
 		for (ListCompNode listCompNode = getParentListCompNode(frNode); listCompNode != null; listCompNode = getParentListCompNode(listCompNode)) {
-			if (listCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (listCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}

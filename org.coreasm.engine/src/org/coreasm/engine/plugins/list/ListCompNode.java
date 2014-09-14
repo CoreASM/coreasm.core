@@ -1,5 +1,9 @@
 package org.coreasm.engine.plugins.list;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -13,9 +17,10 @@ public class ListCompNode extends ASTNode {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2L;
-
+	private static final long serialVersionUID = 1L;
+	
 	private ASTNode dummyGuard = null;
+	private Map<String,ASTNode> varMapCache = null;
 	
 	public ListCompNode(ScannerInfo info) {
 		super(
@@ -29,34 +34,49 @@ public class ListCompNode extends ASTNode {
 	public ListCompNode(ListCompNode node) {
 		super(node);
 	}
-
-	/**
-	 * @return the first occurrence of the specifier variable
-	 */
-	public String getSpecifierVar() {
-		// as the variable node is a TERM, we need to go two step down
-		return this.getFirst().getToken();
-	}
 	
 	/**
-	 * @return the constrainer variable
+	 * @return the specifier function
 	 */
-	public String getConstrainerVar() {
-		return this.getFirst().getNext().getToken();
+	public ASTNode getListFunction() {
+		return this.getFirst();
 	}
 	
-	/**
-	 * @return the node referring to the domain of the list comprehension
-	 */
-	public ASTNode getDomain() {
-		return this.getFirst().getNext().getNext();
+	public Map<String,ASTNode> getVarBindings() throws EngineException {
+		if (varMapCache == null) {
+			ASTNode curVar = getListFunction().getNext();
+			ASTNode curDomain = curVar.getNext();
+			varMapCache = new HashMap<String,ASTNode>();
+			
+			while (curDomain != null) {
+				if (varMapCache.containsKey(curVar)) 
+					throw new EngineException("No two constrainer variables may have the same name.");
+				
+				varMapCache.put(curVar.getToken(), curDomain);
+				curVar = curDomain.getNext();
+				if (curVar == null)
+					curDomain = null;
+				else
+					curDomain = curVar.getNext();
+			}
+		}
+		
+		return varMapCache;
 	}
 	
 	/**
 	 * @return the guard node
 	 */
 	public ASTNode getGuard() {
-		ASTNode guard = this.getDomain().getNext();
+		// starting from the fist variable binding
+		ASTNode guard = getListFunction().getNext();
+		
+		while (guard != null && guard.getNext() != null) {
+			// bypassing variable bindings couples
+			guard = guard.getNext().getNext();
+		}
+		
+		// guard is optional, so it may be null
 		if (guard != null)
 			return guard;
 		else {
@@ -65,4 +85,5 @@ public class ListCompNode extends ASTNode {
 	    	return dummyGuard;
 		}
 	}
+
 }

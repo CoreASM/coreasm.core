@@ -12,6 +12,7 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.SlimEngine;
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
@@ -111,9 +112,9 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 			return true;
 		if (isExtendRuleVariable(frNode))
 			return true;
-		if (isSetComprehensionConstrainerVariable(frNode))
+		if (isSetComprehensionVariable(frNode))
 			return true;
-		if (isListComprehensionConstrainerVariable(frNode))
+		if (isListComprehensionVariable(frNode))
 			return true;
 		if (isImportRuleVariable(frNode))
 			return true;
@@ -280,10 +281,15 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return null;
 	}
 	
-	private boolean isSetComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+	private boolean isSetComprehensionVariable(FunctionRuleTermNode frNode) {
 		for (SetCompNode setCompNode = getParentSetCompNode(frNode); setCompNode != null; setCompNode = getParentSetCompNode(setCompNode)) {
-			if (setCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (setCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -297,10 +303,15 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		return null;
 	}
 	
-	private boolean isListComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+	private boolean isListComprehensionVariable(FunctionRuleTermNode frNode) {
 		for (ListCompNode listCompNode = getParentListCompNode(frNode); listCompNode != null; listCompNode = getParentListCompNode(listCompNode)) {
-			if (listCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (listCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}

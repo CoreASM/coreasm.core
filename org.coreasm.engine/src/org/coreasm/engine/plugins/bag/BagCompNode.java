@@ -1,5 +1,5 @@
 /*	
- * BagCompNode.java  	$Revision: 243 $
+ * BagAdvancedCompNode.java  	$Revision: 243 $
  * 
  * Copyright (C) 2008 Roozbeh Farahbod
  *
@@ -13,11 +13,15 @@
  
 package org.coreasm.engine.plugins.bag;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
 /** 
- * Bag comprehension node.
+ * Advanced bag composition node. 
  *   
  * @author  Roozbeh Farahbod
  * 
@@ -27,9 +31,10 @@ public class BagCompNode extends ASTNode {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2L;
-
+	private static final long serialVersionUID = 1L;
+	
 	private ASTNode dummyGuard = null;
+	private Map<String,ASTNode> varMapCache = null;
 	
 	public BagCompNode(ScannerInfo info) {
 		super(
@@ -43,33 +48,49 @@ public class BagCompNode extends ASTNode {
 	public BagCompNode(BagCompNode node) {
 		super(node);
 	}
-
-	/**
-	 * @return the first occurrence of the specifier variable
-	 */
-	public String getSpecifierVar() {
-		return this.getFirst().getToken();
-	}
 	
 	/**
-	 * @return the constrainer variable
+	 * @return the specifier function
 	 */
-	public String getConstrainerVar() {
-		return this.getFirst().getNext().getToken();
+	public ASTNode getSetFunction() {
+		return this.getFirst();
 	}
 	
-	/**
-	 * @return the node referring to the domain of the set comprehension
-	 */
-	public ASTNode getDomain() {
-		return this.getFirst().getNext().getNext();
+	public Map<String,ASTNode> getVarBindings() throws EngineException {
+		if (varMapCache == null) {
+			ASTNode curVar = getSetFunction().getNext();
+			ASTNode curDomain = curVar.getNext();
+			varMapCache = new HashMap<String,ASTNode>();
+			
+			while (curDomain != null) {
+				if (varMapCache.containsKey(curVar)) 
+					throw new EngineException("No two constrainer variables may have the same name.");
+				
+				varMapCache.put(curVar.getToken(), curDomain);
+				curVar = curDomain.getNext();
+				if (curVar == null)
+					curDomain = null;
+				else
+					curDomain = curVar.getNext();
+			}
+		}
+		
+		return varMapCache;
 	}
 	
 	/**
 	 * @return the guard node
 	 */
 	public ASTNode getGuard() {
-		ASTNode guard = this.getDomain().getNext();
+		// starting from the fist variable binding
+		ASTNode guard = getSetFunction().getNext();
+		
+		while (guard != null && guard.getNext() != null) {
+			// bypassing variable bindings couples
+			guard = guard.getNext().getNext();
+		}
+		
+		// guard is optional, so it may be null
 		if (guard != null)
 			return guard;
 		else {
@@ -78,5 +99,5 @@ public class BagCompNode extends ASTNode {
 	    	return dummyGuard;
 		}
 	}
-}
 
+}

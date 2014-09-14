@@ -99,10 +99,7 @@ public class BagPlugin extends Plugin
 	static final String NAME = PLUGIN_NAME;
 	
 	/* keeps track of to-be-considered values in a bag comprehension */
-	private ThreadLocal<Map<ASTNode, Collection<Element>>> tobeConsidered;
-	
-	/* keeps track of to-be-considered values in an advanced bag comprehension */
-	private ThreadLocal<Map<ASTNode, Collection<Map<String, Element>>>> tobeConsideredAdv;
+	private ThreadLocal<Map<ASTNode, Collection<Map<String, Element>>>> tobeConsidered;
 	
 	/* keeps new bags created on a bag comprehension node */
 	private ThreadLocal<Map<ASTNode, Collection<Element>>> newBags;
@@ -131,13 +128,7 @@ public class BagPlugin extends Plugin
 	}
 
 	public void initialize() {
-		tobeConsidered = new ThreadLocal<Map<ASTNode,Collection<Element>>>() {
-			@Override
-			protected Map<ASTNode, Collection<Element>> initialValue() {
-				return new IdentityHashMap<ASTNode, Collection<Element>>();
-			}
-		};
-		tobeConsideredAdv = new ThreadLocal<Map<ASTNode,Collection<Map<String,Element>>>>() {
+		tobeConsidered = new ThreadLocal<Map<ASTNode,Collection<Map<String,Element>>>>() {
 			@Override
 			protected Map<ASTNode, Collection<Map<String, Element>>> initialValue() {
 				return new IdentityHashMap<ASTNode, Collection<Map<String,Element>>>();
@@ -155,15 +146,8 @@ public class BagPlugin extends Plugin
 	/*
 	 * Returns the instance of 'tobeConsidered' map for this thread.
 	 */
-	private Map<ASTNode, Collection<Element>> getToBeConsideredMap() {
+	private Map<ASTNode, Collection<Map<String, Element>>> getToBeConsideredMap() {
 		return tobeConsidered.get();
-	}
-	
-	/*
-	 * Returns the instance of 'tobeConsideredAdv' map for this thread.
-	 */
-	private Map<ASTNode, Collection<Map<String, Element>>> getToBeConsideredAdvMap() {
-		return tobeConsideredAdv.get();
 	}
 	
 	/*
@@ -190,8 +174,7 @@ public class BagPlugin extends Plugin
 		ASTNode nextPos = pos;
 		String gClass = pos.getGrammarClass();
         
-		Map<ASTNode, Collection<Element>> tobeConsidered = getToBeConsideredMap();
-		Map<ASTNode, Collection<Map<String, Element>>> tobeConsideredAdv = getToBeConsideredAdvMap();
+		Map<ASTNode, Collection<Map<String, Element>>> tobeConsidered = getToBeConsideredMap();
 		Map<ASTNode, Collection<Element>> newBag = getNewBagMap();
 		
 		// if bag related expression
@@ -227,59 +210,9 @@ public class BagPlugin extends Plugin
 				}		
 	        }
 			
-			// if the node is a simple set comprehension (single variable specifier) ...
+			// if the node is an advanced set comprehension (expression specifier) ...
 			else if (pos instanceof BagCompNode) {
 				BagCompNode node = (BagCompNode)pos;
-				String variable = node.getSpecifierVar();
-				
-				// if nothing is evaluated yet
-				if (!node.getDomain().isEvaluated()) {
-					// if x = x_1 
-					if (node.getConstrainerVar().equals(variable)) {
-						tobeConsidered.remove(pos); // to make its to-be-considered value null
-						newBag.put(pos, new ArrayList<Element>());
-						return node.getDomain();
-					} else
-						capi.error("Constrainer variable must have same name as specifier variable (" 
-								+ variable + " vs. " + node.getConstrainerVar() + ").", node, interpreter);
-				}
-				
-				// if the domain is evaluated 
-				else if (!node.getGuard().isEvaluated()) {
-					if (!(node.getDomain().getValue() instanceof Enumerable)) 
-						capi.error("Free variables may only be bound to enumerable elements.", node.getDomain(), interpreter);
-					else {
-						if (tobeConsidered.get(pos) == null) {
-							Enumerable domain = (Enumerable)node.getDomain().getValue();
-							tobeConsidered.put(pos, new ArrayList<Element>(domain.enumerate()));
-						}
-						Collection<Element> domain = tobeConsidered.get(pos);
-						
-						if (domain.isEmpty()) {
-							pos.setNode(null, null, new BagElement(newBag.get(pos)));
-							return pos;
-						} else {
-							Element e = domain.iterator().next();
-							interpreter.addEnv(variable, e);
-							domain.remove(e);
-							return node.getGuard();
-						}
-					}
-				}
-				
-				// if everything is evaluated
-				else {
-					if (node.getGuard().getValue().equals(BooleanElement.TRUE)) 
-						newBag.get(pos).add(interpreter.getEnv(variable));
-					interpreter.removeEnv(variable);
-					interpreter.clearTree(node.getGuard());
-					return pos;
-				}
-			}
-
-			// if the node is an advanced set comprehension (expression specifier) ...
-			else if (pos instanceof BagAdvancedCompNode) {
-				BagAdvancedCompNode node = (BagAdvancedCompNode)pos;
 				Map<String, ASTNode> bindings = null;
 				
 				// get variable to domain bindings
@@ -294,9 +227,6 @@ public class BagPlugin extends Plugin
 
 				if (!guard.isEvaluated()) {
 	 				if (bindings.size() >= 1) {
-						if (bindings.containsKey(node.getSpecifierVar())) 
-							capi.error("Constrainer variable cannot have same name as specifier.", node, interpreter);
-						
 						// evaluate all the domains
 						for (ASTNode domain: bindings.values())
 							if (!domain.isEvaluated()) 
@@ -345,7 +275,7 @@ public class BagPlugin extends Plugin
 								allVariables, possibleValues, 0, possibleBindings, new HashMap<String,Element>());
 	
 						// set the superset of values
-						tobeConsideredAdv.put(pos, possibleBindings);
+						tobeConsidered.put(pos, possibleBindings);
 						
 						// pick the first combination
 						Map<String,Element> firstBinding = possibleBindings.iterator().next();
@@ -371,7 +301,7 @@ public class BagPlugin extends Plugin
 						unbindVariables(interpreter, bindings.keySet());
 
 						// get the remaining combinations
-						Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+						Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 						
 						// if there is more combination to be tried...
 						if (possibleBindings.size() > 0) {
@@ -404,7 +334,7 @@ public class BagPlugin extends Plugin
 					Collection<Element> result = newBag.get(pos);
 					result.add(expression.getValue());
 					// get the remaining combinations
-					Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+					Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 					if (possibleBindings.size() > 0) {
 
 						// pick the first combination
@@ -535,30 +465,44 @@ public class BagPlugin extends Plugin
 					new GrammarRule("BagEnumerate",
 							"'" + BAG_OPEN_SYMBOL + "' Term (',' Term)* '" + BAG_CLOSE_SYMBOL + "'", bagEnumerateParser, PLUGIN_NAME));
 			
-			// BagComprehension: '<<' Term ( 'is' Term )? '|' ID 'in' Term 
+			// BagComprehension: '<<' (ID 'is')? Term '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? '>>'
-			Parser<Node> bagComprehensionParser = Parsers.array(
-					new Parser[] {
-							pTools.getOprParser(BAG_OPEN_SYMBOL),
-							idParser,
-							Parsers.array(
-								pTools.getKeywParser("is", PLUGIN_NAME),
-								termParser).optional(),
-								pTools.getOprParser("|"),
-								pTools.csplus(Parsers.array(
-									idParser,
-									pTools.getKeywParser("in", PLUGIN_NAME),
-									termParser)
-								),
-								Parsers.array(
-									pTools.getKeywParser("with", PLUGIN_NAME),
-									guardParser).optional(),
-									pTools.getOprParser(BAG_CLOSE_SYMBOL)
-					}).map(
-					new BagComprehensionParseMap());
+			Parser<Node> bagComprehensionParser = Parsers.or(
+				Parsers.array(new Parser[] {
+					pTools.getOprParser(BAG_OPEN_SYMBOL),
+					termParser,
+					pTools.getOprParser("|"),
+					pTools.csplus(Parsers.array(
+						idParser,
+						pTools.getKeywParser("in", PLUGIN_NAME),
+						termParser)
+					),
+					Parsers.array(
+						pTools.getKeywParser("with", PLUGIN_NAME),
+						guardParser).optional(),
+					pTools.getOprParser(BAG_CLOSE_SYMBOL)
+				}),
+				Parsers.array(new Parser[] {
+					pTools.getOprParser(BAG_OPEN_SYMBOL),
+					Parsers.array(
+						idParser,
+						pTools.getKeywParser("is", PLUGIN_NAME)),
+					termParser,
+					pTools.getOprParser("|"),
+					pTools.csplus(Parsers.array(
+						idParser,
+						pTools.getKeywParser("in", PLUGIN_NAME),
+						termParser)
+					),
+					Parsers.array(
+						pTools.getKeywParser("with", PLUGIN_NAME),
+						guardParser).optional(),
+					pTools.getOprParser(BAG_CLOSE_SYMBOL)
+				})
+			).map(new BagComprehensionParseMap());
 			parsers.put("BagComprehension", 
 					new GrammarRule("BagComprehension",
-							"'" + BAG_OPEN_SYMBOL + "' Term ( 'is' Term )? '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? '" + BAG_CLOSE_SYMBOL + "'", 
+							"'" + BAG_OPEN_SYMBOL + "' (ID 'is')? Term '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? '" + BAG_CLOSE_SYMBOL + "'", 
 							bagComprehensionParser, PLUGIN_NAME));
 			
 			Parser<Node> bagtermParser = Parsers.or(bagEnumerateParser, bagComprehensionParser);
@@ -1144,7 +1088,7 @@ public class BagPlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			Node node = new BagEnumerateNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
@@ -1158,13 +1102,17 @@ public class BagPlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			Node node = null;
 			// if there is an 'is' clause
-			if (vals[2] != null && vals[2] instanceof Object[])  
-				node = new BagAdvancedCompNode(((Node)vals[0]).getScannerInfo());
-			else
-				node = new BagCompNode(((Node)vals[0]).getScannerInfo());
+			if (vals[1] != null && vals[1] instanceof Object[]) {
+				Object[] newVals = new Object[vals.length - 1];
+				newVals[0] = vals[0];
+				for (int i = 1; i < newVals.length; i++)
+					newVals[i] = vals[i + 1];
+				vals = newVals;
+			}
+			node = new BagCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
 		}

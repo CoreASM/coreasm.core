@@ -14,6 +14,7 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.UniverseDeclaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
@@ -116,7 +117,7 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 			return true;
 		if (isSetComprehensionConstrainerVariable(frNode))
 			return true;
-		if (isListComprehensionConstrainerVariable(frNode))
+		if (isListComprehensionVariable(frNode))
 			return true;
 		if (isImportRuleVariable(frNode))
 			return true;
@@ -285,8 +286,13 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 	
 	private boolean isSetComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
 		for (SetCompNode setCompNode = getParentSetCompNode(frNode); setCompNode != null; setCompNode = getParentSetCompNode(setCompNode)) {
-			if (setCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (setCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -300,10 +306,15 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 		return null;
 	}
 	
-	private boolean isListComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
+	private boolean isListComprehensionVariable(FunctionRuleTermNode frNode) {
 		for (ListCompNode listCompNode = getParentListCompNode(frNode); listCompNode != null; listCompNode = getParentListCompNode(listCompNode)) {
-			if (listCompNode.getConstrainerVar().equals(frNode.getName()))
-				return true;
+			try {
+				if (listCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}

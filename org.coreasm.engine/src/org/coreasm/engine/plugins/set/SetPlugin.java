@@ -104,10 +104,7 @@ public class SetPlugin extends Plugin
 	static final String NAME = PLUGIN_NAME;
 	
 	/* keeps track of to-be-considered values in a set comprehension */
-	private ThreadLocal<Map<ASTNode, Collection<Element>>> tobeConsidered;
-	
-	/* keeps track of to-be-considered values in an advanced set comprehension */
-	private ThreadLocal<Map<ASTNode, Collection<Map<String,Element>>>> tobeConsideredAdv;
+	private ThreadLocal<Map<ASTNode, Collection<Map<String,Element>>>> tobeConsidered;
 	
 	/* keeps new sets created on a set comprehension node */
 	private ThreadLocal<Map<ASTNode, Set<Element>>> newSet;
@@ -136,13 +133,7 @@ public class SetPlugin extends Plugin
 	}
 
 	public void initialize() {
-		tobeConsidered= new ThreadLocal<Map<ASTNode,Collection<Element>>>() {
-			@Override
-			protected Map<ASTNode, Collection<Element>> initialValue() {
-				return new IdentityHashMap<ASTNode, Collection<Element>>();
-			}
-		};
-		tobeConsideredAdv= new ThreadLocal<Map<ASTNode,Collection<Map<String,Element>>>>() {
+		tobeConsidered= new ThreadLocal<Map<ASTNode,Collection<Map<String,Element>>>>() {
 			@Override
 			protected Map<ASTNode, Collection<Map<String, Element>>> initialValue() {
 				return new IdentityHashMap<ASTNode, Collection<Map<String,Element>>>();
@@ -161,15 +152,8 @@ public class SetPlugin extends Plugin
 	/*
 	 * Returns the instance of 'tobeConsidered' map for this thread.
 	 */
-	private Map<ASTNode, Collection<Element>> getToBeConsideredMap() {
+	private Map<ASTNode, Collection<Map<String, Element>>> getToBeConsideredMap() {
 		return tobeConsidered.get();
-	}
-	
-	/*
-	 * Returns the instance of 'tobeConsideredAdv' map for this thread.
-	 */
-	private Map<ASTNode, Collection<Map<String, Element>>> getToBeConsideredAdvMap() {
-		return tobeConsideredAdv.get();
 	}
 	
 	/*
@@ -195,8 +179,7 @@ public class SetPlugin extends Plugin
 		ASTNode nextPos = pos;
 		String gClass = pos.getGrammarClass();
         
-		Map<ASTNode, Collection<Element>> tobeConsidered = getToBeConsideredMap();
-		Map<ASTNode, Collection<Map<String, Element>>> tobeConsideredAdv = getToBeConsideredAdvMap();
+		Map<ASTNode, Collection<Map<String, Element>>> tobeConsidered = getToBeConsideredMap();
 		Map<ASTNode, Set<Element>> newSet = getNewSetMap();
 		
 		// if set related expression
@@ -229,63 +212,11 @@ public class SetPlugin extends Plugin
 				}		
 	        }
 			
-			// (The following code block is developed by Roozbeh Farahbod)
-			//
-			// if the node is a simple set comprehension (single variable specifier) ...
-			else if (pos instanceof SetCompNode) {
-				SetCompNode node = (SetCompNode)pos;
-				String variable = node.getSpecifierVar();
-				
-				// if nothing is evaluated yet
-				if (!node.getDomain().isEvaluated()) {
-					// if x = x_1 
-					if (node.getConstrainerVar().equals(variable)) {
-						tobeConsidered.remove(pos); // to make its to-be-considered value null
-						newSet.put(pos, new HashSet<Element>());
-						return node.getDomain();
-					} else
-						capi.error("Constrainer variable must have same name as specifier variable (" 
-								+ variable + " vs. " + node.getConstrainerVar() + ").", node, interpreter);
-				}
-				
-				// if the domain is evaluated 
-				else if (!node.getGuard().isEvaluated()) {
-					if (!(node.getDomain().getValue() instanceof Enumerable)) 
-						capi.error("Free variables may only be bound to enumerable elements.", node.getDomain(), interpreter);
-					else {
-						if (tobeConsidered.get(pos) == null) {
-							Enumerable domain = (Enumerable)node.getDomain().getValue();
-							tobeConsidered.put(pos, new ArrayList<Element>(domain.enumerate()));
-						}
-						Collection<Element> domain = tobeConsidered.get(pos);
-						
-						if (domain.isEmpty()) {
-							pos.setNode(null, null, new SetElement(newSet.get(pos)));
-							return pos;
-						} else {
-							Element e = domain.iterator().next();
-							interpreter.addEnv(variable, e);
-							domain.remove(e);
-							return node.getGuard();
-						}
-					}
-				}
-				
-				// if everything is evaluated
-				else {
-					if (node.getGuard().getValue().equals(BooleanElement.TRUE)) 
-						newSet.get(pos).add(interpreter.getEnv(variable));
-					interpreter.removeEnv(variable);
-					interpreter.clearTree(node.getGuard());
-					return pos;
-				}
-			}
-
 			// The following code block is developed by Roozbeh Farahbod
 			//
 			// if the node is an advanced set comprehension (expression specifier) ...
-			else if (pos instanceof SetAdvancedCompNode) {
-				SetAdvancedCompNode node = (SetAdvancedCompNode)pos;
+			else if (pos instanceof SetCompNode) {
+				SetCompNode node = (SetCompNode)pos;
 				Map<String,ASTNode> bindings = null;
 				
 				// get variable to domain bindings
@@ -300,9 +231,6 @@ public class SetPlugin extends Plugin
 
 				if (!guard.isEvaluated()) {
 	 				if (bindings.size() >= 1) {
-						if (bindings.containsKey(node.getSpecifierVar())) 
-							capi.error("Constrainer variable cannot have same name as specifier.", node, interpreter);
-						
 						// evaluate all the domains
 						for (ASTNode domain: bindings.values())
 							if (!domain.isEvaluated()) 
@@ -351,7 +279,7 @@ public class SetPlugin extends Plugin
 								allVariables, possibleValues, 0, possibleBindings, new HashMap<String,Element>());
 	
 						// set the superset of values
-						tobeConsideredAdv.put(pos, possibleBindings);
+						tobeConsidered.put(pos, possibleBindings);
 						
 						// pick the first combination
 						Map<String,Element> firstBinding = possibleBindings.iterator().next();
@@ -377,7 +305,7 @@ public class SetPlugin extends Plugin
 						unbindVariables(interpreter, bindings.keySet());
 
 						// get the remaining combinations
-						Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+						Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 						
 						// if there is more combination to be tried...
 						if (possibleBindings.size() > 0) {
@@ -410,7 +338,7 @@ public class SetPlugin extends Plugin
 					Set<Element> result = newSet.get(pos);
 					result.add(expression.getValue());
 					// get the remaining combinations
-					Collection<Map<String,Element>> possibleBindings = tobeConsideredAdv.get(pos);
+					Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
 					if (possibleBindings.size() > 0) {
 
 						// pick the first combination
@@ -541,29 +469,42 @@ public class SetPlugin extends Plugin
 					new GrammarRule("SetEnumerate",
 							"'{' Term (',' Term)* '}'", setEnumerateParser, PLUGIN_NAME));
 			
-			// SetComprehension: '{' FunctionTerm ( 'is' Term )? '|' ID 'in' Term 
+			// SetComprehension: '{' (ID 'is')? Term '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? '}'
-			Parser<Node> setComprehensionParser = Parsers.array(
-					new Parser[] {
-						pTools.getOprParser("{"),
+			Parser<Node> setComprehensionParser = Parsers.or(
+				Parsers.array(new Parser[] {
+					pTools.getOprParser("{"),
+					termParser,
+					pTools.getOprParser("|"),
+					pTools.csplus(Parsers.array(
 						idParser,
-						Parsers.array(
-								pTools.getKeywParser("is", PLUGIN_NAME),
-								termParser).optional(),
-						pTools.getOprParser("|"),
-						pTools.csplus(Parsers.array(
-								idParser,
-								pTools.getKeywParser("in", PLUGIN_NAME),
-								termParser)),
-						Parsers.array(
-								pTools.getKeywParser("with", PLUGIN_NAME),
-								guardParser).optional(),
-						pTools.getOprParser("}")
-					}).map(
-					new SetComprehensionParseMap());
+						pTools.getKeywParser("in", PLUGIN_NAME),
+						termParser)),
+					Parsers.array(
+						pTools.getKeywParser("with", PLUGIN_NAME),
+						guardParser).optional(),
+					pTools.getOprParser("}")
+				}),
+				Parsers.array(new Parser[] {
+					pTools.getOprParser("{"),
+					Parsers.array(
+						idParser,
+						pTools.getKeywParser("is", PLUGIN_NAME)),
+					termParser,
+					pTools.getOprParser("|"),
+					pTools.csplus(Parsers.array(
+						idParser,
+						pTools.getKeywParser("in", PLUGIN_NAME),
+						termParser)),
+					Parsers.array(
+						pTools.getKeywParser("with", PLUGIN_NAME),
+						guardParser).optional(),
+					pTools.getOprParser("}")
+				})
+			).map(new SetComprehensionParseMap());
 			parsers.put("SetComprehension", 
 					new GrammarRule("SetComprehension",
-							"'{' Term ( 'is' Term )? '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? '}'", 
+							"'{' (ID 'is')? Term '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? '}'", 
 							setComprehensionParser, PLUGIN_NAME));
 			
 			Parser<Node> setTermParser = Parsers.or(setEnumerateParser, setComprehensionParser);
@@ -1001,7 +942,7 @@ public class SetPlugin extends Plugin
 			}
 		
 		// enumerable view of the RU value 
-		Collection enumerableViewRUValue = ((Enumerable)ruValue).enumerate();
+		Collection<? extends Element> enumerableViewRUValue = ((Enumerable)ruValue).enumerate();
 		
 		// for all updates
 		for (Update u : locUpdates)
@@ -1194,7 +1135,7 @@ public class SetPlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			Node node = new SetEnumerateNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
@@ -1208,13 +1149,17 @@ public class SetPlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			Node node = null;
 			// if there is an 'is' clause
-			if (vals[2] != null && vals[2] instanceof Object[])  
-				node = new SetAdvancedCompNode(((Node)vals[0]).getScannerInfo());
-			else
-				node = new SetCompNode(((Node)vals[0]).getScannerInfo());
+			if (vals[1] != null && vals[1] instanceof Object[]) {
+				Object[] newVals = new Object[vals.length - 1];
+				newVals[0] = vals[0];
+				for (int i = 1; i < newVals.length; i++)
+					newVals[i] = vals[i + 1];
+				vals = newVals;
+			}
+			node = new SetCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
 		}
