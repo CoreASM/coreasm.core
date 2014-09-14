@@ -610,8 +610,8 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
     	else if (chooseNode.getCondition().isEvaluated() && chooseNode.getDoRule().isEvaluated()) {
             // RemoveEnv(x)
     		for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
-    			interpreter.removeEnv(variable.getKey());
-    			remained.remove(variable.getValue());
+    			if (remained.remove(variable.getValue()) != null)
+    				interpreter.removeEnv(variable.getKey());
     		}
             
             // [pos] := (undef,u,undef)
@@ -621,6 +621,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 
     	// if domain 'E' is evaluated and rule 'R2' is evaluated
     	else if (chooseNode.getIfnoneRule().isEvaluated()) {
+    		// RemoveEnv(x)
     		for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
     			if (remained.remove(variable.getValue()) != null)
     				interpreter.removeEnv(variable.getKey());
@@ -677,7 +678,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 	            	}
 	            	else {
 	            		remained.remove(variable.getValue());
-	            		if (pos == chooseNode.getCondition())
+	            		if (pos != chooseNode.getIfnoneRule())
 	            			pos = chooseNode;
 	            		shouldChoose = true;
 	            		continue;
@@ -687,7 +688,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
             else {
                 capi.error("Cannot choose from " + Tools.sizeLimit(variable.getValue().getValue().denotation()) + ". " +
                 		"Choose domain should be an enumerable element.", variable.getValue(), interpreter);
-                return chooseNode.getCondition();
+                return pos;
             }
     		shouldChoose = false;
 		}
