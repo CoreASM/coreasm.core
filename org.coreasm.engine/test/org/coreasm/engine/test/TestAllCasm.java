@@ -206,9 +206,9 @@ public class TestAllCasm {
 				for (String refusedOutput : refusedOutputList) {
 					if (outContent.toString().contains(refusedOutput)) {
 						failMessage = "refused output found in test file: " + testFile.getName()
-								+ ", refused output: "
+								+ "\nrefused output:\n"
 								+ refusedOutput
-								+ ", actual output: " + outContent.toString();
+								+ "\nactual output:\n" + outContent.toString();
 						return new TestReport(testFile, failMessage, steps, false);
 					}
 				}
@@ -222,9 +222,9 @@ public class TestAllCasm {
 			//check if no required output is missing
 			if (!requiredOutputList.isEmpty()) {
 				failMessage = "missing required output for test file: " + testFile.getName()
-						+ ", missing output: "
+						+ "\nmissing output:\n"
 						+ requiredOutputList.get(0)
-						+ ", actual output: " + outContent.toString();
+						+ "\nactual output:\n" + outContent.toString();
 				return new TestReport(testFile, failMessage, steps - 1, false);
 			}
 		}
