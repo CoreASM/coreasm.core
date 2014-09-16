@@ -1,0 +1,132 @@
+/*
+ * Distributed Termination Detection
+ * This specification is one result of a case study worked on during the Dagstuhl Seminar 13372 
+ * "Integration of Tools for Rigorous Software Construction and Analysis".
+ *
+ * The implementation is based on 
+ * Dijkstra, Edsger W.; Feijen, W.H.J.; Gasteren, A.J.M.; 
+ * Derivation of a termination detection algorithm for distributed computations.
+ * In: Control Flow and Data Flow: Concepts of Distributed Programming.
+ * Broy, Manfred (ed.), 1986, Springer, p. 507-512
+ *
+ * @maxsteps 100
+ * @require "global termination detected!"
+ */
+CoreASM TerminationDetectionProtocolPresentation
+
+use Standard
+
+enum COLORS = {BLACK, WHITE}
+enum STATES = {ACTIVE, PASSIVE}
+
+init InitialState
+
+// the type information can be omitted
+function hasToken: Agents -> BOOLEAN
+function colorM: Agents -> COLOR
+function colorT: -> COLOR
+function state: Agents -> BOOLEAN
+function hasMessage: Agents -> BOOLEAN
+function index: Agents -> NUMBER
+
+rule Machine = {
+   // MESSAGE PASSING
+   // receive a message and become active
+   if hasMessage(self) then {
+      state(self) := ACTIVE                  // A
+      hasMessage(self) := false
+   }
+   else {
+      // a machine only becomes passive, if it has not
+      // sent a message in the same step. (removes
+      // clash between A and B)
+      choose spontaneous in {true, false} do
+         if state(self) = ACTIVE and spontaneous then
+            state(self) := PASSIVE            // B
+   }
+
+   // TOKEN PASSING
+   // Rule 0
+   if hasToken(self) then
+      if state(self) = ACTIVE then
+         skip
+      else
+         if not isMaster(self) then
+            PassToken
+
+   // when active, we can spontaneous send a message
+   // Rule 0 - continued
+   choose spontaneous in {true, false} do
+      if state(self) = ACTIVE and spontaneous then
+         // don't allow sending messages to yourself
+         // (solves the problem with clearing messages)
+         choose dest in machines with dest != self do
+            SendMessage(dest)
+
+   // Master related stuff
+   // Rules 3+4
+   if tokenIndicatesFinished then
+      StopASM
+   else
+      if unsuccessful and state(self) = PASSIVE then
+         PassToken
+}
+
+rule PassToken = {
+   // Rule 2
+   hasToken(self) := false
+   hasToken(pred(self)) := true
+   if isMaster(self) then   // master always sends a white token
+      colorT := WHITE
+   else
+      if colorM(self) = BLACK then
+         colorT := BLACK
+
+   // Rule 5
+   colorM(self) := WHITE
+}
+
+rule SendMessage(dest) = {
+   hasMessage(dest) := true
+   // Rule 1
+   if (gt(dest,self)) then
+      colorM(self) := BLACK
+}
+
+rule StopASM = {
+   forall m in Agents do
+      program(m) := undef
+   print "global termination detected!"
+}
+
+derived tokenIndicatesFinished = (colorT = WHITE) and hasToken(self) and isMaster(self) and state(self) = PASSIVE
+
+derived unsuccessful = (isMaster(self) and hasToken(self) and (colorT = BLACK or colorM(self) = BLACK))
+
+derived N = 4
+derived machines = {a | a in Agents with index(a) != undef}
+derived pred(m) = pick p in machines with index(m) = (index(p)+1) % N
+derived gt(a,b) = index(a) > index(b)
+derived isMaster(m) = (index(m) = 0)
+
+rule InitialState = {
+   forall i in [0..(N-1)] do
+      extend Agents with m do {
+         program(m) := @Machine
+         index(m) := i
+         hasMessage(m) := false
+         choose s in {ACTIVE, PASSIVE} do
+            state(m) := s
+         if i = 0 then {
+            hasToken(m) := true
+            colorM(m) := WHITE
+         }
+         else {
+            hasToken(m) := false
+            colorM(m) := BLACK
+         }
+      }
+   colorT := BLACK
+   program(self) := undef
+}
+

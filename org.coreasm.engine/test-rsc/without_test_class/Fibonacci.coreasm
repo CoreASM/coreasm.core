@@ -1,0 +1,36 @@
+/*
+ * Recursion in CoreASM
+ * @require "55\nNow computing it with recursion...\nFibonacci(10) using pure recursion: 55\n"
+ * @maxsteps 2
+ */ 
+
+CoreASM Fibonacci
+
+use Standard
+
+init InitRule
+
+rule InitRule = 
+	let n = 10 in 
+		if steps = undef then {
+			print "Fibonacci(" + n + ") using dynamic programming: " + fibo_d(n) + "\nNow computing it with recursion..."
+			steps := 1
+		} else {
+			print "Fibonacci(" + n + ") using pure recursion: " + fibo_r(n) 
+			program(self) := undef
+		}
+
+
+derived fibo_r(x) = 
+	return r in
+		if x < 0 then r := 0
+		else if x < 2 then r := x
+		else r := fibo_r(x-2) + fibo_r(x-1) 
+		
+derived fibo_d(x) = 
+	return fibo(x) in 
+		if fibo(x) = undef then { 
+			if x < 0 then fibo(x) := 0
+			else if x < 2 then fibo(x) := x
+			else fibo(x) := fibo_d(x-2) + fibo_d(x-1)
+		}

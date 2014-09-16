@@ -1,0 +1,73 @@
+/* 
+ * Examples of using functions defined on lists, maps, and sets
+ * @require "zip([a0, a1, a2], [b0, b1, b2]) is [[a0, b0], [a1, b1], [a2, b2]]\nmap([{3, 2, 1}, {30, 20, 10}], @foo) is [{2, 4, 8}, {1024, 1048576, 1073741824}]\nmapping the map {1.5->2, 3->d, a->b, 1->2} through 'reverse' gives us {d->3, b->a, 2->1.5}\nNatural numbers in [a, 1.5, 2, 3.4, 5] are [2, 5]\nfiltering the map {1.5->5, 3->d, a->b, 1->2} gives us {3->d, 1->2}\nfold( [a, b, c] , concat, "it goes") is: "it goes c b a"\n[1, m] is [1 | [m]]  and nth([m, 1], 2) = m\nIf l = [a, b, a, d, e, f, g], we have:\n  take(l, 3) : [a, b, a]\n  drop(l, 5) : [f, g]\n  size(l) : 7\n  last(l) : g\n  reverse(l) : [g, f, e, d, a, b, a]\n  indexes(l, a) : [1, 3]\n"
+ */
+ 
+CoreASM ListsAndMaps
+
+use Standard
+use Math
+
+derived foo(a) = 
+	return powers in
+		seq
+			powers := {}
+		next
+			forall p in a do 
+				add bar(p) to powers 
+
+derived bar(a) = pow(2, a)
+
+derived folder(a, b) = a + " " + b
+
+derived isHeadNatural(a) = isNaturalNumber(head(a))
+
+function f: NUMBER * NUMBER -> NUMBER 
+
+init TestAll
+
+rule TestAll =
+	seqblock
+
+		let L0 = ["a0","a1","a2"], L1 = ["b0","b1","b2"] in
+			print "zip("+L0+", "+L1+") is "+zip(L0,L1)
+
+	    // the 'map' function
+		let l = [ {1, 2, 3}, {10, 20, 30} ] in
+			print "map(" + l + ", @foo) is " + map(l, @foo)
+		
+	    // the 'map' function
+		let m = {1->2, "a"->"b", 3->"d", 1.5->2} in
+			print "mapping the map " + m + " through 'reverse' gives us " + map(m, @reverse)
+		
+	    // the 'filter' function
+		let l = ["a", 1.5, 2, 3.4, 5] in
+			print "Natural numbers in " + l + " are " + filter(l, @isNaturalNumber) 
+
+	    // the 'filter' function
+		let m = {1->2, "a"->"b", 3->"d", 1.5->5} in
+			print "filtering the map " + m + " gives us " + filter(m, @isHeadNatural)
+
+	    // the 'fold' function
+		let l = ["a", "b", "c"] in
+			print "fold( " + l + " , concat, \"it goes\") is: \"" + fold(l, @folder, "it goes") + "\""
+		
+		let l = cons(1, ["m"]) in
+			print l + " is [" + head(l) + " | " + tail(l) + "]  and nth([m, 1], 2) = " + nth(l, 2) 
+
+		let l = ["a", "b", "a", "d", "e", "f", "g"] in
+		seqblock
+		    print "If l = " + l + ", we have:"
+			print "  take(l, 3) : " + take(l, 3)
+			print "  drop(l, 5) : " + drop(l, 5)
+			print "  size(l) : " + size(l)
+			print "  last(l) : " + last(l)
+			print "  reverse(l) : " + reverse(l)
+			print "  indexes(l, a) : " + indexes(l, "a")
+		endseqblock
+		
+		// terminate after one step
+		program(self) := undef
+	
+	endseqblock
+	
