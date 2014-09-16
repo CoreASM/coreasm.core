@@ -1,0 +1,35 @@
+CoreASM Map5_comprehension
+
+use Standard
+use Math
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "{0->0, -6->-6, 6->6, 2->2, -2->-2, 10->10, -10->-10, -4->-4, 4->4, 8->8, -8->-8}\n{ -> }\n{ -> }\n{6->6, 2->2, 10->10, 4->4, 8->8}\n{6->6, 2->2, 10->10, 4->4, 8->8}\n{[2, 2]->[2, 2], [4, 4]->[4, 4], [6, 6]->[6, 6], [8, 8]->[8, 8], [10, 10]->[10, 10]}\n{3->6, 2->4, 1->4}"
+ */
+rule Start =
+	seqblock
+		// numberRange inside map-comprehension
+		map1 := {a -> a | a in [-10..10 step 1] with isEvenNumber(a)}
+		print map1
+		// empty map
+		map2 := {a -> a | a in {} with isEvenNumber(a)}
+		print map2
+		//no result possible
+		map3 := {a -> a | a in {1,2,3,4} with x > 10000}
+		print map3
+		// map-comprehension inside map-comprehension
+		map4 := {a -> a | a in {b^(1/2) | b in [1..100 step 1]} with isEvenNumber(a)}
+		print map4
+		// map-comprehension inside map-comprehension with basic derived math function sqrt
+		map5 := {a -> a | a in {sqrt(b) | b in [1..100 step 1]} with isEvenNumber(a)}
+		print map5
+		// handling values from two different maps
+		map6 := {a -> b | a in map1, b in map4 with a = b }
+		print map6
+		print {a -> b | a in [1,2,3], b in [4,5,6]}
+	endseqblock

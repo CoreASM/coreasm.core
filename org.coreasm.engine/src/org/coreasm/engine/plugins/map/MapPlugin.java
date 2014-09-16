@@ -12,18 +12,23 @@
  */
 
 package org.coreasm.engine.plugins.map;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-
+import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
+import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
@@ -52,6 +57,12 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	
 	public static final String PLUGIN_NAME = MapPlugin.class.getSimpleName();
 	
+	/* keeps track of to-be-considered values in a map comprehension */
+	private ThreadLocal<Map<ASTNode, Set<Map<String,Element>>>> tobeConsidered;
+	
+	/* keeps new lists created on a map comprehension node */
+	private ThreadLocal<Map<ASTNode, Map<Element,Element>>> newMap;
+	
 	private Map<String, GrammarRule> parsers = null;
 	private final String[] keywords = {};
 	private final String[] operators = {"{", "}", "->", ","};
@@ -66,7 +77,32 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	 */
 	@Override
 	public void initialize() {
-
+		tobeConsidered= new ThreadLocal<Map<ASTNode,Set<Map<String,Element>>>>() {
+			@Override
+			protected Map<ASTNode, Set<Map<String, Element>>> initialValue() {
+				return new IdentityHashMap<ASTNode, Set<Map<String,Element>>>();
+			}
+		};
+		newMap= new ThreadLocal<Map<ASTNode,Map<Element,Element>>>() {
+			@Override
+			protected Map<ASTNode, Map<Element,Element>> initialValue() {
+				return new IdentityHashMap<ASTNode, Map<Element,Element>>();
+			}
+		};
+	}
+	
+	/*
+	 * Returns the instance of 'tobeConsidered' map for this thread.
+	 */
+	private Map<ASTNode, Set<Map<String, Element>>> getToBeConsideredMap() {
+		return tobeConsidered.get();
+	}
+	
+	/*
+	 * Returns the instance of 'newMap' map for this thread.
+	 */
+	private Map<ASTNode, Map<Element,Element>> getNewMapMap() {
+		return newMap.get();
 	}
 
 	/* (non-Javadoc)
@@ -123,12 +159,12 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 			KernelServices kernel = (KernelServices) capi.getPlugin("Kernel")
 					.getPluginInterface();
 
-			Parser<Node> ruleParser = kernel.getRuleParser();
 			Parser<Node> termParser = kernel.getTermParser();
 			Parser<Node> basicTermParser = kernel.getBasicTermParser();
 			Parser<Node> guardParser = kernel.getGuardParser();
 
 			ParserTools pTools = ParserTools.getInstance(capi);
+			Parser<Node> idParser = pTools.getIdParser();
 
 			Parser<Node> mapletParser = Parsers.array(
 					new Parser[] {
@@ -139,7 +175,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							ASTNode node = new MapletNode((Node)vals[0]);
 							addChildren(node, vals);
 							return node;
@@ -159,19 +195,40 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new MapTermNode((Node)vals[0]);
 							addChildren(node, vals);
 							return node;
 						}
 					}
 			);
-			refMapTermParser.set(maptermParser);
+			
+			// MapComprehension: '{' Maplet '|' ID 'in' Term 
+			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? ']'
+			Parser<Node> mapComprehensionParser = Parsers.array(new Parser[] {
+				pTools.getOprParser("{"),
+				mapletParser,
+				pTools.getOprParser("|"),
+				pTools.csplus(Parsers.array(
+					idParser,
+					pTools.getKeywParser("in", PLUGIN_NAME),
+					termParser)),
+				Parsers.array(
+					pTools.getKeywParser("with", PLUGIN_NAME),
+					guardParser).optional(),
+				pTools.getOprParser("}")
+			}).map(new MapComprehensionParseMap());
+			parsers.put("MapComprehension", 
+					new GrammarRule("MapComprehension",
+							"'{' Maplet '|' ID 'in' Term ( ',' ID 'in' Term )* ( 'with' Guard )? '}'", 
+							mapComprehensionParser, PLUGIN_NAME));
+						
+			refMapTermParser.set(Parsers.or(maptermParser, mapComprehensionParser));
 			parsers.put("MapTerm", new GrammarRule("MapTerm",
 					"'{' '->' | ( Maplet (',' Maplet)* ) '}'", refMapTermParser.lazy(), PLUGIN_NAME));
 			
 			parsers.put("BasicTerm", new GrammarRule("MapBasicTerm", 
-					"MapTerm", refMapTermParser.lazy(), PLUGIN_NAME));
+					"MapTerm | MapComprehension", refMapTermParser.lazy(), PLUGIN_NAME));
 		} 
 		
 		return parsers;
@@ -187,6 +244,9 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 
 	@Override
 	public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
+		Map<ASTNode, Set<Map<String, Element>>> tobeConsidered = getToBeConsideredMap();
+		Map<ASTNode, Map<Element,Element>> newMap = getNewMapMap();
+		
 		if (pos instanceof MapletNode) {
 			if (!pos.getFirst().isEvaluated())
 				return pos.getFirst();
@@ -210,7 +270,207 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 				pos.setNode(null, null, new MapElement(map));
 			}
 		}
+		else if (pos instanceof MapCompNode) {
+			MapCompNode node = (MapCompNode)pos;
+			Map<String,ASTNode> bindings = null;
+			
+			// get variable to domain bindings
+			try {
+				bindings = node.getVarBindings();
+			} catch (EngineException e) {
+				// "No two constrainer variables may have the same name."
+				capi.error(e);
+			}
+			ASTNode guard = node.getGuard();
+			ASTNode expression = node.getMapFunction();
+
+			if (!guard.isEvaluated()) {
+ 				if (bindings.size() >= 1) {
+					// evaluate all the domains
+					for (ASTNode domain: bindings.values())
+						if (!domain.isEvaluated()) 
+							return domain;
+					
+					// if all domains are evaluated
+					for (ASTNode domain: bindings.values()) {
+						if (!(domain.getValue() instanceof Enumerable)) {
+							capi.error("Constrainer variables may only be bound to enumerable elements.", domain, interpreter);
+							return pos;
+						} else 
+							// if any domain is empty, the whole result is also empty
+							if (((Enumerable)domain.getValue()).enumerate().size() == 0) { 
+								pos.setNode(null, null, new MapElement());
+								return pos;
+							}
+					}
+					
+					// create the resulting map
+					newMap.put(pos, new HashMap<Element,Element>());
+					
+					// Set of all possible bindings
+					HashSet<Map<String,Element>> possibleBindings = new HashSet<Map<String,Element>>();
+					
+					// List of all variables
+					ArrayList<String> allVariables = new ArrayList<String>(bindings.keySet());
+					
+					// Map of all possible values for variables 
+					Map<String,ArrayList<Element>> possibleValues = new HashMap<String,ArrayList<Element>>();
+					for (String var: bindings.keySet()) {
+						Enumerable set = (Enumerable)(bindings.get(var).getValue());
+						possibleValues.put(var, new ArrayList<Element>(set.enumerate()));
+					}
+
+					// create all possible combination of values for variables
+					createAllPossibleBindings(
+							allVariables, possibleValues, allVariables.size() - 1, possibleBindings, new HashMap<String,Element>());
+
+					// set the superset of values
+					tobeConsidered.put(pos, possibleBindings);
+					
+					// pick the first combination
+					Map<String,Element> firstBinding = possibleBindings.iterator().next();
+					
+					// bind the combination to the variables
+					bindVariables(interpreter, firstBinding);
+					
+					// remove the already chosen combination
+					possibleBindings.remove(firstBinding);
+					
+					return guard;
+					
+				} else
+					capi.error("At least one constrainer variable must be present.", node, interpreter);
+			} 
+			
+			// if guard is evaluated but the expression is not
+			else if (!expression.isEvaluated()) {
+				if (guard.getValue().equals(BooleanElement.TRUE)) 
+					return expression;
+				else {
+					// remove previous bindings
+					unbindVariables(interpreter, bindings.keySet());
+
+					// get the remaining combinations
+					Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
+					
+					// if there is more combination to be tried...
+					if (possibleBindings.size() > 0) {
+
+						// pick the next combination
+						Map<String,Element> nextBinding = possibleBindings.iterator().next();
+						
+						// bind the combination to the variables
+						bindVariables(interpreter, nextBinding);
+						
+						// remove the already chosen combination
+						possibleBindings.remove(nextBinding);
+						
+						// clear the guard
+						interpreter.clearTree(guard);
+						
+						return guard;
+					} else {
+						pos.setNode(null, null, new MapElement(newMap.get(pos)));
+					}
+				}
+			} 
+			
+			// if everything is evaluated
+			else {
+				// remove previous bindings
+				unbindVariables(interpreter, bindings.keySet());
+
+				Map<Element,Element> result = newMap.get(pos);
+				MapletElement maplet = (MapletElement)expression.getValue();
+				result.put(maplet.key, maplet.value);
+				// get the remaining combinations
+				Collection<Map<String,Element>> possibleBindings = tobeConsidered.get(pos);
+				if (possibleBindings.size() > 0) {
+
+					// pick the first combination
+					Map<String,Element> nextBinding = possibleBindings.iterator().next();
+					
+					// bind the combination to the variables
+					bindVariables(interpreter, nextBinding);
+					
+					// remove the already chosen combination
+					possibleBindings.remove(nextBinding);
+
+					// clear the guard and the expression
+					interpreter.clearTree(guard);
+					interpreter.clearTree(expression);
+					
+					return guard;
+				} else {
+					pos.setNode(null, null, new MapElement(newMap.get(pos)));
+					return pos;
+				}
+			}
+			
+			return pos;
+		}
+		else if (pos instanceof TrueGuardNode) {
+			pos.setNode(null, null, BooleanElement.TRUE);
+			return pos;
+		}
 		return pos;
+	}
+	
+	/*
+	 * This recursive method creates all the possible combinations of values
+	 * for variables. 
+	 */
+	private void createAllPossibleBindings(
+			ArrayList<String> allVariables, 
+			Map<String,ArrayList<Element>> possibleValues, 
+			int index, 
+			HashSet<Map<String,Element>> possibleBindings, 
+			Map<String,Element> currentBinding) {
+
+		// get possible values for this particular variable
+		String var = allVariables.get(index);
+		ArrayList<Element> values = new ArrayList<Element>(possibleValues.get(var));
+		
+		while (values.size() > 0) {
+			// get the first element of those values
+			Element value = values.get(0);
+			
+			// put it as a possible binding
+			currentBinding.put(var, value);
+			
+			// if this is not the last variable in the list
+			if (index > 0) {
+				// get all the possible values for the remaining variables
+				createAllPossibleBindings(
+						allVariables, possibleValues, index-1, possibleBindings, currentBinding);
+			} 
+			
+			// if this is the last variable
+			else {
+				// currentBinding is a draft copy that keeps changing, so you want
+				// to add a new map to the set
+				possibleBindings.add(new HashMap<String,Element>(currentBinding));
+			}
+			values.remove(0);
+		}
+	}
+	
+	/*
+	 * Binds values to variables.
+	 */
+	private void bindVariables(Interpreter interpreter, Map<String,Element> binding) {
+		for (String var: binding.keySet()) {
+			interpreter.addEnv(var, binding.get(var));
+		}
+	}
+	
+	/*
+	 * Unbinds environment variables.
+	 */
+	private void unbindVariables(Interpreter interpreter, Set<String> variables) {
+		for (String var: variables){
+			interpreter.removeEnv(var);
+		}
 	}
 
 	@Override
@@ -262,4 +522,17 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		return Collections.emptyMap();
 	}
 
+	public static class MapComprehensionParseMap extends ParserTools.ArrayParseMap {
+
+		public MapComprehensionParseMap() {
+			super(PLUGIN_NAME);
+		}
+		
+		public Node map(Object[] vals) {
+			Node node = new MapCompNode(((Node)vals[0]).getScannerInfo());
+			addChildren(node, vals);
+			return node;
+		}
+		
+	}
 }
