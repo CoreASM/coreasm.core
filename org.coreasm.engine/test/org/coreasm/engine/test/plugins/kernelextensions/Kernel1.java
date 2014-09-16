@@ -1,4 +1,4 @@
-package org.coreasm.engine.test.plugins.kernel_extension;
+package org.coreasm.engine.test.plugins.kernelextensions;
 
 import java.io.File;
 import java.net.URISyntaxException;

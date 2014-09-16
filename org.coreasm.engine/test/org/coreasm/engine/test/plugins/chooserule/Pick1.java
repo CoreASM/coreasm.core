@@ -1,4 +1,4 @@
-package org.coreasm.engine.test.plugins.choose;
+package org.coreasm.engine.test.plugins.chooserule;
 
 import java.io.File;
 import java.net.URISyntaxException;
