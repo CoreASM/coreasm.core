@@ -147,16 +147,34 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			ParserTools pTools = ParserTools.getInstance(capi);
 			Parser<Node> idParser = pTools.getIdParser();
 	
-			// SeqRule : 'seq' Rule ('next' Rule)+ | 'seq' (Rule)+ 'endseq'
+			// SeqRule : 'seq' Rule ('next' Rule)+ ('endseq')? | 'seq' (Rule)+ 'endseq' | 'seqblock' (Rule)+ 'endseqblock' | '[' (Rule)+ ']'
 			Parser<Node> seqRuleParser = Parsers.or(
-				Parsers.array(new Parser[] {
+				Parsers.array(
 					pTools.getKeywParser("seq", PLUGIN_NAME),
 					ruleParser,
-					pTools.plus(Parsers.array(pTools.getKeywParser("next", PLUGIN_NAME), ruleParser))}),
-				Parsers.array(new Parser[] {
-					Parsers.or(pTools.getKeywParser("seq", PLUGIN_NAME), pTools.getKeywParser("seqblock", PLUGIN_NAME), pTools.getOprParser("[")),
-					pTools.plus(ruleParser),
-					Parsers.or(pTools.getKeywParser("endseq", PLUGIN_NAME), pTools.getKeywParser("endseqblock", PLUGIN_NAME), pTools.getOprParser("]"))})
+					pTools.plus(
+							Parsers.array(
+									pTools.getKeywParser("next", PLUGIN_NAME),
+									ruleParser
+							)
+					),
+					pTools.getKeywParser("endseq", PLUGIN_NAME).optional()
+				),
+				Parsers.array(
+						pTools.getKeywParser("seq", PLUGIN_NAME),
+						pTools.plus(ruleParser),
+						pTools.getKeywParser("endseq", PLUGIN_NAME)
+				),
+				Parsers.array(
+						pTools.getKeywParser("seqblock", PLUGIN_NAME),
+						pTools.plus(ruleParser),
+						pTools.getKeywParser("endseqblock", PLUGIN_NAME)
+				),
+				Parsers.array(
+						pTools.getOprParser("["),
+						pTools.plus(ruleParser),
+						pTools.getOprParser("]")
+				)
 			).map(new SeqRuleParseMap());
 			parsers.put("SeqRule",
 					new GrammarRule("SeqRule", "'seq' Rule ('next' Rule)+ | 'seq' (Rule)+ 'endseq'", 
