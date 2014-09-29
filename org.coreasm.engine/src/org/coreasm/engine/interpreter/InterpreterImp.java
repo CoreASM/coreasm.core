@@ -382,7 +382,9 @@ public class InterpreterImp implements Interpreter {
 					} else { // if current node is 'x(...)' (with arguments)
 						
 						// If this 'x' refers to a function in the state...
-						final FunctionElement f = storage.getFunction(x);
+						FunctionElement f = storage.getFunction(x);
+						if (getEnv(x) != null && getEnv(x) instanceof FunctionElement)
+							f = (FunctionElement)getEnv(x);
 						if (f != null) {
 							final List<ASTNode> args = frNode.getArguments();
 							// look for the parameter that needs to be evaluated
@@ -390,7 +392,7 @@ public class InterpreterImp implements Interpreter {
 							if (toBeEvaluated == null) {
 								// if all nodes are evaluated...
 								final ElementList vList = EngineTools.getValueList(args);
-								final Location l = new Location(x, vList, f.isModifiable());
+								final Location l = new Location(storage.getFunctionName(f), vList, f.isModifiable());
 								try {
 									pos.setNode(l, null, storage.getValue(l));
 								} catch (InvalidLocationException e) {

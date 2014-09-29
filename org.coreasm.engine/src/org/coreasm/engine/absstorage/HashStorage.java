@@ -965,10 +965,13 @@ public class HashStorage implements AbstractStorage {
          * @see org.coreasm.engine.absstorage.State#getFunctionName(org.coreasm.engine.absstorage.FunctionElement)
          */
         public String getFunctionName(FunctionElement function) {
-            for (String name: functionElements.table.keySet()) {
-                if (functionElements.table.get(name).equals(function)) {
-                    return name;
-                }
+            for (Entry<String, FunctionElement> f: functionElements.table.entrySet()) {
+                if (f.getValue().equals(function))
+                	return f.getKey();
+            }
+            for (Entry<String, AbstractUniverse> u : universeElements.table.entrySet()) {
+            	if (u.getValue().equals(function))
+            		return u.getKey();
             }
             return null;
         }
