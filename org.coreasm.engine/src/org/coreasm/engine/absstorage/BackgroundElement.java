@@ -76,4 +76,7 @@ public abstract class BackgroundElement extends AbstractUniverse {
 	 *
 	public abstract String getBackgroundName();
 	*/
+	public String toString() {
+		return "background-element";
+	}
 }

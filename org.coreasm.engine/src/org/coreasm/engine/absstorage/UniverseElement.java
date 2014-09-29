@@ -121,4 +121,7 @@ public class UniverseElement extends AbstractUniverse implements Enumerable {
 		return elements.size();
 	}
 
+	public String toString() {
+		return enumerate().toString();
+	}
 }

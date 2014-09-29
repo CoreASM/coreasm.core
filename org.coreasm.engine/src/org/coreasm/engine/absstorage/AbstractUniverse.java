@@ -87,9 +87,7 @@ public abstract class AbstractUniverse extends FunctionElement {
 	protected abstract Element getValue(Element e); 
 
 	public String toString() {
-		StringBuffer str = new StringBuffer();
-		
-		return str.toString();
+		return "universe-element";
 	}
 	
 }
