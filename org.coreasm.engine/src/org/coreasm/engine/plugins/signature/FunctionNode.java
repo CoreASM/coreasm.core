@@ -16,8 +16,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.absstorage.FunctionElement.FunctionClass;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.plugins.number.NumberRangeNode;
 
@@ -173,6 +175,26 @@ public class FunctionNode extends ASTNode {
    
    public ASTNode getInitNode() {
        return getRangeNode().getNext();
+   }
+   
+   public boolean hasInitializer() {
+	   return getRangeNode().getNextCSTNode() != null && !"initially".equals(getRangeNode().getNextCSTNode().getToken());
+   }
+   
+   public List<String> getInitializerParams() {
+	   if (!hasInitializer() || !(getInitNode() instanceof FunctionRuleTermNode))
+		   return Collections.<String>emptyList();
+	   FunctionRuleTermNode frNode = (FunctionRuleTermNode)getInitNode();
+	   List<String> params = new ArrayList<String>();
+	   for (ASTNode argNode : frNode.getArguments()) {
+		   if (argNode instanceof FunctionRuleTermNode) {
+			   FunctionRuleTermNode arg = (FunctionRuleTermNode)argNode;
+			   params.add(arg.getName());
+		   }
+		   else
+			   throw new CoreASMError("Parameter must be an identifier.", argNode);
+	   }
+	   return params;
    }
    
    private String getTypeString(ASTNode n) {

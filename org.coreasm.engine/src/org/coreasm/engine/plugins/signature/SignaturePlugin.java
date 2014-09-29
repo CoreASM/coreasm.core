@@ -111,7 +111,7 @@ public class SignaturePlugin extends Plugin
 	private FunctionRangeFunctionElement funcRangeFunction;
 	private FunctionDomainFunctionElement funcDomainFunction;
 
-	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "derived"};
+	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "initialized", "by", "derived"};
 	private final String[] operators = {"=", "{", "}", ",", ":", "->"};
 	
     /* (non-Javadoc)
@@ -258,7 +258,7 @@ public class SignaturePlugin extends Plugin
 			parsers.put("FunctionClass", new GrammarRule("FunctionClass", 
 					"'controlled'|'static'|'monitored'", funcClassParser, PLUGIN_NAME));
 			
-			// FunctionSignature : 'function' (FunctionClass)? ID ':' (UniverseTuple)? '->' UniverseTerm ('initially' Term)?
+			// FunctionSignature : 'function' (FunctionClass)? ID ':' (UniverseTuple)? '->' UniverseTerm ('initially' Term | 'initialized by' Term)?
 			Parser<Node> funcSigParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser("function", PLUGIN_NAME),
@@ -268,11 +268,16 @@ public class SignaturePlugin extends Plugin
 						univTupleParser.optional(),
 						pTools.getOprParser("->"),
 						univTermParser,
-						pTools.seq(
+						Parsers.or(
+							pTools.seq(
 								pTools.getKeywParser("initially", PLUGIN_NAME),
-								termParser).atomic().optional(),
-					}).map(
-					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
+								termParser).atomic(),
+							pTools.seq(
+								pTools.getKeywParser("initialized", PLUGIN_NAME),
+								pTools.getKeywParser("by", PLUGIN_NAME),
+								termParser).atomic()
+						).optional()
+					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						public Node map(Object... vals) {
 							Node node = new FunctionNode(((Node)vals[0]).getScannerInfo());
@@ -280,7 +285,7 @@ public class SignaturePlugin extends Plugin
 							return node;
 						}});
 			parsers.put("FunctionSignature", new GrammarRule("FunctionSignature", 
-					"'function' (FunctionClass)? ID ':' (UniverseTuple)? '->' UniverseTerm ('initially' Term)?", funcSigParser, PLUGIN_NAME));
+					"'function' (FunctionClass)? ID ':' (UniverseTuple)? '->' UniverseTerm (('initially' Term) | ('initialized by' Term))?", funcSigParser, PLUGIN_NAME));
 			
 			// DerivedFunctionDeclaration : 'function'? 'derived' RuleSignature '=' Term
 			Parser<Node> derivedFuncParser = Parsers.array(
@@ -828,9 +833,10 @@ public class SignaturePlugin extends Plugin
             // TODO: check signature for correct signature of program function
             function = (MapFunction) capi.getStorage().getFunction(AbstractStorage.PROGRAM_FUNCTION_NAME);
         }
-        else {
-            function = new MapFunction();        
-        }
+        else if (functionNode.hasInitializer())
+        	function = new DerivedMapFunction(capi, functionNode.getInitializerParams(), functionNode.getInitNode());
+        else
+        	function = new MapFunction();        
 
         Signature signature = new Signature();        
         signature.setDomain(functionNode.getDomain());
@@ -842,7 +848,7 @@ public class SignaturePlugin extends Plugin
         }
     
         
-        if (functionNode.getInitNode()!=null) {
+        if (!functionNode.hasInitializer() && functionNode.getInitNode()!=null) {
             //hasInit = true;
             
             try {

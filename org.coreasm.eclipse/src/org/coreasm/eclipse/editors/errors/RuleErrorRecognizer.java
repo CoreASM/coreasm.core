@@ -99,7 +99,7 @@ implements ITreeErrorRecognizer
 								}
 								else {
 									RuleDeclaration parentRule = ruleDeclarations.get(declarationNode.getFirst().getFirst().getToken());
-									if (!parentRule.getParams().contains(frNode.getName()) && !functionDeclarations.contains(frNode.getName()))
+									if (parentRule != null && !parentRule.getParams().contains(frNode.getName()) && !functionDeclarations.contains(frNode.getName()))
 										errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
 								}
 							}
