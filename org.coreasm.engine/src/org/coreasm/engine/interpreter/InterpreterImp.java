@@ -961,11 +961,11 @@ public class InterpreterImp implements Interpreter {
 			} else {
 				if (args != null && a instanceof ASTNode 
 					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
-					&& ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
-					&& ast.getChildNode("lambda") == null) {
+					&& ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)) {
 					for (ASTNode arg : args) {
 						if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
 					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
+					&& arg.getChildNode("lambda") == null
 					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
 							capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
 					}
