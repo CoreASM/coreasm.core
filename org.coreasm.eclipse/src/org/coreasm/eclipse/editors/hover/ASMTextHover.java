@@ -206,7 +206,7 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						if (frNode.hasName() && hoverRegion.getOffset() + hoverRegion.getLength() < offset + frNode.getName().length()) {
 							String value = getExpressionValue(textViewer.getDocument(), frNode.getName());
 							if (isEnvironmentVariable(frNode))
-								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : "")) + "\nParser Info: " + frNode;
+								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							if (isLocalFunction(frNode))
 								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
