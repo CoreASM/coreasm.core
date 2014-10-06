@@ -114,7 +114,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	@Override
 	public boolean visit(IResourceDelta delta) throws CoreException {
 		IResource resource = delta.getResource();
-		if (resource instanceof IFile && !resource.equals(editor.getInputFile())) {
+		if (resource instanceof IFile && !resource.equals(editor.getInputFile()) && (delta.getFlags() & ~IResourceDelta.MARKERS) != 0) {
 			Set<IFile> includedFiles = getIncludedFiles(editor.getInputFile(), true);
 			if (includedFiles.contains(resource) && !includedFiles.contains(editor.getInputFile()))
 				shouldReparse = true;
