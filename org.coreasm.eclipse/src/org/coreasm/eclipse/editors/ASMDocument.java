@@ -168,6 +168,22 @@ public class ASMDocument
 		return 0;
 	}
 	
+	public static int calculateLength(Node node) {
+		if (node != null) {
+			Node lastChild = node;
+			while (lastChild.getFirstCSTNode() != null) {
+				lastChild = lastChild.getFirstCSTNode();
+				while (lastChild.getNextCSTNode() != null)
+					lastChild = lastChild.getNextCSTNode();
+			}
+			int len = 0;
+			if (lastChild.getToken() != null)
+				len = lastChild.getToken().length();
+			return lastChild.getScannerInfo().charPosition + len - node.getScannerInfo().charPosition;
+		}
+		return 0;
+	}
+	
 	/**
 	 * Returns the position of the specified CharacterPosition in this document
 	 * 

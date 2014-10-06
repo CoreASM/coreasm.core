@@ -84,16 +84,18 @@ implements ITreeErrorRecognizer
 								if (declaration != null) {
 									if (!frNode.hasArguments()) {
 										if (declaration.getParams().size() > 0) {
-											SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+											SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, ASMDocument.calculateLength(frNode), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+											error.set("RuleName", frNode.getName());
 											error.set("NumberOfArguments", 0);
-											error.set("NumberOfParams", declaration.getParams().size());
+											error.set("Params", listToString(declaration.getParams()));
 											errors.add(error);
 										}
 									}
 									else if (frNode.getArguments().size() != declaration.getParams().size()) {
-										SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, frNode.getName().length(), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+										SimpleError error = new SimpleError(null, "The number of arguments passed to '" + frNode.getName() +  "' does not match its signature.", frNode, document, ASMDocument.calculateLength(frNode), CLASSNAME, NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH);
+										error.set("RuleName", frNode.getName());
 										error.set("NumberOfArguments", frNode.getArguments().size());
-										error.set("NumberOfParams", declaration.getParams().size());
+										error.set("Params", listToString(declaration.getParams()));
 										errors.add(error);
 									}
 								}
@@ -122,6 +124,16 @@ implements ITreeErrorRecognizer
 				}
 			}
 		}
+	}
+	
+	private static String listToString(List<String> list) {
+		String result = "";
+		for (String element : list) {
+			if (!result.isEmpty())
+				result += ", ";
+			result += element;
+		}
+		return result;
 	}
 	
 	/**

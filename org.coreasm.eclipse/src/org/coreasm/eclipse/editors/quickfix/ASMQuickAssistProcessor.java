@@ -141,8 +141,15 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					proposals.add(new CreateUniverseProposal(undefinedIdentifier, IconManager.getIcon("/icons/editor/bullet.gif")));
 				proposals.add(new CreateRuleProposal(undefinedIdentifier, arguments, IconManager.getIcon("/icons/editor/bullet.gif")));
 			}
-			else if ("NumberOfAgruments".equals(data[0]) && Integer.parseInt(data[2]) == 0)
-				proposals.add(new CompletionProposal(data[1] + "()", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "()'", null, null));
+			else if ("NumberOfAgruments".equals(data[0])) {
+				String params = "";
+				for (int i = 3; i < data.length; i++) {
+					if (!params.isEmpty())
+						params += ", ";
+					params += data[i];
+				}
+				proposals.add(new CompletionProposal(data[1] + "(" + params + ")", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "(" + params + ")'", null, null));
+			}
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);
@@ -175,14 +182,8 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					} catch (BadLocationException e) {
 					}
 				}
-				else if (RuleErrorRecognizer.NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH.equals(simpleError.getErrorID())) {
-					try {
-						String ruleName = error.getDocument().get(error.getPosition(), error.getLength());
-						if (Integer.parseInt(error.get("NumberOfArguments")) == 0)
-							proposals.add(new CompletionProposal(ruleName + "()", error.getPosition(), error.getLength(), ruleName.length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + ruleName + "()'", null, null));
-					} catch (BadLocationException e) {
-					}
-				}
+				else if (RuleErrorRecognizer.NUMBER_OF_ARGUMENTS_DOES_NOT_MATCH.equals(simpleError.getErrorID()))
+					proposals.add(new CompletionProposal(error.get("RuleName") + "(" + error.get("Params") + ")", error.getPosition(), error.getLength(), error.get("RuleName").length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + error.get("RuleName") + "(" + error.get("Params") + ")'", null, null));
 				else if (PluginErrorRecognizer.NO_PLUGIN.equals(simpleError.getErrorID())) {
 					try {
 						String undefinedPluginName = error.getDocument().get(error.getPosition(), error.getLength());
