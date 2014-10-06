@@ -5,6 +5,10 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
+import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
+import org.coreasm.eclipse.editors.errors.AbstractError;
+import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -15,11 +19,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-
-import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
-import org.coreasm.eclipse.editors.errors.AbstractError;
-import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.plugins.modularity.IncludeNode;
 
 /**
  * The <code>IncludeWatcher</code> watches included specifications.
@@ -116,7 +115,8 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	public boolean visit(IResourceDelta delta) throws CoreException {
 		IResource resource = delta.getResource();
 		if (resource instanceof IFile && !resource.equals(editor.getInputFile())) {
-			if (getIncludedFiles(editor.getInputFile(), true).contains(resource))
+			Set<IFile> includedFiles = getIncludedFiles(editor.getInputFile(), true);
+			if (includedFiles.contains(resource) && !includedFiles.contains(editor.getInputFile()))
 				shouldReparse = true;
 		}
 		return true;

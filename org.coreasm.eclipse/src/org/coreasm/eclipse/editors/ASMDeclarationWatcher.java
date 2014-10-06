@@ -376,7 +376,7 @@ public class ASMDeclarationWatcher implements Observer {
 				}
 				if (includedDeclarations) {
 					for (IFile includedFile : ASMIncludeWatcher.getIncludedFiles(file, true))
-						collectDeclarations(includedFile, true, declarations);
+						collectDeclarations(includedFile, false, declarations);
 				}
 			}
 		} catch (CoreException e) {
