@@ -16,8 +16,8 @@ package org.coreasm.engine;
 
 import java.util.Stack;
 
-import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.engine.parser.ParserException;
@@ -43,6 +43,10 @@ public class CoreASMError extends CoreASMIssue {
 	
 	public CoreASMError(Throwable cause, Stack<CallStackElement> stack, Node node) {
 		this(null, cause, null, stack, node);
+	}
+	
+	public CoreASMError(String msg, CharacterPosition pos) {
+		this(msg, null, pos, null, null);
 	}
 	
 	public CoreASMError(String msg, Node node) {

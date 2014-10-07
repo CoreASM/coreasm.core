@@ -47,6 +47,7 @@ import org.coreasm.engine.EngineWarningObserver;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugins.debuginfo.DebugInfoPlugin.DebugInfoPSI;
 import org.coreasm.engine.plugins.io.IOPlugin.IOPluginPSI;
@@ -561,6 +562,11 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 			synchronized (this) {
 				updateFailed = true;
 				stepFailedMsg = sEvent.reason;
+				ControlAPI capi = (ControlAPI)engine;
+				for (Update update : capi.getStorage().getLastInconsistentUpdate()) {
+					for (ScannerInfo scannerInfo : update.sources)
+						showErrorInEclipse(new CoreASMError("Inconsistent Update: " + update, scannerInfo.getPos(capi.getParser().getPositionMap())));
+				}
 			}
 		}
 		
@@ -571,9 +577,8 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 			}
 			showErrorInEclipse(lastError);
 		}
-		else if (event instanceof EngineWarningEvent) {
+		else if (event instanceof EngineWarningEvent)
 			showWarningInEclipse(((EngineWarningEvent)event).getWarning());
-		}
 	}
 	
 	private void showErrorInEclipse(CoreASMError error) {
