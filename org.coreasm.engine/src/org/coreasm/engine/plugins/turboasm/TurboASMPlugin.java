@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
 public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterPlugin, 
 														VocabularyExtender {
 
-	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 9, 1, "beta");
+	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 9, 2, "beta");
 
 	protected static final Logger logger = LoggerFactory.getLogger(TurboASMPlugin.class);
 
@@ -197,20 +197,17 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					new GrammarRule("IterateRule", "'iterate' Rule", 
 							iterateRuleParser, PLUGIN_NAME));
 
-			// WhileRule : 'while' '(' Term ')' Rule
+			// WhileRule : 'while' Term Rule
 			Parser<Node> whileRuleParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser("while", PLUGIN_NAME),
-						pTools.getOprParser("("),
-						termParser,
-						pTools.getOprParser(")"),
+						termParser, //a term already allows surrounding brackets
 						pTools.getKeywParser("do", PLUGIN_NAME).optional(),
 						ruleParser
 					}).map(
 					new WhileParseMap());
 			parsers.put("WhileRule",
-					new GrammarRule("WhileRule", "'while' '(' Term ')' Rule", 
-							whileRuleParser, PLUGIN_NAME));
+					new GrammarRule("WhileRule", "'while' Term Rule", whileRuleParser, PLUGIN_NAME));
 
 			// ReturnResultRule: FunctionRuleTerm '<-' FunctionRuleTerm
 			Parser<Node> retResRuleParser = Parsers.array(
