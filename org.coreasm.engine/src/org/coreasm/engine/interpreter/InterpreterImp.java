@@ -952,6 +952,8 @@ public class InterpreterImp implements Interpreter {
 					frNode.addChild("alpha", arg.getFirst());
 					arg = frNode;
 				}
+				if (getEnv(ast.getFirst().getToken()) != null)
+					capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
 				result = copyTree(arg);
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
 					if (!"alpha".equals(child.name))	// don't copy the id of this node
@@ -967,15 +969,16 @@ public class InterpreterImp implements Interpreter {
 					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
 					&& arg.getChildNode("lambda") == null
 					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
-							capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
+						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
 					}
+					if (getEnv(ast.getFirst().getToken()) != null)
+						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
 				}
 				result = a.duplicate();
 				result.setParent(parent);
 				for (NameNodeTuple child: a.getChildNodesWithNames())
 					result.addChild(child.name, copyTreeSub(child.node, params, args, result));
 			}
-			
 		}
 		return result;
 	}
