@@ -1,0 +1,5 @@
+grant codeBase "file:./target/classes"{
+  permission java.net.SocketPermission "127.0.0.1", "accept, connect";
+  permission java.util.PropertyPermission "multiThreaded", "read";
+  permission java.lang.RuntimePermission "modifyThread";
+};

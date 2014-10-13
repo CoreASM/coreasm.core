@@ -24,6 +24,7 @@
 		<tycho-version>0.20.0</tycho-version>
 		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
 		<kepler-repo.url>http://download.eclipse.org/releases/kepler</kepler-repo.url>
+		<luna-repo.url>http://download.eclipse.org/releases/luna</luna-repo.url>
 	</properties>
 
 	<build>
@@ -154,6 +155,11 @@
 			<id>juno</id>
 			<layout>p2</layout>
 			<url>${juno-repo.url}</url>
+		</repository>
+		<repository>
+			<id>luna</id>
+			<layout>p2</layout>
+			<url>${luna-repo.url}</url>
 		</repository>
 	</repositories>
 </project>
