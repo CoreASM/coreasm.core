@@ -237,14 +237,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 						pTools.getKeywParser("in", PLUGIN_NAME),
 						ruleParser
 					}).map(
-					new ArrayParseMap(PLUGIN_NAME) {
-
-						public Node map(Object[] vals) {
-							Node node = new ReturnRuleNode(((Node)vals[0]).getScannerInfo());
-							addChildren(node, vals);
-							return node;
-						}
-			});
+					new ReturnRuleParseMap()
+			);
 			parsers.put("ReturnRule",
 					new GrammarRule("ReturnRule", "'return' Term 'in' Rule", 
 							returnRuleParser, PLUGIN_NAME));
@@ -608,7 +602,34 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		}
 		
 	}
-	
+
+	public static class ReturnRuleParseMap extends ArrayParseMap {
+
+		String nextChildName;
+
+		public ReturnRuleParseMap() {
+			super(PLUGIN_NAME);
+		}
+
+		public Node map(Object[] vals) {
+			nextChildName = "alpha";
+			Node node = new ReturnRuleNode(((Node)vals[0]).getScannerInfo());
+			addChildren(node, vals);
+			return node;
+		}
+
+		public void addChild(Node parent, Node child) {
+			if (child instanceof ASTNode) {
+				parent.addChild(nextChildName, child);
+			} else {
+				if (child.getToken().equals("in"))
+					nextChildName = "beta";
+				parent.addChild(child);
+			}
+		}
+
+	}
+
 	public static class SeqRuleParseMap extends ArrayParseMap {
 
 		public SeqRuleParseMap() {

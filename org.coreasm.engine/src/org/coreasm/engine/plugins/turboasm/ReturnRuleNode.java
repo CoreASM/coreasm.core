@@ -47,7 +47,7 @@ public class ReturnRuleNode extends ASTNode {
 	 * @return a node
 	 */
 	public ASTNode getExpressionNode() {
-		return this.getFirst();
+		return (ASTNode)getChildNode("alpha");
 	}
 	
 	/** 
@@ -56,7 +56,7 @@ public class ReturnRuleNode extends ASTNode {
 	 * @return a node
 	 */
 	public ASTNode getRuleNode() {
-		return this.getFirst().getNext();
+		return (ASTNode)getChildNode("beta");
 	}
 
 }
