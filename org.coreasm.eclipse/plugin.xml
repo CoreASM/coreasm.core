@@ -543,4 +543,34 @@
          markerType="org.coreasm.eclipse.markers.ProblemMarker"
          class="org.coreasm.eclipse.editors.quickfix.ASMMarkerResolutionGenerator"/>
    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.viewer">
+       <viewerContentBinding
+             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+          <includes>
+             <contentExtension
+                   pattern="org.coreasm.eclipse.specificationContent">
+             </contentExtension></includes>
+       </viewerContentBinding>
+    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.navigatorContent">
+       <navigatorContent
+             activeByDefault="true"
+             contentProvider="org.coreasm.eclipse.editors.outlining.ASMContentProvider"
+             id="org.coreasm.eclipse.specificationContent"
+             labelProvider="org.coreasm.eclipse.editors.outlining.ASMLabelProvider"
+             name="outline"
+             priority="normal">
+          <triggerPoints>
+             <instanceof
+                   value="org.eclipse.core.resources.IFile">
+             </instanceof></triggerPoints>
+          <possibleChildren>
+             <instanceof
+                   value="org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode">
+             </instanceof>
+          </possibleChildren>
+       </navigatorContent>
+    </extension>
 </plugin>

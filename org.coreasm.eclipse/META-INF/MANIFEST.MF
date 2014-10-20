@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.eclipse.ui.navigator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: ., target/lib/org.coreasm.engine.jar
 Import-Package: org.eclipse.ui.dialogs,
@@ -20,7 +21,6 @@ Import-Package: org.eclipse.ui.dialogs,
  org.eclipse.ui.views.contentoutline
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 1.1.1.qualifier
-Export-Package: org.coreasm.eclipse.editors.outlining.util,
- org.coreasm.eclipse.util,
+Export-Package: org.coreasm.eclipse.util,
  org.coreasm.util,
  org.coreasm.util.information

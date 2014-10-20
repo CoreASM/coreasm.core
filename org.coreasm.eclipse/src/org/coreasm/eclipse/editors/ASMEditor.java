@@ -11,8 +11,7 @@ import org.coreasm.eclipse.editors.errors.ErrorManager;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.errors.SyntaxError;
 import org.coreasm.eclipse.editors.errors.UndefinedError;
-import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
-import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
+import org.coreasm.eclipse.editors.outlining.ASMOutlinePage;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMEclipseWarning;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
@@ -29,7 +28,6 @@ import org.coreasm.util.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -87,16 +85,12 @@ implements IDocumentListener
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
 	private ASMIncludeWatcher includeWatcher;
-	private AbstractContentPage outlinePage;
+	private ASMOutlinePage outlinePage;
 	private IEditorInput input;
 	private ColorManager colorManager;
 
 	static {
 		LOGGER_UI_DEBUG.setVisible(false);
-	}
-	
-	public AbstractContentPage getOutlinePage() {
-		return outlinePage;
 	}
 	
 	public ASMEditor()
@@ -119,10 +113,6 @@ implements IDocumentListener
 		parser.addObserver(new ErrorManager(this));
 		parser.addObserver(includeWatcher);
 		parser.addObserver(new ASMDeclarationWatcher(this));
-		
-		
-		// bind the includeWatcher as ResourceChangeListener to the Workspace
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(includeWatcher, IResourceChangeEvent.POST_CHANGE);
 
 		parser.getJob().pause();
 		parser.getJob().schedule();
@@ -181,8 +171,9 @@ implements IDocumentListener
 		
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class required)
+	public Object getAdapter(Class required)
 	{
 		if (IContentOutlinePage.class.equals(required))
 		{
@@ -192,14 +183,10 @@ implements IDocumentListener
 			
 			if (outlinePage == null)
 			{
-				outlinePage = new ParsedOutlinePage(this);
-				parser.addObserver(outlinePage);
+				outlinePage = new ASMOutlinePage(this);
 				
 				if (getEditorInput() != null)
 					outlinePage.setInput(getEditorInput());
-				
-				if (outlinePage instanceof ParsedOutlinePage)
-					((ParsedOutlinePage) outlinePage).setupListener();
 			}
 			return outlinePage;
 		}

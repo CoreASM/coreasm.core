@@ -135,7 +135,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 							String str = objectToString(vals);
 							return new ASTNode(
 									PLUGIN_NAME,
-									ASTNode.DECLARATION_CLASS,
+									ASTNode.ID_CLASS,
 									"PropertyName",
 									str,
 									((Node)vals[0]).getScannerInfo());
