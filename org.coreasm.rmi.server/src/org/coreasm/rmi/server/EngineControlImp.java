@@ -60,6 +60,9 @@ public class EngineControlImp extends UnicastRemoteObject implements
 	private EngineControlImp() throws RemoteException {
 		super();
 		engine = CoreASMEngineFactory.createEngine();
+		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
+		engine.initialize();
+		engine.waitWhileBusy();
 
 		stopOnEmptyUpdates = false;
 		stopOnStableUpdates = false;
@@ -243,9 +246,9 @@ public class EngineControlImp extends UnicastRemoteObject implements
 					while (itr.hasNext()) {
 						sub = itr.next();
 						try {
-							sub.newUpdates(prevupdates);
+							sub.newUpdates(prevupdates.toString());
 						} catch (RemoteException e) {
-							subscriptions.remove(sub);
+							itr.remove();
 						}
 					}
 					if (subscriptions.isEmpty()) {

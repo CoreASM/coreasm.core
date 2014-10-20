@@ -8,22 +8,25 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.coreasm.rmi.server.remoteinterfaces.*;
 
 /**
  * Servlet implementation class CoreASMControl
  */
 @WebServlet(urlPatterns = "/Control", loadOnStartup = 1)
+@MultipartConfig
 public class CoreASMControl extends HttpServlet {
 	public enum Command {
 		start, stop, pause
@@ -50,9 +53,6 @@ public class CoreASMControl extends HttpServlet {
 		ServerControl server = null;
 		String host = "localhost";
 
-		if (System.getSecurityManager() == null) {
-			System.setSecurityManager(new SecurityManager());
-		}
 
 		try {
 			registry = LocateRegistry.getRegistry(host);
@@ -74,7 +74,8 @@ public class CoreASMControl extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
+		RequestDispatcher disp = getServletContext().getRequestDispatcher("/engine.jsp");
+	    disp.forward(request, response);
 	}
 
 	/**
@@ -89,12 +90,16 @@ public class CoreASMControl extends HttpServlet {
 			ServletContext ctx = getServletContext();
 			ServerControl server = (ServerControl) ctx.getAttribute("RMIServer");
 			ctrl = server.getNewEngine();
-			session = request.getSession();
 			session.setAttribute("Control", ctrl);
+			UpdateSubscription sub = new UpdateSubImp();
+			((EngineControl) session.getAttribute("Control"))
+					.subscribe(sub);
+			session.setAttribute("Subscription", sub);
+			session.setAttribute("UpdateCount", 0);
 		}
 
-		Part file = request.getPart("file");
-		if (file == null) {
+		
+		if (!ServletFileUpload.isMultipartContent(request)) {
 			switch (Command.valueOf(request.getParameter("command"))) {
 			case start:
 				ctrl.start();
@@ -107,6 +112,7 @@ public class CoreASMControl extends HttpServlet {
 				break;
 			}
 		} else {
+			Part file = request.getPart("file");
 			InputStream in = file.getInputStream();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    byte[] data = new byte[4096];
@@ -118,6 +124,8 @@ public class CoreASMControl extends HttpServlet {
 		    }
 		    byte[] spec = baos.toByteArray();
 		    ctrl.load(spec);
+		    RequestDispatcher disp = getServletContext().getRequestDispatcher("/engine.jsp");
+		    disp.forward(request, response);
 		}
 	}
 
