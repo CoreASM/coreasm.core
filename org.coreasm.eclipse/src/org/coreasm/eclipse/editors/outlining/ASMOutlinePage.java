@@ -5,7 +5,6 @@ import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode.NodeType;
-import org.coreasm.eclipse.util.Utilities;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
@@ -34,7 +33,6 @@ public class ASMOutlinePage extends ContentOutlinePage {
 		this.editor = editor;
 		labelProvider = new ASMLabelProvider();
 		contentProvider = new ASMContentProvider(editor);
-		Utilities.addOutlineContentProvider(new StandardOutlineContentProvider());
 	}
 
 	@Override

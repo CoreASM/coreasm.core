@@ -45,6 +45,10 @@ public class ASMContentProvider implements ITreeContentProvider, Observer
 	private IFile parentFile;
 	private StructuredViewer viewer;
 	
+	static {
+		Utilities.addOutlineContentProvider(new StandardOutlineContentProvider());
+	}
+	
 	public ASMContentProvider() {
 	}
 	
