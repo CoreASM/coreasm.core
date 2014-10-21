@@ -1,10 +1,12 @@
 package org.coreasm.eclipse.editors.outlining;
 
+import java.util.Observable;
+import java.util.Observer;
+
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
 import org.coreasm.eclipse.editors.IconManager;
-import org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode.NodeType;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
@@ -18,10 +20,12 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-public class ASMOutlinePage extends ContentOutlinePage {
+public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 	private ASMEditor editor;
 	private Object input;
 	
@@ -31,8 +35,9 @@ public class ASMOutlinePage extends ContentOutlinePage {
 	public ASMOutlinePage(ASMEditor editor) {
 		super();
 		this.editor = editor;
+		editor.getParser().addObserver(this);
 		labelProvider = new ASMLabelProvider();
-		contentProvider = new ASMContentProvider(editor);
+		contentProvider = new ASMContentProvider();
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class ASMOutlinePage extends ContentOutlinePage {
 		});
 		
 		if (input != null)
-			viewer.setInput(input);
+			setInput(input);
 	}
 	
 	public void setInput(Object input) {
@@ -80,6 +85,28 @@ public class ASMOutlinePage extends ContentOutlinePage {
 		this.input = input;
 		if (viewer != null && !viewer.getControl().isDisposed())
 			viewer.setInput(input);
+		update();
+	}
+	
+	protected void update() {
+		TreeViewer viewer = getTreeViewer();
+		if (viewer != null && !viewer.getControl().isDisposed()) {
+			Control control = viewer.getControl();
+			control.setRedraw(false);
+			viewer.refresh();
+			viewer.expandAll();
+			control.setRedraw(true);
+		}
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				update();
+			}
+		});
 	}
 	
 	@Override
@@ -96,7 +123,7 @@ public class ASMOutlinePage extends ContentOutlinePage {
 			try {
 				if (element instanceof ASMOutlineTreeNode) {
 					ASMOutlineTreeNode node = (ASMOutlineTreeNode) element;
-					if (node.getType() == NodeType.GROUP_NODE)
+					if (node.getNode() == null)
 						return;
 
 					ASMDocument document = (ASMDocument)editor.getInputDocument();
@@ -120,6 +147,7 @@ public class ASMOutlinePage extends ContentOutlinePage {
 			@Override
 			public void run() {
 				contentProvider.setDisplayGroups(this.isChecked());
+				update();
 			}
 		};
 		action.setImageDescriptor(IconManager.getDescriptor("/icons/editor/folders.gif"));
@@ -129,6 +157,7 @@ public class ASMOutlinePage extends ContentOutlinePage {
 			@Override
 			public void run() {
 				contentProvider.setDisplaySorted(this.isChecked());
+				update();
 			}
 		};
 		action.setImageDescriptor(IconManager.getDescriptor("/icons/editor/sort.png"));

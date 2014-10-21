@@ -13,6 +13,9 @@ import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
@@ -25,46 +28,33 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.progress.UIJob;
 
-public class ASMContentProvider implements ITreeContentProvider, Observer 
+public class ASMContentProvider implements ITreeContentProvider
 {
 	private final static String AST_POSITIONS = "__ast_position";
 	
 	private final IPositionUpdater positionUpdater = new DefaultPositionUpdater(AST_POSITIONS);
-	private ASMEditor editor;
+	private HashMap<ASMEditor, Observer> observers = new HashMap<ASMEditor, Observer>();
 	private ASMOutlineTreeNode root;
 	private ASMOutlineTreeNode ungroupedRoot;
 	private ASMOutlineTreeNode groupedRoot;
 	private boolean displayGroups = true;
 	private boolean displaySorted = false;
-	private IFile parentFile;
 	private StructuredViewer viewer;
 	
 	static {
 		Utilities.addOutlineContentProvider(new StandardOutlineContentProvider());
 	}
 	
-	public ASMContentProvider() {
-	}
-	
-	public ASMContentProvider(ASMEditor editor) {
-		this.editor = editor;
-		editor.getParser().addObserver(this);
-	}
-	
 	public void setDisplaySorted(boolean displaySorted) {
 		this.displaySorted = displaySorted;
-		update();
 	}
 	
 	public void setDisplayGroups(boolean displayGroups) {
 		this.displayGroups = displayGroups;
-		update();
 	}
 	
 	public boolean isDisplaySorted() {
@@ -85,44 +75,37 @@ public class ASMContentProvider implements ITreeContentProvider, Observer
 	}
 	
 	private ASMEditor getEditor(Object input) {
-		if (!(input instanceof IFile))
-			return editor;
-		if (editor != null)
-			editor.getParser().deleteObserver(this);
-		parentFile = (IFile)input;
-		editor = (ASMEditor)Utilities.getEditor(parentFile);
-		if (editor != null)
-			editor.getParser().addObserver(this);
+		ASMEditor editor = (ASMEditor)Utilities.getEditor(input);
+		registerEditor(input);
 		return editor;
 	}
 	
-	protected void update() {
-		if (viewer != null && !viewer.getControl().isDisposed()) {
-			if (parentFile != null)
-				viewer.refresh(parentFile);
-			else {
-				viewer.refresh();
-				if (viewer instanceof TreeViewer) {
-					TreeViewer treeViewer = (TreeViewer)viewer;
-					Control control = treeViewer.getControl();
-					control.setRedraw(false);
-					treeViewer.expandAll();
-					control.setRedraw(true);
-				}
+	private void registerEditor(final Object input) {
+		ASMEditor editor = (ASMEditor)Utilities.getEditor(input);
+		if (editor != null) {
+			Observer observer = observers.get(editor);
+			if (observer == null) {
+				observer = new Observer() {
+					
+					@Override
+					public void update(Observable o, Object arg) {
+						new UIJob("Updating Outline") {
+							
+							@Override
+							public IStatus runInUIThread(IProgressMonitor monitor) {
+								if (viewer != null && !viewer.getControl().isDisposed())
+									viewer.refresh(input);
+								return Status.OK_STATUS;
+							}
+						}.schedule();
+					}
+				};
+				editor.getParser().addObserver(observer);
+				observers.put(editor, observer);
 			}
 		}
 	}
 	
-	@Override
-	public void update(Observable o, Object arg) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				update();
-			}
-		});
-	}
-
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (viewer != this.viewer) {
@@ -131,7 +114,9 @@ public class ASMContentProvider implements ITreeContentProvider, Observer
 				
 				@Override
 				public void open(OpenEvent event) {
-					getEditor(parentFile);
+					ISelection selection = event.getSelection();
+					IStructuredSelection sel = (IStructuredSelection) selection;
+					registerEditor(sel.getFirstElement());
 				}
 			});
 			this.viewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -141,22 +126,18 @@ public class ASMContentProvider implements ITreeContentProvider, Observer
 					ISelection selection = event.getSelection();
 					IStructuredSelection sel = (IStructuredSelection) selection;
 					Object element = sel.getFirstElement();
+					registerEditor(element);
 					try {
-						ASMEditor editor = getEditor(parentFile);
-						if (editor == null)
-							Utilities.openEditor(parentFile);
-					
 						if (element instanceof ASMOutlineTreeNode) {
 							ASMOutlineTreeNode node = (ASMOutlineTreeNode) element;
-							if (node.getType() == NodeType.GROUP_NODE)
+							if (node.getNode() == null)
 								return;
-
+							IFile parentFile = node.getParentFile();
+							Utilities.openEditor(parentFile);
 							ASMDocument document = (ASMDocument)getEditor(parentFile).getInputDocument();
 							getEditor(parentFile).setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), ASMDocument.calculateLength(node.getNode()), true);
 						}
-					}
-					catch (IllegalArgumentException exeption) {
-						getEditor(parentFile).resetHighlightRange();
+					} catch (IllegalArgumentException exeption) {
 					} catch (PartInitException e) {
 						e.printStackTrace();
 					}
@@ -188,16 +169,17 @@ public class ASMContentProvider implements ITreeContentProvider, Observer
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		ASTNode node = null;
-		if (getEditor(inputElement) != null)
-			node = getEditor(inputElement).getParser().getRootNode();
-		else {
-			groupedRoot = null;
-			ungroupedRoot = null;
-		}
+		if (getEditor(inputElement) == null)
+			return null;
+		ASTNode node = getEditor(inputElement).getParser().getRootNode();
 		if (node != null) {
 			ungroupedRoot = new ASMOutlineTreeNode(node);
 			groupedRoot = createStructuredTree(node);
+			if (inputElement instanceof IFile) {
+				IFile parent = (IFile)inputElement;
+				ungroupedRoot.setParentFile(parent);
+				groupedRoot.setParentFile(parent);
+			}
 		}
 		
 		root = (displayGroups ? groupedRoot : ungroupedRoot);

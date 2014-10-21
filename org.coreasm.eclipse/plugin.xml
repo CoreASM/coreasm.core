@@ -549,7 +549,7 @@
              viewerId="org.eclipse.ui.navigator.ProjectExplorer">
           <includes>
              <contentExtension
-                   pattern="org.coreasm.eclipse.specificationContent">
+                   pattern="org.coreasm.eclipse.ASMspecificationContent">
              </contentExtension></includes>
        </viewerContentBinding>
     </extension>
@@ -558,14 +558,19 @@
        <navigatorContent
              activeByDefault="true"
              contentProvider="org.coreasm.eclipse.editors.outlining.ASMContentProvider"
-             id="org.coreasm.eclipse.specificationContent"
+             id="org.coreasm.eclipse.ASMspecificationContent"
              labelProvider="org.coreasm.eclipse.editors.outlining.ASMLabelProvider"
-             name="outline"
+             name="ASMspecificationContent"
              priority="normal">
           <triggerPoints>
-             <instanceof
-                   value="org.eclipse.core.resources.IFile">
-             </instanceof></triggerPoints>
+             <or>
+                <instanceof
+                      value="org.eclipse.core.resources.IFile">
+                </instanceof>
+                <instanceof
+                      value="org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode">
+                </instanceof>
+             </or></triggerPoints>
           <possibleChildren>
              <instanceof
                    value="org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode">

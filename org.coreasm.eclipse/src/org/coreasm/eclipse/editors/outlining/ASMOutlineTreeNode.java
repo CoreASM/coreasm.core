@@ -9,6 +9,7 @@ import org.coreasm.eclipse.util.OutlineContentProvider;
 import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -34,7 +35,7 @@ public class ASMOutlineTreeNode implements Comparable<ASMOutlineTreeNode> {
 	private final Image image;
 	private final String suffix;
 	
-	private ASMOutlineTreeNode parent;
+	private Object parent;
 	private final List<ASMOutlineTreeNode> children;
 	
 	public ASMOutlineTreeNode(Node node, NodeType type, String description, String group, Image image, String suffix) {
@@ -65,7 +66,19 @@ public class ASMOutlineTreeNode implements Comparable<ASMOutlineTreeNode> {
 			child.parent = null;
 	}
 	
-	public ASMOutlineTreeNode getParent() {
+	public void setParentFile(IFile parent) {
+		this.parent = parent;
+	}
+	
+	public IFile getParentFile() {
+		if (parent instanceof IFile)
+			return (IFile)parent;
+		if (parent instanceof ASMOutlineTreeNode)
+			return ((ASMOutlineTreeNode)parent).getParentFile();
+		return null;
+	}
+	
+	public Object getParent() {
 		return parent;
 	}
 	
