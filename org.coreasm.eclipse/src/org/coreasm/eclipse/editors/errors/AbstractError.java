@@ -6,15 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.eclipse.core.resources.IFile;
+import org.coreasm.eclipse.util.Utilities;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Abstract class for modeling errors within CoreASM specifications. It stores
@@ -198,26 +193,12 @@ public abstract class AbstractError
 	public static AbstractError createFromMarker(IMarker marker) {
 		try {
 			AbstractError error = AbstractError.decode(marker.getAttribute("data", ""));
-			IEditorPart editor = getEditor(marker);
+			IEditorPart editor = Utilities.getEditor(marker);
 			if (editor instanceof ASMEditor) {
 				error.setDocument(((ASMEditor)editor).getDocumentProvider().getDocument(editor.getEditorInput()));
 				return error;
 			}
 		} catch (Exception e) {
-		}
-		return null;
-	}
-	
-	private static IEditorPart getEditor(IMarker marker) {
-		IResource resource = marker.getResource();
-		if (resource instanceof IFile) {
-			IEditorInput input = new FileEditorInput((IFile)resource);
-			
-			if (input != null) {
-				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				if (page != null)
-					return page.findEditor(input);
-			}
 		}
 		return null;
 	}

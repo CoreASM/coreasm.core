@@ -12,8 +12,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
@@ -38,7 +36,7 @@ public class ASMMarkerResolutionGenerator implements IMarkerResolutionGenerator 
 				IResource resource = marker.getResource();
 				if (resource instanceof IFile) {
 					try {
-						editor = IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), (IFile)marker.getResource(), true);
+						editor = Utilities.openEditor(marker);
 						if (editor instanceof ITextEditor) {
 							int start = MarkerUtilities.getCharStart(marker);
 							int end = MarkerUtilities.getCharEnd(marker);

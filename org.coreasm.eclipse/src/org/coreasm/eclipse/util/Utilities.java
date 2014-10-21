@@ -25,12 +25,39 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
+/**
+ * 
+ * @author Michael Stegmaier
+ *
+ */
 public final class Utilities {
 	
 	private static ArrayList<OutlineContentProvider> outlineContentProviders = new ArrayList<OutlineContentProvider>();
 	
+	public static IEditorPart openEditor(Object object) throws PartInitException {
+		if (object instanceof IResource)
+			return openEditor((IResource)object);
+		if (object instanceof IMarker)
+			return openEditor((IMarker)object);
+		return null;
+	}
+	
+	public static IEditorPart openEditor(IMarker marker) throws PartInitException {
+		return openEditor(marker.getResource());
+	}
+	
+	public static IEditorPart openEditor(IResource resource) throws PartInitException {
+		if (resource instanceof IFile)
+			return openEditor((IFile)resource);
+		return null;
+	}
+	
 	public static IEditorPart openEditor(IFile file) throws PartInitException {
-		return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true);
+		return IDE.openEditor(getActiveWorkbenchWindow().getActivePage(), file, true);
+	}
+	
+	public static IEditorPart openEditor(String filename) throws PartInitException {
+		return openEditor(getFile(filename));
 	}
 	
 	public static IEditorPart getEditor(Object object) {
@@ -62,27 +89,28 @@ public final class Utilities {
 	}
 	
 	public static IEditorPart getEditor(IFile file) {
-		if (file != null)
-			return getEditor(new FileEditorInput(file));
-		return null;
+		return getEditor(new FileEditorInput(file));
 	}
 	
 	public static IEditorPart getEditor(IFileEditorInput input) {
 		if (input != null) {
-			final IWorkbenchWindow[] pointer = new IWorkbenchWindow[1];
-			Display.getDefault().syncExec(new Runnable() {
-				
-				@Override
-				public void run() {
-					pointer[0] = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-				}
-			});
-			IWorkbenchWindow window = pointer[0];
-			IWorkbenchPage page = window.getActivePage();
+			IWorkbenchPage page = getActiveWorkbenchWindow().getActivePage();
 			if (page != null)
 				return page.findEditor(input);
 		}
 		return null;
+	}
+	
+	private static IWorkbenchWindow getActiveWorkbenchWindow() {
+		final IWorkbenchWindow[] pointer = new IWorkbenchWindow[1];
+		Display.getDefault().syncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				pointer[0] = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			}
+		});
+		return pointer[0];
 	}
 	
 	public static Set<IFile> getIncludedFiles(IFile file, boolean transitive) {
