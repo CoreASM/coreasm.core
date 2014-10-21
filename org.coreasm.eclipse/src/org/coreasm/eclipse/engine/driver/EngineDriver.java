@@ -21,7 +21,6 @@ package org.coreasm.eclipse.engine.driver;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +31,6 @@ import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.engine.CoreASMEngineFactory;
 import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
-import org.coreasm.eclipse.tools.ColorManager;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
@@ -57,6 +55,8 @@ import org.coreasm.util.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IOConsole;
@@ -103,13 +103,9 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 	private volatile boolean shouldStop = false;
 	private volatile boolean shouldPause = false;
 	
-	private static long lastPrefChangeTime = 0;
-	
 	public static synchronized EngineDriver getSyntaxInstance() {
-		if (syntaxInstance == null || PreferenceConstants.isPrefChanged()) {
+		if (syntaxInstance == null || PreferenceConstants.isPrefChanged())
 			syntaxInstance = new EngineDriver(true);
-			lastPrefChangeTime = (new Date()).getTime();
-		}
 		return syntaxInstance;
 	}
 	
@@ -401,8 +397,8 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 		stderr=new PrintStream(consoleStderr);
 		stddump=new PrintStream(consoleStddump);
 		consoleStdout.setColor(null);
-		consoleStderr.setColor(ColorManager.getColor(IStreamsColorConstants.ERROR));
-		consoleStddump.setColor(ColorManager.getColor(IStreamsColorConstants.DUMP));
+		consoleStderr.setColor(new Color(Display.getCurrent(), IStreamsColorConstants.ERROR));
+		consoleStddump.setColor(new Color(Display.getCurrent(), IStreamsColorConstants.DUMP));
 
 		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {console});
 		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);
@@ -421,8 +417,8 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 		stderr=new PrintStream(consoleStderr);
 		stddump=new PrintStream(consoleStddump);
 		consoleStdout.setColor(null);
-		consoleStderr.setColor(ColorManager.getColor(IStreamsColorConstants.ERROR));
-		consoleStddump.setColor(ColorManager.getColor(IStreamsColorConstants.DUMP));
+		consoleStderr.setColor(new Color(Display.getCurrent(), IStreamsColorConstants.ERROR));
+		consoleStddump.setColor(new Color(Display.getCurrent(), IStreamsColorConstants.DUMP));
 
 		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {console});
 		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);

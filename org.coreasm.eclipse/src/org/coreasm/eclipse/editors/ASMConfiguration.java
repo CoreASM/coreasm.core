@@ -4,7 +4,6 @@ package org.coreasm.eclipse.editors;
 import org.coreasm.eclipse.editors.contentassist.TemplateAssistProcessor;
 import org.coreasm.eclipse.editors.hover.ASMTextHover;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
-import org.coreasm.eclipse.tools.ColorManager;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -18,6 +17,8 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 /**
@@ -30,16 +31,14 @@ public class ASMConfiguration
 extends TextSourceViewerConfiguration
 {
 	private ASMEditor editor;
-	private ColorManager colorManager;
 
 	// scanner objects for syntax highlighting
 	private CommentScanner commentScanner;
 	private KeywordScanner keywordScanner;
 	
-	public ASMConfiguration(ASMEditor editor, ColorManager colorManager)
+	public ASMConfiguration(ASMEditor editor)
 	{
 		this.editor = editor;
-		this.colorManager = colorManager;
 	}
 	
 	/**
@@ -100,8 +99,8 @@ extends TextSourceViewerConfiguration
 	{
 		if (commentScanner == null)
 		{
-			commentScanner = new CommentScanner(colorManager);
-			commentScanner.setDefaultReturnToken(new Token(new TextAttribute(ColorManager.getColor(IEditorColorConstants.ASM_COMMENT))));
+			commentScanner = new CommentScanner();
+			commentScanner.setDefaultReturnToken(new Token(new TextAttribute(new Color(Display.getCurrent(), IEditorColorConstants.ASM_COMMENT))));
 		}
 		return commentScanner;
 	}
@@ -115,8 +114,8 @@ extends TextSourceViewerConfiguration
 	{
 		if (keywordScanner == null)
 		{
-			keywordScanner = new KeywordScanner(colorManager);
-			keywordScanner.setDefaultReturnToken(new Token(new TextAttribute(ColorManager.getColor(IEditorColorConstants.DEFAULT))));
+			keywordScanner = new KeywordScanner();
+			keywordScanner.setDefaultReturnToken(new Token(new TextAttribute(new Color(Display.getCurrent(), IEditorColorConstants.DEFAULT))));
 		}
 		return keywordScanner;
 	}

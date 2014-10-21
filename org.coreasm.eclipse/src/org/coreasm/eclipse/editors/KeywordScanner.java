@@ -3,9 +3,6 @@ package org.coreasm.eclipse.editors;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.coreasm.eclipse.editors.IEditorColorConstants;
-import org.coreasm.eclipse.editors.TokenSkipRule;
-import org.coreasm.eclipse.tools.ColorManager;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -16,6 +13,7 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 public class KeywordScanner
 extends RuleBasedScanner 
@@ -35,24 +33,24 @@ extends RuleBasedScanner
 	/**
 	 * This class defines the rules and formatting of keywords, IDs and strings 
 	 * for the syntax highlighting. 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
-	public KeywordScanner(ColorManager colorManager)
+	public KeywordScanner()
 	{
 		super();
 		
 		// create formatting token for keywords
-		Color colorKeyword = ColorManager.getColor(IEditorColorConstants.KEYWORD);
+		Color colorKeyword = new Color(Display.getCurrent(), IEditorColorConstants.KEYWORD);
 		TextAttribute attrKeyword = new TextAttribute(colorKeyword, null, SWT.BOLD);
 		asmKeyword = new Token(attrKeyword);
 		
 		// create formatting token for IDs
-		Color colorID = ColorManager.getColor(IEditorColorConstants.PLUGIN_DEFINED_IDS);
+		Color colorID = new Color(Display.getCurrent(), IEditorColorConstants.PLUGIN_DEFINED_IDS);
 		TextAttribute attrID = new TextAttribute(colorID, null, SWT.ITALIC);
 		asmID = new Token(attrID);
 		
 		// create formatting token for strings
-		Color colorString = ColorManager.getColor(IEditorColorConstants.STRING);
+		Color colorString = new Color(Display.getCurrent(), IEditorColorConstants.STRING);
 		TextAttribute attrString = new TextAttribute(colorString);
 		asmString = new Token(attrString);
 		

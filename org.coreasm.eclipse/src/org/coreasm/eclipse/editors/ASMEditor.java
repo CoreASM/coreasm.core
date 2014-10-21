@@ -15,7 +15,6 @@ import org.coreasm.eclipse.editors.outlining.ASMOutlinePage;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMEclipseWarning;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
-import org.coreasm.eclipse.tools.ColorManager;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMIssue;
@@ -87,7 +86,6 @@ implements IDocumentListener
 	private ASMIncludeWatcher includeWatcher;
 	private ASMOutlinePage outlinePage;
 	private IEditorInput input;
-	private ColorManager colorManager;
 
 	static {
 		LOGGER_UI_DEBUG.setVisible(false);
@@ -103,9 +101,8 @@ implements IDocumentListener
 		// its first call (which will be the first call of this constructor).
 		SlimEngine.getFullEngine();
 		
-		colorManager = new ColorManager();
 		documentProvider = new ASMDocumentProvider(this);
-		setSourceViewerConfiguration(new ASMConfiguration(this, colorManager));
+		setSourceViewerConfiguration(new ASMConfiguration(this));
 		setDocumentProvider(documentProvider);
 		
 		includeWatcher = new ASMIncludeWatcher(this);
@@ -146,7 +143,6 @@ implements IDocumentListener
 			;
 		}
 		
-		ColorManager.dispose();
 		if (outlinePage != null)
 			outlinePage.setInput(null);
 		super.dispose();
