@@ -27,7 +27,12 @@
 					<include>org/coreasm/compiler/plugins/**/include/*.*</include>
 				</includes>
 			</resource>
+			<resource>
+				<directory>rsc</directory>
+			</resource>
 		</resources>
+		
+		
 		
 		<plugins>
 			<plugin>
