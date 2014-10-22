@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.registry.ICoreASMPlugin;
@@ -107,4 +108,8 @@ public abstract class Plugin implements ICoreASMPlugin {
 		return this.getName();
 	}
 	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return null;
+	}
 }

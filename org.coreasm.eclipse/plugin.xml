@@ -543,4 +543,18 @@
          markerType="org.coreasm.eclipse.markers.ProblemMarker"
          class="org.coreasm.eclipse.editors.quickfix.ASMMarkerResolutionGenerator"/>
    </extension>
+    <extension
+          point="org.eclipse.ui.exportWizards">
+       <category
+             id="org.coreasm.eclipse.wizard"
+             name="CoreASM">
+       </category>
+       <wizard
+             category="org.coreasm.eclipse.wizard"
+             class="org.coreasm.eclipse.wizards.ToJarExportWizard"
+             icon="icons/CoreASM-Logo.png"
+             id="org.coreasm.eclipse.coreasmtojar"
+             name="CoreASM to Jar Export">
+       </wizard>
+    </extension>
 </plugin>

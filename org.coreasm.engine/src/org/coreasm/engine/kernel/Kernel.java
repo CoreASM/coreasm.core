@@ -15,13 +15,19 @@
 
 package org.coreasm.engine.kernel;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -51,6 +57,7 @@ import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
@@ -66,6 +73,13 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.VocabularyExtender;
+import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * Provides essential services to Kernel.
@@ -77,6 +91,9 @@ import org.coreasm.engine.plugin.VocabularyExtender;
 public class Kernel extends Plugin 
 		implements VocabularyExtender, Aggregator, OperatorProvider, ParserPlugin, PluginServiceInterface {
 
+
+	private static final Logger logger = LoggerFactory.getLogger(Kernel.class);
+	
 	public static final VersionInfo VERSION_INFO = Engine.VERSION_INFO;
 
 	public static final String PLUGIN_NAME = Kernel.class.getSimpleName();
@@ -168,6 +185,10 @@ public class Kernel extends Plugin
     private final Parser.Reference<Node> refRuleSignatureParser = Parser.newReference();
     private final Parser.Reference<Node> refBasicExprParser = Parser.newReference();
     private final Parser.Reference<Node> refRuleDeclarationParser = Parser.newReference();
+    
+    //compiler plugin
+    private CompilerPlugin compilerPlugin;
+    
     /**
      * Creates a new Kernel plugin.
      */
@@ -180,6 +201,7 @@ public class Kernel extends Plugin
 		backgroundNames.add(FunctionBackgroundElement.FUNCTION_BACKGROUND_NAME);
 		backgroundNames.add(RuleBackgroundElement.RULE_BACKGROUND_NAME);
 		
+		compilerPlugin = new CompilerKernelPlugin();
     }
  
 	@Override
@@ -1095,6 +1117,14 @@ public class Kernel extends Plugin
 	
 	public String[] getKeywords() {
 		return keywords;
+	}
+	
+	
+	
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
 	}
 }
 

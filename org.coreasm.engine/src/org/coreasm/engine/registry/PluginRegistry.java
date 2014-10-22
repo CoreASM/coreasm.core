@@ -8,22 +8,10 @@
  */
 package org.coreasm.engine.registry;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-import javax.security.auth.login.Configuration;
-
-import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +79,6 @@ public class PluginRegistry implements IPluginRegistry {
 	/**
 	 * Loads all the plugins that are available.
 	 */ 
-	@SuppressWarnings("rawtypes")
 	private void loadPlugins() {
 		logger.info("Loading CoreASM plugins...");
 		

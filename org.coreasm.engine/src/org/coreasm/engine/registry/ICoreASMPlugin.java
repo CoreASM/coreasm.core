@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.VersionInfoProvider;
@@ -109,5 +110,10 @@ public interface ICoreASMPlugin extends VersionInfoProvider {
 	 * @see #DEFAULT_LOAD_PRIORITY
 	 */
 	public double getLoadPriority();
-	
+	/**
+	 * Returns the compiler component of the plugin, or null, if there is no
+	 * compiler implementation of it
+	 * @return A compiler plugin
+	 */
+	public CompilerPlugin getCompilerPlugin();
 }

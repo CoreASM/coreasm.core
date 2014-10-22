@@ -13,13 +13,8 @@
  
 package org.coreasm.engine.kernel;
 
-import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.ParseMap;
-import org.coreasm.engine.parser.ParseMap3;
-import org.coreasm.engine.parser.ParseMap5;
-import org.coreasm.engine.parser.ParseMapN;
 
 /** 
  * A parser map for the update rule form.
@@ -28,8 +23,6 @@ import org.coreasm.engine.parser.ParseMapN;
  * 
  */
 public class UpdateRuleParseMap extends ParseMap<Object[], Node> {
-
-	private static final long serialVersionUID = 1L;
 
 	public UpdateRuleParseMap() {
 		super(Kernel.PLUGIN_NAME);

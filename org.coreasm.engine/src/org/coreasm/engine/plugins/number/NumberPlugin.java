@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -58,6 +59,25 @@ import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
+import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.exception.CompilerException;
+import org.coreasm.compiler.exception.EntryAlreadyExistsException;
+import org.coreasm.compiler.exception.IncludeException;
+import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
+import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
+import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
+import org.coreasm.compiler.mainprogram.EntryType;
+import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.number.CompilerNumberPlugin;
+import org.coreasm.compiler.plugins.number.NumberValueSpawner;
+import org.coreasm.compiler.preprocessor.InheritRule;
+import org.coreasm.compiler.preprocessor.SynthesizeRule;
+import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CoreASMCompiler;
 
 /**
  * Plugin for number related literals, operations, and functions.
@@ -66,7 +86,7 @@ import org.coreasm.engine.plugin.VocabularyExtender;
  * 
  */
 public class NumberPlugin extends Plugin implements ParserPlugin,
-		InterpreterPlugin, VocabularyExtender, OperatorProvider {
+		InterpreterPlugin, VocabularyExtender, OperatorProvider{
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 5, 4, "");
 
@@ -129,8 +149,11 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 
 	private SizeFunctionElement sizeFunction = null;
 
+	private CompilerPlugin compilerPlugin;
+	
 	public NumberPlugin() {
 		exposedParsers = new HashMap<String, Parser<Node>>();
+		compilerPlugin = new CompilerNumberPlugin();
 	}
 
 	@Override
@@ -659,4 +682,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 		Number
 	}
 
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 }
