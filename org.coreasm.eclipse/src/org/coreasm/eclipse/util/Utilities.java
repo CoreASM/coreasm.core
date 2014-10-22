@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +13,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -85,11 +85,16 @@ public final class Utilities {
 	}
 	
 	private static IFile getFile(String filename) {
-		return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(filename));
+		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(new File(filename).toURI());
+		if (files.length > 0)
+			return files[0];
+		return null;
 	}
 	
 	public static IEditorPart getEditor(IFile file) {
-		return getEditor(new FileEditorInput(file));
+		if (file != null)
+			return getEditor(new FileEditorInput(file));
+		return null;
 	}
 	
 	public static IEditorPart getEditor(IFileEditorInput input) {
