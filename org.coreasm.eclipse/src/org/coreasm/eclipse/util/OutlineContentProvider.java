@@ -7,5 +7,5 @@ public interface OutlineContentProvider {
 	public URL getGroupImage(String group);
 	public String getGroup(String grammarRule);
 	public String getSuffix(String grammarRule, String description);
-	public boolean hasChildren(String grammarRule);
+	public boolean hasDeclarations(String grammarRule);
 }

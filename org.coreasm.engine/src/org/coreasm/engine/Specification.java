@@ -163,7 +163,7 @@ public class Specification {
 		if (this.fileName == null)
 			updateLines(loadSpec(reader, "Specification"));
 		else
-			updateLines(loadSpec(reader, this.fileName));
+			updateLines(loadSpec(reader, this.absolutePath));
 		logger.debug("New specification created.");
 	}
 	

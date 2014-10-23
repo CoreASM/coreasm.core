@@ -64,7 +64,7 @@ public class StandardOutlineContentProvider implements OutlineContentProvider {
 	}
 
 	@Override
-	public boolean hasChildren(String grammarRule) {
+	public boolean hasDeclarations(String grammarRule) {
 		return "CoreASM".equals(grammarRule) || "CoreModule".equals(grammarRule);
 	}
 }

@@ -204,7 +204,7 @@ public class ASMOutlineTreeNode implements Comparable<ASMOutlineTreeNode> {
 	private static List<ASMOutlineTreeNode> getChildren(ASTNode node) {
 		ArrayList<ASMOutlineTreeNode> children = new ArrayList<ASMOutlineTreeNode>();
 		for (OutlineContentProvider provider : Utilities.getOutlineContentProviders()) {
-			if (provider.hasChildren(node.getGrammarRule())) {
+			if (provider.hasDeclarations(node.getGrammarRule())) {
 				for (ASTNode child : node.getAbstractChildNodes()) {
 					if (!ASTNode.ID_CLASS.equals(child.getGrammarClass()))
 						children.add(new ASMOutlineTreeNode(child));

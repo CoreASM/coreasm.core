@@ -1,5 +1,7 @@
 package org.coreasm.eclipse.editors.outlining;
 
+import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -16,7 +18,15 @@ public class ASMLabelProvider extends StyledCellLabelProvider implements ILabelP
 		if (element instanceof ASMOutlineTreeNode) {
 			ASMOutlineTreeNode node = (ASMOutlineTreeNode)element;
 			cell.setImage(node.getImage());
-			text.append(node.getDescription());
+			if (node.getDescription() == null) {
+				Node n = node.getNode();
+				if (n instanceof ASTNode)
+					text.append("Unknown " + ((ASTNode) n).getGrammarClass());
+				else
+					text.append("Unknown Node");
+			}
+			else
+				text.append(node.getDescription());
 			String suffix = node.getSuffix();
 			if (suffix != null)
 				text.append(" : " + suffix, StyledString.DECORATIONS_STYLER);
