@@ -170,7 +170,7 @@ public class ASMContentProvider implements ITreeContentProvider
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if (getEditor(inputElement) == null)
-			return null;
+			return new Object[] { root };
 		ASTNode node = getEditor(inputElement).getParser().getRootNode();
 		if (node != null) {
 			ungroupedRoot = new ASMOutlineTreeNode(node);
