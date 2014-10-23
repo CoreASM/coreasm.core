@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.progress.UIJob;
 
@@ -37,7 +38,7 @@ public class ASMContentProvider implements ITreeContentProvider
 	private final static String AST_POSITIONS = "__ast_position";
 	
 	private final IPositionUpdater positionUpdater = new DefaultPositionUpdater(AST_POSITIONS);
-	private HashMap<ASMEditor, Observer> observers = new HashMap<ASMEditor, Observer>();
+	private HashMap<IEditorPart, Observer> observers = new HashMap<IEditorPart, Observer>();
 	private ASMOutlineTreeNode root;
 	private ASMOutlineTreeNode ungroupedRoot;
 	private ASMOutlineTreeNode groupedRoot;
@@ -81,8 +82,9 @@ public class ASMContentProvider implements ITreeContentProvider
 	}
 	
 	private void registerEditor(final Object input) {
-		ASMEditor editor = (ASMEditor)Utilities.getEditor(input);
-		if (editor != null) {
+		IEditorPart editor = Utilities.getEditor(input);
+		if (editor instanceof ASMEditor) {
+			ASMEditor asmEditor = (ASMEditor)editor;
 			Observer observer = observers.get(editor);
 			if (observer == null) {
 				observer = new Observer() {
@@ -100,8 +102,8 @@ public class ASMContentProvider implements ITreeContentProvider
 						}.schedule();
 					}
 				};
-				editor.getParser().addObserver(observer);
-				observers.put(editor, observer);
+				asmEditor.getParser().addObserver(observer);
+				observers.put(asmEditor, observer);
 			}
 		}
 	}
@@ -144,9 +146,11 @@ public class ASMContentProvider implements ITreeContentProvider
 				}
 			});
 		}
-		if (getEditor(newInput) != null) {
-			if (oldInput != null) {
-				IDocument document = getEditor(oldInput).getDocumentProvider().getDocument(oldInput);
+		if (oldInput != null) {
+			ASMEditor editor = getEditor(oldInput);
+			if (editor != null) {
+				editor.getParser().deleteObserver(observers.get(editor));
+				IDocument document = editor.getDocumentProvider().getDocument(oldInput);
 				if (document != null) {
 					try {
 						document.removePositionCategory(AST_POSITIONS);
@@ -156,8 +160,11 @@ public class ASMContentProvider implements ITreeContentProvider
 					document.removePositionUpdater(positionUpdater);
 				}
 			}
-			
-			if (newInput != null) {
+		}
+		
+		if (newInput != null) {
+			ASMEditor editor = getEditor(newInput);
+			if (editor != null) {
 				IDocument document = getEditor(newInput).getDocumentProvider().getDocument(newInput);
 				if (document != null) {
 					document.addPositionCategory(AST_POSITIONS);
@@ -170,7 +177,7 @@ public class ASMContentProvider implements ITreeContentProvider
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if (getEditor(inputElement) == null)
-			return new Object[] { root };
+			return new Object[0];
 		ASTNode node = getEditor(inputElement).getParser().getRootNode();
 		if (node != null) {
 			ungroupedRoot = new ASMOutlineTreeNode(node);
@@ -198,12 +205,12 @@ public class ASMContentProvider implements ITreeContentProvider
 		if (parentElement instanceof IResource)
 			return getElements(parentElement);
 		if (!(parentElement instanceof ASMOutlineTreeNode))
-			return null;
+			return new Object[0];
 		
 		ASMOutlineTreeNode parentNode = (ASMOutlineTreeNode) parentElement;
 		
 		if (!parentNode.hasChildren())
-			return null;
+			return new Object[0];
 		
 		List<ASMOutlineTreeNode> list = parentNode.getChildren();
 		
