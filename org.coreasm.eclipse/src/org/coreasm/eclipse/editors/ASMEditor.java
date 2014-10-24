@@ -139,9 +139,6 @@ implements IDocumentListener
 		} catch (InterruptedException e) {
 			;
 		}
-		
-		if (outlinePage != null)
-			outlinePage.setInput(null);
 		super.dispose();
 		
 		// remove the childDocWatcher as WorkspaceListener
@@ -175,12 +172,7 @@ implements IDocumentListener
 			// it is created.
 			
 			if (outlinePage == null)
-			{
 				outlinePage = new ASMOutlinePage(this);
-				
-				if (getEditorInput() != null)
-					outlinePage.setInput(getEditorInput());
-			}
 			return outlinePage;
 		}
 		return super.getAdapter(required);

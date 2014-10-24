@@ -27,7 +27,6 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 	private ASMEditor editor;
-	private Object input;
 	
 	private ASMContentProvider contentProvider;
 	private StyledCellLabelProvider labelProvider;
@@ -75,17 +74,7 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 				}
 			}
 		});
-		
-		if (input != null)
-			setInput(input);
-	}
-	
-	public void setInput(Object input) {
-		TreeViewer viewer = getTreeViewer();
-		this.input = input;
-		if (viewer != null && !viewer.getControl().isDisposed())
-			viewer.setInput(input);
-		update();
+		viewer.setInput(editor.getEditorInput());
 	}
 	
 	protected void update() {
@@ -93,7 +82,7 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 		if (viewer != null && !viewer.getControl().isDisposed()) {
 			Control control = viewer.getControl();
 			control.setRedraw(false);
-			viewer.refresh();
+			viewer.setInput(editor.getEditorInput());
 			viewer.expandAll();
 			control.setRedraw(true);
 		}
