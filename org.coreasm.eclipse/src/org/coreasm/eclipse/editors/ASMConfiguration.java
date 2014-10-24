@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.editors;
 
 
+import org.coreasm.eclipse.editors.contentassist.ASMContentAssistProcessor;
 import org.coreasm.eclipse.editors.contentassist.TemplateAssistProcessor;
 import org.coreasm.eclipse.editors.hover.ASMTextHover;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
@@ -65,7 +66,7 @@ extends TextSourceViewerConfiguration
 		ContentAssistant assistant = new ContentAssistant();
 
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-		assistant.setContentAssistProcessor(new TemplateAssistProcessor(), ASMEditor.PARTITION_CODE);
+		assistant.setContentAssistProcessor(new ASMContentAssistProcessor(editor, new TemplateAssistProcessor()), ASMEditor.PARTITION_CODE);
 
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
