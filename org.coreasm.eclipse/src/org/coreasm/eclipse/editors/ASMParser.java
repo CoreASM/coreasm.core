@@ -157,7 +157,9 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 		
 		positionMap = null;
 		try {
-			((SlimEngine)slimengine).setSpec(new Specification(slimengine, new StringReader(doc.get()), parentEditor.getInputFile().getLocation().toFile().getAbsolutePath()));
+			Specification spec = new Specification(slimengine, new StringReader(doc.get()), parentEditor.getInputFile().getLocation().toFile().getAbsolutePath());
+			spec.setPluginNames(getUsedPlugins());
+			((SlimEngine)slimengine).setSpec(spec);
 		} catch (IOException e) {
 		}
 		((SlimEngine)slimengine).notifyEngineParsing();
