@@ -424,7 +424,7 @@ public class Node implements Serializable {
 	 * @see #unparseTree(NodeToFormatStringMapper)
 	 */
 	public String unparseTree() {
-		return this.unparseTree(DEFAULT_FORMAT_STRING_MAPPER);
+		return this.unparseTree(DEFAULT_FORMAT_STRING_MAPPER).trim().replaceAll("(\\s)+", "$1");
 	}
 	
 	/**

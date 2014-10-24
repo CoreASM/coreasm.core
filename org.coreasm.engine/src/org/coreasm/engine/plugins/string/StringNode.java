@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.string;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.util.Tools;
 
 /** 
  * Node for string values.
@@ -46,7 +47,7 @@ public class StringNode extends ASTNode {
 	 */
 	@Override
 	public String unparse() {
-		return "\"" + super.unparse() + "\"";
+		return "\"" + Tools.convertToEscapeSqeuence(super.unparse()) + "\"";
 	}
 	
 }
