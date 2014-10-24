@@ -6,10 +6,11 @@ import java.util.Observer;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
-import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.util.IconManager;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -47,6 +48,7 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 
 		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(labelProvider);
+		viewer.setAutoExpandLevel(AbstractTreeViewer.ALL_LEVELS);
 		
 		viewer.addSelectionChangedListener(this);
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -74,7 +76,7 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 				}
 			}
 		});
-		viewer.setInput(editor.getEditorInput());
+		update();
 	}
 	
 	protected void update() {
@@ -83,7 +85,6 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 			Control control = viewer.getControl();
 			control.setRedraw(false);
 			viewer.setInput(editor.getEditorInput());
-			viewer.expandAll();
 			control.setRedraw(true);
 		}
 	}

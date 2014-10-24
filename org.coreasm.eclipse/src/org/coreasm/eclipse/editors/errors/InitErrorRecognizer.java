@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.AstTools;
-import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.eclipse.jface.text.BadLocationException;
@@ -20,7 +20,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
  * <li>Are there more than one init statements?</li>
  * <li>Is there a rule with the given name?</li> 
  * </ul>
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public class InitErrorRecognizer 
 implements ITreeErrorRecognizer
@@ -122,7 +122,7 @@ implements ITreeErrorRecognizer
 	/**
 	 * Quick fix for adding an init for an existing rule declaration
 	 * 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_NoInit_Add
 	extends AbstractQuickFix
@@ -288,7 +288,7 @@ implements ITreeErrorRecognizer
 	/**
 	 * Quick fix for deleting an init statement.
 	 * 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_UnknInit_Delete
 	extends AbstractQuickFix
@@ -325,7 +325,7 @@ implements ITreeErrorRecognizer
 	 * Quick fix for creating a new rule with the name of the given
 	 * include statement if a rule with that name doesn't exist.
 	 * 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_UnknInit_Create
 	extends AbstractQuickFix

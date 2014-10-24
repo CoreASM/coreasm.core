@@ -84,7 +84,7 @@ public final class Utilities {
 		return getEditor(getFile(filename));
 	}
 	
-	private static IFile getFile(String filename) {
+	public static IFile getFile(String filename) {
 		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(new File(filename).toURI());
 		if (files.length > 0)
 			return files[0];

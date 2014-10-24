@@ -3,11 +3,13 @@ package org.coreasm.eclipse.editors.outlining;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.editors.ASMParser;
 import org.coreasm.eclipse.editors.outlining.ASMOutlineTreeNode.NodeType;
 import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -38,7 +40,7 @@ public class ASMContentProvider implements ITreeContentProvider
 	private final static String AST_POSITIONS = "__ast_position";
 	
 	private final IPositionUpdater positionUpdater = new DefaultPositionUpdater(AST_POSITIONS);
-	private HashMap<IEditorPart, Observer> observers = new HashMap<IEditorPart, Observer>();
+	private HashMap<ASMEditor, Observer> observers = new HashMap<ASMEditor, Observer>();
 	private ASMOutlineTreeNode root;
 	private ASMOutlineTreeNode ungroupedRoot;
 	private ASMOutlineTreeNode groupedRoot;
@@ -66,13 +68,13 @@ public class ASMContentProvider implements ITreeContentProvider
 		return displayGroups;
 	}
 	
-	public boolean isContentAvailable() {
-		return root != null;
-	}
-
 	@Override
 	public void dispose() {
-
+		for (Entry<ASMEditor, Observer> entry : observers.entrySet()) {
+			ASMParser parser = entry.getKey().getParser();
+			if (parser != null)
+				parser.deleteObserver(entry.getValue());
+		}
 	}
 	
 	private ASMEditor getEditor(Object input) {

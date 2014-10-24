@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.FileManager;
-import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.util.IconManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -32,7 +32,7 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  * <li>Is the filename a valid one, and does the file exist?</li>
  * <li>If the statement part of an multiline comment?</li> 
  * </ul>
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 
@@ -360,7 +360,7 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 		
 	/**
 	 * Helper class for storing include statements with their relevant data
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	private class IncludeStatement
 	{
@@ -427,7 +427,7 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 	
 	/**
 	 * QuickFix for opening an included document if this document contains errors.
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_ChildError_Open
 	extends AbstractQuickFix

@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.eclipse.util.OutlineContentProvider;
 import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.interpreter.ASTNode;
