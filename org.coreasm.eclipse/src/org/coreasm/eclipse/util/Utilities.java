@@ -91,6 +91,15 @@ public final class Utilities {
 		return null;
 	}
 	
+	public static void refreshFile(String filename) {
+		IFile file = getFile(filename);
+		try {
+			file.refreshLocal(IResource.DEPTH_ZERO, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static IEditorPart getEditor(IFile file) {
 		if (file != null)
 			return getEditor(new FileEditorInput(file));
