@@ -160,7 +160,8 @@ public class Node implements Serializable {
 	
 	/**
 	 * Adds a new child to this node. The child will be put
-	 * after <code>indexNode</code>.
+	 * after <code>indexNode</code>. If <code>indexNode</code> is
+	 * <code>null</code> the node will be added as first child.
 	 * 
 	 * @param indexNode the child node after which the new node will be added
 	 * @param name name of the new child node
@@ -170,7 +171,8 @@ public class Node implements Serializable {
 	public void addChildAfter(Node indexNode, String name, Node node) 
 			throws IllegalArgumentException {
 		if (indexNode == null) {
-			addChild(name, node);
+			children.add(0, new NameNodeTuple(name, node));
+			node.parent = this;
 			return;
 		}
 		int index = 0;
