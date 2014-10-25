@@ -17,6 +17,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -52,8 +53,23 @@ public final class Utilities {
 		return null;
 	}
 	
-	public static IEditorPart openEditor(IFile file) throws PartInitException {
-		return IDE.openEditor(getActiveWorkbenchWindow().getActivePage(), file, true);
+	public static IEditorPart openEditor(final IFile file) throws PartInitException {
+		final IWorkbenchPage[] pointer = new IWorkbenchPage[1];
+		Display.getDefault().syncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null)
+						pointer[0] = window.getActivePage();
+				}
+			}
+		});
+		if (pointer[0] == null)
+			return null;
+		return IDE.openEditor(pointer[0], file, true);
 	}
 	
 	public static IEditorPart openEditor(String filename) throws PartInitException {
@@ -106,22 +122,21 @@ public final class Utilities {
 		return null;
 	}
 	
-	public static IEditorPart getEditor(IFileEditorInput input) {
-		if (input != null) {
-			IWorkbenchPage page = getActiveWorkbenchWindow().getActivePage();
-			if (page != null)
-				return page.findEditor(input);
-		}
-		return null;
-	}
-	
-	private static IWorkbenchWindow getActiveWorkbenchWindow() {
-		final IWorkbenchWindow[] pointer = new IWorkbenchWindow[1];
+	public static IEditorPart getEditor(final IFileEditorInput input) {
+		final IEditorPart[] pointer = new IEditorPart[1];
 		Display.getDefault().syncExec(new Runnable() {
 			
 			@Override
 			public void run() {
-				pointer[0] = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null) {
+						IWorkbenchPage page = window.getActivePage();
+						if (page != null)
+							pointer[0] = page.findEditor(input);
+					}
+				}
 			}
 		});
 		return pointer[0];
