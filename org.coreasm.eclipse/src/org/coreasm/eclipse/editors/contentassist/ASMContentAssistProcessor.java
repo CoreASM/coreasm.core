@@ -12,6 +12,9 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.UniverseDeclaration;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.util.IconManager;
+import org.coreasm.engine.Specification.BackgroundInfo;
+import org.coreasm.engine.Specification.FunctionInfo;
+import org.coreasm.engine.Specification.UniverseInfo;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -80,6 +83,29 @@ public class ASMContentAssistProcessor implements IContentAssistProcessor {
 						params = "(" + params + ")";
 					proposals.add(new CompletionProposal(declaration.getName() + params, offset, end - offset, declaration.getName().length() + params.length(), icon, null, null, null));
 				}
+			}
+			for (FunctionInfo info : editor.getParser().getSlimEngine().getSpec().getDefinedFunctions()) {
+				if (info.name.startsWith(prefix)) {
+					String params = "";
+					if (info.signature != null) {
+						for (String param : info.signature.getDomain()) {
+							if (!params.isEmpty())
+								params += ", ";
+							params += param;
+						}
+					}
+					if (!params.isEmpty())
+						params = "(" + params + ")";
+					proposals.add(new CompletionProposal(info.name + params, offset, end - offset, info.name.length() + params.length(), IconManager.getIcon("/icons/editor/package.gif"), null, null, null));
+				}
+			}
+			for (BackgroundInfo info : editor.getParser().getSlimEngine().getSpec().getDefinedBackgrounds()) {
+				if (info.name.startsWith(prefix))
+					proposals.add(new CompletionProposal(info.name, offset, end - offset, info.name.length(), IconManager.getIcon("/icons/editor/package.gif"), null, null, null));
+			}
+			for (UniverseInfo info : editor.getParser().getSlimEngine().getSpec().getDefinedUniverses()) {
+				if (info.name.startsWith(prefix))
+					proposals.add(new CompletionProposal(info.name, offset, end - offset, info.name.length(), IconManager.getIcon("/icons/editor/package.gif"), null, null, null));
 			}
 		} catch (BadLocationException e) {
 		}

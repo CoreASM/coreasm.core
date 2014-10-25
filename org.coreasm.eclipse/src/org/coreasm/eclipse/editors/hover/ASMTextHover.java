@@ -15,7 +15,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMIncludeWatcher;
-import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.EngineException;
@@ -134,7 +133,6 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	private ASMEditor editor;
 	private ASMStorage selectedState;
-	private Map<String, FunctionInfo> pluginFunctions = null;
 	private IInformationControlCreator hoverControlCreator;
 	private DefaultMarkerAnnotationAccess annotationAccess = new DefaultMarkerAnnotationAccess();
 
@@ -540,15 +538,13 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	
 	private FunctionInfo getPluginFunction(String functionName) {
-		if (pluginFunctions == null) {
-			pluginFunctions = new HashMap<String, FunctionInfo>();
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedFunctions())
-				pluginFunctions.put(functionInfo.name, functionInfo);
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedUniverses())
-				pluginFunctions.put(functionInfo.name, functionInfo);
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedBackgrounds())
-				pluginFunctions.put(functionInfo.name, functionInfo);
-		}
+		Map<String, FunctionInfo> pluginFunctions = new HashMap<String, FunctionInfo>();
+		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedFunctions())
+			pluginFunctions.put(functionInfo.name, functionInfo);
+		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedUniverses())
+			pluginFunctions.put(functionInfo.name, functionInfo);
+		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedBackgrounds())
+			pluginFunctions.put(functionInfo.name, functionInfo);
 		return pluginFunctions.get(functionName);
 	}
 	

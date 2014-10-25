@@ -200,8 +200,6 @@ implements IDocumentListener
 					try {
 						getSourceViewer().invalidateTextPresentation();
 					} catch (IllegalArgumentException e) {
-//						FIXME: Why does this call sometimes cause an IllegalArgumentException at org.eclipse.swt.graphics.TextStyle.<init>(TextStyle.java:171)?
-//						foreground.isDisposed() is true, but why?
 					}
 				}
 			}
