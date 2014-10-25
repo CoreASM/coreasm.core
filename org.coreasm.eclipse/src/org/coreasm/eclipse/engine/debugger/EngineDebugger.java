@@ -329,6 +329,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	
 	@Override
 	public void update(EngineEvent event) {
+		super.update(event);
 		if (event instanceof EngineModeEvent) {
 			if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepSucceeded) {
 				updates = ASMUpdate.wrapUpdateSet(capi);
@@ -343,7 +344,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 			EngineErrorEvent errorEvent = (EngineErrorEvent)event;
 			onBreakpointHit((ASTNode)errorEvent.getError().node);
 		}
-		super.update(event);
 	}
 	
 	@Override
