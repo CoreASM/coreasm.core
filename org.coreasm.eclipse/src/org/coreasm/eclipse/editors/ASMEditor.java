@@ -488,6 +488,12 @@ implements IDocumentListener
 		}
 	}
 	
+	public Specification getSpec() {
+		if (parser != null)
+			return parser.getSpec();
+		return null;
+	}
+	
 	/**
 	 * Returns the parser object which is bound to this ASMEditor instance.
 	 */

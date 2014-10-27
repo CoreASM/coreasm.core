@@ -174,7 +174,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 				// specification is not a module -> run root parser
 				parser = rootParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
 			
-			rootnode = parser.parse(slimengine.getSpec().getText());
+			rootnode = parser.parse(getSpec().getText());
 			doc.setRootnode(rootnode);
 			doc.setControlAPI(slimengine);
 			
@@ -422,6 +422,12 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 	public Set<String> getCurrentIDs()
 	{
 		return currentIDs;
+	}
+	
+	public Specification getSpec() {
+		if (slimengine != null)
+			return slimengine.getSpec();
+		return null;
 	}
 	
 	public ASTNode getRootNode()

@@ -539,11 +539,11 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	
 	private FunctionInfo getPluginFunction(String functionName) {
 		Map<String, FunctionInfo> pluginFunctions = new HashMap<String, FunctionInfo>();
-		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedFunctions())
+		for (FunctionInfo functionInfo : editor.getSpec().getDefinedFunctions())
 			pluginFunctions.put(functionInfo.name, functionInfo);
-		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedUniverses())
+		for (FunctionInfo functionInfo : editor.getSpec().getDefinedUniverses())
 			pluginFunctions.put(functionInfo.name, functionInfo);
-		for (FunctionInfo functionInfo : editor.getParser().getSlimEngine().getSpec().getDefinedBackgrounds())
+		for (FunctionInfo functionInfo : editor.getSpec().getDefinedBackgrounds())
 			pluginFunctions.put(functionInfo.name, functionInfo);
 		return pluginFunctions.get(functionName);
 	}

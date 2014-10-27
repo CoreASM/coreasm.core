@@ -370,11 +370,11 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	private Set<String> getPluginFunctionNames() {
 		if (pluginFunctionNames == null) {
 			pluginFunctionNames = new HashSet<String>();
-			for (FunctionInfo functionInfo : parentEditor.getParser().getSlimEngine().getSpec().getDefinedFunctions())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedFunctions())
 				pluginFunctionNames.add(functionInfo.name);
-			for (FunctionInfo functionInfo : parentEditor.getParser().getSlimEngine().getSpec().getDefinedUniverses())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedUniverses())
 				pluginFunctionNames.add(functionInfo.name);
-			for (FunctionInfo functionInfo : parentEditor.getParser().getSlimEngine().getSpec().getDefinedBackgrounds())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedBackgrounds())
 				pluginFunctionNames.add(functionInfo.name);
 		}
 		return pluginFunctionNames;

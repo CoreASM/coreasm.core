@@ -192,7 +192,7 @@ public class ErrorManager implements Observer
 			
 			if (perr != null) {
 				// SYNTAX ERROR
-				int line = asmEditor.getParser().getSlimEngine().getSpec().getLine(pe.getLocation().line).line;
+				int line = asmEditor.getSpec().getLine(pe.getLocation().line).line;
 				int col = pe.getLocation().column;
 				int index = 0;
 				try {
