@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="org.coreasm.rmi.webclient">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/RMIServer"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/CoreASMEngine"/>
+        <dependent-module archiveName="org.coreasm.engine-1.6.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/org.coreasm.engine/org.coreasm.engine">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.coreasm.util-1.7.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/org.coreasm.util/org.coreasm.util">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.coreasm.rmi.server-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/org.coreasm.rmi.server/org.coreasm.rmi.server">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path" value="/org.coreasm.rmi.webclient/build/classes"/>
-        <property name="context-root" value="coreasmwebclient"/>
+        <property name="context-root" value="org.coreasm.rmi.webclient"/>
     </wb-module>
 </project-modules>

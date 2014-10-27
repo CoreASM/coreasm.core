@@ -26,29 +26,18 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.m2e.core.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
 		<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>CoreASMEngine</name>
-			<type>2</type>
-			<location>D:/Programmierung/Projekte/CoreASM/coreasm.core/org.coreasm.engine/src</location>
-		</link>
-		<link>
-			<name>CoreASMRMIServer</name>
-			<type>2</type>
-			<location>D:/Programmierung/Projekte/CoreASM/coreasm.core/org.coreasm.rmi.server/src</location>
-		</link>
-		<link>
-			<name>RMIServer</name>
-			<type>2</type>
-			<location>D:/Programmierung/Projekte/CoreASM/coreasm.core/org.coreasm.rmi.server/src</location>
-		</link>
-	</linkedResources>
 </projectDescription>
