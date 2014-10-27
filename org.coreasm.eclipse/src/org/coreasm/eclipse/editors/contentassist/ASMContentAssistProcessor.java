@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.editors.contentassist;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ public class ASMContentAssistProcessor implements IContentAssistProcessor {
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 		Set<ICompletionProposal> proposals = new HashSet<ICompletionProposal>();
+		proposals.addAll(Arrays.asList(templateProcessor.computeCompletionProposals(viewer, offset)));
 		IDocument document = viewer.getDocument();
 		try {
 			if (document.getChar(offset - 1) == '(')
@@ -109,8 +111,6 @@ public class ASMContentAssistProcessor implements IContentAssistProcessor {
 			}
 		} catch (BadLocationException e) {
 		}
-		if (proposals.isEmpty())
-			return templateProcessor.computeCompletionProposals(viewer, offset);
 		return proposals.toArray(new ICompletionProposal[proposals.size()]);
 	}
 
