@@ -578,4 +578,49 @@
           </possibleChildren>
        </navigatorContent>
     </extension>
+    <extension
+          point="org.eclipse.ui.editors.annotationTypes">
+       <type
+             name="org.coreasm.eclipse.ui.occurrence">
+       </type>
+       <type
+             name="org.coreasm.eclipse.ui.occurrence.write"
+             super="org.coreasm.eclipse.ui.occurrence">
+       </type>
+    </extension>
+    <extension
+          point="org.eclipse.ui.editors.markerAnnotationSpecification">
+       <specification
+             annotationType="org.coreasm.eclipse.ui.occurrence"
+             colorPreferenceKey="org.coreasm.eclipse.ui.occurrence.color"
+             colorPreferenceValue="212,212,212"
+             highlightPreferenceKey="org.coreasm.eclipse.ui.occurrence.highlight"
+             highlightPreferenceValue="true"
+             includeOnPreferencePage="true"
+             label="ASM Occurrences"
+             overviewRulerPreferenceKey="org.coreasm.eclipse.ui.occurrence.overview"
+             overviewRulerPreferenceValue="true"
+             textPreferenceKey="org.coreasm.eclipse.ui.occurrence.text"
+             textPreferenceValue="false"
+             textStylePreferenceValue="NONE"
+             verticalRulerPreferenceKey="org.coreasm.eclipse.ui.occurrence.vertical"
+             verticalRulerPreferenceValue="false">
+       </specification>
+       <specification
+             annotationType="org.coreasm.eclipse.ui.occurrence.write"
+             colorPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.color"
+             colorPreferenceValue="240,216,168"
+             highlightPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.highlight"
+             highlightPreferenceValue="true"
+             includeOnPreferencePage="true"
+             label="ASM Write Occurrences"
+             overviewRulerPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.overview"
+             overviewRulerPreferenceValue="true"
+             textPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.text"
+             textPreferenceValue="false"
+             textStylePreferenceValue="NONE"
+             verticalRulerPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.vertical"
+             verticalRulerPreferenceValue="false">
+       </specification>
+    </extension>
 </plugin>

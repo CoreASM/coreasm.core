@@ -204,6 +204,23 @@ public class ASMDocument
 		}
 		return 0;
 	}
+	
+	public ASTNode getIDnodeAt(int offset) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		ASTNode rootNode = (ASTNode) getRootnode();
+
+		if (rootNode != null)
+			fringe.add(rootNode);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			int nodeOffset = getNodePosition(node);
+			if (ASTNode.ID_CLASS.equals(node.getGrammarClass()) && offset >= nodeOffset && offset <= nodeOffset + node.getToken().length())
+				return node;
+			for (ASTNode child : node.getAbstractChildNodes())
+				fringe.add(fringe.size(), child);
+		}
+		return null;
+	}
 
 	/**
 	 * Returns a list of nodes in the specified line

@@ -31,19 +31,24 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.MarkerUtilities;
@@ -78,6 +83,16 @@ implements IDocumentListener
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
 	public static final String MARKER_TYPE_DECLARATIONS = "asm.markerType.declarations";
 	
+	private final ISelectionListener postSelectionListener = new ISelectionListener() {
+		
+		@Override
+		public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+			if (part == ASMEditor.this && selection instanceof ITextSelection)
+				firePostSelectionChanged((ITextSelection)selection);
+		}
+	};
+	private final ListenerList postSelectionListeners = new ListenerList(ListenerList.IDENTITY);
+	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
 	private ASMIncludeWatcher includeWatcher;
@@ -110,6 +125,8 @@ implements IDocumentListener
 
 		parser.getJob().pause();
 		parser.getJob().schedule();
+		
+		new ASMOccurenceHighlighter(this);
 	}
 	
 	/*
@@ -141,6 +158,8 @@ implements IDocumentListener
 		}
 		super.dispose();
 		
+		getEditorSite().getPage().removePostSelectionListener(postSelectionListener);
+		
 		// remove the childDocWatcher as WorkspaceListener
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(includeWatcher);
 	}
@@ -159,6 +178,7 @@ implements IDocumentListener
 		parser.getJob().unpause();
 		parser.getJob().schedule(0);
 		
+		getEditorSite().getPage().addPostSelectionListener(postSelectionListener);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -181,6 +201,19 @@ implements IDocumentListener
 	@Override
 	protected void editorSaved() {
 		super.editorSaved();
+	}
+	
+	public void addPostSelectionListener(IASMSelectionListener listener) {
+		postSelectionListeners.add(listener);
+	}
+	
+	public void removePostSelectionListener(IASMSelectionListener listener) {
+		postSelectionListeners.remove(listener);
+	}
+	
+	public void firePostSelectionChanged(ITextSelection selection) {
+		for (Object listener : postSelectionListeners.getListeners())
+			((IASMSelectionListener)listener).selectionChanged(this, selection, getParser().getRootNode());
 	}
 	
 	/**
