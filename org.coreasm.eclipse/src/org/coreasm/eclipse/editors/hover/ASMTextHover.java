@@ -2,11 +2,9 @@ package org.coreasm.eclipse.editors.hover;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.coreasm.eclipse.debug.core.model.ASMStorage;
@@ -14,7 +12,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.eclipse.editors.ASMIncludeWatcher;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.EngineException;
@@ -23,7 +20,6 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
-import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
@@ -31,15 +27,11 @@ import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
 import org.coreasm.engine.plugins.list.ListCompNode;
-import org.coreasm.engine.plugins.modularity.IncludeNode;
 import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
 import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
@@ -258,35 +250,11 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 	}
 	
 	private String getDeclaration(ASMDocument document, String functionName) {
-		for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(editor.getInputFile(), false)) {
-			if (declaration.getName().equals(functionName))
+		for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(editor.getInputFile(), true)) {
+			if (declaration.getName().equals(functionName)) {
+				if (declaration.getFile() != null && declaration.getFile() != editor.getInputFile())
+					return declaration.getFile().getProjectRelativePath() + "\n\n" + declaration;
 				return declaration.toString();
-		}
-		IPath relativePath = editor.getInputFile().getProjectRelativePath().removeLastSegments(1);
-		IProject project = editor.getInputFile().getProject();
-		for (Node node = document.getRootnode().getFirstCSTNode(); node != null; node = node.getNextCSTNode()) {
-			if (node instanceof IncludeNode) {
-				String includedFunctionDeclaration = getIncludedDeclaration(project, project.getFile(relativePath.append(((IncludeNode)node).getFilename())), functionName, new HashSet<IFile>());
-				if (includedFunctionDeclaration != null)
-					return includedFunctionDeclaration;
-			}
-		}
-		return null;
-	}
-	
-	private String getIncludedDeclaration(IProject project, IFile file, String functionName, Set<IFile> includedFiles) {
-		if (includedFiles.contains(file))
-			return null;
-		includedFiles.add(file);
-		if (file != null) {
-			for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(file, false)) {
-				if (declaration.getName().equals(functionName))
-					return file.getProjectRelativePath() + "\n\n" + declaration;
-			}
-			for (IFile include : ASMIncludeWatcher.getIncludedFiles(file, false)) {
-				String includedFunctionDeclaration = getIncludedDeclaration(project, include, functionName, includedFiles);
-				if (includedFunctionDeclaration != null)
-					return includedFunctionDeclaration;
 			}
 		}
 		return null;
