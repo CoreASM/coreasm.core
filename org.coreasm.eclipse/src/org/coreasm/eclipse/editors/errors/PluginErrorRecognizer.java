@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMParser;
-import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.SlimEngine;
+import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.Plugin;

@@ -1,101 +1,153 @@
 package org.coreasm.eclipse.util;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.MarkerUtilities;
-
-import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
-import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
-import org.coreasm.eclipse.editors.outlining.util.RootOutlineTreeNode;
-import org.coreasm.eclipse.preferences.PreferenceConstants;
+import org.coreasm.eclipse.editors.ASMIncludeWatcher;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 
+/**
+ * 
+ * @author Michael Stegmaier
+ *
+ */
 public final class Utilities {
 	
-	/**
-	 * @return	The current editor from the workbench
-	 */
-	private static ASMEditor getCurrentEditor() {
-		final IWorkbenchWindow[] pointer = new IWorkbenchWindow[1];
+	private static ArrayList<OutlineContentProvider> outlineContentProviders = new ArrayList<OutlineContentProvider>();
+	
+	public static IEditorPart openEditor(Object object) throws PartInitException {
+		if (object instanceof IResource)
+			return openEditor((IResource)object);
+		if (object instanceof IMarker)
+			return openEditor((IMarker)object);
+		return null;
+	}
+	
+	public static IEditorPart openEditor(IMarker marker) throws PartInitException {
+		return openEditor(marker.getResource());
+	}
+	
+	public static IEditorPart openEditor(IResource resource) throws PartInitException {
+		if (resource instanceof IFile)
+			return openEditor((IFile)resource);
+		return null;
+	}
+	
+	public static IEditorPart openEditor(final IFile file) throws PartInitException {
+		final IWorkbenchPage[] pointer = new IWorkbenchPage[1];
 		Display.getDefault().syncExec(new Runnable() {
 			
 			@Override
 			public void run() {
-				pointer[0] = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null)
+						pointer[0] = window.getActivePage();
+				}
 			}
 		});
-		IWorkbenchWindow win = pointer[0];
-		
-		IWorkbenchPage page = win.getActivePage();
-		if (page != null) {
-			return (ASMEditor)page.getActiveEditor();
-		}
-		
+		if (pointer[0] == null)
+			return null;
+		return IDE.openEditor(pointer[0], file, true);
+	}
+	
+	public static IEditorPart openEditor(String filename) throws PartInitException {
+		return openEditor(getFile(filename));
+	}
+	
+	public static IEditorPart getEditor(Object object) {
+		if (object instanceof IFileEditorInput)
+			return getEditor((IFileEditorInput)object);
+		if (object instanceof IResource)
+			return getEditor((IResource)object);
+		if (object instanceof IMarker)
+			return getEditor((IMarker)object);
 		return null;
 	}
 	
-	/**
-	 * Clears the externRootList from the Outline
-	 */
-	public static void clearExternOutlineRootList() {
-		ASMEditor editor = getCurrentEditor();
-		
-		if (editor != null) {
-			AbstractContentPage outlinePage = editor.getOutlinePage();
-			if (outlinePage instanceof ParsedOutlinePage) {
-				ParsedOutlinePage parsedOutlinePage = (ParsedOutlinePage) outlinePage;
-				parsedOutlinePage.getContentProvider().clearExternRootList();
-			}
+	public static IEditorPart getEditor(IMarker marker) {
+		return getEditor(marker.getResource());
+	}
+	
+	public static IEditorPart getEditor(IResource resource) {
+		if (resource instanceof IFile)
+			return getEditor((IFile)resource);
+		return null;
+	}
+	
+	public static IEditorPart getEditor(String filename) {
+		return getEditor(getFile(filename));
+	}
+	
+	public static IFile getFile(String filename) {
+		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(new File(filename).toURI());
+		if (files.length > 0)
+			return files[0];
+		return null;
+	}
+	
+	public static void refreshFile(String filename) {
+		IFile file = getFile(filename);
+		try {
+			file.refreshLocal(IResource.DEPTH_ZERO, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
 	}
 	
-	/**
-	 * @param rootNode	Node which has to be removed to the outline
-	 * 
-	 * Removes a root node from the outline
-	 */
-	public static void removeExternOutlineRoot(RootOutlineTreeNode rootNode) {
-		ASMEditor editor = getCurrentEditor();
-		
-		if (editor != null) {
-			AbstractContentPage outlinePage = editor.getOutlinePage();
-			if (outlinePage instanceof ParsedOutlinePage) {
-				ParsedOutlinePage parsedOutlinePage = (ParsedOutlinePage) outlinePage;
-				parsedOutlinePage.getContentProvider().removeRootNode(rootNode);
-			}
-		}
+	public static IEditorPart getEditor(IFile file) {
+		if (file != null)
+			return getEditor(new FileEditorInput(file));
+		return null;
 	}
 	
-	/**
-	 * @param rootNode	Node which has to be added to the outline
-	 * 
-	 * Adds a root node to the outline
-	 */
-	public static void addExternOutlineRoot(RootOutlineTreeNode rootNode) {
-		ASMEditor editor = getCurrentEditor();
-		
-		if (editor != null) {
-			AbstractContentPage outlinePage = editor.getOutlinePage();
-			if (outlinePage instanceof ParsedOutlinePage) {
-				ParsedOutlinePage parsedOutlinePage = (ParsedOutlinePage) outlinePage;
-				parsedOutlinePage.getContentProvider().addRootNode(rootNode);
+	public static IEditorPart getEditor(final IFileEditorInput input) {
+		final IEditorPart[] pointer = new IEditorPart[1];
+		Display.getDefault().syncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null) {
+						IWorkbenchPage page = window.getActivePage();
+						if (page != null)
+							pointer[0] = page.findEditor(input);
+					}
+				}
 			}
-		}
+		});
+		return pointer[0];
+	}
+	
+	public static Set<IFile> getIncludedFiles(IFile file, boolean transitive) {
+		return ASMIncludeWatcher.getIncludedFiles(file, transitive);
 	}
 	
 	public static void createMarker(String markerType, String filename, int line, int column, int length, Map<String, Object> attributes) {
-		ASMEditor editor = getCurrentEditor();
+		ASMEditor editor = (ASMEditor)getEditor(filename);
 		
 		if (editor != null) {
 			try {
@@ -113,15 +165,23 @@ public final class Utilities {
 		}
 	}
 	
-	public static void removeMarkers(String markerType) {
-		ASMEditor editor = getCurrentEditor();
+	public static void removeMarkers(String markerType, String filename) {
+		ASMEditor editor = (ASMEditor)getEditor(filename);
 		
 		if (editor != null)
 			editor.removeMarkers(markerType);
 	}
 
-	public static String getAdditionalPluginsFolders() {
-		IPreferenceStore prefStore = CoreASMPlugin.getDefault().getPreferenceStore();
-		return prefStore.getString(PreferenceConstants.ADDITIONAL_PLUGINS_FOLDERS);
+	public static ArrayList<OutlineContentProvider> getOutlineContentProviders() {
+		return outlineContentProviders;
+	}
+	
+	public static void addOutlineContentProvider(OutlineContentProvider provider) {
+		if (!outlineContentProviders.contains(provider))
+			outlineContentProviders.add(provider);
+	}
+	
+	public static void removeOutlineContentProvider(OutlineContentProvider provider) {
+		outlineContentProviders.remove(provider);
 	}
 }

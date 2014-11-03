@@ -1,5 +1,9 @@
 package org.coreasm.eclipse.launch;
 
+import org.coreasm.eclipse.editors.ASMEditor;
+import org.coreasm.eclipse.editors.ASMIncludeWatcher;
+import org.coreasm.eclipse.editors.ASMParser;
+import org.coreasm.eclipse.util.Utilities;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -35,6 +39,17 @@ public class LaunchShortcut implements ILaunchShortcut {
 		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = launchManager.getLaunchConfigurationType("org.coreasm.eclipse.launchConfigurationType");
+		IEditorPart editor = Utilities.getEditor(file);
+		if (editor instanceof ASMEditor) {
+			ASMParser parser = ((ASMEditor)editor).getParser();
+			if (parser.getRootNode() != null && "CoreModule".equals(parser.getRootNode().getGrammarRule())) {
+				IFile[] files = ASMIncludeWatcher.getIncludingFiles(file);
+				if (files.length > 0) {
+					file = files[0];
+					spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
+				}
+			}
+		}
 		try {
 			for (ILaunchConfiguration configuration : launchManager.getLaunchConfigurations(type)) {
 				if (project.equals(configuration.getAttribute(ICoreASMConfigConstants.PROJECT, (String)null))) {

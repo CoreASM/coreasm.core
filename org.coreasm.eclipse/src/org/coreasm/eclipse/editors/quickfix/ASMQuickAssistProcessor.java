@@ -10,7 +10,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.FunctionDeclaration;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleDeclaration;
-import org.coreasm.eclipse.editors.IconManager;
 import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.AbstractQuickFix;
@@ -23,6 +22,7 @@ import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.MarkAsLocalProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.UsePluginProposal;
+import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -129,8 +129,12 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					}
 				}
 				for (FunctionInfo function : getPluginFunctions()) {
-					if (isSimilar(undefinedIdentifier, function.name))
-						proposals.add(new CompletionProposal(function.name, start, end - start, function.name.length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + function.name + "'", null, null));
+					if (isSimilar(undefinedIdentifier, function.name)) {
+						if (function.name.equals(undefinedIdentifier))
+							proposals.add(new UsePluginProposal(function.plugin, IconManager.getIcon("/icons/editor/package.gif")));
+						else
+							proposals.add(new CompletionProposal(function.name, start, end - start, function.name.length(), IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + function.name + "'", null, null));
+					}
 				}
 				proposals.add(new MarkAsLocalProposal(undefinedIdentifier, start, IconManager.getIcon("/icons/editor/bullet.gif")));
 				if (arguments == 0)
@@ -162,7 +166,7 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 							if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
 								ParserPlugin parserPlugin = (ParserPlugin)plugin;
 								for (String keyword : parserPlugin.getKeywords()) {
-									if (keyword.equals(undefinedRule))
+									if (isSimilar(undefinedRule, keyword))
 										proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
 								}
 							}
@@ -207,7 +211,7 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
 						ParserPlugin parserPlugin = (ParserPlugin)plugin;
 						for (String keyword : parserPlugin.getKeywords()) {
-							if (keyword.equals(syntaxError.getEncountered()))
+							if (isSimilar(syntaxError.getEncountered(), keyword))
 								proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
 						}
 					}

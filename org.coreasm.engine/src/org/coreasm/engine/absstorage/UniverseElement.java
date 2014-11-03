@@ -43,6 +43,10 @@ public class UniverseElement extends AbstractUniverse implements Enumerable {
 	public UniverseElement() {
 		elements = new HashSet<Element>();
 	}
+	
+	public UniverseElement(UniverseElement universe) {
+		this.elements = new HashSet<Element>(universe.elements);
+	}
 
 	/** 
 	 * Provides a set of all the Elements in this universe.
@@ -61,7 +65,13 @@ public class UniverseElement extends AbstractUniverse implements Enumerable {
 	 * 
 	 */
 	public void setValue(List<? extends Element> args, Element value) {
-		if (args.size() == 1 && value instanceof BooleanElement)
+		if (args.size() == 0 && value instanceof UniverseElement) {
+			UniverseElement universe = (UniverseElement)value;
+			elements.clear();
+			elements.addAll(universe.elements);
+			enumerationCache = null;
+		}
+		else if (args.size() == 1 && value instanceof BooleanElement)
 			setValue(args.get(0), (BooleanElement)value);
 	}
 

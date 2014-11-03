@@ -32,30 +32,36 @@ public class ASMDeclarationWatcher implements Observer {
 	
 	public static abstract class Declaration {
 		protected final String name;
+		protected final IFile file;
 		
-		protected Declaration(String name) {
+		protected Declaration(String name, IFile file) {
 			if (name == null)
 				throw new IllegalArgumentException("Name must not be null!");
 			this.name = name;
+			this.file = file;
 		}
 
 		public String getName() {
 			return name;
 		}
 		
-		public static Declaration decode(String declaration) {
+		public IFile getFile() {
+			return file;
+		}
+		
+		public static Declaration decode(String declaration, IFile file) {
 			String type = declaration.substring(0, declaration.indexOf(':'));
 			declaration = declaration.substring(type.length() + 2);
 			if ("Function".equals(type))
-				return new FunctionDeclaration(declaration);
+				return new FunctionDeclaration(declaration, file);
 			else if ("Universe".equals(type))
-				return new UniverseDeclaration(declaration);
+				return new UniverseDeclaration(declaration, file);
 			else if ("Enumeration".equals(type))
-				return new EnumerationDeclaration(declaration);
+				return new EnumerationDeclaration(declaration, file);
 			else if ("Derived Function".equals(type))
-				return new DerivedFunctionDeclaration(declaration);
+				return new DerivedFunctionDeclaration(declaration, file);
 			else if ("Rule".equals(type))
-				return new RuleDeclaration(declaration);
+				return new RuleDeclaration(declaration, file);
 			return null;
 		}
 	}
@@ -64,15 +70,15 @@ public class ASMDeclarationWatcher implements Observer {
 		private String comment;
 		
 		private FunctionDeclaration(FunctionNode node, String comment) {
-			super(node.getName());
+			super(node.getName(), null);
 			this.signature = new Signature();
 			this.signature.setDomain(node.getDomain());
 			this.signature.setRange(node.getRange());
 			this.comment = comment;
 		}
 		
-		private FunctionDeclaration(String declaration) {
-			super(declaration.substring(0, declaration.indexOf(':')));
+		private FunctionDeclaration(String declaration, IFile file) {
+			super(declaration.substring(0, declaration.indexOf(':')), file);
 			int index = declaration.indexOf("->");
 			String declarationDomain = declaration.substring(name.length() + 2, index - 1);
 			String[] domain = declarationDomain.split(" x ");
@@ -110,7 +116,7 @@ public class ASMDeclarationWatcher implements Observer {
 			private UniverseDeclaration parent;
 			
 			private Member(UniverseDeclaration parent, String name) {
-				super(name);
+				super(name, parent.getFile());
 				this.parent = parent;
 			}
 			
@@ -123,14 +129,14 @@ public class ASMDeclarationWatcher implements Observer {
 		private String comment;
 		
 		private UniverseDeclaration(UniverseNode node, String comment) {
-			super(node.getName());
+			super(node.getName(), null);
 			for (ASTNode member = node.getFirst().getNext(); member != null; member = member.getNext())
 				members.add(new Member(this, member.getToken()));
 			this.comment = comment;
 		}
 		
-		private UniverseDeclaration(String declaration) {
-			super(declaration.substring(0, declaration.indexOf('=') - 1));
+		private UniverseDeclaration(String declaration, IFile file) {
+			super(declaration.substring(0, declaration.indexOf('=') - 1), file);
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
@@ -165,7 +171,7 @@ public class ASMDeclarationWatcher implements Observer {
 			private EnumerationDeclaration parent;
 			
 			private Member(EnumerationDeclaration parent, String name) {
-				super(name);
+				super(name, parent.getFile());
 				this.parent = parent;
 			}
 			
@@ -178,14 +184,14 @@ public class ASMDeclarationWatcher implements Observer {
 		private String comment;
 		
 		private EnumerationDeclaration(EnumerationNode node, String comment) {
-			super(node.getName());
+			super(node.getName(), null);
 			for (EnumerationElement member : node.getMembers())
 				members.add(new Member(this, member.getName()));
 			this.comment = comment;
 		}
 		
-		private EnumerationDeclaration(String declaration) {
-			super(declaration.substring(0, declaration.indexOf('=') - 1));
+		private EnumerationDeclaration(String declaration, IFile file) {
+			super(declaration.substring(0, declaration.indexOf('=') - 1), file);
 			int indexOfMembers = declaration.indexOf('{');
 			if (indexOfMembers > 0) {
 				for (String member : declaration.substring(indexOfMembers + 2, declaration.indexOf('}') - 1).split(", "))
@@ -220,7 +226,7 @@ public class ASMDeclarationWatcher implements Observer {
 		private String returnExpression;
 		
 		private DerivedFunctionDeclaration(DerivedFunctionNode node, String comment) {
-			super(node.getNameSignatureNode().getFirst().getToken());
+			super(node.getNameSignatureNode().getFirst().getToken(), null);
 			for (ASTNode param = node.getNameSignatureNode().getFirst().getNext(); param != null; param = param.getNext()) 
 				params.add(param.getToken());
 			if (node.getFirst().getNext() instanceof ReturnRuleNode)
@@ -228,8 +234,8 @@ public class ASMDeclarationWatcher implements Observer {
 			this.comment = comment;
 		}
 		
-		private DerivedFunctionDeclaration(String declaration) {
-			super(findName(declaration));
+		private DerivedFunctionDeclaration(String declaration, IFile file) {
+			super(findName(declaration), file);
 			declaration = declaration.substring(name.length());
 			if (declaration.startsWith("("))
 				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
@@ -281,7 +287,7 @@ public class ASMDeclarationWatcher implements Observer {
 		private String comment;
 		
 		private RuleDeclaration(ASTNode node, String comment) {
-			super(node.getFirst().getFirst().getToken());
+			super(node.getFirst().getFirst().getToken(), null);
 			if (!Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()))
 				throw new IllegalArgumentException("Illegal GrammarRule: " + node.getGrammarRule());
 			for (ASTNode param = node.getFirst().getFirst().getNext(); param != null; param = param.getNext())
@@ -289,8 +295,8 @@ public class ASMDeclarationWatcher implements Observer {
 			this.comment = comment;
 		}
 		
-		private RuleDeclaration(String declaration) {
-			super(findName(declaration));
+		private RuleDeclaration(String declaration, IFile file) {
+			super(findName(declaration), file);
 			declaration = declaration.substring(name.length());
 			if (declaration.startsWith("("))
 				params = Arrays.asList(declaration.substring(1, declaration.indexOf(')')).split(", "));
@@ -368,7 +374,7 @@ public class ASMDeclarationWatcher implements Observer {
 					String markerDeclarations = declarationMarker[0].getAttribute("declarations", "");
 					if (!markerDeclarations.isEmpty()) {
 						for (String declaration : markerDeclarations.split(DECLARATION_SEPERATOR)) {
-							Declaration decodedDeclaration = Declaration.decode(declaration);
+							Declaration decodedDeclaration = Declaration.decode(declaration, file);
 							if (decodedDeclaration != null)
 								declarations.add(decodedDeclaration);
 						}

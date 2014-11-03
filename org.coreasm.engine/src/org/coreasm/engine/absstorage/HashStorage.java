@@ -307,23 +307,33 @@ public class HashStorage implements AbstractStorage {
 	 * Gets the value of a location possibly going through the stack of states.
 	 */
 	private Element getValueOverStack(Location loc) throws InvalidLocationException {
-		if (!isStateStacked()) 
-			return state.getValue(loc);
-		else {
-			Stack<Map<Location, Element>> updateStack = getUpdateStack();
+		Element value = getStackedValue(loc);
+		if (value != null)
+			return value;
+		return state.getValue(loc);
+	}
+	
+	/**
+	 * Returns the value from the stack of states. Returns <code>null</code> if the location is not part of the stack.
+	 * @param loc
+	 * @return the value from the stack of states or <code>null</code> if the location is not part of the stack
+	 */
+	private Element getStackedValue(Location loc) {
+		if (!isStateStacked())
+			return null;
+		Stack<Map<Location, Element>> updateStack = getUpdateStack();
 
-			// Looking through the stack from the top...
-			// This relies on the Vector implementation of the stack
-			Map<Location,Element> um = null;
-			for (int i=updateStack.size()-1; i >= 0; i--) {
-				um = updateStack.get(i);
-				// Look in all the update multisets
-				Element value = um.get(loc);
-				if (value != null)
-					return value;
-			}
-			return state.getValue(loc);
+		// Looking through the stack from the top...
+		// This relies on the Vector implementation of the stack
+		Map<Location,Element> um = null;
+		for (int i=updateStack.size()-1; i >= 0; i--) {
+			um = updateStack.get(i);
+			// Look in all the update multisets
+			Element value = um.get(loc);
+			if (value != null)
+				return value;
 		}
+		return null;
 	}
 
 	public void aggregateUpdates() {
@@ -864,6 +874,12 @@ public class HashStorage implements AbstractStorage {
 				throws IdentifierNotFoundException {
 			Element id = null;
 			id = (Element)universeElements.getValue(name);
+			// Fix for consistency issues with UniverseElements in sequential rules
+			if (id != null) {
+				Element e = getStackedValue(new Location(name, ElementList.NO_ARGUMENT));
+				if (e instanceof UniverseElement)
+					id = (UniverseElement)e;
+			}
 			if (id == null) {
 				id = functionElements.getValue(name);
 				if (id == null) {

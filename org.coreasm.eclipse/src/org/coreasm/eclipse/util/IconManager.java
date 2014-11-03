@@ -1,4 +1,4 @@
-package org.coreasm.eclipse.editors;
+package org.coreasm.eclipse.util;
 
 import java.net.URL;
 import java.util.HashMap;

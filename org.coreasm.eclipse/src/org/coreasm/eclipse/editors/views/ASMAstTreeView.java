@@ -3,28 +3,27 @@ package org.coreasm.eclipse.editors.views;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ui.ASMASTContentProvider;
 import org.coreasm.eclipse.editors.ui.ILinkedWithASMEditorView;
 import org.coreasm.eclipse.editors.ui.LinkWithEditorPartListener;
 import org.coreasm.engine.interpreter.Node;
-
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.swt.widgets.Tree;
 
 public class ASMAstTreeView extends ViewPart implements ILinkedWithASMEditorView, ISelectionChangedListener, Observer {
 	public ASMAstTreeView() {
@@ -155,19 +154,12 @@ public class ASMAstTreeView extends ViewPart implements ILinkedWithASMEditorView
 		}
 	}
 
-	/*
-	 * TODO improve highlighting
-	 */
-	 protected void setHighlighting(Object element) 
-	 {
-		 if (element instanceof Node) {
-			 Node node = (Node) element;
-			 String str = node.toString();
-			 int index = str.lastIndexOf("@") + 1;
-			 int pos = Integer.parseInt( str.substring(index, str.length()-1) );
-			 asmEditor.setHighlightRange(pos, 2, true);
-		 }
-		 else
-			 asmEditor.resetHighlightRange();	
-	 }
+	protected void setHighlighting(Object element) {
+		if (element instanceof Node) {
+			Node node = (Node) element;
+			ASMDocument document = (ASMDocument) asmEditor.getInputDocument();
+			asmEditor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node)), ASMDocument.calculateLength(node), true);
+		} else
+			asmEditor.resetHighlightRange();
+	}
 }
