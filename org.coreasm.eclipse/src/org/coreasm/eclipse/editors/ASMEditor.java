@@ -11,12 +11,11 @@ import org.coreasm.eclipse.editors.errors.ErrorManager;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.errors.SyntaxError;
 import org.coreasm.eclipse.editors.errors.UndefinedError;
-import org.coreasm.eclipse.editors.outlining.AbstractContentPage;
-import org.coreasm.eclipse.editors.outlining.ParsedOutlinePage;
+import org.coreasm.eclipse.editors.outlining.ASMOutlinePage;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMEclipseWarning;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
-import org.coreasm.eclipse.tools.ColorManager;
+import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMIssue;
@@ -29,28 +28,28 @@ import org.coreasm.util.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -84,19 +83,24 @@ implements IDocumentListener
 	public static final String MARKER_TYPE_INCLUDE = "org.coreasm.eclipse.markers.IncludeMarker";
 	public static final String MARKER_TYPE_DECLARATIONS = "asm.markerType.declarations";
 	
+	private final ISelectionListener postSelectionListener = new ISelectionListener() {
+		
+		@Override
+		public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+			if (part == ASMEditor.this && selection instanceof ITextSelection)
+				firePostSelectionChanged((ITextSelection)selection);
+		}
+	};
+	private final ListenerList postSelectionListeners = new ListenerList(ListenerList.IDENTITY);
+	
 	private ASMDocumentProvider documentProvider;
 	private ASMParser parser;
 	private ASMIncludeWatcher includeWatcher;
-	private AbstractContentPage outlinePage;
+	private ASMOutlinePage outlinePage;
 	private IEditorInput input;
-	private ColorManager colorManager;
 
 	static {
 		LOGGER_UI_DEBUG.setVisible(false);
-	}
-	
-	public AbstractContentPage getOutlinePage() {
-		return outlinePage;
 	}
 	
 	public ASMEditor()
@@ -109,9 +113,8 @@ implements IDocumentListener
 		// its first call (which will be the first call of this constructor).
 		SlimEngine.getFullEngine();
 		
-		colorManager = new ColorManager();
 		documentProvider = new ASMDocumentProvider(this);
-		setSourceViewerConfiguration(new ASMConfiguration(this, colorManager));
+		setSourceViewerConfiguration(new ASMConfiguration(this));
 		setDocumentProvider(documentProvider);
 		
 		includeWatcher = new ASMIncludeWatcher(this);
@@ -119,13 +122,11 @@ implements IDocumentListener
 		parser.addObserver(new ErrorManager(this));
 		parser.addObserver(includeWatcher);
 		parser.addObserver(new ASMDeclarationWatcher(this));
-		
-		
-		// bind the includeWatcher as ResourceChangeListener to the Workspace
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(includeWatcher, IResourceChangeEvent.POST_CHANGE);
 
 		parser.getJob().pause();
 		parser.getJob().schedule();
+		
+		new ASMOccurenceHighlighter(this);
 	}
 	
 	/*
@@ -155,11 +156,9 @@ implements IDocumentListener
 		} catch (InterruptedException e) {
 			;
 		}
-		
-		ColorManager.dispose();
-		if (outlinePage != null)
-			outlinePage.setInput(null);
 		super.dispose();
+		
+		getEditorSite().getPage().removePostSelectionListener(postSelectionListener);
 		
 		// remove the childDocWatcher as WorkspaceListener
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(includeWatcher);
@@ -179,10 +178,12 @@ implements IDocumentListener
 		parser.getJob().unpause();
 		parser.getJob().schedule(0);
 		
+		getEditorSite().getPage().addPostSelectionListener(postSelectionListener);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class required)
+	public Object getAdapter(Class required)
 	{
 		if (IContentOutlinePage.class.equals(required))
 		{
@@ -191,16 +192,7 @@ implements IDocumentListener
 			// it is created.
 			
 			if (outlinePage == null)
-			{
-				outlinePage = new ParsedOutlinePage(this);
-				parser.addObserver(outlinePage);
-				
-				if (getEditorInput() != null)
-					outlinePage.setInput(getEditorInput());
-				
-				if (outlinePage instanceof ParsedOutlinePage)
-					((ParsedOutlinePage) outlinePage).setupListener();
-			}
+				outlinePage = new ASMOutlinePage(this);
 			return outlinePage;
 		}
 		return super.getAdapter(required);
@@ -209,6 +201,19 @@ implements IDocumentListener
 	@Override
 	protected void editorSaved() {
 		super.editorSaved();
+	}
+	
+	public void addPostSelectionListener(IASMSelectionListener listener) {
+		postSelectionListeners.add(listener);
+	}
+	
+	public void removePostSelectionListener(IASMSelectionListener listener) {
+		postSelectionListeners.remove(listener);
+	}
+	
+	public void firePostSelectionChanged(ITextSelection selection) {
+		for (Object listener : postSelectionListeners.getListeners())
+			((IASMSelectionListener)listener).selectionChanged(this, selection, getParser().getRootNode());
 	}
 	
 	/**
@@ -228,8 +233,6 @@ implements IDocumentListener
 					try {
 						getSourceViewer().invalidateTextPresentation();
 					} catch (IllegalArgumentException e) {
-//						FIXME: Why does this call sometimes cause an IllegalArgumentException at org.eclipse.swt.graphics.TextStyle.<init>(TextStyle.java:171)?
-//						foreground.isDisposed() is true, but why?
 					}
 				}
 			}
@@ -407,7 +410,7 @@ implements IDocumentListener
 	}
 	
 	public static void createRuntimeErrorMark(CoreASMError error, ControlAPI capi) {
-		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(error, capi))));
+		IEditorPart editor = Utilities.getEditor(getIssueFileName(error, capi));
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
 			ASMDocument asmDocument = (ASMDocument)asmEditor.getDocumentProvider().getDocument(editor.getEditorInput());
@@ -462,7 +465,7 @@ implements IDocumentListener
 	}
 	
 	public static void createRuntimeWarningMark(CoreASMWarning warning, ControlAPI capi) {
-		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(getIssueFileName(warning, capi))));
+		IEditorPart editor = Utilities.getEditor(getIssueFileName(warning, capi));
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
 			asmEditor.createWarningMark(new CoreASMEclipseWarning(warning, asmEditor.getDocumentProvider().getDocument(editor.getEditorInput())), true);
@@ -496,26 +499,6 @@ implements IDocumentListener
 		createWarningMark(warning, false);
 	}
 	
-	private static IEditorPart getEditor(IResource resource) {
-		final IEditorPart[] editor = new IEditorPart[1];
-		if (resource instanceof IFile) {
-			final IEditorInput input = new FileEditorInput((IFile)resource);
-			
-			if (input != null) {
-				Display.getDefault().syncExec(new Runnable() {
-					
-					@Override
-					public void run() {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						if (page != null)
-							editor[0] = page.findEditor(input);
-					}
-				});
-			}
-		}
-		return editor[0];
-	}
-	
 	/**
 	 * Removes all markers of the specified type from the current document
 	 */
@@ -531,11 +514,17 @@ implements IDocumentListener
 	public static void removeRuntimeProblemMarkers(ControlAPI capi) {
 		Specification spec = capi.getSpec();
 		String fileName = spec.getAbsolutePath();
-		IEditorPart editor = getEditor(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(fileName)));
+		IEditorPart editor = Utilities.getEditor(fileName);
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
 			asmEditor.removeMarkers(ASMEditor.MARKER_TYPE_RUNTIME_PROBLEM);
 		}
+	}
+	
+	public Specification getSpec() {
+		if (parser != null)
+			return parser.getSpec();
+		return null;
 	}
 	
 	/**

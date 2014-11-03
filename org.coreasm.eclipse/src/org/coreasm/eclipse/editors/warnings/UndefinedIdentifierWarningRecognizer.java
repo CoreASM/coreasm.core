@@ -11,7 +11,6 @@ import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
-import org.coreasm.eclipse.editors.SlimEngine;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -47,7 +46,7 @@ import org.eclipse.core.runtime.IPath;
  */
 public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer {
 	private final ASMEditor parentEditor;
-	private Set<String> pluginFunctionNames = null;
+	private Set<String> pluginFunctionNames;
 
 	public UndefinedIdentifierWarningRecognizer(ASMEditor parentEditor) {
 		this.parentEditor = parentEditor;
@@ -58,6 +57,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 		List<AbstractWarning> warnings = new LinkedList<AbstractWarning>();
 		Set<String> functionNames = getDeclaredNames(document);
 		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		
+		pluginFunctionNames = null;
 		
 		for (ASTNode declarationNode = ((ASTNode)document.getRootnode()).getFirst(); declarationNode != null; declarationNode = declarationNode.getNext()) {
 			if (ASTNode.DECLARATION_CLASS.equals(declarationNode.getGrammarClass())) {
@@ -369,11 +370,11 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 	private Set<String> getPluginFunctionNames() {
 		if (pluginFunctionNames == null) {
 			pluginFunctionNames = new HashSet<String>();
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedFunctions())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedFunctions())
 				pluginFunctionNames.add(functionInfo.name);
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedUniverses())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedUniverses())
 				pluginFunctionNames.add(functionInfo.name);
-			for (FunctionInfo functionInfo : SlimEngine.getFullEngine().getSpec().getDefinedBackgrounds())
+			for (FunctionInfo functionInfo : parentEditor.getSpec().getDefinedBackgrounds())
 				pluginFunctionNames.add(functionInfo.name);
 		}
 		return pluginFunctionNames;

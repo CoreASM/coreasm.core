@@ -1,0 +1,24 @@
+CoreASM TestAggregation
+
+use Standard
+
+init TestAggregation
+
+universe Universe = {member1,member2}
+
+/*
+ * @refuse member2
+ * @require [member1]\ntrue
+ * @maxsteps 1
+*/
+rule TestAggregation =
+seq
+	Universe(member2) := false
+next
+	print Universe
+next
+	import e do
+		seq
+			Universe(e) := true
+		next
+			print Universe(e)

@@ -163,7 +163,7 @@ public class Specification {
 		if (this.fileName == null)
 			updateLines(loadSpec(reader, "Specification"));
 		else
-			updateLines(loadSpec(reader, this.fileName));
+			updateLines(loadSpec(reader, this.absolutePath));
 		logger.debug("New specification created.");
 	}
 	
@@ -296,7 +296,7 @@ public class Specification {
 	 * Sets the name of required plugins in the specification.
 	 * This method should only be called by the CoreASM Engine.
 	 */
-	protected void setPluginNames(Set<String> pluginNames) {
+	public void setPluginNames(Set<String> pluginNames) {
 		if (requiredPluginNames != null)
 			throw new IllegalStateException("The set of required plug-ins can be set only once for every specification."); 
 		requiredPluginNames = Collections.unmodifiableSet(pluginNames);

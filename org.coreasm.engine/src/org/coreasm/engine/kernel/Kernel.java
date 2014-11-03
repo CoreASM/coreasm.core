@@ -21,17 +21,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
-import org.codehaus.jparsec.Token;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.Engine;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
+import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanBackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
@@ -54,12 +55,13 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;
 import org.coreasm.engine.parser.ParseMap;
 import org.coreasm.engine.parser.ParseMap2;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -840,6 +842,8 @@ public class Kernel extends Plugin
 		// all locations on which basic updates occur
 		Set<Location> basicUpdateLocations = pluginAgg.getLocsWithActionOnly(Update.UPDATE_ACTION);
 		
+		basicUpdateLocations = aggregateUniverseUpdates(pluginAgg, basicUpdateLocations);
+		
 		for (Location l : basicUpdateLocations) {
 			// get all updates on the location
 			UpdateMultiset updatesOnLoc = pluginAgg.getLocUpdates(l);
@@ -854,6 +858,59 @@ public class Kernel extends Plugin
 				pluginAgg.addResultantUpdate(u,this);
 			}
 		}
+	}
+	
+	/**
+	 * Special treatment of the aggregation of universe elements to ensure consistency in sequential rules.
+	 * 
+	 * @param pluginAgg plugin aggregation API object
+	 * @param basicUpdateLocations basic update locations
+	 * @return the locations that haven't been aggregated by this function
+	 */
+	private Set<Location> aggregateUniverseUpdates(PluginAggregationAPI pluginAgg, Set<Location> basicUpdateLocations) {
+		HashSet<Location> aggregatedLocations = new HashSet<Location>();
+		HashMap<String, UpdateMultiset> universeUpdates = new HashMap<String, UpdateMultiset>();
+		
+		// Filter and group update locations by universes
+		for (Location location : basicUpdateLocations) {
+			AbstractUniverse universe = capi.getStorage().getUniverse(location.name);
+			if (universe instanceof UniverseElement) {
+				// If regular updates are inconsitent, there is an add/remove conflict for this universe
+				if (pluginAgg.inconsistentRegularUpdatesOnLoc(location))
+					pluginAgg.handleInconsistentAggregationOnLocation(location, this);
+				else {
+					UpdateMultiset updates = universeUpdates.get(location.name);
+					if (updates == null) {
+						updates = new UpdateMultiset();
+						universeUpdates.put(location.name, updates);
+					}
+					updates.addAll(pluginAgg.getLocUpdates(location));
+				}
+				aggregatedLocations.add(location);
+			}
+		}
+		
+		for (Entry<String, UpdateMultiset> updates : universeUpdates.entrySet()) {
+			UniverseElement universe = (UniverseElement)capi.getStorage().getUniverse(updates.getKey());
+			Set<Element> contributingAgents = new HashSet<Element>();
+			Set<ScannerInfo> contributingNodes = new HashSet<ScannerInfo>();
+			UniverseElement resultantUniverse = new UniverseElement(universe);
+			// all updates added successfully, so flag them
+			// and add their agents to the contributing agent set
+			for (Update u : updates.getValue()) {
+				pluginAgg.flagUpdate(u,Flag.SUCCESSFUL,this);
+				contributingAgents.addAll(u.agents);
+				contributingNodes.addAll(u.sources);
+				resultantUniverse.setValue(u.loc.args, u.value);
+			}
+			
+			// add resultant update to resultant update set
+			pluginAgg.addResultantUpdate(new Update(new Location(updates.getKey(), ElementList.NO_ARGUMENT), resultantUniverse, Update.UPDATE_ACTION, contributingAgents, contributingNodes), this);
+		}
+		
+		// Remove all locations that have been aggregated by this function
+		basicUpdateLocations.removeAll(aggregatedLocations);
+		return basicUpdateLocations;
 	}
 
 	/**

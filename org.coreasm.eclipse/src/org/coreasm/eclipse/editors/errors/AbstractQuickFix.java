@@ -3,7 +3,7 @@ package org.coreasm.eclipse.editors.errors;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.coreasm.eclipse.editors.IconManager;
+import org.coreasm.eclipse.util.IconManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
@@ -14,7 +14,7 @@ import org.eclipse.swt.graphics.Point;
 
 /**
  * This class is an abstract implementation of QuickFixes for an error.
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public abstract class AbstractQuickFix
 {
@@ -77,7 +77,7 @@ public abstract class AbstractQuickFix
 	 * General QuickFix for replacing the whole hover region with a given string
 	 * or inserting the string at the offset of the hover region.
 	 * 
-	 * @author Markus Müller
+	 * @author Markus Mï¿½ller
 	 */
 	public static class QF_Replace
 	extends AbstractQuickFix

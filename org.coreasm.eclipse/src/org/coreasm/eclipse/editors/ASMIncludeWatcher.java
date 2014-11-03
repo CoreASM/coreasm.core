@@ -9,6 +9,7 @@ import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugins.modularity.IncludeNode;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -17,6 +18,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
@@ -35,6 +37,7 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 	public ASMIncludeWatcher(ASMEditor editor)
 	{
 		this.editor = editor;
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 	}
 	
 	/**
@@ -78,6 +81,38 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public static IFile[] getIncludingFiles(IFile includedFile) {
+		Set<IFile> includingFiles = new HashSet<IFile>();
+		collectIncludingFiles(includedFile, includedFile.getProject(), includingFiles);
+		return includingFiles.toArray(new IFile[includingFiles.size()]);
+	}
+	
+	private static void collectIncludingFiles(IFile includedFile, IContainer container, Set<IFile> includingFiles) {
+		try {
+			for (IResource member : container.members()) {
+				if (member instanceof IContainer)
+					collectIncludingFiles(includedFile, (IContainer)member, includingFiles);
+				if (member instanceof IFile) {
+					IFile file = (IFile)member;
+					if (file.exists()) {
+						IMarker[] includeMarker = file.findMarkers(ASMEditor.MARKER_TYPE_INCLUDE, false, IResource.DEPTH_ZERO);
+						if (includeMarker.length > 0) {
+							IProject project = includedFile.getProject();
+							for (String include : includeMarker[0].getAttribute("includes", "").split(AbstractError.SEPERATOR_VAL)) {
+								try {
+									if (includedFile.equals(project.getFile(include)))
+										includingFiles.add(file);
+								} catch (IllegalArgumentException e) {
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (CoreException e) {
 		}
 	}
 

@@ -23,6 +23,7 @@ import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineModeEvent;
 import org.coreasm.engine.EngineModeObserver;
@@ -328,6 +329,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	
 	@Override
 	public void update(EngineEvent event) {
+		super.update(event);
 		if (event instanceof EngineModeEvent) {
 			if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepSucceeded) {
 				updates = ASMUpdate.wrapUpdateSet(capi);
@@ -335,16 +337,18 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				shouldStepReturn = false;
 				stepSucceeded = true;
 			}
-			else if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepFailed || ((EngineModeEvent)event).getNewMode() == EngineMode.emError)
+			else if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepFailed)
 				onBreakpointHit(null);
 		}
-		else
-			super.update(event);
+		else if (event instanceof EngineErrorEvent) {
+			EngineErrorEvent errorEvent = (EngineErrorEvent)event;
+			onBreakpointHit((ASTNode)errorEvent.getError().node);
+		}
 	}
 	
 	@Override
 	protected void handleError() {
-		// lastError is needed by the ASM Update View, it may not be set to null at this point
+		// lastError is needed by the ASM Update View, it must not be set to null at this point
 		CoreASMError error = lastError;
 		super.handleError();
 		lastError = error;
@@ -517,6 +521,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 
 	@Override
 	public void beforeNodeEvaluation(ASTNode pos) {
+		if (lastError != null)
+			System.out.println("before");
 		if (isUnvisited(pos)) {
 			sourceName = ASMDebugUtils.getFileName(pos, capi);
 			lineNumber = ASMDebugUtils.getLineNumber(pos, capi);
@@ -568,6 +574,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 
 	@Override
 	public void afterNodeEvaluation(ASTNode pos) {
+		if (lastError != null)
+			System.out.println("after");
 		if (pos == stepReturnPos) {
 			shouldStepReturn = false;
 			stepReturnPos = null;
