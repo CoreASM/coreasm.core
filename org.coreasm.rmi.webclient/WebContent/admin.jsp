@@ -8,41 +8,30 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
+		$("#ul1").on("click", "button", function (){
+			$.post("Control", {
+				command : "stop",
+				engineId : $(this).val()
+			})
+	    });
+		$.ajaxSetup({
+			// Disable caching of AJAX responses
+			cache : false
+		});
 		function count() {
-
-			$.ajax({
-				cache : false,
-				url : "Updates",
-				data: {
-					engineId: "${requestScope.EngineId}"
-				},
-				success : function(data) {
-					$("#ul1").append(data);
-				}
-			});
+			$("#ul1").load("AdminControl");
 		}
 
 		var auto_refresh = setInterval(function() {
 			count()
-		}, 5000);
+		}, 10000);
 
 		count();
-
-		$(".command").click(function() {
-			$.post("Control", {
-				command : $(this).val(),
-				engineId: "${requestScope.EngineId}"
-			})
-		});
-
 	});
 </script>
 </head>
 <body>
-	<button class="command" value="start" type="submit">Start</button>
-	<button class="command" value="stop" type="submit">Stop</button>
-	<button class="command" value="pause" type="submit">Pause</button>
-	<p>Updates</p>
+	<p>Enginelist</p>
 	<div id="div1">
 		<ul id="ul1"></ul>
 	</div>

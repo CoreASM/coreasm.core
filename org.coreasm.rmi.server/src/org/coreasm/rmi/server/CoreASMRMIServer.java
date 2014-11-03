@@ -11,10 +11,17 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+
+
+import java.util.concurrent.TimeUnit;
 
 import org.coreasm.rmi.server.remoteinterfaces.*;
 
@@ -23,16 +30,20 @@ import org.coreasm.rmi.server.remoteinterfaces.*;
  *
  */
 public class CoreASMRMIServer extends UnicastRemoteObject implements
-		ServerControl {
+		ServerControl, ServerAdminControl {
 
 	HashMap<String, EngineControl> engines = new HashMap<String, EngineControl>();
 	private int maxPoolsize = 9;
-	private ExecutorService pool;
+	private ThreadPoolExecutor pool;
+	private BlockingQueue<Runnable> TaskQueue;
 
 	protected CoreASMRMIServer() throws RemoteException {
 		super();
-		pool = Executors.newFixedThreadPool(maxPoolsize);
+//		pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxPoolsize);
+		TaskQueue = new LinkedBlockingQueue<Runnable>();
+		pool = new ThreadPoolExecutor(maxPoolsize, maxPoolsize, 0, TimeUnit.MILLISECONDS, TaskQueue);
 	}
+	
 
 	private static final long serialVersionUID = 1L;
 
@@ -64,14 +75,15 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 			try {
 				registry = LocateRegistry.getRegistry();
 				registry.list();
+				System.out.println("Registry found");
 			} catch (RemoteException e) {
 				registry = LocateRegistry.createRegistry(1099);
+				System.out.println("Registry bound to 1099");
 			}
 			registry.rebind(name, server);
-			System.out.println("Registry bound to 1099");
+			
 			BufferedReader eingabe = new BufferedReader(new InputStreamReader(
 					System.in));
-
 			exit = false;
 			while (!exit) {
 				try {
@@ -106,6 +118,7 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 	@Override
 	public EngineControl getNewEngine() throws RemoteException {
 		EngineControlImp newEngine = new EngineControlImp(UUID.randomUUID().toString());
+		engines.put(newEngine.getIdNr(), newEngine);
 		pool.execute(newEngine);
 		return newEngine;
 	}
@@ -113,6 +126,16 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 	@Override
 	public EngineControl connectExistingEngine(String idNr) throws RemoteException {
 		return engines.get(idNr);
+	}
+
+	@Override
+	public ArrayList<EngineDriverInfo> getEngineList() throws RemoteException {
+		ArrayList<EngineDriverInfo> lst = new ArrayList<EngineDriverInfo>();
+		Iterator<Map.Entry<String, EngineControl>> itr = engines.entrySet().iterator();
+		while(itr.hasNext()) {
+			lst.add(itr.next().getValue().getDriverInfo());
+		}
+		return lst;
 	}
 
 }

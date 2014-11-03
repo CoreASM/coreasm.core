@@ -24,6 +24,7 @@ import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
+import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
 
 /**
@@ -33,7 +34,6 @@ import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
 public class EngineControlImp extends UnicastRemoteObject implements
 		Runnable, EngineControl, EngineStepObserver, EngineErrorObserver {
 	private static final long serialVersionUID = 1L;
-	private String Id;
 	private CoreASMEngine engine;
 	private BufferedReader spec = null;
 	private boolean updateFailed;
@@ -49,13 +49,11 @@ public class EngineControlImp extends UnicastRemoteObject implements
 
 	private volatile boolean shouldStop = false;
 	private volatile boolean shouldPause = true;
+	private volatile EngineDriverInfo driverInfo;
 
 	private List<Set<Update>> previousUpdates;
 	private List<UpdateSubscription> subscriptions;
 
-	public enum EngineDriverStatus {
-		stopped, running, paused
-	};
 
 	private EngineControlImp() throws RemoteException {
 		super();
@@ -74,11 +72,12 @@ public class EngineControlImp extends UnicastRemoteObject implements
 
 		previousUpdates = new ArrayList<Set<Update>>();
 		subscriptions = new ArrayList<UpdateSubscription>();
+		driverInfo = new EngineDriverInfo("", EngineDriverStatus.empty);
 	}
 
 	public EngineControlImp(String id) throws RemoteException {
 		this();
-		Id = id;		
+		driverInfo.setId(id);
 	}
 
 	/*
@@ -112,7 +111,7 @@ public class EngineControlImp extends UnicastRemoteObject implements
 	 */
 	@Override
 	public String getIdNr() throws RemoteException {
-		return Id;
+		return driverInfo.getId();
 	}
 
 	/*
@@ -156,6 +155,7 @@ public class EngineControlImp extends UnicastRemoteObject implements
 	public void load(byte[] specification) throws RemoteException {
 		ByteArrayInputStream in = new ByteArrayInputStream(specification);
 		spec = new BufferedReader(new InputStreamReader(in));
+		driverInfo.setStatus(EngineDriverStatus.paused);
 	}
 
 	/*
@@ -202,7 +202,7 @@ public class EngineControlImp extends UnicastRemoteObject implements
 
 			while (engine.getEngineMode() == EngineMode.emIdle) {
 				if (shouldPause) {
-
+					driverInfo.setStatus(EngineDriverStatus.paused);
 					System.err
 							.println("[!] Run is paused by user. Click on resume to continue...");
 
@@ -217,7 +217,8 @@ public class EngineControlImp extends UnicastRemoteObject implements
 				if (shouldStop) {
 					throw new EngineDriverException();
 				}
-
+				driverInfo.setStatus(EngineDriverStatus.running);
+				
 				engine.step();
 				step++;
 
@@ -280,7 +281,7 @@ public class EngineControlImp extends UnicastRemoteObject implements
 							+ exception);
 		}
 		engine.terminate();
-
+		driverInfo.setStatus(EngineDriverStatus.stopped);
 	}
 
 	private boolean terminated(int step, Set<Update> updates,
@@ -328,5 +329,15 @@ public class EngineControlImp extends UnicastRemoteObject implements
 
 	public void finalize() {
 		engine.terminate();
+	}
+
+	@Override
+	public EngineDriverStatus getDriverStatus() throws RemoteException {		
+		return driverInfo.getStatus();
+	}
+	
+	@Override
+	public EngineDriverInfo getDriverInfo() throws RemoteException {		
+		return driverInfo;
 	}
 }

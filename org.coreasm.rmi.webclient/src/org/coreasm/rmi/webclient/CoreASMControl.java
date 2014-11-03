@@ -3,13 +3,10 @@ package org.coreasm.rmi.webclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.*;
@@ -25,11 +22,11 @@ import org.coreasm.rmi.server.remoteinterfaces.*;
 /**
  * Servlet implementation class CoreASMControl
  */
-@WebServlet(urlPatterns = "/Control", loadOnStartup = 1)
+@WebServlet(urlPatterns = "/Control", loadOnStartup = 2)
 @MultipartConfig
 public class CoreASMControl extends HttpServlet {
 	public enum Command {
-		start, stop, pause
+		start, stop, pause, join
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -43,39 +40,14 @@ public class CoreASMControl extends HttpServlet {
 	}
 
 	/**
-	 * @see Servlet#init(ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-
-		String name = "RMIServer";
-		Registry registry;
-		ServerControl server = null;
-		String host = "localhost";
-
-
-		try {
-			registry = LocateRegistry.getRegistry(host);
-			try {
-				server = (ServerControl) registry.lookup(name);
-			} catch (NotBoundException e) {
-				e.printStackTrace();
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-
-		getServletContext().setAttribute("RMIServer", server);
-	}
-
-	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		RequestDispatcher disp = getServletContext().getRequestDispatcher("/engine.jsp");
-	    disp.forward(request, response);
+		RequestDispatcher disp = getServletContext().getRequestDispatcher(
+				"/engine.jsp");
+		disp.forward(request, response);
 	}
 
 	/**
@@ -84,49 +56,91 @@ public class CoreASMControl extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		String engId = request.getParameter("engineId");
+		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
 		HttpSession session = request.getSession();
-		EngineControl ctrl = (EngineControl) session.getAttribute("Control");
-		if (ctrl == null) {
-			ServletContext ctx = getServletContext();
-			ServerControl server = (ServerControl) ctx.getAttribute("RMIServer");
-			ctrl = server.getNewEngine();
-			session.setAttribute("Control", ctrl);
-			UpdateSubscription sub = new UpdateSubImp();
-			((EngineControl) session.getAttribute("Control"))
-					.subscribe(sub);
-			session.setAttribute("Subscription", sub);
-			session.setAttribute("UpdateCount", 0);
+		EngineControl ctrl = getEngine(engId, session);
+		if (ctrl != null) {
+			engId = ctrl.getIdNr();
+			if (!isMultipart) {
+				String com = request.getParameter("command");
+				if (com != null) {
+					switch (Command.valueOf(com)) {
+					case start:
+						ctrl.start();
+						break;
+					case stop:
+						ctrl.stop();
+						break;
+					case pause:
+						ctrl.pause();
+						break;
+					case join:
+						request.setAttribute("EngineId", engId);
+						RequestDispatcher disp = getServletContext()
+								.getRequestDispatcher("/engine.jsp");
+						disp.forward(request, response);
+					}
+				}
+			} else {
+				Part file = request.getPart("file");
+				InputStream in = file.getInputStream();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				byte[] data = new byte[4096];
+				int count = in.read(data);
+				while (count != -1) {
+					baos.write(data, 0, count);
+					count = in.read(data);
+				}
+				byte[] spec = baos.toByteArray();
+				ctrl.load(spec);
+				request.setAttribute("EngineId", engId);
+				RequestDispatcher disp = getServletContext()
+						.getRequestDispatcher("/engine.jsp");
+				disp.forward(request, response);
+			}
+		}
+	}
+
+	private EngineControl getEngine(String Id, HttpSession session) {
+
+		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
+				.getAttribute("EngineMap");
+		if (engineMap == null) {
+			engineMap = new ConcurrentHashMap<String, EngineControl>();
+			session.setAttribute("EngineMap", engineMap);
+		}
+		EngineControl ctrl = null;
+		if (Id != null) {
+			ctrl = (EngineControl) engineMap.get(Id);
 		}
 
-		
-		if (!ServletFileUpload.isMultipartContent(request)) {
-			switch (Command.valueOf(request.getParameter("command"))) {
-			case start:
-				ctrl.start();
-				break;
-			case stop:
-				ctrl.stop();
-				break;
-			case pause:
-				ctrl.pause();
-				break;
+		if (ctrl == null) {
+			ServletContext ctx = getServletContext();
+			ServerControl server = (ServerControl) ctx
+					.getAttribute("RMIServer");
+			try {
+				if (Id == null) {
+					ctrl = server.getNewEngine();
+					Id = ctrl.getIdNr();
+				} else {
+					ctrl = server.connectExistingEngine(Id);
+				}
+				engineMap.put(Id, ctrl);
+				UpdateSubImp sub = new UpdateSubImp();
+				ctrl.subscribe(sub);
+				ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
+						.getAttribute("Subscriptions");
+				if (subMap == null) {
+					subMap = new ConcurrentHashMap<String, UpdateSubImp>();
+					session.setAttribute("Subscriptions", subMap);
+				}
+				subMap.putIfAbsent(Id, sub);
+				session.setAttribute("UpdateCount", 0);
+			} catch (RemoteException e) {
 			}
-		} else {
-			Part file = request.getPart("file");
-			InputStream in = file.getInputStream();
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		    byte[] data = new byte[4096];
-		    int count = in.read(data);
-		    while(count != -1)
-		    {
-		        baos.write(data, 0, count);
-		        count = in.read(data);
-		    }
-		    byte[] spec = baos.toByteArray();
-		    ctrl.load(spec);
-		    RequestDispatcher disp = getServletContext().getRequestDispatcher("/engine.jsp");
-		    disp.forward(request, response);
 		}
+		return ctrl;
 	}
 
 }

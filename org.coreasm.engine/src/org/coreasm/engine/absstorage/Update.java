@@ -14,6 +14,7 @@
  
 package org.coreasm.engine.absstorage;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,8 +28,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
  *   
  *  @author  Roozbeh Farahbod
  */
-public class Update {
+public class Update implements Serializable{
 	
+
+	private static final long serialVersionUID = 1L;
+
 	/** Name of the regular update action */
 	public static final String UPDATE_ACTION = "updateAction";
 	

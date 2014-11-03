@@ -9,11 +9,4 @@
   	<version>1.7.1-SNAPSHOT</version>
   	<relativePath>../org.coreasm.parent</relativePath>
   </parent>
-  <dependencies>
-  	<dependency>
-  		<groupId>org.coreasm</groupId>
-  		<artifactId>org.coreasm.engine</artifactId>
-  		<version>1.6.5-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
 </project>

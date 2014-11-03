@@ -9,5 +9,10 @@
 		<input type="file" name="file" />
 		<input type="submit" />
 	</form>
+	<form action="Control" method="post">
+		<input type="text" name="engineId" />
+		<input type="hidden" name="command" value="join" />
+		<input type="submit" />
+	</form>
 </body>
 </html>

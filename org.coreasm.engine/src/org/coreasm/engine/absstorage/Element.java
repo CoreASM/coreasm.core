@@ -15,6 +15,8 @@
  
 package org.coreasm.engine.absstorage;
 
+import java.io.Serializable;
+
 import org.coreasm.engine.ControlAPI;
 
 /** 
@@ -24,9 +26,11 @@ import org.coreasm.engine.ControlAPI;
  *  @author  Roozbeh Farahbod
  *  
  */
- public class Element {
+ public class Element implements Serializable{
 
- 	/**
+	private static final long serialVersionUID = 1L;
+
+	/**
  	 * This value is used to automatically generate
  	 * general Element names. 
  	 */

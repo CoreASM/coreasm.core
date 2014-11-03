@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.coreasm.engine.absstorage.Update;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 
 /**
@@ -37,16 +36,19 @@ public class UpdateProvider extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		UpdateSubImp sub;
 		EngineControl ctrl;
 		HttpSession session = request.getSession(false);
-
-		if (session != null) {
+		String engId = (String) request.getParameter("engineId");
+		if (engId == null) {
+			response.sendRedirect("index.jsp");
+		} else if (session != null) {
 			// Request wird nur bearbeitet, wenn zuvor Post an CoreASMControl
 			// ging
-			ctrl = (EngineControl) session.getAttribute("Control");
+			ctrl = getEngine(engId, session);
 			if (ctrl != null) {
-				sub = (UpdateSubImp) session.getAttribute("Subscription");
+				ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
+						.getAttribute("Subscriptions");
+				UpdateSubImp sub = subMap.get(engId);
 				if (sub != null) {
 
 					int count = (int) session.getAttribute("UpdateCount");
@@ -61,22 +63,31 @@ public class UpdateProvider extends HttpServlet {
 						out.println("<li>");
 						out.println("Update " + count + ":");
 						out.println("<ul>");
-//						Iterator<Update> itr2 = updt.iterator();
-//						while (itr2.hasNext()) {
-//							out.println("<li>" + itr2.next().toString()
-//									+ "</li>");
-//						}
 						out.println(updt);
 						out.println("</ul>");
 						out.println("</li>");
 						count++;
 					}
-					
+
 					session.setAttribute("UpdateCount", count);
 				}
+
 			}
 
 		}
+	}
+
+	private EngineControl getEngine(String Id, HttpSession session) {
+		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
+				.getAttribute("EngineMap");
+		if (engineMap == null) {
+			return null;
+		}
+		EngineControl ctrl = (EngineControl) engineMap.get(Id);
+		if (ctrl == null) {
+			return null;
+		}
+		return ctrl;
 	}
 
 }
