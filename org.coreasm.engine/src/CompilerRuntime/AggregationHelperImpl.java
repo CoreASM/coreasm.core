@@ -6,6 +6,10 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 
+import org.coreasm.engine.absstorage.Update;
+
+import org.coreasm.engine.absstorage.Location;
+
 public class AggregationHelperImpl implements AggregationHelper, EngineAggregationHelper {
 
 	/** Update multiset of update instructions **/

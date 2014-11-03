@@ -49,6 +49,11 @@ public class CompilerKernelPlugin implements
 	CompilerPlugin, CompilerCodeLPlugin, CompilerCodeRPlugin, CompilerCodeUPlugin, CompilerCodeBPlugin,
 	CompilerVocabularyExtender, CompilerOperatorPlugin, CompilerCodeLRPlugin, CompilerPreprocessorPlugin{
 
+	private void addAbsReplacement(String name){
+		CoreASMCompiler.getEngine().getClassLibrary().addPackageReplacement("org.coreasm.engine.absstorage." + name, "CompilerRuntime." + name);
+	}
+	
+	
 	//------------------------------------------------------------
 		//---------------- Start of Compiler code --------------------
 		//------------------------------------------------------------
@@ -253,7 +258,7 @@ public class CompilerKernelPlugin implements
 					result.appendFragment(lhs);
 					result.appendLine("\n@decl(CompilerRuntime.Location,tmplocation)=(CompilerRuntime.Location)evalStack.pop();\n");
 					result.appendLine("@decl(CompilerRuntime.Element,tmpvalue)=(CompilerRuntime.Element)evalStack.pop();\n");
-					result.appendLine("\n@decl(CompilerRuntime.Update,tmpupdate)=new CompilerRuntime.Update(@tmplocation@, @tmpvalue@, \"UPDATE\", this.getUpdateResponsible());\n");
+					result.appendLine("\n@decl(CompilerRuntime.Update,tmpupdate)=new CompilerRuntime.Update(@tmplocation@, @tmpvalue@, \"updateAction\", this.getUpdateResponsible(), null);\n");
 					result.appendLine("@decl(CompilerRuntime.UpdateList,tmplist)=new CompilerRuntime.UpdateList();\n");
 					result.appendLine("@tmplist@.add(@tmpupdate@);\n");
 					result.appendLine("evalStack.push(@tmplist@);\n");
@@ -496,6 +501,72 @@ public class CompilerKernelPlugin implements
 				
 				Enumeration<JarEntry> entries = jar.entries();
 				
+				//list of entries not to include from the runtime directory
+					
+				classLibrary.addPackageReplacement("org.coreasm.engine.ControlAPI", "CompilerRuntime.ControlAPI");
+				classLibrary.addPackageReplacement("org.coreasm.engine.interpreter.Node", "CompilerRuntime.Node");
+				classLibrary.addPackageReplacement("org.coreasm.engine.interpreter.ScannerInfo", "CompilerRuntime.ScannerInfo");
+				classLibrary.addPackageReplacement("org.coreasm.engine.scheduler.SchedulingPolicy", "CompilerRuntime.SchedulingPolicy");
+				classLibrary.addPackageReplacement("org.coreasm.engine.EngineError", "CompilerRuntime.EngineError");
+				classLibrary.addPackageReplacement("org.coreasm.engine.EngineException", "CompilerRuntime.EngineException");
+				
+				addAbsReplacement("AbstractUniverse");
+				addAbsReplacement("BackgroundElement");
+				addAbsReplacement("BooleanBackgroundElement");
+				addAbsReplacement("BooleanElement");
+				addAbsReplacement("Element");
+				addAbsReplacement("ElementBackgroundElement");
+				addAbsReplacement("Enumerable");
+				addAbsReplacement("FunctionBackgroundElement");
+				addAbsReplacement("FunctionElement");
+				addAbsReplacement("Location");
+				addAbsReplacement("MapFunction");
+				addAbsReplacement("NameElement");
+				addAbsReplacement("Signature");
+				addAbsReplacement("UniverseElement");
+				addAbsReplacement("Update");
+				addAbsReplacement("ElementFormatException");
+				addAbsReplacement("ElementList");
+				addAbsReplacement("IdentifierNotFoundException");
+				addAbsReplacement("InvalidLocationException");
+				addAbsReplacement("NameConflictException");
+				addAbsReplacement("UnmodifiableFunctionException");
+				
+				
+				try{
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/AbstractUniverse.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/BackgroundElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/BooleanBackgroundElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/BooleanElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/Element.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/ElementBackgroundElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/Enumerable.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/FunctionBackgroundElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/FunctionElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/Location.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/MapFunction.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/NameElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/Signature.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/UniverseElement.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/Update.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/ElementFormatException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/EngineError.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/EngineException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/IdentifierNotFoundException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/InvalidLocationException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/NameConflictException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/UnmodifiableFunctionException.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/absstorage/ElementList.java", "CompilerRuntime"));
+					classLibrary.addEntry(new ClassInclude(enginePath, "org/coreasm/engine/scheduler/SchedulingPolicy.java", "CompilerRuntime"));
+				}
+				catch(IOException e){
+					throw new CompilerException("could not load classes " + e.getMessage());
+				} catch (EntryAlreadyExistsException e) {
+					throw new CompilerException("could not load classes " + e.getMessage());
+				}
+				
+				
+				
 				for(JarEntry jarEntry = entries.nextElement(); entries.hasMoreElements(); jarEntry = entries.nextElement()){
 					String name = jarEntry.getName();
 					if(name.startsWith("CompilerRuntime/") && name.endsWith(".java")){
@@ -564,6 +635,7 @@ public class CompilerKernelPlugin implements
 			}*/
 			return loadedClasses;
 		}
+
 
 		@Override
 		public List<String> unaryOperations() {

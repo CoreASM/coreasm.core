@@ -2,6 +2,7 @@ package CompilerRuntime;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.coreasm.engine.absstorage.Update;
 
 /**
  * A list of updates

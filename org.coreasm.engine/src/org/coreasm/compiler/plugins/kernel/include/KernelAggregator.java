@@ -2,10 +2,12 @@ package org.coreasm.compiler.plugins.kernel.include;
 
 import java.util.Set;
 
+
+import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.Update;
+
 import CompilerRuntime.AggregationHelper;
-import CompilerRuntime.Location;
 import CompilerRuntime.PluginCompositionAPI;
-import CompilerRuntime.Update;
 import CompilerRuntime.UpdateList;
 
 public class KernelAggregator implements CompilerRuntime.UpdateAggregator {
@@ -13,14 +15,14 @@ public class KernelAggregator implements CompilerRuntime.UpdateAggregator {
 	@Override
 	public void aggregateUpdates(AggregationHelper ah) {
 		// all locations on which basic updates occur
-				Set<CompilerRuntime.Location> basicUpdateLocations = ah.getLocsWithActionOnly(CompilerRuntime.Update.UPDATE_ACTION);
+				Set<Location> basicUpdateLocations = ah.getLocsWithActionOnly(Update.UPDATE_ACTION);
 				
-				for (CompilerRuntime.Location l : basicUpdateLocations) {
+				for (Location l : basicUpdateLocations) {
 					// get all updates on the location
 					CompilerRuntime.UpdateList updatesOnLoc = ah.getLocUpdates(l);
 					
 					// for all updates on the location
-					for (CompilerRuntime.Update u : updatesOnLoc)
+					for (Update u : updatesOnLoc)
 					{
 						// flag the update as successful
 						ah.flagUpdate(u,CompilerRuntime.AggregationHelper.Flag.SUCCESSFUL,this);

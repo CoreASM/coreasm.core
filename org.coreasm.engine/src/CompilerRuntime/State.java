@@ -15,6 +15,12 @@ package CompilerRuntime;
 
 import java.util.Map;
 import java.util.Set;
+import org.coreasm.engine.absstorage.AbstractUniverse;
+import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.NameConflictException;
+import org.coreasm.engine.absstorage.InvalidLocationException;
 
 /**
  * Defines an interface to CoreASM state.

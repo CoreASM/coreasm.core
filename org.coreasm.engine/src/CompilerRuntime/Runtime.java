@@ -1,6 +1,7 @@
 package CompilerRuntime;
 
 import java.util.Set;
+import org.coreasm.engine.absstorage.Element;
 
 /**
  * An interface providing access to the runtime of the compiled

@@ -42,6 +42,7 @@ public class ClassInclude implements LibraryEntry{
 	private File targetFile;
 	private String packageName;
 	private Map<String, String> importReplacements;
+	private Map<String, String> importPackageReplacements;
 	
 	/**
 	 * The base path to the plugins. Used to make the merge with the coreasm project easier.
@@ -73,6 +74,8 @@ public class ClassInclude implements LibraryEntry{
 		
 		this.packageName = packageName;
 		importReplacements = new HashMap<String, String>();
+		
+		populatePackageReplacements();
 	}
 	
 	/**
@@ -97,7 +100,16 @@ public class ClassInclude implements LibraryEntry{
 		targetFile = new File(tFile);
 		this.packageName = packageName;
 		importReplacements = new HashMap<String, String>();
+		populatePackageReplacements();
 	}
+	
+	private void populatePackageReplacements(){
+		importPackageReplacements = new HashMap<String, String>();
+		
+		importPackageReplacements.put("org.coreasm.engine.absstorage", "CompilerRuntime");
+		importPackageReplacements.put("org.coreasm.engine.CoreASMError", "CompilerRuntime.CoreASMError");
+	}
+	
 	@Override
 	public void writeFile() throws LibraryEntryException{
 		targetDirectory.mkdirs();
@@ -167,6 +179,13 @@ public class ClassInclude implements LibraryEntry{
 				String r = importReplacements.get(l);
 				if(r != null){
 					tmp = "import " + r + ";";
+				}
+				else{
+					for(String s : importPackageReplacements.keySet()){
+						if(l.startsWith(s)){
+							tmp = "import " + importPackageReplacements.get(s) + l.substring(s.length()) + ";";
+						}
+					}
 				}
 			}
 			bw.write(tmp + "\n");

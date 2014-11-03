@@ -1,7 +1,8 @@
 package CompilerRuntime;
 
 import java.util.concurrent.Callable;
-
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.RuleBackgroundElement;
 /**
  * An interface representing a CoreASM Rule
  * @author Markus Brenner

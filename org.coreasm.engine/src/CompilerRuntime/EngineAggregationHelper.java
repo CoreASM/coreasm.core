@@ -1,6 +1,7 @@
 package CompilerRuntime;
 
 import java.util.Collection;
+import org.coreasm.engine.absstorage.Update;
 
 public interface EngineAggregationHelper {
 	void setUpdateInstructions(UpdateList updates);

@@ -1,5 +1,8 @@
 package CompilerRuntime;
 
+import org.coreasm.engine.absstorage.BackgroundElement;
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.BooleanElement;
 
 public class RuleBackgroundElement extends BackgroundElement {
 	public static final String RULE_BACKGROUND_NAME = "RULE";
@@ -12,7 +15,7 @@ public class RuleBackgroundElement extends BackgroundElement {
 
 	@Override
 	protected Element getValue(Element e) {
-		return CompilerRuntime.BooleanElement.valueOf(e instanceof Rule);
+		return BooleanElement.valueOf(e instanceof Rule);
 	}
 
 }

@@ -3,6 +3,7 @@ package org.coreasm.eclipse.wizards;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.Job;
@@ -38,9 +39,6 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 	@Override
 	public boolean performFinish() {
 		System.out.println("requested to compile specification");
-		System.out.println("spec: " + page.getSpec());
-		System.out.println("jar: " + page.getJar());
-		System.out.println("tmp: " + page.keepTmp());
 		
 		//build a compiler options object and fill in information
 		CompilerOptions co = new CompilerOptions();
@@ -59,21 +57,26 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 		}
 		co.tempDirectory = tmppath.toAbsolutePath().toString();		
 		co.outputFile = page.getJar();
-		co.keepTempFiles = page.keepTmp();
-		//TODO: set these to correct values later on
-		co.removeExistingFiles = true;
-		co.terminateOnError = false;		
-		co.terminateOnFailedUpdate = false;		
-		co.terminateOnEmptyUpdate = false;
-		co.terminateOnSameUpdate = false;
-		co.terminateOnUndefAgent = false;		
-		co.terminateOnStepCount = -1;				
-		co.logUpdatesAfterStep = false;			
-		co.logStateAfterStep = false;		
-		co.logEndOfStep = false;
-		co.logAgentSetAfterStep = false;
-		co.logStateTransition = false;
-		co.noCompile = false;
+		
+		Map<String, Boolean> settings = page.getSettings();
+		
+		
+		co.keepTempFiles = settings.get("keepTempFiles");
+		//TODO: set these to correct values later on		
+			
+		co.removeExistingFiles = settings.get("removeExistingFiles");
+		co.terminateOnError = settings.get("terminateOnError");		
+		co.terminateOnFailedUpdate = settings.get("terminateOnFailedUpdate");		
+		co.terminateOnEmptyUpdate = settings.get("terminateOnEmptyUpdate");
+		co.terminateOnSameUpdate = settings.get("terminateOnSameUpdate");
+		co.terminateOnUndefAgent = settings.get("terminateOnUndefAgent");		
+		co.terminateOnStepCount = page.getStepCount();				
+		co.logUpdatesAfterStep = settings.get("logUpdatesAfterStep");	
+		co.logStateAfterStep = settings.get("logStateAfterStep");		
+		co.logEndOfStep = settings.get("logEndOfStep");
+		co.logAgentSetAfterStep = settings.get("logAgentSetAfterStep");
+		co.logStateTransition = settings.get("logStateTransition");
+		co.noCompile = settings.get("noCompile");
 		
 		
 		CompileJob cj = new CompileJob("Compiling CoreASM specification", co);

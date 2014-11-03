@@ -6,12 +6,15 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
 
-public class DefaultSchedulingPolicy implements CompilerRuntime.SchedulingPolicy {
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.scheduler.SchedulingPolicy;
+
+public class DefaultSchedulingPolicy implements SchedulingPolicy {
 
 	/** Maximum number of elements considered, 30 */
 	public static final int MAX_SET_SIZE = 30;
 
-	public Iterator<Set<CompilerRuntime.Rule>> getNewSchedule(java.util.Set<? extends CompilerRuntime.Rule> set) {
+	public Iterator<Set<Element>> getNewSchedule(java.util.Set<? extends Element> set) {
 		return new DefaultIterator(set);
 	}
 	
@@ -37,7 +40,7 @@ public class DefaultSchedulingPolicy implements CompilerRuntime.SchedulingPolicy
 	/**
 	 * @see #getNewSchedule(Set)
 	 */
-	public Iterator<Set<CompilerRuntime.Rule>> getNewSchedule(Object groupHandle, Set<? extends CompilerRuntime.Rule> set) {
+	public Iterator<Set<Element>> getNewSchedule(Object groupHandle, Set<? extends Element> set) {
 		return getNewSchedule(set);
 	}
 
@@ -50,9 +53,9 @@ public class DefaultSchedulingPolicy implements CompilerRuntime.SchedulingPolicy
 	 * @author Roozbeh Farahbod
 	 *
 	 */
-	protected class DefaultIterator implements Iterator<Set<CompilerRuntime.Rule>> {
+	protected class DefaultIterator implements Iterator<Set<Element>> {
 		
-		private final List<CompilerRuntime.Rule> list;
+		private final List<Element> list;
 		private final List<Integer> iteratedIndices;
 		private final int max_tries;	// this is actually an int value
 		
@@ -62,17 +65,17 @@ public class DefaultSchedulingPolicy implements CompilerRuntime.SchedulingPolicy
 		 * then a subset of the given set (no larger than {@link DefaultSchedulingPolicy#MAX_SET_SIZE}
 		 * is considered.  
 		 */
-		public DefaultIterator(Set<? extends CompilerRuntime.Rule> set) {
-			List<CompilerRuntime.Rule> tempList = new ArrayList<CompilerRuntime.Rule>(set);
+		public DefaultIterator(Set<? extends Element> set) {
+			List<Element> tempList = new ArrayList<Element>(set);
 
 			// Here I pick a subset of the given set with a size of MAX_SET_SIZE
             if (set.size() > MAX_SET_SIZE) {
-    			this.list = new ArrayList<CompilerRuntime.Rule>();
+    			this.list = new ArrayList<Element>();
             	int clipIndex = CompilerRuntime.RuntimeProvider.getRuntime().randInt(set.size() - MAX_SET_SIZE + 1);
             	for (int i = 0; i < MAX_SET_SIZE; i++)
             		list.add(tempList.get(i + clipIndex));
             } else
-    			this.list = new ArrayList<CompilerRuntime.Rule>(set);
+    			this.list = new ArrayList<Element>(set);
 
 			this.iteratedIndices = new ArrayList<Integer>();
 			this.max_tries = (int)Math.round(Math.pow(2, list.size())) - 1; 
@@ -82,15 +85,15 @@ public class DefaultSchedulingPolicy implements CompilerRuntime.SchedulingPolicy
 			return iteratedIndices.size() < max_tries;
 		}
 
-		public Set<CompilerRuntime.Rule> next() {
+		public Set<Element> next() {
 			if (!hasNext()) 
 				throw new Error("There is no possible combination left.");
 			
 			if (list.size() == 1) {
-				return new HashSet<CompilerRuntime.Rule>(list);
+				return new HashSet<Element>(list);
 			}
 			else {
-				Set<CompilerRuntime.Rule> result = new HashSet<CompilerRuntime.Rule>();
+				Set<Element> result = new HashSet<Element>();
 
 	            // choose a subset index randomly
 				int selectedIndex;

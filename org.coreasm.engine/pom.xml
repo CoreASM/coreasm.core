@@ -18,6 +18,22 @@
 			<resource>
 				<directory>src</directory>
 				<includes>
+					<include>org/coreasm/engine/absstorage/*.*</include>
+				</includes>
+			</resource>
+		
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/engine/EngineError.java</include>
+					<include>org/coreasm/engine/EngineException.java</include>
+					<include>org/coreasm/engine/scheduler/SchedulingPolicy.java</include>
+				</includes>
+			</resource>
+		
+			<resource>
+				<directory>src</directory>
+				<includes>
 					<include>CompilerRuntime/*.*</include>
 				</includes>
 			</resource>
@@ -25,6 +41,12 @@
 				<directory>src</directory>
 				<includes>
 					<include>org/coreasm/compiler/plugins/**/include/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/engine/plugins/**/*.*</include>
 				</includes>
 			</resource>
 			<resource>

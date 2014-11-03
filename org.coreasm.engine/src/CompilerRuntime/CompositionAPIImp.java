@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.Update;
 
 // TODO The performance of this class in general can be improved. 
 /** 

@@ -7,6 +7,8 @@ import java.util.Map;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.classlibrary.ConstantFunctionLibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
@@ -26,7 +28,6 @@ import org.coreasm.engine.plugins.number.NumberValueTransformer;
 public class CompilerNumberPlugin implements
 	CompilerOperatorPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, 
 	CompilerFunctionPlugin, CompilerPreprocessorPlugin{
-	//===============================start of compiler code
 
 		@Override
 		public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
@@ -37,57 +38,66 @@ public class CompilerNumberPlugin implements
 			
 			try{
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberBackgroundElement.java", this), EntryType.BACKGROUND,
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberUtil.java", this), EntryType.INCLUDEONLY, ""));
+				
+				result.add(new MainFileEntry(
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberBackgroundElement.java", this), EntryType.BACKGROUND,
 						"NUMBER"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberRangeBackgroundElement.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRangeBackgroundElement.java",
 								this), EntryType.BACKGROUND,
 						"NUMBER_RANGE"));
 		
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberElement.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberElement.java",
 								this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberRangeElement.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRangeElement.java",
 								this), EntryType.INCLUDEONLY, ""));
 		
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberEvenFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberEvenFunction.java",//"org/coreasm/compiler/plugins/number/include/NumberEvenFunction.java",
 								this), EntryType.FUNCTION,
 						"isEvenNumber"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberIntegerFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberIntegerFunction.java",
 								this), EntryType.FUNCTION,
 						"isIntegerNumber"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberNaturalFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberNaturalFunction.java",
 								this), EntryType.FUNCTION,
 						"isNaturalNumber"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberNegativeFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberNegativeFunction.java",
 								this), EntryType.FUNCTION,
 						"isNegativeValue"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberOddFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberOddFunction.java",
 								this), EntryType.FUNCTION,
 						"isOddNumber"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberPositiveFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberPositiveFunction.java",
 								this), EntryType.FUNCTION,
 						"isPositiveValue"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberRealFunction.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRealFunction.java",
 								this), EntryType.FUNCTION,
 						"isRealNumber"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/ToNumberFunctionElement.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/ToNumberFunctionElement.java",
 								this), EntryType.FUNCTION,
 						"toNumber"));
+				
+				LibraryEntry le = new ConstantFunctionLibraryEntry("infinity", "plugins.NumberPlugin", "plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY");
+				library.addEntry(le);
+				
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/NumberInfinityFunction.java",
-								this), EntryType.FUNCTION, "infinity"));
+						le, EntryType.FUNCTION, "infinity"));
+						
+						//library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberInfinityFunction.java",
+						//		this), EntryType.FUNCTION, "infinity"));
 				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/compiler/plugins/number/include/SizeFunctionElement.java",
+						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/SizeFunctionElement.java",
 								this), EntryType.FUNCTION, "size"));
 			}
 			catch(EntryAlreadyExistsException e){

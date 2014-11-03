@@ -2,6 +2,8 @@
 package CompilerRuntime;
 
 import java.util.Set;
+import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.Update;
 
 public interface AggregationHelper {
 	public enum Flag {SUCCESSFUL, FAILED};
