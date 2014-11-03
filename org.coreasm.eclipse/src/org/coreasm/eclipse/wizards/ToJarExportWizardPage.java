@@ -214,6 +214,11 @@ public class ToJarExportWizardPage extends WizardPage {
 	}
 	
 	public int getStepCount(){
-		return Integer.getInteger(txtStepCount.getText(), -1);
+		try{
+			return Integer.parseInt(txtStepCount.getText());
+		}
+		catch(Exception e){
+			return -1;
+		}
 	}
 }
