@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.predicatelogic.CompilerPredicateLogicPlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
@@ -76,6 +78,13 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	private final String[] keywords = {IMPLY_OP, OR_OP, XOR_OP, AND_OP, NOT_OP, NOTIN_OP,
 			"forall", "holds", "exists", "with", IN_OP, "in"};
 	private final String[] operators = {"!="};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerPredicateLogicPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	/**
 	 * Create a new instance of PredicateLogicPlugin

@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.options.CompilerOptionsPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -65,6 +67,13 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	private final Map<EngineMode, Integer> sourceModes;
 	private final Map<EngineMode, Integer> targetModes;
 
+	private final CompilerPlugin compilerPlugin = new CompilerOptionsPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
+	
 	public OptionsPlugin() {
 		sourceModes = new HashMap<EngineMode, Integer>();
 		targetModes = new HashMap<EngineMode, Integer>();

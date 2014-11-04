@@ -23,6 +23,7 @@ import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.preprocessor.InheritRule;
 import org.coreasm.compiler.preprocessor.SynthesizeRule;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugins.number.NumberPlugin;
 import org.coreasm.engine.plugins.number.NumberValueTransformer;
 
 public class CompilerNumberPlugin implements
@@ -505,6 +506,6 @@ public class CompilerNumberPlugin implements
 
 		@Override
 		public String getName() {
-			return "NumberPlugin";
+			return NumberPlugin.PLUGIN_NAME;
 		}
 }

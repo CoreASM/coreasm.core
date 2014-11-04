@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.forall.CompilerForallRulePlugin;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BooleanElement;
@@ -63,6 +65,13 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
     private ThreadLocal<Map<Node,UpdateMultiset>> updates;
     
     private Map<String, GrammarRule> parsers;
+    
+    private final CompilerPlugin compilerPlugin = new CompilerForallRulePlugin();
+    
+    @Override
+    public CompilerPlugin getCompilerPlugin(){
+    	return compilerPlugin;
+    }
     
     @Override
     public void initialize() {

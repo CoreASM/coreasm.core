@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.caserule.CompilerCaseRulePlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.UpdateMultiset;
@@ -56,7 +58,8 @@ public class CaseRulePlugin extends Plugin
     private Map<String, GrammarRule> parsers = null;
     private ThreadLocal<Map<Node,Set<ASTNode>>> matchingRules;
 
-
+    private final CompilerPlugin compilerPlugin = new CompilerCaseRulePlugin();
+    
     @Override
     public void initialize() {
         matchingRules = new ThreadLocal<Map<Node, Set<ASTNode>>>() {
@@ -212,5 +215,10 @@ public class CaseRulePlugin extends Plugin
 						nextChildName = "gamma";
 			}
 		}
+	}
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
 	}
 }

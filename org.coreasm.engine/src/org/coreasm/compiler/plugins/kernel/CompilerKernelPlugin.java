@@ -42,6 +42,7 @@ import org.coreasm.engine.absstorage.FunctionBackgroundElement;
 import org.coreasm.engine.absstorage.RuleBackgroundElement;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
+import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
 
@@ -730,6 +731,6 @@ public class CompilerKernelPlugin implements
 
 		@Override
 		public String getName() {
-			return "Kernel";
+			return Kernel.PLUGIN_NAME;
 		}
 }
