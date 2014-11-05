@@ -147,6 +147,7 @@ public class ClassInclude implements LibraryEntry{
 				if(jarjar != null) jarjar.close();
 			}
 			catch(Exception e){
+				e.printStackTrace();
 				CoreASMCompiler.getEngine().getLogger().error(ClassInclude.class, "Could not close in and out streams");
 			}
 		}
