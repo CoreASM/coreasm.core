@@ -183,6 +183,11 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			
 			// ListComprehension: '[' Term '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? ']'
+			
+			pTools.getKeywParser("in", PLUGIN_NAME);
+			pTools.getKeywParser("with", PLUGIN_NAME);
+			
+			
 			Parser<Node> listComprehensionParser = Parsers.array(new Parser[] {
 				pTools.getOprParser("["),
 				termParser,
