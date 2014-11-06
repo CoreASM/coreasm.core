@@ -93,7 +93,7 @@ public class CompilerStringPlugin implements CompilerOperatorPlugin,
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/ToStringFunctionElement.java", this),EntryType.FUNCTION, ToStringFunctionElement.TOSTRING_FUNC_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringLengthFunctionElement.java", this),EntryType.FUNCTION, StringLengthFunctionElement.STRLENGTH_FUNC_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringSubstringFunction.java", this),EntryType.FUNCTION, StringSubstringFunction.STRING_SUBSTRING_FUNCTION_NAME));
-				//result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringMatchingFunction.java", this),EntryType.FUNCTION, StringMatchingFunction.STRING_MATCHES_FUNCTION_NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringMatchingFunction.java", this),EntryType.FUNCTION_CAPI, StringMatchingFunction.STRING_MATCHES_FUNCTION_NAME));
 				
 			
 			}

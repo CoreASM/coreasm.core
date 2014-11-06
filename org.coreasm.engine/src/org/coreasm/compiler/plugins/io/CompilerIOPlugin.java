@@ -65,10 +65,10 @@ public class CompilerIOPlugin implements CompilerPlugin, CompilerVocabularyExten
 		else{			
 			try {
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/OutputFunctionElement.java", this), EntryType.FUNCTION, "output"));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/OutputFunctionElement.java", this), EntryType.FUNCTION, "output"));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/InputFunctionElement.java", this), EntryType.FUNCTION, "input"));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/InputProvider.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/IOHelper.java", this), EntryType.INCLUDEONLY, ""));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/InputProvider.java", this), EntryType.INCLUDEONLY, ""));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/IOPlugin.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/IOAggregator.java", this), EntryType.AGGREGATOR, ""));
 			} catch (IncludeException e) {
 				throw new CompilerException(e);

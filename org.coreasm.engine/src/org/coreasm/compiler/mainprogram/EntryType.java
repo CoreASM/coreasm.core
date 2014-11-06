@@ -14,6 +14,13 @@ public enum EntryType {
 	 */
 	FUNCTION, 
 	/**
+	 * A function type entry will be imported as a function into the abstract storage.
+	 * This function entry is used for functions, which require passing a capi to the constructor
+	 * Requires a name, under which the entry will be accessible.
+	 * The class needs to have a default constructor.
+	 */
+	FUNCTION_CAPI, 
+	/**
 	 * A universe type entry will be imported as a universe into the abstract storage.
 	 * Requires a name, under which the entry will be accessible.
 	 * The class needs to have a default constructor.

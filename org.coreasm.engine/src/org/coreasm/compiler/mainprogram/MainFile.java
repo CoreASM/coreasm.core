@@ -230,6 +230,10 @@ public class MainFile implements LibraryEntry{
 					finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "());\n");
 				}
 				break;
+			case FUNCTION_CAPI:
+				//program function needs no parameter for the constructor, so it cannot appear here
+				finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "(new CompilerRuntime.ControlAPI()));\n");
+				break;
 			case UNIVERSE:
 				if(entry.entryName.equals(CompilerRuntime.AbstractStorage.AGENTS_UNIVERSE_NAME)){
 					finalContent.appendLine("\t\tuniTmp = new " + entry.classFile.getFullName() + "();\n");
