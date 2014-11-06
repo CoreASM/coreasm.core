@@ -15,10 +15,13 @@ package org.coreasm.compiler.plugins.list.include;
 
 import java.util.List;
 
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.plugins.collection.AbstractListElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.Signature;
+import org.coreasm.engine.plugins.list.ListBackgroundElement;
+import org.coreasm.engine.plugins.list.ListFunctionElement;
 
 /** 
  * Impelementation of head and last functions on lists.
@@ -34,8 +37,8 @@ public class HeadFunctionElement extends ListFunctionElement {
 	protected Signature signature = null;
 	protected final boolean isHead;
 	
-	public HeadFunctionElement() {
-		super();
+	public HeadFunctionElement(ControlAPI capi) {
+		super(capi);
 		this.isHead = true;
 	}
 

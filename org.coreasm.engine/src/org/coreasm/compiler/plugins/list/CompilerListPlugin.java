@@ -14,6 +14,7 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.list.ConsFunctionElement;
 import org.coreasm.engine.plugins.list.DropFunctionElement;
 import org.coreasm.engine.plugins.list.FlattenListFunctionElement;
+import org.coreasm.engine.plugins.list.HeadLastFunctionElement;
 import org.coreasm.engine.plugins.list.IndexesFunctionElement;
 import org.coreasm.engine.plugins.list.ListBackgroundElement;
 import org.coreasm.engine.plugins.list.NthFunctionElement;
@@ -189,25 +190,33 @@ public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExt
 		}
 		else{
 			try {
+				//replacements for packages
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractListElement", "plugins.CollectionPlugin.AbstractListElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.include.NumberElement", "plugins.NumberPlugin.NumberElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberBackgroundElement", "plugins.NumberPlugin.NumberBackgroundElement");
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableIndexedCollection", "plugins.CollectionPlugin.ModifiableIndexedCollection");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListFunctionElement", "plugins.ListPlugin.ListFunctionElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListBackgroundElement", "plugins.ListPlugin.ListBackgroundElement");
+				//elements provided by the plugins include
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/list/include/LastFunctionElement.java", this), EntryType.FUNCTION_CAPI, HeadLastFunctionElement.LAST_FUNC_NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/list/include/ListElement.java", this), EntryType.INCLUDEONLY, ""));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/list/include/HeadFunctionElement.java", this), EntryType.FUNCTION_CAPI, HeadLastFunctionElement.HEAD_FUNC_NAME));
+				//elements taken from the coreasm files
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ListBackgroundElement.java", this), EntryType.BACKGROUND, ListBackgroundElement.LIST_BACKGROUND_NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ListElement.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ListFunctionElement.java", this), EntryType.INCLUDEONLY, ""));
-				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ConsFunctionElement.java", this), EntryType.FUNCTION, ConsFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/DropFunctionElement.java", this), EntryType.FUNCTION, DropFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/DropFunctionElement.java", this), EntryType.FUNCTION_CAPI, DropFunctionElement.NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/FlattenListFunctionElement.java", this), EntryType.FUNCTION, FlattenListFunctionElement.NAME));
-				//result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/HeadFunctionElement.java", this), EntryType.FUNCTION, Hea.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/IndexesFunctionElement.java", this), EntryType.FUNCTION, IndexesFunctionElement.NAME));
-				//result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/LastFunctionElement.java", this), EntryType.FUNCTION, LastFun.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/IndexesFunctionElement.java", this), EntryType.FUNCTION_CAPI, IndexesFunctionElement.NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/NthFunctionElement.java", this), EntryType.FUNCTION, NthFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ReplicateFunctionElement.java", this), EntryType.FUNCTION, ReplicateFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ReverseFunctionElement.java", this), EntryType.FUNCTION, ReverseFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/SetNthFunctionElement.java", this), EntryType.FUNCTION, SetNthFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/TailFunctionElement.java", this), EntryType.FUNCTION, TailFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/TakeFunctionElement.java", this), EntryType.FUNCTION, TakeFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ReplicateFunctionElement.java", this), EntryType.FUNCTION_CAPI, ReplicateFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ReverseFunctionElement.java", this), EntryType.FUNCTION_CAPI, ReverseFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/SetNthFunctionElement.java", this), EntryType.FUNCTION_CAPI, SetNthFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/TailFunctionElement.java", this), EntryType.FUNCTION_CAPI, TailFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/TakeFunctionElement.java", this), EntryType.FUNCTION_CAPI, TakeFunctionElement.NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ToListFunctionElement.java", this), EntryType.FUNCTION, ToListFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ZipFunctionElement.java", this), EntryType.FUNCTION, ZipFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ZipWithFunctionElement.java", this), EntryType.FUNCTION, ZipWithFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ZipFunctionElement.java", this), EntryType.FUNCTION_CAPI, ZipFunctionElement.NAME));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/list/ZipWithFunctionElement.java", this), EntryType.FUNCTION_CAPI, ZipWithFunctionElement.NAME));
 			} catch (IncludeException e) {
 				throw new CompilerException(e);
 			} catch (EntryAlreadyExistsException e) {

@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.list.CompilerListPlugin;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -95,8 +97,15 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	private Map<String, BackgroundElement> backgrounds = null;
 	private Map<String, FunctionElement> functions = null;
 
-	private final String[] keywords = {"shift", "left", "right", "into"};
+	private final String[] keywords = {"shift", "left", "right", "into", "in", "with"};
 	private final String[] operators = {"<<", ">>", "[", "]", ",", "+"};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerListPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	public ListPlugin() {
 		super();
@@ -183,9 +192,6 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			
 			// ListComprehension: '[' Term '|' ID 'in' Term 
 			//                    ( ',' ID 'in' Term )* ( 'with' Guard )? ']'
-			
-			pTools.getKeywParser("in", PLUGIN_NAME);
-			pTools.getKeywParser("with", PLUGIN_NAME);
 			
 			
 			Parser<Node> listComprehensionParser = Parsers.array(new Parser[] {
