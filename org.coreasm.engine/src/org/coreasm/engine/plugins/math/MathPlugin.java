@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.math.CompilerMathPlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -64,6 +66,13 @@ public class MathPlugin extends Plugin implements VocabularyExtender, ParserPlug
 
 	private Map<String, GrammarRule> parsers;
 
+	private CompilerPlugin compilerPlugin = new CompilerMathPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
+	
 	public MathPlugin() {
 		super();
 		dependencyNames = new HashSet<String>();

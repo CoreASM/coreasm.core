@@ -253,6 +253,7 @@ public class CompilerSetPlugin implements CompilerPlugin, CompilerVocabularyExte
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", "plugins.SetPlugin.SetElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetBackgroundElement", "plugins.SetPlugin.SetBackgroundElement");
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/set/SetBackgroundElement.java", this), EntryType.BACKGROUND, SetBackgroundElement.SET_BACKGROUND_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/set/include/SetCardinalityFunctionElement.java", this), EntryType.FUNCTION, SetCardinalityFunctionElement.SET_CARINALITY_FUNCTION_NAME));

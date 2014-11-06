@@ -12,4 +12,8 @@ public class ControlAPI {
 	public void error(CoreASMError c){
 		
 	}
+	
+	public int getStepCount(){
+		return RuntimeProvider.getRuntime().getScheduler().getStepCount();
+	}
 }
