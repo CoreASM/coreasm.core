@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.map.CompilerMapPlugin;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -71,6 +73,14 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 	private Map<String, BackgroundElement> bkgs = null;
 
 	private HashMap<String, FunctionElement> functions;
+	
+	private CompilerPlugin compilerPlugin = new CompilerMapPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.Plugin#initialize()

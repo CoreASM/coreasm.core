@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.set.CompilerSetPlugin;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
@@ -118,6 +120,13 @@ public class SetPlugin extends Plugin
 	private Map<String, GrammarRule> parsers = null;
 	
 	Parser.Reference<Node> refSetTermParser = Parser.newReference();
+	
+	private CompilerPlugin compilerPlugin = new CompilerSetPlugin();
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	public SetPlugin() {
 		super();
