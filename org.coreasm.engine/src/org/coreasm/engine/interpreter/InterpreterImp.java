@@ -383,8 +383,16 @@ public class InterpreterImp implements Interpreter {
 						
 						// If this 'x' refers to a function in the state...
 						FunctionElement f = storage.getFunction(x);
-						if (getEnv(x) != null && getEnv(x) instanceof FunctionElement)
+						if (getEnv(x) instanceof FunctionElement)
 							f = (FunctionElement)getEnv(x);
+						if (f == null) {
+							try {
+								Element value = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+								if (value instanceof FunctionElement)
+									f = (FunctionElement)value;
+							} catch (InvalidLocationException e) {
+							}
+						}
 						if (f != null) {
 							final List<ASTNode> args = frNode.getArguments();
 							// look for the parameter that needs to be evaluated
@@ -392,13 +400,18 @@ public class InterpreterImp implements Interpreter {
 							if (toBeEvaluated == null) {
 								// if all nodes are evaluated...
 								final ElementList vList = EngineTools.getValueList(args);
-								final Location l = new Location(storage.getFunctionName(f), vList, f.isModifiable());
-								try {
-									pos.setNode(l, null, storage.getValue(l));
-								} catch (InvalidLocationException e) {
-									throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
-											"This cannot happen!");
+								final String name = storage.getFunctionName(f);
+								if (name != null) {
+									final Location l = new Location(name, vList, f.isModifiable());
+									try {
+										pos.setNode(l, null, storage.getValue(l));
+									} catch (InvalidLocationException e) {
+										throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
+												"This cannot happen!");
+									}
 								}
+								else
+									pos.setNode(new Location(x, vList, f.isModifiable()), null, f.getValue(vList));
 							} else
 								pos = toBeEvaluated;
 						} else
@@ -456,6 +469,16 @@ public class InterpreterImp implements Interpreter {
 				Element e = storage.getRule(name);
 				if (e == null) 
 					e = storage.getFunction(name);
+				if (getEnv(name) instanceof FunctionElement || getEnv(name) instanceof RuleElement)
+					e = getEnv(name);
+				if (e == null) {
+					try {
+						Element value = storage.getValue(new Location(name, ElementList.NO_ARGUMENT));
+						if (value instanceof FunctionElement || value instanceof RuleElement)
+							e = value;
+					} catch (InvalidLocationException ex) {
+					}
+				}
 				
 				if (e != null) {
 				    if (e instanceof FunctionElement) {
