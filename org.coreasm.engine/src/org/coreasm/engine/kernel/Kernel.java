@@ -189,7 +189,7 @@ public class Kernel extends Plugin
     private final Parser.Reference<Node> refRuleDeclarationParser = Parser.newReference();
     
     //compiler plugin
-    private CompilerPlugin compilerPlugin;
+    private final CompilerPlugin compilerPlugin = new CompilerKernelPlugin(this);
     
     /**
      * Creates a new Kernel plugin.
@@ -202,8 +202,6 @@ public class Kernel extends Plugin
 		backgroundNames.add(BooleanBackgroundElement.BOOLEAN_BACKGROUND_NAME);
 		backgroundNames.add(FunctionBackgroundElement.FUNCTION_BACKGROUND_NAME);
 		backgroundNames.add(RuleBackgroundElement.RULE_BACKGROUND_NAME);
-		
-		compilerPlugin = new CompilerKernelPlugin();
     }
  
 	@Override

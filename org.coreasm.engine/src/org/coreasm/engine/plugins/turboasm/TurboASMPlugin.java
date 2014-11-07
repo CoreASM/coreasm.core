@@ -98,7 +98,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			"local", "in", "return", "result"};
 	private final String[] operators = {",", "<-", "[", "]"};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerTurboASMPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerTurboASMPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

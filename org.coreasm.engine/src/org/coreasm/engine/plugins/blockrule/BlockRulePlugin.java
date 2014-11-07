@@ -65,7 +65,7 @@ public class BlockRulePlugin extends Plugin
 	private final String[] keywords = {"par", "endpar"};
 	private final String[] operators = {"{", "}"};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerBlockRulePlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerBlockRulePlugin(this);
 	
     public ASTNode interpret(Interpreter interpreter, ASTNode pos) {
         String gRule = pos.getGrammarRule();

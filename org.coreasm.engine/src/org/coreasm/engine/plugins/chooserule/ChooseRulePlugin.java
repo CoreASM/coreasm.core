@@ -70,7 +70,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 
     private Map<String, GrammarRule> parsers;
     
-    private final CompilerPlugin compilerPlugin = new CompilerChooseRulePlugin();
+    private final CompilerPlugin compilerPlugin = new CompilerChooseRulePlugin(this);
     
     @Override
     public CompilerPlugin getCompilerPlugin(){

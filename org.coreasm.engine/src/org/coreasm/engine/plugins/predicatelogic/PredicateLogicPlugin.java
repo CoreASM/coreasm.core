@@ -79,7 +79,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 			"forall", "holds", "exists", "with", IN_OP, "in"};
 	private final String[] operators = {"!="};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerPredicateLogicPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerPredicateLogicPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

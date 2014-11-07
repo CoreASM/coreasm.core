@@ -62,7 +62,7 @@ public class ExtendRulePlugin extends Plugin implements ParserPlugin, Interprete
 	private final String[] keywords = {"extend", "with", "do"};
 	private final String[] operators = {};
 
-	private final CompilerPlugin compilerPlugin = new CompilerExtendRulePlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerExtendRulePlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

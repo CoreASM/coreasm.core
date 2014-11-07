@@ -74,7 +74,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 
 	private HashMap<String, FunctionElement> functions;
 	
-	private CompilerPlugin compilerPlugin = new CompilerMapPlugin();
+	private CompilerPlugin compilerPlugin = new CompilerMapPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

@@ -11,6 +11,7 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.list.ConsFunctionElement;
 import org.coreasm.engine.plugins.list.DropFunctionElement;
 import org.coreasm.engine.plugins.list.FlattenListFunctionElement;
@@ -36,6 +37,17 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerOperatorPlugin, CompilerCodeUPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerListPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	
 	@Override
@@ -198,6 +210,7 @@ public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExt
 				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableIndexedCollection", "plugins.CollectionPlugin.ModifiableIndexedCollection");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListFunctionElement", "plugins.ListPlugin.ListFunctionElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListBackgroundElement", "plugins.ListPlugin.ListBackgroundElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
 				//elements provided by the plugins include
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/list/include/LastFunctionElement.java", this), EntryType.FUNCTION_CAPI, HeadLastFunctionElement.LAST_FUNC_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/list/include/ListElement.java", this), EntryType.INCLUDEONLY, ""));

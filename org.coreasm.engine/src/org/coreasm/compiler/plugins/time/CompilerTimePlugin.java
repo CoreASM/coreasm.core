@@ -12,10 +12,22 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.time.NowFunctionElement;
 import org.coreasm.engine.plugins.time.StepCountFunctionElement;
 
 public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExtender {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerTimePlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)

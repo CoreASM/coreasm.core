@@ -58,7 +58,7 @@ public class CaseRulePlugin extends Plugin
     private Map<String, GrammarRule> parsers = null;
     private ThreadLocal<Map<Node,Set<ASTNode>>> matchingRules;
 
-    private final CompilerPlugin compilerPlugin = new CompilerCaseRulePlugin();
+    private final CompilerPlugin compilerPlugin = new CompilerCaseRulePlugin(this);
     
     @Override
     public void initialize() {

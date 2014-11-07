@@ -12,6 +12,7 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.collection.FilterFunctionElement;
 import org.coreasm.engine.plugins.collection.MapFunctionElement;
 import org.coreasm.compiler.CodeType;
@@ -23,6 +24,17 @@ import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerCollectionPlugin implements CompilerCodeUPlugin,
 		CompilerFunctionPlugin, CompilerVocabularyExtender, CompilerPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerCollectionPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	private final String FilterName = "filter";
 	private final String FoldName = "fold";

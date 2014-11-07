@@ -12,6 +12,7 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.string.StringLengthFunctionElement;
 import org.coreasm.engine.plugins.string.StringMatchingFunction;
 import org.coreasm.engine.plugins.string.StringPlugin;
@@ -26,6 +27,17 @@ import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerStringPlugin implements CompilerOperatorPlugin,
 		CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerFunctionPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerStringPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public String getName() {

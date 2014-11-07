@@ -6,14 +6,25 @@ import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ASTNode.NameAbstractNodeTuple;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.forallrule.ForallRulePlugin;
-
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 
 public class CompilerForallRulePlugin implements CompilerCodeUPlugin, CompilerPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerForallRulePlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 	@Override
 	public CodeFragment uCode(ASTNode n) throws CompilerException{
 		if ((n.getGrammarClass().equals("Rule")) && (n.getGrammarRule().equals("ForallRule"))) {

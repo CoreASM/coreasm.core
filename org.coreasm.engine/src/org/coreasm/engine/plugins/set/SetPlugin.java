@@ -121,7 +121,7 @@ public class SetPlugin extends Plugin
 	
 	Parser.Reference<Node> refSetTermParser = Parser.newReference();
 	
-	private CompilerPlugin compilerPlugin = new CompilerSetPlugin();
+	private CompilerPlugin compilerPlugin = new CompilerSetPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

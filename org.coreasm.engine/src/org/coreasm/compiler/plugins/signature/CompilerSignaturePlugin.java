@@ -17,6 +17,7 @@ import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.signature.FunctionDomainFunctionElement;
 import org.coreasm.engine.plugins.signature.FunctionRangeFunctionElement;
 import org.coreasm.compiler.CodeType;
@@ -28,6 +29,13 @@ import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlugin,
 		CompilerVocabularyExtender, CompilerExtensionPointPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
     private static enum CheckMode {cmOff, cmWarn, cmStrict};
     private CheckMode typeCheckingMode;    
@@ -52,8 +60,9 @@ public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlu
 	/**
 	 * Creates a new signature plugin
 	 */
-	public CompilerSignaturePlugin(){
+	public CompilerSignaturePlugin(Plugin p){
 		entries = new HashMap<String, IncludeEntry>();
+		this.interpreterPlugin = p;
 	}
 
 	@Override
@@ -90,7 +99,6 @@ public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlu
 		}
 		else{
 			try {
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/EnumerationBackgroundElement.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/EnumerationElement.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/FunctionDomainFunctionElement.java", this), EntryType.FUNCTION, FunctionDomainFunctionElement.FUNCTION_NAME));

@@ -67,7 +67,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	private final Map<EngineMode, Integer> sourceModes;
 	private final Map<EngineMode, Integer> targetModes;
 
-	private final CompilerPlugin compilerPlugin = new CompilerOptionsPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerOptionsPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

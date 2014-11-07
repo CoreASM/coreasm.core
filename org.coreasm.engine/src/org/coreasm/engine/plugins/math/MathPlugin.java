@@ -66,7 +66,7 @@ public class MathPlugin extends Plugin implements VocabularyExtender, ParserPlug
 
 	private Map<String, GrammarRule> parsers;
 
-	private CompilerPlugin compilerPlugin = new CompilerMathPlugin();
+	private CompilerPlugin compilerPlugin = new CompilerMathPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

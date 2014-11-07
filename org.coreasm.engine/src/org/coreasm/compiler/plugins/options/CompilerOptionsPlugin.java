@@ -4,14 +4,25 @@ import java.util.Map;
 
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.options.OptionNode;
 import org.coreasm.engine.plugins.options.OptionsPlugin;
-
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.interfaces.CompilerCodeBPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 
 public class CompilerOptionsPlugin implements CompilerCodeBPlugin, CompilerPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerOptionsPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 	private Map<String, String> options;
 	
 	@Override

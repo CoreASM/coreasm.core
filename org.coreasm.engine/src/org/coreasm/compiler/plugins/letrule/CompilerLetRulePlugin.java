@@ -3,14 +3,25 @@ package org.coreasm.compiler.plugins.letrule;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.letrule.LetRulePlugin;
-
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 
 public class CompilerLetRulePlugin implements CompilerCodeUPlugin, CompilerPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerLetRulePlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 	@Override
 	public CodeFragment uCode(ASTNode n) throws CompilerException{
 		if(n.getGrammarClass().equals("Rule") && n.getGrammarRule().equals("LetRule")){

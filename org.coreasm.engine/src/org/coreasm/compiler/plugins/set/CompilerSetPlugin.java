@@ -13,10 +13,10 @@ import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.set.SetBackgroundElement;
 import org.coreasm.engine.plugins.set.SetCardinalityFunctionElement;
 import org.coreasm.engine.plugins.set.SetCompNode;
-import org.coreasm.engine.plugins.set.SetElement;
 import org.coreasm.engine.plugins.set.ToSetFunctionElement;
 import org.coreasm.engine.plugins.set.TrueGuardNode;
 import org.coreasm.compiler.CodeType;
@@ -27,6 +27,17 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerSetPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerOperatorPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerSetPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public String getName() {

@@ -116,7 +116,7 @@ public class SignaturePlugin extends Plugin
 	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "initialized", "by", "derived"};
 	private final String[] operators = {"=", "{", "}", ",", ":", "->"};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerSignaturePlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerSignaturePlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

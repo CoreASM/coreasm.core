@@ -149,11 +149,10 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 
 	private SizeFunctionElement sizeFunction = null;
 
-	private CompilerPlugin compilerPlugin;
+	private final CompilerPlugin compilerPlugin = new CompilerNumberPlugin(this);
 	
 	public NumberPlugin() {
 		exposedParsers = new HashMap<String, Parser<Node>>();
-		compilerPlugin = new CompilerNumberPlugin();
 	}
 
 	@Override

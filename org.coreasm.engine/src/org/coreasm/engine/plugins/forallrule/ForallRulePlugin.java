@@ -66,7 +66,7 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
     
     private Map<String, GrammarRule> parsers;
     
-    private final CompilerPlugin compilerPlugin = new CompilerForallRulePlugin();
+    private final CompilerPlugin compilerPlugin = new CompilerForallRulePlugin(this);
     
     @Override
     public CompilerPlugin getCompilerPlugin(){

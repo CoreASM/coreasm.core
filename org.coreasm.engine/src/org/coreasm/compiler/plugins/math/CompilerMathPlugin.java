@@ -14,6 +14,7 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.math.MathPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -21,6 +22,17 @@ import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerMathPlugin implements CompilerPlugin,
 		CompilerVocabularyExtender, CompilerCodeRPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerMathPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)

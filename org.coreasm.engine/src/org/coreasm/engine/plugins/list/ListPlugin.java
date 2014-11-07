@@ -100,7 +100,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 	private final String[] keywords = {"shift", "left", "right", "into", "in", "with"};
 	private final String[] operators = {"<<", ">>", "[", "]", ",", "+"};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerListPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerListPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

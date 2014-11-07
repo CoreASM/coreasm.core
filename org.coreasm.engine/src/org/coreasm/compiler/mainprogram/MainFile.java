@@ -5,8 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
@@ -16,12 +17,14 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
 import org.coreasm.compiler.mainprogram.statemachine.StateMachine;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.MainFileHelper;
+import org.coreasm.engine.kernel.Kernel;
 
 /**
  * Advanced LibraryEntry representing the Main class of the compiled code.
@@ -76,20 +79,59 @@ public class MainFile implements LibraryEntry{
 	 * @throws CompilerException If an error occurred in on of the plugins
 	 */
 	public void processVocabularyExtenderPlugins(List<CompilerVocabularyExtender> vocabularyExtenderPlugins) throws CompilerException {
-		for(CompilerVocabularyExtender p : vocabularyExtenderPlugins){
-			try{
-				extensions.addAll(p.loadClasses(CoreASMCompiler.getEngine().getClassLibrary()));
+		//load extenders in order, respecting dependencies of plugins
+		Map<CompilerVocabularyExtender, Boolean> isLoaded = new HashMap<CompilerVocabularyExtender, Boolean>();
+		Map<String, CompilerVocabularyExtender> pluginMapping = new HashMap<String, CompilerVocabularyExtender>();
+		CompilerVocabularyExtender kernel = null;
+		
+		//initialize data structures
+		for(CompilerVocabularyExtender cve : vocabularyExtenderPlugins){
+			if(cve.getName().equals(Kernel.PLUGIN_NAME)){
+				kernel = cve;
+				continue;
 			}
-			catch(CompilerException e){
-				if(e.getCause() instanceof EntryAlreadyExistsException){
-					String tmp = ((EntryAlreadyExistsException)e.getCause()).getEntryName();
-					CoreASMCompiler.getEngine().addError("Plugin " + p.getName() + " could not load all its classes, an entry with the name " + tmp + " already exists");
+			
+			isLoaded.put(cve, false);
+			pluginMapping.put(cve.getName(), cve);
+		}
+		
+		//load kernel
+		loadVocabExtender(kernel);
+		isLoaded.put(kernel, true);
+		
+		//load remaining plugins
+		for(int i = 0; i < vocabularyExtenderPlugins.size(); i++){
+			attemptLoad(isLoaded, pluginMapping, vocabularyExtenderPlugins.get(i));
+		}
+	}
+	
+	private void attemptLoad(Map<CompilerVocabularyExtender, Boolean> loaded, Map<String, CompilerVocabularyExtender> plugins, CompilerVocabularyExtender current) throws CompilerException{
+		if(!loaded.get(current)){
+			for(String s : ((CompilerPlugin)current).getInterpreterPlugin().getDependencyNames()){
+				CompilerVocabularyExtender dep = plugins.get(s);
+				if(dep != null && !loaded.get(dep)){
+					attemptLoad(loaded, plugins, dep);
 				}
-				else{
-					CoreASMCompiler.getEngine().addError("Plugin " + p.getName() + " could not load all its classes");
-				}
-				throw e;
 			}
+			
+			loadVocabExtender(current);
+			loaded.put(current, true);
+		}
+	}
+	
+	private void loadVocabExtender(CompilerVocabularyExtender cve) throws CompilerException{
+		try{
+			extensions.addAll(cve.loadClasses(CoreASMCompiler.getEngine().getClassLibrary()));
+		}
+		catch(CompilerException e){
+			if(e.getCause() instanceof EntryAlreadyExistsException){
+				String tmp = ((EntryAlreadyExistsException)e.getCause()).getEntryName();
+				CoreASMCompiler.getEngine().addError("Plugin " + cve.getName() + " could not load all its classes, an entry with the name " + tmp + " already exists");
+			}
+			else{
+				CoreASMCompiler.getEngine().addError("Plugin " + cve.getName() + " could not load all its classes");
+			}
+			throw e;
 		}
 	}
 

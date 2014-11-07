@@ -84,7 +84,7 @@ public class StringPlugin extends Plugin
 	private final String[] keywords = {};
 	private final String[] operators = {"+"};
 	
-	private CompilerPlugin compilerPlugin = new CompilerStringPlugin();
+	private CompilerPlugin compilerPlugin = new CompilerStringPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

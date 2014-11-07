@@ -45,10 +45,22 @@ import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
+import org.coreasm.engine.plugin.Plugin;
 
 public class CompilerKernelPlugin implements 
 	CompilerPlugin, CompilerCodeLPlugin, CompilerCodeRPlugin, CompilerCodeUPlugin, CompilerCodeBPlugin,
 	CompilerVocabularyExtender, CompilerOperatorPlugin, CompilerCodeLRPlugin, CompilerPreprocessorPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerKernelPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	private void addAbsReplacement(String name){
 		CoreASMCompiler.getEngine().getClassLibrary().addPackageReplacement("org.coreasm.engine.absstorage." + name, "CompilerRuntime." + name);

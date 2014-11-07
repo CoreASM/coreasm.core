@@ -3,6 +3,7 @@ package org.coreasm.compiler.plugins.abstraction;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.abstraction.AbstractionPlugin;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
@@ -17,6 +18,17 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
  */
 public class CompilerAbstractionPlugin implements CompilerCodeUPlugin, CompilerPlugin {
 
+	private Plugin interpreterPlugin;
+	
+	public CompilerAbstractionPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
+	
 	@Override
 	public String getName() {
 		return AbstractionPlugin.PLUGIN_NAME;

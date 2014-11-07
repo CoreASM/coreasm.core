@@ -52,7 +52,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 	private final String[] keywords = {"let", "in"};
 	private final String[] operators = {"=", ","};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerLetRulePlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerLetRulePlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

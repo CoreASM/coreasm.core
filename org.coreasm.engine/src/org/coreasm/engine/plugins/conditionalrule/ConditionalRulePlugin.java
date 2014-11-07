@@ -63,7 +63,7 @@ public class ConditionalRulePlugin extends Plugin
 
 	private Map<String, GrammarRule> parsers = null;
 
-	private final CompilerPlugin compilerPlugin = new CompilerConditionalRulePlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerConditionalRulePlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

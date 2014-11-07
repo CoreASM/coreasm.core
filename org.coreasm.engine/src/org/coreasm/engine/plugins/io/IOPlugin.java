@@ -117,7 +117,7 @@ public class IOPlugin extends Plugin implements
 	private final String[] keywords = {"print"};
 	private final String[] operators = {};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerIOPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerIOPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

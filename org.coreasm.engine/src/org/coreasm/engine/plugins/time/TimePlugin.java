@@ -45,7 +45,7 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 	
 	private Map<String, FunctionElement> functions = null;
 	
-	private CompilerPlugin compilerPlugin = new CompilerTimePlugin();
+	private CompilerPlugin compilerPlugin = new CompilerTimePlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

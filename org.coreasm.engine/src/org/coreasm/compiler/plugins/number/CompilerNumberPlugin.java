@@ -23,12 +23,24 @@ import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.preprocessor.InheritRule;
 import org.coreasm.compiler.preprocessor.SynthesizeRule;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.number.NumberPlugin;
 import org.coreasm.engine.plugins.number.NumberValueTransformer;
 
 public class CompilerNumberPlugin implements
 	CompilerOperatorPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, 
 	CompilerFunctionPlugin, CompilerPreprocessorPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerNumberPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 		@Override
 		public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {

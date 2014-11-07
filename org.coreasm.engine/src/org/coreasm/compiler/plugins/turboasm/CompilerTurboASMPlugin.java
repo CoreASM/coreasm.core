@@ -5,6 +5,7 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.preprocessor.Information;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
@@ -13,6 +14,17 @@ import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 
 public class CompilerTurboASMPlugin implements CompilerPlugin, CompilerCodeUPlugin, CompilerCodeRPlugin {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerTurboASMPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public CodeFragment uCode(ASTNode n)

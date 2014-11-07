@@ -11,6 +11,7 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.map.MapBackgroundElement;
 import org.coreasm.engine.plugins.map.MapToPairsFunctionElement;
 import org.coreasm.engine.plugins.map.ToMapFunctionElement;
@@ -22,6 +23,17 @@ import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerMapPlugin implements CompilerPlugin, CompilerCodeRPlugin,
 		CompilerVocabularyExtender {
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerMapPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)

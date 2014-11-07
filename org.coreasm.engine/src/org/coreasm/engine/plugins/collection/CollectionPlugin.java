@@ -68,7 +68,7 @@ public class CollectionPlugin extends Plugin
 	private final String[] keywords = {"add", "to", "remove", "from"};
 	private final String[] operators = {};
 	
-	private final CompilerPlugin compilerPlugin = new CompilerCollectionPlugin();
+	private final CompilerPlugin compilerPlugin = new CompilerCollectionPlugin(this);
 	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){

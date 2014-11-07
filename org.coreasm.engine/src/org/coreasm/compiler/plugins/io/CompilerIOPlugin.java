@@ -12,6 +12,7 @@ import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.io.OutputFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
@@ -22,6 +23,17 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerIOPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerExtensionPointPlugin, CompilerInitCodePlugin, CompilerCodeUPlugin{
+
+	private Plugin interpreterPlugin;
+	
+	public CompilerIOPlugin(Plugin parent){
+		this.interpreterPlugin = parent;
+	}
+	
+	@Override
+	public Plugin getInterpreterPlugin(){
+		return interpreterPlugin;
+	}
 
 	@Override
 	public String getName() {
