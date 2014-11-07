@@ -127,8 +127,9 @@ public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExt
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberElement", "plugins.NumberPlugin.NumberElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberBackgroundElement", "plugins.NumberPlugin.NumberBackgroundElement");
 			
-			
 			try{
+				
+				
 				result.add(new MainFileEntry(classLibrary.includeClass(
 						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ConsFunctionElement.java", 
 						this), EntryType.FUNCTION, "cons"));

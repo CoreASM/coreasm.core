@@ -38,6 +38,8 @@ public class CompilerNumberPlugin implements
 			String jarpath = CoreASMCompiler.getEngine().getOptions().enginePath;
 			
 			try{
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
+				
 				result.add(new MainFileEntry(
 						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberUtil.java", this), EntryType.INCLUDEONLY, ""));
 				
