@@ -276,7 +276,7 @@ public class ASMDeclarationWatcher implements Observer {
 			}
 			declaration = (declaration + ")").replace("()", "");
 			if (returnExpression != null)
-				declaration += "\nreturns" + returnExpression;
+				declaration += "\nreturns " + returnExpression;
 			if (comment != null)
 				declaration += "\n\n" + comment;
 			return declaration;
