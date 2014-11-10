@@ -129,6 +129,13 @@ public class CompilerCollectionPlugin implements CompilerCodeUPlugin,
 		else{
 			
 			try {
+				//add package replacements for imported classes which can be used by other plugins
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractBagElement", "plugins.CollectionPlugin.AbstractBagElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractListElement", "plugins.CollectionPlugin.AbstractListElement");
+				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableIndexedCollection", "plugins.CollectionPlugin.ModifiableIndexedCollection");
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
+				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				library.addPackageReplacement("org.coreasm.engine.plugins.collection.CollectionFunctionElement", "plugins.CollectionPlugin.CollectionFunctionElement");
 				
 				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/AbstractBagElement.java", this), EntryType.INCLUDEONLY, ""));

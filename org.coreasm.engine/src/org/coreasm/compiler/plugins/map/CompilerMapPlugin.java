@@ -95,10 +95,13 @@ public class CompilerMapPlugin implements CompilerPlugin, CompilerCodeRPlugin,
 		}
 		else{
 			try {
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
-				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
+				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
+				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
+				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
+				
+				//package replacements for classes accessible from other plugins
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.map.MapBackgroundElement", "plugins.MapPlugin.MapBackgroundElement");
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.map.include.MapElement", "plugins.MapPlugin.MapElement");
 				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/map/MapBackgroundElement.java", this), EntryType.BACKGROUND, MapBackgroundElement.NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/map/MapToPairsFunctionElement.java", this), EntryType.FUNCTION, MapToPairsFunctionElement.NAME));

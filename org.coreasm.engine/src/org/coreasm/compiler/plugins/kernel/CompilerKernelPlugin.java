@@ -522,6 +522,9 @@ public class CompilerKernelPlugin implements
 				classLibrary.addPackageReplacement("org.coreasm.engine.scheduler.SchedulingPolicy", "CompilerRuntime.SchedulingPolicy");
 				classLibrary.addPackageReplacement("org.coreasm.engine.EngineError", "CompilerRuntime.EngineError");
 				classLibrary.addPackageReplacement("org.coreasm.engine.EngineException", "CompilerRuntime.EngineException");
+				classLibrary.addPackageReplacement("org.coreasm.util.Tools", "CompilerRuntime.Tools");
+				classLibrary.addPackageReplacement("org.slf4j.Logger", "java.util.ArrayList");
+				classLibrary.addPackageReplacement("org.slf4j.LoggerFactory", "java.util.HashMap");	
 				
 				addAbsReplacement("AbstractUniverse");
 				addAbsReplacement("BackgroundElement");

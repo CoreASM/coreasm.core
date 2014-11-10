@@ -59,7 +59,8 @@ public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExt
 		}
 		else{
 			try {
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
+				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
+				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/time/NowFunctionElement.java", this), EntryType.FUNCTION, NowFunctionElement.NOW_FUNC_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/time/StepCountFunctionElement.java", this), EntryType.FUNCTION_CAPI, StepCountFunctionElement.FUNC_NAME));
 			} catch (IncludeException e) {

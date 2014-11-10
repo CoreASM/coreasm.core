@@ -51,6 +51,10 @@ public class CompilerNumberPlugin implements
 			
 			try{
 				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberUtil", "plugins.NumberPlugin.NumberUtil");
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberBackgroundElement", "plugins.NumberPlugin.NumberBackgroundElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeBackgroundElement", "plugins.NumberPlugin.NumberRangeBackgroundElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeElement", "plugins.NumberPlugin.NumberRangeElement");
 				
 				result.add(new MainFileEntry(
 						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberUtil.java", this), EntryType.INCLUDEONLY, ""));

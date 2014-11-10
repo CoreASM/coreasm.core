@@ -76,7 +76,12 @@ public class CompilerIOPlugin implements CompilerPlugin, CompilerVocabularyExten
 		}
 		else{			
 			try {
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
+				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
+				
+				//add package replacements for classes accessible for other plugins
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.io.InputProvider", "plugins.IOPlugin.InputProvider");
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.io.include.IOPlugin", "plugins.IOPlugin.IOPlugin");
+				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/OutputFunctionElement.java", this), EntryType.FUNCTION, "output"));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/InputFunctionElement.java", this), EntryType.FUNCTION, "input"));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/InputProvider.java", this), EntryType.INCLUDEONLY, ""));

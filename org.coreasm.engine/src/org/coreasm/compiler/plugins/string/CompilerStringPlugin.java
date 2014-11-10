@@ -95,10 +95,9 @@ public class CompilerStringPlugin implements CompilerOperatorPlugin,
 			}
 			else{
 				//load classes from jar archive
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
-				classLibrary.addPackageReplacement("org.coreasm.util.Tools", "CompilerRuntime.Tools");
-				classLibrary.addPackageReplacement("org.slf4j.Logger", "java.util.ArrayList");
-				classLibrary.addPackageReplacement("org.slf4j.LoggerFactory", "java.util.HashMap");	
+				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringBackgroundElement", "plugins.StringPlugin.StringBackgroundElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
 				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringBackgroundElement.java", this),EntryType.BACKGROUND, "STRING"));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/string/StringElement.java", this),EntryType.INCLUDEONLY, ""));
