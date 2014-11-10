@@ -241,15 +241,30 @@ public class EngineControlImp extends UnicastRemoteObject implements
 				previousUpdates.add(updates);
 
 				synchronized (subscriptions) {
-					Iterator<UpdateSubscription> itr = subscriptions.iterator();
+					Iterator<UpdateSubscription> itrSub = subscriptions.iterator();
+					Iterator<Update> itrUpdt;
+					Update updt;
+					StringBuilder Update = new StringBuilder();
+					Update.append('[');
+					itrUpdt = prevupdates.iterator();
+					while(itrUpdt.hasNext()) {
+						updt = itrUpdt.next();
+						Update.append("{\"location\":\"" + updt.getLocationString() + '"');
+						Update.append(", \"value\":\"" + updt.getValueString().replaceAll("(\\r|\\n)", "") + '\"');
+						Update.append(", \"action\":\"" + updt.getActionString() + "\"}");
+						if (itrUpdt.hasNext()) {
+							Update.append(", ");
+						}
+					}
+					Update.append(']');
 
 					UpdateSubscription sub;
-					while (itr.hasNext()) {
-						sub = itr.next();
+					while (itrSub.hasNext()) {
+						sub = itrSub.next();
 						try {
-							sub.newUpdates(prevupdates.toString());
+							sub.newUpdates(Update.toString());
 						} catch (RemoteException e) {
-							itr.remove();
+							itrSub.remove();
 						}
 					}
 					if (subscriptions.isEmpty()) {

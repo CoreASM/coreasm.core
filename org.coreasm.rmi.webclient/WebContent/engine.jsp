@@ -8,25 +8,50 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
-		function count() {
+		$.ajaxSetup({ cache: false });
+		function update() {
 
 			$.ajax({
 				cache : false,
+				dataType: "json",
 				url : "Updates",
 				data: {
 					engineId: "${requestScope.EngineId}"
 				},
 				success : function(data) {
-					$("#ul1").append(data);
+					for (i = 0; i<data.length; i++) {
+						var update = data[i];
+						/* var newUpdatesHTML = "<li>";
+						newUpdatesHTML += "<table border=\"1\" style=\"width:100%\">";
+						for (j=0; j<update.length; j++) {
+							newUpdatesHTML += "<tr>";
+							newUpdatesHTML += "<td>" + update[j].location + "</td>";
+							newUpdatesHTML += "<td>" + update[j].value + "</td>";
+							newUpdatesHTML += "<td>" + update[j].action + "</td>";
+							newUpdatesHTML += "</tr>";
+						}
+						newUpdatesHTML += "</table>";						
+						newUpdatesHTML += "</li>"; */
+						var newUpdatesHTML = "";
+						for (j=0; j<update.length; j++) {
+							if(update[j].location == "output()") {
+								newUpdatesHTML += "<li>";
+								newUpdatesHTML += update[j].value;
+								newUpdatesHTML += "</li>";
+							}
+						}
+						$("#ul1").append(newUpdatesHTML);
+					}
 				}
 			});
+			
 		}
 
 		var auto_refresh = setInterval(function() {
-			count()
-		}, 5000);
+			update()
+		}, 500);
 
-		count();
+		update();
 
 		$(".command").click(function() {
 			$.post("Control", {

@@ -57,17 +57,18 @@ public class UpdateProvider extends HttpServlet {
 
 					PrintWriter out = response.getWriter();
 					response.setContentType("text/html");
-
+					out.println('[');
 					while (itr.hasNext()) {
 						String updt = itr.next();
-						out.println("<li>");
-						out.println("Update " + count + ":");
-						out.println("<ul>");
-						out.println(updt);
-						out.println("</ul>");
-						out.println("</li>");
+						out.print(updt);
+						if(itr.hasNext()) {
+							out.println(',');
+						} else {
+							out.println();
+						}
 						count++;
 					}
+					out.println(']');
 
 					session.setAttribute("UpdateCount", count);
 				}

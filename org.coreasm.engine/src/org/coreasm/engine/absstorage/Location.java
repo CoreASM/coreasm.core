@@ -14,7 +14,6 @@
  
 package org.coreasm.engine.absstorage;
 
-import java.io.Serializable;
 import java.util.List;
 
 /** 
@@ -23,12 +22,7 @@ import java.util.List;
  *  @author  Roozbeh Farahbod
  *  
  */
-public class Location implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class Location {
 
 	/**
 	 * The name of the location function
