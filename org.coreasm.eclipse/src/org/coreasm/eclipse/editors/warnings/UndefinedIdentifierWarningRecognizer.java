@@ -72,12 +72,8 @@ public class UndefinedIdentifierWarningRecognizer implements IWarningRecognizer 
 								break;
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 							if (frNode.hasName()) {
-								if (!frNode.hasArguments()) {
-									if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
-										warnings.add(new UndefinedIdentifierWarning(frNode.getName(), Collections.<ASTNode>emptyList(), frNode, document));
-								}
-								else if (!isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
-									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), frNode.getArguments(), frNode, document));
+								if (!isEnvironmentVariable(frNode) && !isFunctionName(frNode.getName(), functionNames) && !isLocalFunction(frNode))
+									warnings.add(new UndefinedIdentifierWarning(frNode.getName(), Collections.<ASTNode>emptyList(), frNode, document));
 							}
 						}
 						else if (ASTNode.EXPRESSION_CLASS.equals(node.getGrammarClass())) {
