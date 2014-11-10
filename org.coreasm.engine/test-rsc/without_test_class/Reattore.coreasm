@@ -49,8 +49,8 @@ rule InitializeState =
 rule Main = 
 	let	baselineph=7.4, phgrowth=0.01, delay=6, sprayamount=0.1, suppresslength=10, limit=7.45 in 
 	par
-		Controller	// the software
-		Environment	// the cells
+		Controller(sprayamaount, suppresslength, limit)	// the software
+		Environment(phgrowth, delay)	// the cells
 		Kronos		// the Merciless God
 		Monitor		// for display purposes
 	endpar
@@ -61,7 +61,7 @@ rule Main =
 rule Kronos =
 	now := now+1
 
-rule Environment = 
+rule Environment(phgrowth, delay) = 
 	par
 		choose unknown in deltaRange do	
 			ph(now+1) := ph(laste) + phgrowth - (0.5*spray(now-delay+1))
@@ -70,7 +70,7 @@ rule Environment =
 		laste := now+1
 	endpar
 
-rule Controller =
+rule Controller(sprayamount, suppresslength, limit) =
 	par
 		let delta = ph(now) - ph(lastc) in
 			if delta < 0 then
@@ -79,7 +79,7 @@ rule Controller =
 				if ph(now) > limit then	// We'd better do something
 					if (now > suppress) then 
 					par
-						Spray
+						Spray(sprayamount)
 						suppress := now + suppresslength
 					endpar
 		lastc := now
@@ -101,7 +101,7 @@ rule Monitor =
 		 
 
 // What do we mean, "Spray"? :)
-rule Spray =
+rule Spray(sprayamount) =
 	spray(now+1) := sprayamount
 	
 // End! BTW, better models could be developed... consider this just a test.

@@ -156,6 +156,16 @@ public interface Interpreter {
 	public void removeEnv(String name);
 	
 	/**
+	 * Hide the current environment variables
+	 */
+	public void hideEnvVars();
+	
+	/**
+	 * Unhide the previously hidden environment variables
+	 */
+	public void unhideEnvVars();
+	
+	/**
 	 * Returns a copy of the current call stack.
 	 */
 	public Stack<CallStackElement> getCurrentCallStack();
