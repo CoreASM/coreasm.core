@@ -47,7 +47,7 @@ public class CompilerExtendRulePlugin implements CompilerCodeUPlugin, CompilerPl
 				
 				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,arglist)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
 				result.appendLine("@arglist@.add(@elem@);\n");
-				result.appendLine("@ulist@.add(new CompilerRuntime.Update(new CompilerRuntime.Location(@target@,@arglist@), CompilerRuntime.BooleanElement.TRUE, CompilerRuntime.Update.UPDATE_ACTION, this.getUpdateResponsible()));\n");
+				result.appendLine("@ulist@.add(new CompilerRuntime.Update(new CompilerRuntime.Location(@target@,@arglist@), CompilerRuntime.BooleanElement.TRUE, CompilerRuntime.Update.UPDATE_ACTION, this.getUpdateResponsible(), null));\n");
 				result.appendLine("evalStack.push(@ulist@);\n");
 				
 				return result;

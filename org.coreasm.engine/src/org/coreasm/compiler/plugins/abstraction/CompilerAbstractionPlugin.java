@@ -43,7 +43,7 @@ public class CompilerAbstractionPlugin implements CompilerCodeUPlugin, CompilerP
 				result.appendFragment(CoreASMCompiler.getEngine().compile(n.getAbstractChildNodes().get(0), CodeType.R));
 				result.appendLine("@decl(String,msg)=evalStack.pop().toString();\n");
 				result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
-				result.appendLine("@ulist@.add(new CompilerRuntime.Update(plugins.IOPlugin.IOHelper.OUTPUT_FUNC_LOC, new plugins.StringPlugin.StringElement(\"Abstract Call: \" + @msg@), plugins.IOPlugin.IOHelper.PRINT_ACTION, this.getUpdateResponsible()));\n");
+				result.appendLine("@ulist@.add(new CompilerRuntime.Update(plugins.IOPlugin.IOPlugin.OUTPUT_FUNC_LOC, new plugins.StringPlugin.StringElement(\"Abstract Call: \" + @msg@), plugins.IOPlugin.IOPlugin.PRINT_ACTION, this.getUpdateResponsible(), null));\n");
 				result.appendLine("evalStack.push(@ulist@);\n");
 				return result;
 			}
