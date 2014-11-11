@@ -1020,7 +1020,7 @@ public class InterpreterImp implements Interpreter {
 					frNode.addChild("alpha", arg.getFirst());
 					arg = frNode;
 				}
-				if (getEnv(ast.getFirst().getToken()) != null)
+				if (!params.get(i).equals(ast.getFirst().getToken()) && getEnv(ast.getFirst().getToken()) != null)
 					capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
 				result = copyTree(arg);
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
@@ -1032,15 +1032,20 @@ public class InterpreterImp implements Interpreter {
 				if (args != null && a instanceof ASTNode 
 					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
 					&& ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)) {
-					for (ASTNode arg : args) {
-						if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
-					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
-					&& arg.getChildNode("lambda") == null
-					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
-						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
-					}
 					if (getEnv(ast.getFirst().getToken()) != null)
 						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
+					else {
+						for (ASTNode arg : args) {
+							if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
+							&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
+							&& arg.getChildNode("lambda") == null
+							&& !params.get(args.indexOf(arg)).equals(arg.getFirst().getToken())
+							&& arg.getFirst().getToken().equals(ast.getFirst().getToken())) {
+								if (storage.getFunction(ast.getFirst().getToken()) == null || storage.getFunction(ast.getFirst().getToken()).isModifiable())
+									capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument passed as parameter \"" + params.get(args.indexOf(arg)) + "\".", ast, this);
+							}
+						}
+					}
 				}
 				result = a.duplicate();
 				result.setParent(parent);
