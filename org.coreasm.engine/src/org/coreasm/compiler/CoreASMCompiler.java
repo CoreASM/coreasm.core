@@ -19,6 +19,7 @@ import org.coreasm.compiler.interfaces.CompilerCodeLPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeLRPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeLUPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeLURPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeURPlugin;
@@ -196,54 +197,14 @@ public class CoreASMCompiler implements CompilerEngine {
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, type + " requested for node(" + node.getGrammarRule() + ", " + node.getPluginName() + ")");
 		CompilerPlugin cp = pluginLoader.getPlugin(node.getPluginName());
 		
-		//because of the way the interpreter handels operators, we need to intercept calls for operators here
-		if(node.getGrammarClass().equals("BinaryOperator")){
-			//first, check if the optimization for values has a result for us
-			Information inf = preprocessor.getNodeInformation(node).get("value");
-			try{
-				String val = (String) inf.getInformation("code").getValue();
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "optimization point found");
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "replacing operator node with '" + val + "'");
-				return new CodeFragment("evalStack.push(" + val + ");\n");
-			}
-			catch(NullPointerException e){
-				//do nothing, unfortunately we have no value stored at the node
-			}
-			
-			CodeFragment result = new CodeFragment("");
-			result.appendFragment(compile(node.getAbstractChildNodes().get(0), CodeType.R));
-			result.appendFragment(compile(node.getAbstractChildNodes().get(1), CodeType.R));
-			
-			result.appendLine("@decl(CompilerRuntime.Element, rhs)=(CompilerRuntime.Element)evalStack.pop();\n");
-			result.appendLine("@decl(CompilerRuntime.Element, lhs)=(CompilerRuntime.Element)evalStack.pop();\n");
-			
-			List<CompilerPlugin> tmp = binaryOperators.get(node.getToken());
-			for(int i = 0; i < tmp.size(); i++){
-				String s = ((CompilerOperatorPlugin)tmp.get(i)).compileBinaryOperator(node.getToken());
-				result.appendLine(s);
-			}
-			
-			result.appendLine("\nevalStack.push(CompilerRuntime.Element.UNDEF);\n");
-			
-			return result;
-		}	
-		else if(node.getGrammarClass().equals("UnaryOperator")){
-			CodeFragment result = new CodeFragment("");
-			result.appendFragment(compile(node.getAbstractChildNodes().get(0), CodeType.R));
-			
-			result.appendLine("@decl(CompilerRuntime.Element, lhs)=(CompilerRuntime.Element)evalStack.pop();\n");
-			
-			List<CompilerPlugin> tmp = unaryOperators.get(node.getToken());
-			for(int i = 0; i < tmp.size(); i++){
-				String s = ((CompilerOperatorPlugin)tmp.get(i)).compileUnaryOperator(node.getToken());
-				result.appendLine(s);
-			}
-			
-			result.appendLine("\nevalStack.push(CompilerRuntime.Element.UNDEF);\n");
-			
-			return result;
-		}
-		//test, whether the node is a function call
+		//----------------------------------------
+		//---------Handle Operator Calls----------
+		//----------------------------------------
+		CodeFragment result = handleOperatorCall(node);
+		if(result != null) return result;
+		
+		
+		//test, if the node is a function call
 		if(node.getGrammarClass().equals("FunctionRule") && node.getGrammarRule().equals("FunctionRuleTerm") && type == CodeType.R && node.getPluginName().equals("Kernel")){
 			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Function call detected - checking for Function Plugin");
 			//get the function name
@@ -261,7 +222,18 @@ public class CoreASMCompiler implements CompilerEngine {
 		
 		if(cp == null) throw new CompilerException("no plugin available - perhaps an unregistered operator?");
 		
-		switch(type){
+		//compile code
+		if(cp instanceof CompilerCodePlugin){
+			CompilerCodePlugin resp = (CompilerCodePlugin) cp;
+			return resp.compile(type, node);			
+		}
+		else{
+			//not compilable
+			this.addError("plugin " + cp.getName() + " does not register any code handlers");
+			throw new CompilerException("plugin " + cp.getName()  + " does not register any code handlers");
+		}
+		
+		/*switch(type){
 			case BASIC:
 				if(!(cp instanceof CompilerCodeBPlugin)){
 					this.addError("plugin " + cp.getName() + " does not compile bCode");
@@ -314,7 +286,57 @@ public class CoreASMCompiler implements CompilerEngine {
 				
 			default: 			CoreASMCompiler.getEngine().getLogger().error(CoreASMCompiler.class, "Unknown compile type requested"); 
 								throw new CompilerException("Unknown compile type: " + type);
+		}*/
+	}
+	
+	private CodeFragment handleOperatorCall(ASTNode node) throws CompilerException{
+		if(node.getGrammarClass().equals("BinaryOperator")){
+			//first, check if the optimization for values has a result for us
+			Information inf = preprocessor.getNodeInformation(node).get("value");
+			try{
+				String val = (String) inf.getInformation("code").getValue();
+				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "optimization point found");
+				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "replacing operator node with '" + val + "'");
+				return new CodeFragment("evalStack.push(" + val + ");\n");
+			}
+			catch(NullPointerException e){
+				//do nothing, unfortunately we have no value stored at the node
+			}
+			
+			CodeFragment result = new CodeFragment("");
+			result.appendFragment(compile(node.getAbstractChildNodes().get(0), CodeType.R));
+			result.appendFragment(compile(node.getAbstractChildNodes().get(1), CodeType.R));
+			
+			result.appendLine("@decl(CompilerRuntime.Element, rhs)=(CompilerRuntime.Element)evalStack.pop();\n");
+			result.appendLine("@decl(CompilerRuntime.Element, lhs)=(CompilerRuntime.Element)evalStack.pop();\n");
+			
+			List<CompilerPlugin> tmp = binaryOperators.get(node.getToken());
+			for(int i = 0; i < tmp.size(); i++){
+				String s = ((CompilerOperatorPlugin)tmp.get(i)).compileBinaryOperator(node.getToken());
+				result.appendLine(s);
+			}
+			
+			result.appendLine("\nevalStack.push(CompilerRuntime.Element.UNDEF);\n");
+			
+			return result;
+		}	
+		else if(node.getGrammarClass().equals("UnaryOperator")){
+			CodeFragment result = new CodeFragment("");
+			result.appendFragment(compile(node.getAbstractChildNodes().get(0), CodeType.R));
+			
+			result.appendLine("@decl(CompilerRuntime.Element, lhs)=(CompilerRuntime.Element)evalStack.pop();\n");
+			
+			List<CompilerPlugin> tmp = unaryOperators.get(node.getToken());
+			for(int i = 0; i < tmp.size(); i++){
+				String s = ((CompilerOperatorPlugin)tmp.get(i)).compileUnaryOperator(node.getToken());
+				result.appendLine(s);
+			}
+			
+			result.appendLine("\nevalStack.push(CompilerRuntime.Element.UNDEF);\n");
+			
+			return result;
 		}
+		return null;
 	}
 
 	@Override
