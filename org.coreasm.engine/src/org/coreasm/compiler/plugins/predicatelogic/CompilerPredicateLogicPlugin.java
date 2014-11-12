@@ -3,18 +3,16 @@ package org.coreasm.compiler.plugins.predicatelogic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
-import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.predicatelogic.PredicateLogicPlugin;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
+import org.coreasm.compiler.plugins.predicatelogic.code.rcode.ExistsExpHandler;
+import org.coreasm.compiler.plugins.predicatelogic.code.rcode.ForallExpHandler;
 
-public class CompilerPredicateLogicPlugin implements CompilerOperatorPlugin,
-		CompilerCodeRPlugin {
+public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements CompilerOperatorPlugin {
 
 	private Plugin interpreterPlugin;
 	
@@ -30,87 +28,6 @@ public class CompilerPredicateLogicPlugin implements CompilerOperatorPlugin,
 	@Override
 	public String getName() {
 		return PredicateLogicPlugin.PLUGIN_NAME;
-	}
-
-	@Override
-	public CodeFragment rCode(ASTNode n) throws CompilerException {
-		if (n.getGrammarRule().equals("")) {
-
-		} else if (n.getGrammarRule().equals("ExistsExp")
-				&& n.getGrammarClass().equals("Expression")) {
-			CodeFragment result = new CodeFragment("");
-
-			CodeFragment name = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(0), CodeType.L);
-			result.appendFragment(name);
-			result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
-			result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
-
-			CodeFragment source = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(1), CodeType.R);
-			CodeFragment guard = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(2), CodeType.R);
-
-			result.appendFragment(source);
-			result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
-			result.appendLine("for(@decl(int,i)=0;@i@<=@list@.size();@i@++){\n");
-			result.appendLine("if(@i@ == @list@.size()){\n");
-			result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.FALSE);\n");
-			result.appendLine("}\n");
-			result.appendLine("else{\n");
-			result.appendLine("localStack.pushLayer();\n");
-			result.appendLine("localStack.put(@nameloc@.name, @list@.get(@i@));\n");
-			result.appendFragment(guard);
-			result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
-			result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.TRUE);\n");
-			result.appendLine("break;\n");
-			result.appendLine("}\n");
-			result.appendLine("localStack.popLayer();\n");
-			result.appendLine("}\n");
-			result.appendLine("}\n");
-
-			return result;
-
-		} else if (n.getGrammarRule().equals("ForallExp")
-				&& n.getGrammarClass().equals("Expression")) {
-			CodeFragment result = new CodeFragment("");
-
-			CodeFragment loc = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(0), CodeType.L);
-
-			CodeFragment source = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(1), CodeType.R);
-			CodeFragment guard = CoreASMCompiler.getEngine().compile(
-					n.getAbstractChildNodes().get(2), CodeType.R);
-
-			result.appendFragment(loc);
-			result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
-			result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
-
-			result.appendFragment(source);
-			result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
-			result.appendLine("for(@decl(int,i)=0;@i@<=@list@.size();@i@++){\n");
-			result.appendLine("if(@i@ == @list@.size()){\n");
-			result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.TRUE);\n");
-			result.appendLine("}\n");
-			result.appendLine("else{\n");
-			result.appendLine("localStack.pushLayer();\n");
-			result.appendLine("localStack.put(@nameloc@.name, @list@.get(@i@));\n");
-			result.appendFragment(guard);
-			result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.FALSE)){\n");
-			result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.FALSE);\n");
-			result.appendLine("break;\n");
-			result.appendLine("}\n");
-			result.appendLine("localStack.popLayer();\n");
-			result.appendLine("}\n");
-			result.appendLine("}\n");
-
-			return result;
-		}
-
-		throw new CompilerException(
-				"unhandled code type: (PredicateLogicPlugin, rCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
 	}
 
 	@Override
@@ -232,5 +149,11 @@ public class CompilerPredicateLogicPlugin implements CompilerOperatorPlugin,
 		result = result + " else ";
 
 		return result;
+	}
+
+	@Override
+	public void registerCodeHandlers() throws CompilerException {
+		register(new ExistsExpHandler(), CodeType.R, "Expression", "ExistsExp", null);
+		register(new ForallExpHandler(), CodeType.R, "Expression", "ForallExp", null);
 	}
 }

@@ -11,18 +11,17 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
-import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.compiler.plugins.io.code.ucode.PrintRuleHandler;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugins.io.OutputFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerIOPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerExtensionPointPlugin, CompilerInitCodePlugin, CompilerCodeUPlugin{
+public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerExtensionPointPlugin, CompilerInitCodePlugin{
 
 	private Plugin interpreterPlugin;
 	
@@ -120,22 +119,7 @@ public class CompilerIOPlugin implements CompilerPlugin, CompilerVocabularyExten
 	}
 
 	@Override
-	public CodeFragment uCode(ASTNode n)
-			throws CompilerException {
-		if(n.getGrammarClass().equals("Rule")){
-			if(n.getGrammarRule().equals("PrintRule")){
-				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(n.getAbstractChildNodes().get(0), CodeType.R));
-				result.appendLine("@decl(String,msg)=evalStack.pop().toString();\n");
-				result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
-				result.appendLine("@ulist@.add(new CompilerRuntime.Update(new CompilerRuntime.Location(\"output\", new java.util.ArrayList<CompilerRuntime.Element>()), new plugins.StringPlugin.StringElement(@msg@), \"printAction\", this.getUpdateResponsible(), null));\n");
-				result.appendLine("evalStack.push(@ulist@);\n");
-				return result;
-			}
-		}
-		
-		throw new CompilerException(
-				"unhandled code type: (IOPlugin, uCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
+	public void registerCodeHandlers() throws CompilerException {
+		register(new PrintRuleHandler(), CodeType.U, "Rule", "PrintRule", null);
 	}
 }

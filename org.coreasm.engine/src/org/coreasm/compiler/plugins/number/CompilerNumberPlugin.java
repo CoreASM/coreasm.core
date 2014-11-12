@@ -13,13 +13,16 @@ import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.number.code.rcode.NumberHandler;
+import org.coreasm.compiler.plugins.number.code.rcode.NumberRangeHandler;
+import org.coreasm.compiler.plugins.number.code.rcode.SizeOfHandler;
 import org.coreasm.compiler.preprocessor.InheritRule;
 import org.coreasm.compiler.preprocessor.SynthesizeRule;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -27,8 +30,8 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.number.NumberPlugin;
 import org.coreasm.engine.plugins.number.NumberValueTransformer;
 
-public class CompilerNumberPlugin implements
-	CompilerOperatorPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, 
+public class CompilerNumberPlugin extends CompilerCodePlugin implements
+	CompilerOperatorPlugin, CompilerVocabularyExtender, 
 	CompilerFunctionPlugin, CompilerPreprocessorPlugin{
 
 	private Plugin interpreterPlugin;
@@ -154,63 +157,6 @@ public class CompilerNumberPlugin implements
 			ops.add("<=");
 
 			return ops;
-		}
-
-		@Override
-		public CodeFragment rCode(ASTNode n)
-				throws CompilerException {
-			if (n.getGrammarRule().equals("NUMBER")) {
-				if (n.getGrammarClass().equals("Expression")) {
-					CodeFragment result = new CodeFragment("");
-					result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.getInstance("
-							+ Double.parseDouble(n.getToken()) + "));\n");
-					return result;
-				}
-			} else if (n.getGrammarRule().equals("SizeOfEnumTerm")) {
-				if (n.getGrammarClass().equals("Expression")) {
-					CodeFragment result = new CodeFragment("");
-					CodeFragment en = CoreASMCompiler.getEngine().compile(
-							n.getAbstractChildNodes().get(0), CodeType.R);
-					result.appendFragment(en);
-					result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-					result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
-					result.appendLine("evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(new CompilerRuntime.Location(\"size\", @list@)));\n");
-					return result;
-				}
-			} else if (n.getGrammarRule().equals("NumberRangeTerm")) {
-				if (n.getGrammarClass().equals("Expression")) {
-					CodeFragment start = CoreASMCompiler.getEngine().compile(
-							n.getAbstractChildNodes().get(0), CodeType.R);
-					CodeFragment end = CoreASMCompiler.getEngine().compile(
-							n.getAbstractChildNodes().get(1), CodeType.R);
-					CodeFragment step = null;
-					if (n.getAbstractChildNodes().size() == 3) {
-						step = CoreASMCompiler.getEngine().compile(
-								n.getAbstractChildNodes().get(2), CodeType.R);
-					}
-
-					CodeFragment result = new CodeFragment("");
-
-					result.appendFragment(start);
-					result.appendFragment(end);
-					if (step != null) {
-						result.appendFragment(step);
-						result.appendLine("@decl(double,step)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
-					}
-					result.appendLine("@decl(double,end)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
-					result.appendLine("@decl(double,start)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
-					if (step != null) {
-						result.appendLine("evalStack.push(new plugins.NumberPlugin.NumberRangeElement(@start@,@end@,@step@));\n");
-					} else {
-						result.appendLine("evalStack.push(new plugins.NumberPlugin.NumberRangeElement(@start@,@end@));\n");
-					}
-					return result;
-				}
-			}
-
-			throw new CompilerException(
-					"unhandled code type: (NumberPlugin, rCode, "
-							+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
 		}
 
 		@Override
@@ -525,5 +471,12 @@ public class CompilerNumberPlugin implements
 		@Override
 		public String getName() {
 			return NumberPlugin.PLUGIN_NAME;
+		}
+
+		@Override
+		public void registerCodeHandlers() throws CompilerException {
+			register(new NumberHandler(), CodeType.R, "Expression", "NUMBER", null);
+			register(new NumberRangeHandler(), CodeType.R, "Expression", "NumberRangeTerm", null);
+			register(new SizeOfHandler(), CodeType.R, "Expression", "SizeOfEnumTerm", null);
 		}
 }

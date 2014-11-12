@@ -2,31 +2,26 @@ package org.coreasm.compiler.plugins.set;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-
 import org.coreasm.compiler.classlibrary.ClassLibrary;
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
-import org.coreasm.engine.EngineException;
-import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.compiler.plugins.set.code.rcode.ComprehensionHandler;
+import org.coreasm.compiler.plugins.set.code.rcode.EnumerateHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.set.SetBackgroundElement;
 import org.coreasm.engine.plugins.set.SetCardinalityFunctionElement;
-import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.set.ToSetFunctionElement;
-import org.coreasm.engine.plugins.set.TrueGuardNode;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerSetPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerOperatorPlugin{
+public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin{
 
 	private Plugin interpreterPlugin;
 	
@@ -128,105 +123,6 @@ public class CompilerSetPlugin implements CompilerPlugin, CompilerVocabularyExte
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public CodeFragment rCode(ASTNode n)
-			throws CompilerException {		
-		if(n.getGrammarClass().equals("Expression")){
-			if(n.getGrammarRule().equals("SetEnumerate")){
-				CodeFragment result = new CodeFragment("");
-				for(ASTNode c : n.getAbstractChildNodes()){
-					result.appendFragment(CoreASMCompiler.getEngine().compile(c, CodeType.R));
-				}
-				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,slist)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-				for(int i = 0; i < n.getAbstractChildNodes().size(); i++){
-					result.appendLine("@slist@.add((CompilerRuntime.Element)evalStack.pop());\n");
-				}
-				result.appendLine("evalStack.push(new plugins.SetPlugin.SetElement(@slist@));\n");
-				return result;
-			}
-			else if(n.getGrammarRule().equals("SetComprehension")){
-				//set comprehension was changed in a newer update of CoreASM.
-				//there are no longer two different set comprehension node types
-				
-
-				//evaluates a set comprehension of the form
-				//{id | id in value with guard}
-				//{id is exp | id1 in value1, ... idn in value n with guard}
-				//where the guard is optional.
-				//in the first case, the exp is simply id
-				
-				SetCompNode cnode = (SetCompNode) n;
-				
-				//get the exp
-				CodeFragment expr = CoreASMCompiler.getEngine().compile(cnode.getSetFunction(), CodeType.R);
-				//guard might be non existent, so initialize it
-				CodeFragment guard = null;
-				//optimization: the true guard is always true anyway, so if it is existent, leave it out
-				if(!(cnode.getGuard() instanceof TrueGuardNode)) guard = CoreASMCompiler.getEngine().compile(cnode.getGuard(), CodeType.R);
-
-				CodeFragment result = new CodeFragment("");
-				List<String> constrnames = new ArrayList<String>();
-				
-				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-				try{
-					//evaluate all constrainer domains and collect the list of variable names
-					int counter = 0;
-					for(Entry<String, ASTNode> e: cnode.getVarBindings().entrySet()){
-						constrnames.add(e.getKey());
-						result.appendFragment(CoreASMCompiler.getEngine().compile(e.getValue(), CodeType.R));
-						result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,domain" + counter + ")=new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
-						counter++;
-					}	
-					//iterate
-					
-					//open for loops
-					for(int i = 0; i < constrnames.size(); i++){
-						String var = "@domain" + i + "@";
-						String cvar = "@c" + i + "@";
-						result.appendLine("for(@decl(int,c" + i + ")=0; " + cvar + " < " + var + ".size(); " + cvar + "++){\n");
-					}
-					
-					result.appendLine("localStack.pushLayer();\n");
-					
-					for(int i = 0; i < constrnames.size(); i++){
-						result.appendLine("localStack.put(\"" + constrnames.get(i) + "\", @domain" + i + "@.get(@c" + i + "@));\n");
-					}
-					
-					if(guard == null){
-						result.appendFragment(expr);
-						result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
-					}
-					else{
-						result.appendFragment(guard);
-						result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
-						result.appendFragment(expr);
-						result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
-						result.appendLine("}\n");
-					}
-					
-					result.appendLine("localStack.popLayer();\n");
-					
-					//close for loops
-					for(int i = 0; i < constrnames.size(); i++){
-						result.appendLine("}\n");
-					}
-					result.appendLine("evalStack.push(new plugins.SetPlugin.SetElement(@list@));\n");
-					
-					return result;
-				}
-				catch(EngineException exc){
-					throw new CompilerException(exc);
-				}
-			}
-		}
-		
-		throw new CompilerException(
-				"unhandled code type: (SetPlugin, rCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
-	}
-
-	
 	
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
@@ -280,5 +176,11 @@ public class CompilerSetPlugin implements CompilerPlugin, CompilerVocabularyExte
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void registerCodeHandlers() throws CompilerException {
+		register(new EnumerateHandler(), CodeType.R, "Expression", "SetEnumerate", null);
+		register(new ComprehensionHandler(), CodeType.R, "Expression", "SetComprehension", null);
 	}
 }

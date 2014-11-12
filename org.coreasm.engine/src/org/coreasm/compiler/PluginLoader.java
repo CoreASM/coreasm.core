@@ -2,6 +2,7 @@ package org.coreasm.compiler;
 import java.util.List;
 
 import org.coreasm.compiler.exception.NotCompilableException;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
@@ -70,4 +71,6 @@ public interface PluginLoader {
 	 * @return A list of all Preprocessor Plugins
 	 */
 	public List<CompilerPreprocessorPlugin> getPreprocessorPlugins();
+	
+	public List<CompilerCodePlugin> getCompilerCodePlugins();
 }

@@ -11,19 +11,20 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.collection.code.ucode.AddToHandler;
+import org.coreasm.compiler.plugins.collection.code.ucode.RemoveFromHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.collection.FilterFunctionElement;
 import org.coreasm.engine.plugins.collection.MapFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerCollectionPlugin implements CompilerCodeUPlugin,
-		CompilerFunctionPlugin, CompilerVocabularyExtender, CompilerPlugin {
+public class CompilerCollectionPlugin extends CompilerCodePlugin implements CompilerFunctionPlugin, CompilerVocabularyExtender, CompilerPlugin {
 
 	private Plugin interpreterPlugin;
 	
@@ -178,50 +179,8 @@ public class CompilerCollectionPlugin implements CompilerCodeUPlugin,
 	}
 
 	@Override
-	public CodeFragment uCode(ASTNode n) throws CompilerException {
-
-		List<ASTNode> children = n.getAbstractChildNodes();
-
-		if (n.getGrammarClass().equals("Rule")) {
-			if (n.getGrammarRule().equals("AddToCollectionRule")) {
-				CodeFragment lhs = CoreASMCompiler.getEngine().compile(
-						children.get(0), CodeType.R);
-				CodeFragment rhs = CoreASMCompiler.getEngine().compile(
-						children.get(1), CodeType.L);
-
-				CodeFragment result = new CodeFragment("");
-				result.appendFragment(lhs);
-				result.appendFragment(rhs);
-				result.appendLine("@decl(CompilerRuntime.Location, loc)=(CompilerRuntime.Location)evalStack.pop();\n");
-				result.appendLine("@decl(CompilerRuntime.Element, el) = (CompilerRuntime.Element) evalStack.pop();\n");
-				result.appendLine("@decl(plugins.CollectionPlugin.ModifiableCollection, coll) = (plugins.CollectionPlugin.ModifiableCollection)CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@);\n");
-				result.appendLine("@decl(CompilerRuntime.UpdateList, ul) = new CompilerRuntime.UpdateList();\n");
-				result.appendLine("@ul@.addAll(@coll@.computeAddUpdate(@loc@, @el@, this));\n");
-				result.appendLine("evalStack.push(@ul@);\n");
-
-				return result;
-			} else if (n.getGrammarRule().equals("RemoveFromCollectionRule")) {
-				CodeFragment lhs = CoreASMCompiler.getEngine().compile(
-						children.get(0), CodeType.R);
-				CodeFragment rhs = CoreASMCompiler.getEngine().compile(
-						children.get(1), CodeType.L);
-
-				CodeFragment result = new CodeFragment("");
-				result.appendFragment(lhs);
-				result.appendFragment(rhs);
-				result.appendLine("@decl(CompilerRuntime.Location, loc)=(CompilerRuntime.Location)evalStack.pop();\n");
-				result.appendLine("@decl(CompilerRuntime.Element, el) = (CompilerRuntime.Element) evalStack.pop();\n");
-				result.appendLine("@decl(plugins.CollectionPlugin.ModifiableCollection, coll) = (plugins.CollectionPlugin.ModifiableCollection)CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@);\n");
-				result.appendLine("@decl(CompilerRuntime.UpdateList, ul) = new CompilerRuntime.UpdateList();\n");
-				result.appendLine("@ul@.addAll(@coll@.computeRemoveUpdate(@loc@, @el@, this));\n");
-				result.appendLine("evalStack.push(@ul@);\n");
-
-				return result;
-			}
-		}
-
-		throw new CompilerException(
-				"unhandled code type: (CollectionPlugin, uCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
+	public void registerCodeHandlers() throws CompilerException {
+		register(new AddToHandler(), CodeType.U, "Rule", "AddToCollectionRule", null);
+		register(new RemoveFromHandler(), CodeType.U, "Rule", "RemoveFromCollectionRule", null);
 	}
 }

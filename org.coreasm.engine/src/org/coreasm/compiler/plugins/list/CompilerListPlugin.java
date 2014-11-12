@@ -10,6 +10,8 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.list.code.rcode.ListTermHandler;
+import org.coreasm.compiler.plugins.list.code.ucode.ShiftRuleHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.list.ConsFunctionElement;
@@ -30,13 +32,14 @@ import org.coreasm.engine.plugins.list.ZipFunctionElement;
 import org.coreasm.engine.plugins.list.ZipWithFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerOperatorPlugin, CompilerCodeUPlugin{
+public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin{
 
 	private Plugin interpreterPlugin;
 	
@@ -96,35 +99,6 @@ public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExt
 			throws CompilerException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public CodeFragment rCode(ASTNode n)
-			throws CompilerException {		
-		
-		if(n.getGrammarClass().equals("Expression")){
-			if(n.getGrammarRule().equals("ListTerm")){
-				CodeFragment result = new CodeFragment("");
-				
-				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-				for(ASTNode child : n.getAbstractChildNodes()){
-					result.appendFragment(CoreASMCompiler.getEngine().compile(child, CodeType.R));
-					result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
-				}
-				
-				result.appendLine("evalStack.push(new plugins.ListPlugin.ListElement(@list@));\n");
-				
-				return result;
-			}
-			else if(n.getGrammarRule().equals("ShiftRule")){
-				
-			}
-		}
-		
-		
-		throw new CompilerException(
-				"unhandled code type: (ListPlugin, rCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
 	}
 
 	@Override
@@ -249,41 +223,8 @@ public class CompilerListPlugin implements CompilerPlugin, CompilerVocabularyExt
 	}
 
 	@Override
-	public CodeFragment uCode(ASTNode n)
-			throws CompilerException {
-
-		if(n.getGrammarClass().equals("Rule")){
-			if(n.getGrammarRule().equals("ShiftRule")){
-				ShiftRuleNode srn = (ShiftRuleNode) n;
-				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(srn.getLocationNode(), CodeType.L));
-				result.appendFragment(CoreASMCompiler.getEngine().compile(srn.getListNode(), CodeType.LR));
-				
-				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>(((plugins.ListPlugin.ListElement)evalStack.pop()).values());\n");
-				result.appendLine("@decl(CompilerRuntime.Location,listloc)=(CompilerRuntime.Location)evalStack.pop();\n");
-				result.appendLine("@decl(CompilerRuntime.Location,loc)=(CompilerRuntime.Location)evalStack.pop();\n");
-				result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
-				
-				if(srn.isLeft){
-					result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(0),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
-					result.appendLine("@list@.remove(0);\n");
-					result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
-				}
-				else{
-					result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(@list@.size() - 1),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
-					result.appendLine("@list@.remove(@list@.size() - 1);\n");
-					result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
-				}
-				
-				result.appendLine("evalStack.push(@ulist@);\n");
-				
-				return result;
-			}
-		}
-		
-		
-		throw new CompilerException(
-				"unhandled code type: (ListPlugin, uCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
+	public void registerCodeHandlers() throws CompilerException {
+		register(new ShiftRuleHandler(), CodeType.U, "Rule", "ShiftRule", null);
+		register(new ListTermHandler(), CodeType.R, "Expression", "ListTerm", null);
 	}
 }

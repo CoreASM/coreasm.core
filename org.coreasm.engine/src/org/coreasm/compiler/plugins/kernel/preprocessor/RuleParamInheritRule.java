@@ -1,4 +1,4 @@
-package org.coreasm.compiler.plugins.kernel;
+package org.coreasm.compiler.plugins.kernel.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -12,45 +12,23 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
 
 public abstract class CompilerCodePlugin {
-	private Map<CodeType, Map<String, Map<String, Map<String, CompilerCodeHandler>>>> handlers;
-
-	protected void register(CompilerCodeHandler handler) throws CompilerException{
-		if(handlers == null){
-			handlers = new HashMap<CodeType, Map<String,Map<String,Map<String,CompilerCodeHandler>>>>();
-		}
-		
-		CodeType type = handler.getType();
-		Map<String, Map<String, Map<String, CompilerCodeHandler>>> typeMap = handlers.get(type);
-		if(typeMap == null){
-			typeMap = new HashMap<String, Map<String,Map<String,CompilerCodeHandler>>>();
-			handlers.put(type, typeMap);
-		}
+	private Mapper handlers;
 	
-		String gclass = handler.getGrammarClass();
-		gclass = (gclass == null) ? "" : gclass;
-		Map<String, Map<String, CompilerCodeHandler>> gclassMap = typeMap.get(gclass);
-		if(gclassMap == null){
-			gclassMap = new HashMap<String, Map<String,CompilerCodeHandler>>();
-			typeMap.put(gclass, gclassMap);
+	public abstract void registerCodeHandlers() throws CompilerException;
+	
+	protected void register(CompilerCodeHandler handler, CodeType type, String gClass, String gRule, String token) throws CompilerException{
+		if(handlers == null){
+			handlers = new Mapper();
 		}
 		
-		String grule = handler.getGrammarRule();
-		grule = (grule == null) ? "" : grule;
-		Map<String, CompilerCodeHandler> gruleMap = gclassMap.get(grule);
-		if(gruleMap == null){
-			gruleMap = new HashMap<String, CompilerCodeHandler>();
-			gclassMap.put(grule, gruleMap);
+		if(!handlers.insert(handler, type, gClass, gRule, token)){
+			throw new CompilerException("Handler already registered for (" + type + ", " + gClass + ", " + gRule + ", " + token + ")");
 		}
-		
-		String token = handler.getToken();
-		token = (token == null) ? "" : token;
-		
-		if(gruleMap.get(token) != null) throw new CompilerException("Handler already registered for (" + type + ", " + gclass + ", " + grule + ", " + token + ")");
-		gruleMap.put(token, handler);
 	}
 	
 	public CodeFragment compile(CodeType t, ASTNode n) throws CompilerException{
-		List<CompilerCodeHandler> h = layer2(handlers.get(t), n);
+		List<Object> h = handlers.find(t, n.getGrammarClass(), n.getGrammarRule(), n.getToken());
+		
 		if(h.size() == 0){
 			throw new CompilerException("no handler registered for (" + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");
 		}
@@ -58,44 +36,81 @@ public abstract class CompilerCodePlugin {
 			throw new CompilerException("two handlers registered for (" + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");			
 		}
 		
-		CompilerCodeHandler current = h.get(0);
+		CompilerCodeHandler current = (CompilerCodeHandler) h.get(0);
 		CodeFragment result = new CodeFragment();
 		
 		current.compile(result, n, CoreASMCompiler.getEngine());
 		
 		return result;
 	}
-	
-	private List<CompilerCodeHandler> layer2(Map<String, Map<String, Map<String, CompilerCodeHandler>>> map, ASTNode n){
-		List<CompilerCodeHandler> result = new ArrayList<CompilerCodeHandler>();
-		if(map == null) return result;
-		
-		result.addAll(layer3(map.get(n.getGrammarClass()), n));
-		result.addAll(layer3(map.get(""), n));
-		
-		return result;
-	}
-	
-	private List<CompilerCodeHandler> layer3(Map<String, Map<String, CompilerCodeHandler>> map, ASTNode n){
-		List<CompilerCodeHandler> result = new ArrayList<CompilerCodeHandler>();
-		if(map == null) return result;
-		
-		result.addAll(layer4(map.get(n.getGrammarRule()), n));
-		result.addAll(layer4(map.get(""), n));
-		
-		return result;
-	}
+}
 
-	private List<CompilerCodeHandler> layer4(Map<String, CompilerCodeHandler> map, ASTNode n){
-		List<CompilerCodeHandler> result = new ArrayList<CompilerCodeHandler>();
-		if(map == null) return result;
+class Mapper{
+	private Object def;
+	private Map<Object, Object> mappings;
+	
+	public Mapper(){
+		mappings = new HashMap<Object, Object>();
+	}
+	
+	private List<Object> find(int pos, Object...keys){
+		List<Object> result = new ArrayList<Object>();
 		
-		CompilerCodeHandler r = map.get(n.getToken());
-		if(r != null) result.add(r);
+		if(def != null){
+			if(pos == keys.length - 1) result.add(def);
+			else{
+				result.addAll(((Mapper)def).find(pos + 1, keys));
+			}
+		}
 		
-		r = map.get("");
-		if(r != null) result.add(r);
+		Object o = mappings.get(keys[pos]);
+		if(o != null){
+			if(pos == keys.length - 1) result.add(o);
+			else{
+				result.addAll(((Mapper)o).find(pos + 1, keys));
+			}
+		}
 		
 		return result;
+	}
+	
+	public List<Object> find(Object... keys){
+		return find(0, keys);
+	}
+	
+	private boolean insert(int pos, Object o, Object...keys){
+		Object k = keys[pos];
+		if(pos == keys.length - 1){
+			if(k == null){
+				if(def != null) return false;
+				def = o;
+				return true;
+			}
+			else{	
+				if(mappings.get(k) != null) return false;
+				mappings.put(k, o);
+				return true;
+			}
+		}
+		else{
+			if(k == null){
+				if(def == null) def = new Mapper();
+				
+				return ((Mapper) def).insert(pos + 1, o, keys);
+			}
+			else{
+				Object tmp = mappings.get(keys[pos]);
+				if(tmp == null){
+					tmp = new Mapper();
+					mappings.put(keys[pos], tmp);
+				}
+				
+				return ((Mapper) tmp).insert(pos + 1, o, keys);
+			}
+		}
+	}
+	
+	public boolean insert(Object o, Object... keys){
+		return insert(0, o, keys);
 	}
 }

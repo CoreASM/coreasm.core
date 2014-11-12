@@ -16,18 +16,18 @@ import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
-import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.compiler.plugins.signature.code.bcode.SignatureHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.signature.FunctionDomainFunctionElement;
 import org.coreasm.engine.plugins.signature.FunctionRangeFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeBPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlugin,
+public class CompilerSignaturePlugin extends CompilerCodePlugin implements CompilerPlugin,
 		CompilerVocabularyExtender, CompilerExtensionPointPlugin {
 
 	private Plugin interpreterPlugin;
@@ -44,9 +44,9 @@ public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlu
     //is put to use
     //private CheckMode idCheckingMode;    
 	
-    private enum SignatureEntryType {UNIVERSE, ENUM, DERIVED, FUNCTION};
+    public enum SignatureEntryType {UNIVERSE, ENUM, DERIVED, FUNCTION};
     
-    private class IncludeEntry{
+    public class IncludeEntry{
     	SignatureEntryType type;
     	LibraryEntry entry;
     	
@@ -150,111 +150,6 @@ public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlu
 			throw new CompilerException(e1);
 		}
 		return result;
-	}
-	
-	@Override
-	public void bCode(ASTNode n)
-			throws CompilerException {
-		if(n.getGrammarClass().equals("Declaration")){
-			if(n.getGrammarRule().equals("Signature")){
-				//get the actual root node of the declaration
-				ASTNode root = n.getAbstractChildNodes().get(0);
-				if(root.getGrammarRule().equals("UniverseDefinition")){
-					parseUniverse(root);
-					return;
-				}
-				else if(root.getGrammarRule().equals("EnumerationDefinition")){
-					parseEnum(root);
-					return;
-				}
-				else if(root.getGrammarRule().equals("FunctionSignature")){
-					parseFunction(root);
-					return;
-				}
-				else if(root.getGrammarRule().equals("DerivedFunctionDeclaration")){
-					parseDerivedFunction(root);
-					return;
-				}
-			}
-		}
-		
-
-		throw new CompilerException("unhandled code type: (SignaturePlugin, bCode, " + n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
-	}
-
-	private void parseDerivedFunction(ASTNode root) throws CompilerException {
-		ASTNode signature = root.getAbstractChildNodes().get(0);
-		CodeFragment body = CoreASMCompiler.getEngine().compile(root.getAbstractChildNodes().get(1), CodeType.R);
-		
-		String name = signature.getAbstractChildNodes().get(0).getToken();
-		String[] params = new String[signature.getAbstractChildNodes().size() - 1];
-		for(int i = 1; i < signature.getAbstractChildNodes().size(); i++){
-			params[i - 1] = signature.getAbstractChildNodes().get(i).getToken();
-		}
-		
-		entries.put(name, new IncludeEntry(SignatureEntryType.DERIVED, new DerivedFunctionEntry(name, params, body)));
-		//derived.put(name, new DerivedFunctionEntry(name, params, body));
-	}
-
-	private void parseFunction(ASTNode root) throws CompilerException {
-		//first node is either the function id or the function class
-		String name = null;
-		String fclass = null;
-		int pos = 0;
-		List<ASTNode> children = root.getAbstractChildNodes();
-		if(children.get(0).getGrammarRule().equals("ID")){
-			name = children.get(0).getToken();
-			pos = 1;
-		}
-		else{
-			fclass = children.get(0).getToken();
-			String tmp = fclass.substring(0, 1);
-			fclass = tmp.toUpperCase() + fclass.substring(1);
-			name = children.get(1).getToken();
-			pos = 2;
-		}
-		
-		
-		//next node holds the lefthand side
-		List<String> domain = new ArrayList<String>();
-		if(children.get(pos).getGrammarRule().equals("UniverseTuple")){
-			for(ASTNode n : children.get(pos).getAbstractChildNodes()){
-				domain.add(n.getToken());
-			}
-			pos++;
-		}
-		//righthand side
-		String range = children.get(pos).getToken();
-		CodeFragment init = null;
-		if(children.size() > pos + 1){
-			init = CoreASMCompiler.getEngine().compile(children.get(pos + 1), CodeType.R);
-		}
-		
-		//add the function element
-		entries.put(name, new IncludeEntry(SignatureEntryType.FUNCTION, new FunctionEntry(name, fclass, domain, range, init)));
-		//functions.put(name, new FunctionEntry(name, fclass, domain, range, init));
-	}
-
-	private void parseEnum(ASTNode root) {
-		String name = root.getAbstractChildNodes().get(0).getToken();
-		String[] elements = new String[root.getAbstractChildNodes().size() - 1];
-		for(int i = 1; i < root.getAbstractChildNodes().size(); i++){
-			elements[i - 1] = root.getAbstractChildNodes().get(i).getToken();
-		}
-
-		entries.put(name, new IncludeEntry(SignatureEntryType.ENUM, new EnumBackgroundEntry(name, elements)));
-		//enums.put(name, new EnumBackgroundEntry(name, elements));
-	}
-
-	private void parseUniverse(ASTNode root) {
-		String name = root.getAbstractChildNodes().get(0).getToken();
-		String[] elements = new String[root.getAbstractChildNodes().size() - 1];
-		for(int i = 1; i < root.getAbstractChildNodes().size(); i++){
-			elements[i - 1] = root.getAbstractChildNodes().get(i).getToken();
-		}
-		
-		entries.put(name, new IncludeEntry(SignatureEntryType.UNIVERSE, new UniverseEntry(name, elements)));
-		//universes.put(name, new UniverseEntry(name, elements));
 	}
 
 	@Override
@@ -373,4 +268,13 @@ public class CompilerSignaturePlugin implements CompilerPlugin, CompilerCodeBPlu
     	}
     	return typeCheckingMode;
     }	
+	
+	public void addEntry(String name, IncludeEntry entry){
+		entries.put(name, entry);
+	}
+
+	@Override
+	public void registerCodeHandlers() throws CompilerException {
+		register(new SignatureHandler(this), CodeType.BASIC, "Declaration", "Signature", null);
+	}
 }

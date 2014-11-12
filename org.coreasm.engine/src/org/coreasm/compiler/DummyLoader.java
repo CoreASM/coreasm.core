@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.coreasm.compiler.exception.NotCompilableException;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
@@ -64,6 +65,7 @@ public class DummyLoader implements PluginLoader {
 	private HashMap<String, CompilerOperatorPlugin> operatorplugins;
 	private HashMap<String, CompilerFunctionPlugin> functionplugins;
 	private HashMap<String, CompilerPreprocessorPlugin> preprocessorplugins;
+	private HashMap<String, CompilerCodePlugin> compilercodeplugins;
 	private List<String> notCompilable;
 	
 	/**
@@ -78,6 +80,7 @@ public class DummyLoader implements PluginLoader {
 		operatorplugins = new HashMap<String, CompilerOperatorPlugin>();
 		functionplugins = new HashMap<String, CompilerFunctionPlugin>();
 		preprocessorplugins = new HashMap<String, CompilerPreprocessorPlugin>();
+		compilercodeplugins = new HashMap<String, CompilerCodePlugin>();
 		notCompilable = new ArrayList<String>();
 		
 		//until coreasmc is merged with coreasm,
@@ -117,6 +120,7 @@ public class DummyLoader implements PluginLoader {
 		operatorplugins.clear();
 		functionplugins.clear();
 		preprocessorplugins.clear();
+		compilercodeplugins.clear();
 		
 		//add all plugins which provide code but won't appear in the
 		//parse tree body
@@ -207,6 +211,7 @@ public class DummyLoader implements PluginLoader {
 		if(cp instanceof CompilerOperatorPlugin) operatorplugins.put(icap.getName(), (CompilerOperatorPlugin) cp);
 		if(cp instanceof CompilerFunctionPlugin) functionplugins.put(icap.getName(), (CompilerFunctionPlugin) cp);
 		if(cp instanceof CompilerPreprocessorPlugin) preprocessorplugins.put(icap.getName(), (CompilerPreprocessorPlugin) cp);
+		if(cp instanceof CompilerCodePlugin) compilercodeplugins.put(icap.getName(), (CompilerCodePlugin) cp);
 		
 		//finally, add it to the result list and to the list of ICoreASMPlugins
 		plugins.put(icap.getName(), cp);
@@ -292,6 +297,15 @@ public class DummyLoader implements PluginLoader {
 	public List<CompilerPreprocessorPlugin> getPreprocessorPlugins(){
 		List<CompilerPreprocessorPlugin> p = new ArrayList<CompilerPreprocessorPlugin>();
 		for(Entry<String, CompilerPreprocessorPlugin> s : preprocessorplugins.entrySet()){
+			p.add(s.getValue());
+		}
+		return p;
+	}
+	
+	@Override
+	public List<CompilerCodePlugin> getCompilerCodePlugins(){
+		List<CompilerCodePlugin> p = new ArrayList<CompilerCodePlugin>();
+		for(Entry<String, CompilerCodePlugin> s : compilercodeplugins.entrySet()){
 			p.add(s.getValue());
 		}
 		return p;

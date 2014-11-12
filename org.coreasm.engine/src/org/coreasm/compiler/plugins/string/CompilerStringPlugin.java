@@ -11,6 +11,7 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.string.code.rcode.StringTermHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.string.StringLengthFunctionElement;
@@ -20,13 +21,13 @@ import org.coreasm.engine.plugins.string.StringSubstringFunction;
 import org.coreasm.engine.plugins.string.ToStringFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerStringPlugin implements CompilerOperatorPlugin,
-		CompilerVocabularyExtender, CompilerCodeRPlugin, CompilerFunctionPlugin {
+public class CompilerStringPlugin extends CompilerCodePlugin implements CompilerOperatorPlugin,
+		CompilerVocabularyExtender, CompilerFunctionPlugin {
 
 	private Plugin interpreterPlugin;
 	
@@ -154,20 +155,6 @@ public class CompilerStringPlugin implements CompilerOperatorPlugin,
 	}
 
 	@Override
-	public CodeFragment rCode(ASTNode n) throws CompilerException {
-		if (n.getGrammarClass().equals("Expression")
-				&& n.getGrammarRule().equals("StringTerm")) {
-			return new CodeFragment(
-					"evalStack.push(new plugins.StringPlugin.StringElement(\""
-							+ n.getToken().replaceAll("\n", "\\n") + "\"));\n");
-		}
-
-		throw new CompilerException(
-				"unhandled code type: (StringPlugin, rCode, "
-						+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
-	}
-
-	@Override
 	public List<String> getCompileFunctionNames() {
 		List<String> result = new ArrayList<String>();
 		result.add("strlen");
@@ -256,5 +243,10 @@ public class CompilerStringPlugin implements CompilerOperatorPlugin,
 
 		throw new CompilerException(
 				"unknown function name for plugin NumberPlugin: " + fname);
+	}
+
+	@Override
+	public void registerCodeHandlers() throws CompilerException {
+		register(new StringTermHandler(), CodeType.R, "Expression", "StringTerm", null);
 	}
 }

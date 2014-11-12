@@ -14,15 +14,7 @@ import org.coreasm.compiler.exception.EmptyContextStackException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 import org.coreasm.compiler.exception.NotCompilableException;
-import org.coreasm.compiler.interfaces.CompilerCodeBPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeLPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeLRPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeLUPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeLURPlugin;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeURPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -396,7 +388,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		}
 	}
 	
-	private void applyFirstPlugins(CompilerInformation info) {
+	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
 		//operator plugins
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading operators");
 		List<CompilerOperatorPlugin> ops = pluginLoader.getOperatorPlugins();
@@ -419,6 +411,10 @@ public class CoreASMCompiler implements CompilerEngine {
 			for(String s : cfp.getCompileFunctionNames()){
 				functionMapping.put(s, cfp);
 			}
+		}
+		//compiler plugins
+		for(CompilerCodePlugin ccp : pluginLoader.getCompilerCodePlugins()){
+			ccp.registerCodeHandlers();
 		}
 	}
 	
