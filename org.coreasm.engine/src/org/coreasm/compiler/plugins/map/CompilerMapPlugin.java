@@ -4,24 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.compiler.classlibrary.ClassLibrary;
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
-import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.compiler.plugins.map.code.rcode.MapHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.map.MapBackgroundElement;
 import org.coreasm.engine.plugins.map.MapToPairsFunctionElement;
 import org.coreasm.engine.plugins.map.ToMapFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
+import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerMapPlugin implements CompilerPlugin, CompilerCodeRPlugin,
+public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlugin,
 		CompilerVocabularyExtender {
 
 	private Plugin interpreterPlugin;
@@ -118,33 +117,12 @@ public class CompilerMapPlugin implements CompilerPlugin, CompilerCodeRPlugin,
 	}
 
 	@Override
-	public CodeFragment rCode(ASTNode n) throws CompilerException {
-		if (n.getGrammarClass().equals("Expression")) {
-			CodeFragment result = new CodeFragment("");
-			result.appendLine("@decl(java.util.Map<CompilerRuntime.Element,CompilerRuntime.Element>,mp)=new java.util.HashMap<>();\n");
-			if (n.getAbstractChildNodes().size() > 0)
-				result.appendLine("@decl(CompilerRuntime.Element,tmp)=null;\n");
-			if (n.getGrammarRule().equals("MapTerm")) {
-				for (ASTNode maplet : n.getAbstractChildNodes()) {
-					result.appendFragment(CoreASMCompiler.getEngine().compile(
-							maplet.getAbstractChildNodes().get(0), CodeType.R));
-					result.appendFragment(CoreASMCompiler.getEngine().compile(
-							maplet.getAbstractChildNodes().get(1), CodeType.R));
-					result.appendLine("@tmp@=(CompilerRuntime.Element)evalStack.pop();\n");
-					result.appendLine("@mp@.put((CompilerRuntime.Element)evalStack.pop(), @tmp@);\n");
-				}
-				result.appendLine("evalStack.push(new plugins.MapPlugin.MapElement(@mp@));\n");
-			}
-
-			return result;
-		}
-
-		throw new CompilerException("unhandled code type: (MapPlugin, rCode, "
-				+ n.getGrammarClass() + ", " + n.getGrammarRule() + ")");
+	public String getName() {
+		return "MapPlugin";
 	}
 
 	@Override
-	public String getName() {
-		return "MapPlugin";
+	public void registerCodeHandlers() throws CompilerException {
+		register(new MapHandler(), CodeType.R, "Expression", "MapTerm", null);
 	}
 }
