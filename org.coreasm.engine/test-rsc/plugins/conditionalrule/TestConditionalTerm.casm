@@ -1,0 +1,17 @@
+CoreASM TestConditionalTerm
+
+use Standard
+
+init TestConditionalTerm
+
+/*
+ * @require "min(-2, 2) = -2\nmax(-2, 2) = 2\n"
+*/
+rule TestConditionalTerm =
+seqblock
+	print "min(-2, 2) = " + min(-2, 2)	// @refuse "min(-2, 2) = 2"
+	print "max(-2, 2) = " + max(-2, 2)	// @refuse "max(-2, 2) = -2"
+endseqblock
+
+derived min(a,b) = if a < b then a else b
+derived max(a,b) = if a > b then a else b
