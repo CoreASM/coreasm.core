@@ -13,7 +13,6 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
 		CodeFragment guard = engine.compile(node.getAbstractChildNodes().get(0), CodeType.R);
-		CodeFragment rule = engine.compile(node.getAbstractChildNodes().get(1), CodeType.U);
 		
 		result.appendLine("@decl(CompilerRuntime.AbstractStorage,storage)=CompilerRuntime.RuntimeProvider.getRuntime().getStorage();\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList,composed)=new CompilerRuntime.UpdateList();\n");
@@ -22,7 +21,7 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 		result.appendLine("@guard@=((CompilerRuntime.BooleanElement)evalStack.pop()).getValue();\n");
 		result.appendLine("@storage@.pushState();\n");
 		result.appendLine("if(@guard@){\n");
-		result.appendFragment(rule);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("@decl(CompilerRuntime.UpdateList,current)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
 		result.appendLine("while(!@current@.isEmpty() && @guard@){\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList,aggreg)=@storage@.performAggregation(@current@);\n");
@@ -34,7 +33,7 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 		result.appendLine("if(!@guard@){\n");
 		result.appendLine("break;\n");
 		result.appendLine("}\n");
-		result.appendFragment(rule);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("@current@ = (CompilerRuntime.UpdateList) evalStack.pop();\n");
 		result.appendLine("}\n");
 		result.appendLine("else{\n");

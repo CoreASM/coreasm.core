@@ -126,6 +126,9 @@ public class CoreASMCompiler implements CompilerEngine {
 		catch(CompilerException ce){
 			throw ce;
 		}
+		catch(Exception e){
+			System.out.println("uncaught exception:"  + e.getMessage());
+		}
 		finally{
 			if(!options.keepTempFiles){
 				purgeTempDir();
@@ -353,7 +356,7 @@ public class CoreASMCompiler implements CompilerEngine {
 			cae = (Engine)CoreASMEngineFactory.createEngine();
 			cae.initialize();
 		}
-			
+		
 		cae.loadSpecification(options.SpecificationName);
 		//wait until parsing has finished
 		cae.waitWhileBusy();
@@ -368,9 +371,15 @@ public class CoreASMCompiler implements CompilerEngine {
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Loading plugins");
 		try{
 			pluginLoader.loadPlugins(cae);
+			System.out.println("Plugins loaded");
 		}
 		catch(NotCompilableException nce){
+			nce.printStackTrace();
+			System.out.println("error: " + nce.getMessage());
 			throw new CompilerException(nce);
+		}
+		catch(Throwable t){
+			System.out.println("throwable: " + t.getMessage());
 		}
 		//store the root node
 		info.root = (ASTNode) cae.getSpec().getRootNode();

@@ -10,6 +10,7 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
+import org.coreasm.compiler.plugins.list.code.rcode.ListCompHandler;
 import org.coreasm.compiler.plugins.list.code.rcode.ListTermHandler;
 import org.coreasm.compiler.plugins.list.code.ucode.ShiftRuleHandler;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -226,5 +227,6 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 	public void registerCodeHandlers() throws CompilerException {
 		register(new ShiftRuleHandler(), CodeType.U, "Rule", "ShiftRule", null);
 		register(new ListTermHandler(), CodeType.R, "Expression", "ListTerm", null);
+		register(new ListCompHandler(), CodeType.R, "Expression", "ListComprehension", null);
 	}
 }

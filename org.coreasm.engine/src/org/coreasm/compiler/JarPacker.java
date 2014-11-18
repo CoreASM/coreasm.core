@@ -58,7 +58,7 @@ public class JarPacker {
 		BufferedInputStream in = null;
 		try{
 			if (source.isDirectory()){
-		    	String name = source.getPath().replace("\\", "/").replace(options.tempDirectory + "/", "");
+				String name = source.getPath().replace(options.tempDirectory + "\\", "").replace("\\", "/");
 		    	if (!name.isEmpty()){
 		    		if (!name.endsWith("/")) name += "/";
 	    			JarEntry entry = new JarEntry(name);
@@ -72,7 +72,7 @@ public class JarPacker {
 	    		}
 		    }
 			else if(!source.getName().endsWith(".java")){
-			    JarEntry entry = new JarEntry(source.getPath().replace("\\", "/").replace(options.tempDirectory + "/", ""));
+			    JarEntry entry = new JarEntry(source.getPath().replace(options.tempDirectory + "\\", "").replace("\\", "/"));
 			    entry.setTime(source.lastModified());
 			    target.putNextEntry(entry);
 			    in = new BufferedInputStream(new FileInputStream(source));

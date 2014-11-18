@@ -102,7 +102,7 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationBackgroundElement", "plugins.SignaturePlugin.EnumerationBackgroundElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationElement", "plugins.SignaturePlugin.EnumerationElement");
 				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/EnumerationBackgroundElement.java", this), EntryType.INCLUDEONLY, ""));
+				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/signature/include/EnumerationBackgroundElement.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/EnumerationElement.java", this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/FunctionDomainFunctionElement.java", this), EntryType.FUNCTION, FunctionDomainFunctionElement.FUNCTION_NAME));
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/FunctionRangeFunctionElement.java", this), EntryType.FUNCTION, FunctionRangeFunctionElement.FUNCTION_NAME));

@@ -9,6 +9,6 @@ public class CoreASMError extends Error{
 	}
 	
 	public CoreASMError(String s, ASTNode n){
-		
+		super(s);
 	}
 }

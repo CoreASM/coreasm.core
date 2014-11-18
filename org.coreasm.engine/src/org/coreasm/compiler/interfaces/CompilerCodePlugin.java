@@ -30,10 +30,25 @@ public abstract class CompilerCodePlugin {
 		List<Object> h = handlers.find(t, n.getGrammarClass(), n.getGrammarRule(), n.getToken());
 		
 		if(h.size() == 0){
-			throw new CompilerException("no handler registered for (" + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");
+			
+			ASTNode parent = n.getParent();
+			System.out.println("father: (" + parent.toString() + ")");
+			
+			System.out.println(parent.getAbstractChildNodes().get(0).getAbstractChildNodes().get(0));
+			
+			
+			for(int i = 0; i < parent.getAbstractChildNodes().size(); i++){
+				if(parent.getAbstractChildNodes().get(i).equals(n))
+					System.out.println("child " + i + ": (" + parent.getAbstractChildNodes().get(i) + ") [ERR]");
+				else
+					System.out.println("child " + i + ": (" + parent.getAbstractChildNodes().get(i) + ")");
+			}
+			
+			
+			throw new CompilerException("no handler registered for (" + this.getClass().getName() + ", " + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");
 		}
 		else if(h.size() > 1){
-			throw new CompilerException("two handlers registered for (" + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");			
+			throw new CompilerException("two handlers registered for (" + this.getClass().getName() + ", " + t + ", " + n.getGrammarClass() + ", " + n.getGrammarRule() + ", " + n.getToken() + ")");			
 		}
 		
 		CompilerCodeHandler current = (CompilerCodeHandler) h.get(0);

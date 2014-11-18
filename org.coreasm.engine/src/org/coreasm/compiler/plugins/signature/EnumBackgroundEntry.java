@@ -65,6 +65,7 @@ public class EnumBackgroundEntry implements LibraryEntry {
 		result = "package plugins.SignaturePlugin;\n"
 				+ "public class EnumBackground_" + name + " extends plugins.SignaturePlugin.EnumerationBackgroundElement{\n"
 						+ "public EnumBackground_" + name + "() throws Exception{\n";
+		//result += "super(new java.util.ArrayList<plugins.SignaturePlugin.EnumerationElement>());\n";
 		//result += "try{\n";
 		result += "java.util.List<plugins.SignaturePlugin.EnumerationElement> list = new java.util.ArrayList<plugins.SignaturePlugin.EnumerationElement>();\n";
 		result += "plugins.SignaturePlugin.EnumerationElement e = null;\n";

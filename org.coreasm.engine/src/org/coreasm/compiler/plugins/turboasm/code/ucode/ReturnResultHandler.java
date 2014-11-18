@@ -73,7 +73,7 @@ public class ReturnResultHandler implements CompilerCodeHandler {
 		result.appendLine("@decl(CompilerRuntime.Location, uloc) = (CompilerRuntime.Location) evalStack.pop();\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList, ulist) = new CompilerRuntime.UpdateList();\n");
 		result.appendLine("@ulist@.addAll(@result@.updates);\n");
-		result.appendLine("@ulist@.add(new CompilerRuntime.Update(@uloc@, @result@.value, CompilerRuntime.Update.UPDATE_ACTION, this.getUpdateResponsible()));\n");
+		result.appendLine("@ulist@.add(new CompilerRuntime.Update(@uloc@, @result@.value, CompilerRuntime.Update.UPDATE_ACTION, this.getUpdateResponsible(), null));\n");
 		result.appendLine("evalStack.push(@ulist@);\n");
 	}
 

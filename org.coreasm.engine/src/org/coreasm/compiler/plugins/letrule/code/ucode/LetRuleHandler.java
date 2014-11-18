@@ -1,31 +1,37 @@
 package org.coreasm.compiler.plugins.letrule.code.ucode;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugins.letrule.LetRuleNode;
 
 public class LetRuleHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
+		System.out.println("called, father is " + node.getParent());
 		try {
-			CodeFragment name = engine.compile(node.getAbstractChildNodes().get(0), CodeType.L);
-			result.appendFragment(name);
-			result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
-			result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
+			LetRuleNode letrule = (LetRuleNode) node;
+			Map<String, ASTNode> letmap = letrule.getVariableMap();
 			
-			CodeFragment val = engine.compile(node.getAbstractChildNodes().get(1), CodeType.R);
-			CodeFragment upd = engine.compile(node.getAbstractChildNodes().get(2), CodeType.U);
+			result.appendLine("//start of let\n");
+			result.appendLine("localStack.pushLayer();\n");
+			for(Entry<String, ASTNode> entry : letmap.entrySet()){
+				CodeFragment val = engine.compile(entry.getValue(), CodeType.R);
+				result.appendFragment(val);
+				result.appendLine("localStack.put(\"" + entry.getKey() + "\", evalStack.pop());\n");
+			}
 			
-			result.appendFragment(val);
-			result.appendLine("localStack.pushLayer();\nlocalStack.put(@nameloc@.name, evalStack.pop());\n");
-			result.appendFragment(upd);
+			result.appendFragment(engine.compile(letrule.getInRule(), CodeType.U));
 			result.appendLine("localStack.popLayer();\n");
-
+			result.appendLine("//end of let\n");
 		} catch (Exception e) {
 			throw new CompilerException(e);
 		}

@@ -24,14 +24,14 @@ public class ShiftRuleHandler implements CompilerCodeHandler {
 		result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
 		
 		if(srn.isLeft){
-			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(0),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
+			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(0),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible(), null));\n");
 			result.appendLine("@list@.remove(0);\n");
-			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
+			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible(), null));\n");
 		}
 		else{
-			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(@list@.size() - 1),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
+			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@loc@,@list@.get(@list@.size() - 1),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible(), null));\n");
 			result.appendLine("@list@.remove(@list@.size() - 1);\n");
-			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible()));\n");
+			result.appendLine("@ulist@.add(new CompilerRuntime.Update(@listloc@,new plugins.ListPlugin.ListElement(@list@),CompilerRuntime.Update.UPDATE_ACTION,this.getUpdateResponsible(), null));\n");
 		}
 		
 		result.appendLine("evalStack.push(@ulist@);\n");

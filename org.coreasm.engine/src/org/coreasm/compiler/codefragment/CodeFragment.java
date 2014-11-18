@@ -216,14 +216,15 @@ public class CodeFragment {
 				if(names.contains(name)){
 					throw new CodeFragmentException("trying to redeclare the variable '" + name + "' near '" + buildErrorString(tmp, j) + "'");
 				}
-				
+				//add the variable to the list of already declared names
 				names.add(name);  
 				
 				CompilerVariable cv = vman.createVariable(type);
+				//replace all occurences in the same codeList entry
 				for(int k = j; k < tmp.length; k++){						
 					tmp[k] = tmp[k].replaceAll("@" + name + "@", cv.toString());
 				}
-				
+				//replace all occurences in the following codeList entries
 				for(int k = i + 1; k < codeList.size(); k++){
 					codeList.set(k, codeList.get(k).replaceAll("@" + name + "@", cv.toString()));
 				}

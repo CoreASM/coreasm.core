@@ -156,13 +156,36 @@ public class DummyLoader implements PluginLoader {
 		for(int i = 0; i < tmp.size(); i++){
 			if(plugins.get(tmp.get(i).getName()) == null){
 				//add the plugin
-				putPlugin(tmp.get(i), cae);
-				
+				try{
+					putPlugin(tmp.get(i), cae);
+				}
+				catch(NotCompilableException exc){
+					if(tmp.get(i) instanceof ExtensionPointPlugin){
+						CoreASMCompiler.getEngine().addWarning("plugin " + tmp.get(i).getName() + " is not compilable and might not be required, continuing without it");
+					}
+					else{
+						CoreASMCompiler.getEngine().getLogger().error(DummyLoader.class, "plugin " + tmp.get(i).getName() + " is not compilable but mandatory");
+						CoreASMCompiler.getEngine().addError("plugin " + tmp.get(i).getName() + " is not compilable but mandatory");
+						notCompilable.add(tmp.get(i).getName());
+					}
+				}
 				//process dependencies and add all dependencies to the list
 				for(String dep : tmp.get(i).getDependencyNames()){
 					if(plugins.get(dep) == null){
 						ICoreASMPlugin depplugin = cae.getPlugin(dep);
-						putPlugin(depplugin, cae);
+						try{
+							putPlugin(depplugin, cae);
+						}
+						catch(NotCompilableException e){
+							if(depplugin instanceof ExtensionPointPlugin){
+								CoreASMCompiler.getEngine().addWarning("plugin " + depplugin.getName() + " is not compilable and might not be required, continuing without it");
+							}
+							else{
+								CoreASMCompiler.getEngine().getLogger().error(DummyLoader.class, "plugin " + depplugin.getName() + " is not compilable but mandatory");
+								CoreASMCompiler.getEngine().addError("plugin " + depplugin.getName() + " is not compilable but mandatory");
+								notCompilable.add(depplugin.getName());
+							}
+						}
 					}
 				}
 			}

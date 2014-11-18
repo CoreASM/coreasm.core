@@ -2,8 +2,10 @@ package org.coreasm.compiler.plugins.turboasm;
 
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.plugins.turboasm.code.rcode.ReturnRuleHandler;
+import org.coreasm.compiler.plugins.turboasm.code.ucode.EmptyHandler;
 import org.coreasm.compiler.plugins.turboasm.code.ucode.IterateRuleHandler;
 import org.coreasm.compiler.plugins.turboasm.code.ucode.LocalRuleHandler;
+import org.coreasm.compiler.plugins.turboasm.code.ucode.ReturnResultHandler;
 import org.coreasm.compiler.plugins.turboasm.code.ucode.SeqRuleHandler;
 import org.coreasm.compiler.plugins.turboasm.code.ucode.WhileRuleHandler;
 import org.coreasm.engine.plugin.Plugin;
@@ -41,6 +43,7 @@ public class CompilerTurboASMPlugin extends CompilerCodePlugin implements Compil
 		register(new IterateRuleHandler(), CodeType.U, "Rule", "IterateRule", null);
 		register(new WhileRuleHandler(), CodeType.U, "Rule", "WhileRule", null);
 		register(new LocalRuleHandler(), CodeType.U, "Rule", "LocalRule", null);
-		register(new ReturnRuleHandler(), CodeType.U, "Rule", "ReturnResultRule", null);
+		register(new ReturnResultHandler(), CodeType.U, "Rule", "ReturnResultRule", null);
+		register(new EmptyHandler(), CodeType.U, "Rule", "EmptyRule", null);
 	}
 }

@@ -109,7 +109,27 @@ public class SignatureHandler implements CompilerCodeHandler {
 	
 	private void parseDerivedFunction(ASTNode node, CompilerEngine engine) throws CompilerException{
 		ASTNode signature = node.getAbstractChildNodes().get(0);
-		CodeFragment body = engine.compile(node.getAbstractChildNodes().get(1), CodeType.R);
+		
+		CodeFragment body = null;
+		try{
+			body = engine.compile(node.getAbstractChildNodes().get(1), CodeType.R);
+		}
+		catch(Exception e){
+			CodeFragment c = engine.compile(node.getAbstractChildNodes().get(1), CodeType.U);
+		
+			body = new CodeFragment("");
+			body.appendFragment(c);
+			body.appendLine("@decl(Object,res)=CompilerRuntime.Element.UNDEF;\n");
+			body.appendLine("@decl(CompilerRuntime.UpdateList, ulist) = (CompilerRuntime.UpdateList) evalStack.pop();\n");
+			body.appendLine("for(@decl(int,i)=0; @i@ < @ulist@.size(); @i@++){\n");
+			body.appendLine("if(@ulist@.get(@i@).loc.name.equals(\"result\")){\n");
+			body.appendLine("@res@=@ulist@.get(@i@).value;\n");
+			body.appendLine("break;\n");
+			body.appendLine("}\n");
+			body.appendLine("}\n");
+			body.appendLine("evalStack.push(@res@);\n");
+		}
+		
 		
 		String name = signature.getAbstractChildNodes().get(0).getToken();
 		String[] params = new String[signature.getAbstractChildNodes().size() - 1];

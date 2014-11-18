@@ -94,6 +94,7 @@ public class FunctionEntry implements LibraryEntry {
 			if(init != null){
 				result += "CompilerRuntime.EvalStack evalStack = new CompilerRuntime.EvalStack();\n";
 				result += "CompilerRuntime.LocalStack localStack = new CompilerRuntime.LocalStack();\n";
+				result += "java.util.Map<String, CompilerRuntime.RuleParam> ruleparams = new java.util.HashMap<String, CompilerRuntime.RuleParam>();\n";
 				result += init.generateCode();
 				result += "CompilerRuntime.Element initValue = (CompilerRuntime.Element) evalStack.pop();\n";
 				if(this.domain.size() == 0){
@@ -120,7 +121,7 @@ public class FunctionEntry implements LibraryEntry {
 					result += "                } catch (CompilerRuntime.UnmodifiableFunctionException e) {}\n";
 					result += "    		}\n";
 					result += "    		else\n";
-					result += "            	throw new EngineError(\"Initial value of function " + name + " does not match the function signature.\");\n";
+					result += "            	throw new CompilerRuntime.EngineError(\"Initial value of function " + name + " does not match the function signature.\");\n";
 					result += "    	}\n";
 					result += "            \n";
 					result += "    }        \n";                          
