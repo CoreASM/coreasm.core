@@ -26,7 +26,7 @@ import org.coreasm.rmi.server.remoteinterfaces.*;
 @MultipartConfig
 public class CoreASMControl extends HttpServlet {
 	public enum Command {
-		start, stop, pause, join
+		start, stop, pause, join, update
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -76,10 +76,16 @@ public class CoreASMControl extends HttpServlet {
 						ctrl.pause();
 						break;
 					case join:
-						request.setAttribute("EngineId", engId);
+						request.setAttribute("engineId", engId);
 						RequestDispatcher disp = getServletContext()
 								.getRequestDispatcher("/engine.jsp");
 						disp.forward(request, response);
+						break;
+					case update:
+						String loc = (String) request.getParameter("location");
+						String val = (String) request.getParameter("value");
+						ctrl.addUpdate(loc, val);
+						break;						
 					}
 				}
 			} else {

@@ -19,10 +19,20 @@ import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineErrorObserver;
 import org.coreasm.engine.EngineEvent;
+import org.coreasm.engine.EngineModeEvent;
+import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.absstorage.BooleanElement;
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.absstorage.UpdateMultiset;
+import org.coreasm.engine.plugins.number.NumberElement;
+import org.coreasm.engine.plugins.signature.EnumerationElement;
+import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
@@ -31,8 +41,8 @@ import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
  * @author Stephan
  *
  */
-public class EngineControlImp extends UnicastRemoteObject implements
-		Runnable, EngineControl, EngineStepObserver, EngineErrorObserver {
+public class EngineControlImp extends UnicastRemoteObject implements Runnable,
+		EngineControl, EngineStepObserver, EngineErrorObserver, EngineModeObserver {
 	private static final long serialVersionUID = 1L;
 	private CoreASMEngine engine;
 	private BufferedReader spec = null;
@@ -52,8 +62,9 @@ public class EngineControlImp extends UnicastRemoteObject implements
 	private volatile EngineDriverInfo driverInfo;
 
 	private List<Set<Update>> previousUpdates;
+	private UpdateMultiset pendingUpdates;
+	private UpdateMultiset queuedUpdates;
 	private List<UpdateSubscription> subscriptions;
-
 
 	private EngineControlImp() throws RemoteException {
 		super();
@@ -73,6 +84,9 @@ public class EngineControlImp extends UnicastRemoteObject implements
 		previousUpdates = new ArrayList<Set<Update>>();
 		subscriptions = new ArrayList<UpdateSubscription>();
 		driverInfo = new EngineDriverInfo("", EngineDriverStatus.empty);
+		
+		pendingUpdates = new UpdateMultiset();
+		queuedUpdates = new UpdateMultiset();
 	}
 
 	public EngineControlImp(String id) throws RemoteException {
@@ -100,6 +114,16 @@ public class EngineControlImp extends UnicastRemoteObject implements
 			synchronized (this) {
 				lastError = ((EngineErrorEvent) event).getError();
 			}
+		}
+
+		// Pushing updates
+		else if (event instanceof EngineModeEvent) {
+			if (((EngineModeEvent) event).getNewMode() == EngineMode.emAggregation) {
+				UpdateMultiset updates = engine.getUpdateInstructions();
+				updates.addAll(pendingUpdates);
+				pendingUpdates.clear();
+			}
+
 		}
 
 	}
@@ -217,8 +241,14 @@ public class EngineControlImp extends UnicastRemoteObject implements
 				if (shouldStop) {
 					throw new EngineDriverException();
 				}
+
+				synchronized (queuedUpdates) {
+					pendingUpdates.addAll(queuedUpdates);
+					queuedUpdates.clear();
+				}
+
 				driverInfo.setStatus(EngineDriverStatus.running);
-				
+
 				engine.step();
 				step++;
 
@@ -241,17 +271,22 @@ public class EngineControlImp extends UnicastRemoteObject implements
 				previousUpdates.add(updates);
 
 				synchronized (subscriptions) {
-					Iterator<UpdateSubscription> itrSub = subscriptions.iterator();
+					Iterator<UpdateSubscription> itrSub = subscriptions
+							.iterator();
 					Iterator<Update> itrUpdt;
 					Update updt;
 					StringBuilder Update = new StringBuilder();
 					Update.append('[');
 					itrUpdt = prevupdates.iterator();
-					while(itrUpdt.hasNext()) {
+					while (itrUpdt.hasNext()) {
 						updt = itrUpdt.next();
-						Update.append("{\"location\":\"" + updt.getLocationString() + '"');
-						Update.append(", \"value\":\"" + updt.getValueString().replaceAll("(\\r|\\n)", "") + '\"');
-						Update.append(", \"action\":\"" + updt.getActionString() + "\"}");
+						Update.append("{\"location\":\""
+								+ updt.getLocationString() + '"');
+						Update.append(", \"value\":\""
+								+ updt.getValueString().replaceAll("(\\r|\\n)",
+										"") + '\"');
+						Update.append(", \"action\":\""
+								+ updt.getActionString() + "\"}");
 						if (itrUpdt.hasNext()) {
 							Update.append(", ");
 						}
@@ -347,12 +382,41 @@ public class EngineControlImp extends UnicastRemoteObject implements
 	}
 
 	@Override
-	public EngineDriverStatus getDriverStatus() throws RemoteException {		
+	public EngineDriverStatus getDriverStatus() throws RemoteException {
 		return driverInfo.getStatus();
 	}
-	
+
 	@Override
-	public EngineDriverInfo getDriverInfo() throws RemoteException {		
+	public EngineDriverInfo getDriverInfo() throws RemoteException {
 		return driverInfo;
+	}
+
+	@Override
+	public void addUpdate(String locationName, String value)
+			throws RemoteException {
+		String name = locationName.substring(0, locationName.indexOf('('));
+		FunctionElement function = engine.getState().getFunction(name);
+		Element val = null;
+		synchronized (queuedUpdates) {
+			for (Location loc : function.getLocations(name)) {
+				if (loc.toString().equals(locationName)) {
+					try {
+						val = NumberElement.getInstance(Double
+								.parseDouble(value));
+					} catch (NumberFormatException e) {
+						if (BooleanElement.TRUE_NAME.equals(value))
+							val = BooleanElement.TRUE;
+						else if (BooleanElement.FALSE_NAME.equals(value))
+							val = BooleanElement.FALSE;
+						else if (value.startsWith("\"") && value.endsWith("\""))
+							val = new StringElement(value);
+						else if (Character.isLetterOrDigit(value.charAt(0)))
+							val = new EnumerationElement(value);
+					}
+					queuedUpdates.add(new Update(loc, val,
+							Update.UPDATE_ACTION, (Element) null, null));
+				}
+			}
+		}
 	}
 }
