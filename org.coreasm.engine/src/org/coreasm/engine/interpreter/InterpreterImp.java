@@ -77,8 +77,8 @@ public class InterpreterImp implements Interpreter {
 	/** Link to the ControlAPI module */
 	private final ControlAPI capi;
 
-	//private Map<String,Element> envMap;
-	private final Map<String,Stack<Element>> envMap;
+	private Map<String,Stack<Element>> envMap;
+	private Stack<Map<String,Stack<Element>>> hiddenEnvMaps;
 	
 	/** Work copy of a tree */
 	private final Map<ASTNode,ASTNode> workCopy;
@@ -99,6 +99,7 @@ public class InterpreterImp implements Interpreter {
 	public InterpreterImp(ControlAPI capi) {
 		((ch.qos.logback.classic.Logger)logger).setLevel(ch.qos.logback.classic.Level.ERROR);	// added this line to temporarily turn off the logger
 		this.capi = capi;
+		this.hiddenEnvMaps = new Stack<Map<String, Stack<Element>>>();
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
 		this.workCopy = new IdentityHashMap<ASTNode,ASTNode>();
@@ -297,6 +298,18 @@ public class InterpreterImp implements Interpreter {
 	}
 	*/
 	
+	@Override
+	public void hideEnvVars() {
+		hiddenEnvMaps.push(envMap);
+		envMap = new HashMap<String, Stack<Element>>();
+	}
+	
+	@Override
+	public void unhideEnvVars() {
+		if (hiddenEnvMaps.isEmpty())
+			throw new IllegalStateException("There are no hidden environment variables.");
+		envMap = hiddenEnvMaps.pop();
+	}
 
 	public void addEnv(String name, Element value) {
 		Stack<Element> stack = envMap.get(name);
@@ -889,6 +902,16 @@ public class InterpreterImp implements Interpreter {
 				return pos;
 			}
 			wCopy = copyTreeSub(rule.getBody(), params, args);
+			
+			// Hide current environment variables but keep the ones visible that are used in the rule call itself
+			Map<String, Element> envVars = getRequiredEnvVars(args);
+			String functionNameOfRuleCall = pos.getFirst().getFirst().getToken();
+			if (getEnv(functionNameOfRuleCall) != null)
+				envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
+			hideEnvVars();
+			for (Entry<String, Element> envVar : envVars.entrySet())
+				addEnv(envVar.getKey(), envVar.getValue());
+			
 			workCopy.put(pos, wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, self);
@@ -903,11 +926,33 @@ public class InterpreterImp implements Interpreter {
 			// to throw this copy out! :)
 			wCopy.dipose();
 			
+			unhideEnvVars();
+			
 			workCopy.remove(pos);
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
 			return pos;
 		}
+	}
+	
+	private Map<String, Element> getRequiredEnvVars(List<ASTNode> args) {
+		Map<String, Element> requiredEnvVars = new HashMap<String, Element>();
+		if (args != null) {
+			Stack<ASTNode> fringe = new Stack<ASTNode>();
+			for (ASTNode arg : args) {
+				fringe.push(arg);
+				while (!fringe.isEmpty()) {
+					ASTNode node = fringe.pop();
+					if (node instanceof FunctionRuleTermNode) {
+						FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+						if (frNode.hasName() && getEnv(frNode.getName()) != null)
+							requiredEnvVars.put(frNode.getName(), getEnv(frNode.getName()));
+					}
+					fringe.addAll(node.getAbstractChildNodes());
+				}
+			}
+		}
+		return requiredEnvVars;
 	}
 	
 	/**
@@ -975,7 +1020,7 @@ public class InterpreterImp implements Interpreter {
 					frNode.addChild("alpha", arg.getFirst());
 					arg = frNode;
 				}
-				if (getEnv(ast.getFirst().getToken()) != null)
+				if (!params.get(i).equals(ast.getFirst().getToken()) && getEnv(ast.getFirst().getToken()) != null)
 					capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
 				result = copyTree(arg);
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
@@ -987,15 +1032,20 @@ public class InterpreterImp implements Interpreter {
 				if (args != null && a instanceof ASTNode 
 					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
 					&& ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)) {
-					for (ASTNode arg : args) {
-						if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
-					&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
-					&& arg.getChildNode("lambda") == null
-					&& arg.getFirst().getToken().equals(ast.getFirst().getToken()))
-						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument \"" + params.get(args.indexOf(arg)) + "\" passed as parameter.", ast, this);
-					}
 					if (getEnv(ast.getFirst().getToken()) != null)
 						capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
+					else {
+						for (ASTNode arg : args) {
+							if (arg.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
+							&& arg.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS)
+							&& arg.getChildNode("lambda") == null
+							&& !params.get(args.indexOf(arg)).equals(arg.getFirst().getToken())
+							&& arg.getFirst().getToken().equals(ast.getFirst().getToken())) {
+								if (storage.getFunction(ast.getFirst().getToken()) == null || storage.getFunction(ast.getFirst().getToken()).isModifiable())
+									capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with the argument passed as parameter \"" + params.get(args.indexOf(arg)) + "\".", ast, this);
+							}
+						}
+					}
 				}
 				result = a.duplicate();
 				result.setParent(parent);

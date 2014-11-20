@@ -1,5 +1,7 @@
 package org.coreasm.eclipse.launch;
 
+import java.util.HashSet;
+
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMIncludeWatcher;
 import org.coreasm.eclipse.editors.ASMParser;
@@ -36,20 +38,19 @@ public class LaunchShortcut implements ILaunchShortcut {
 
 	private void launch(IFile file, String mode) {
 		String project = IPath.SEPARATOR + file.getProject().getName();
-		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = launchManager.getLaunchConfigurationType("org.coreasm.eclipse.launchConfigurationType");
-		IEditorPart editor = Utilities.getEditor(file);
-		if (editor instanceof ASMEditor) {
-			ASMParser parser = ((ASMEditor)editor).getParser();
-			if (parser.getRootNode() != null && "CoreModule".equals(parser.getRootNode().getGrammarRule())) {
+		HashSet<IFile> consideredFiles = new HashSet<IFile>();
+		while (isCoreModule(file)) {
+			if (!consideredFiles.contains(file)) {
 				IFile[] files = ASMIncludeWatcher.getIncludingFiles(file);
-				if (files.length > 0) {
-					file = files[0];
-					spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
+				for (int i = 0; i < files.length && isCoreModule(file); i++) {
+					file = files[i];
+					consideredFiles.add(file);
 				}
 			}
 		}
+		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
 		try {
 			for (ILaunchConfiguration configuration : launchManager.getLaunchConfigurations(type)) {
 				if (project.equals(configuration.getAttribute(ICoreASMConfigConstants.PROJECT, (String)null))) {
@@ -74,5 +75,15 @@ public class LaunchShortcut implements ILaunchShortcut {
 		} catch (CoreException e) {
 			return;
 		}
+	}
+	
+	private static boolean isCoreModule(IFile file) {
+		IEditorPart editor = Utilities.getEditor(file);
+		if (editor instanceof ASMEditor) {
+			ASMParser parser = ((ASMEditor)editor).getParser();
+			if (parser.getRootNode() != null && "CoreModule".equals(parser.getRootNode().getGrammarRule()))
+				return true;
+		}
+		return ASMIncludeWatcher.getIncludingFiles(file).length > 0;
 	}
 }
