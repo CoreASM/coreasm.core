@@ -142,9 +142,9 @@ public class ClassInclude implements LibraryEntry{
 		}
 		finally{
 			try{
-				br.close();
-				bw.close(); 
-				if(jarjar != null) jarjar.close();
+				if (br != null) br.close();
+				if (bw != null) bw.close();
+				if (jarjar != null) jarjar.close();
 			}
 			catch(Exception e){
 				e.printStackTrace();
