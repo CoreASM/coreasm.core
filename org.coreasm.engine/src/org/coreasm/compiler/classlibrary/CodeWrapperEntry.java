@@ -9,6 +9,12 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
+/**
+ * Represents a code encapsulating class.
+ * CodeWrappers can be generated to avoid large code blocks, which can exceed the java byte limit for methods.
+ * @author Spellmaker
+ *
+ */
 public class CodeWrapperEntry extends AbstractLibraryEntry {
 	private static int count = 0;
 	private CodeFragment body;
@@ -22,6 +28,16 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 		this.responsible = responsible;
 	}
 	
+	/**
+	 * Builds a new code wrapper.
+	 * The code wrapper is inserted into the class library and a new {@link CodeFragment} is returned.
+	 * The code wrapper will share the environment of the calling code and will therefore modify
+	 * the same evalStack
+	 * @param body The body of the code wrapper
+	 * @param responsible A string denoting the class responsible for the creation of this wrapper for debugging
+	 * @return A code fragment which executes the code wrapper
+	 * @throws CompilerException If an error occured during the creation
+	 */
 	public static CodeFragment buildWrapper(CodeFragment body, String responsible) throws CompilerException{
 		LibraryEntry repl = new CodeWrapperEntry(body, responsible);
 		try{

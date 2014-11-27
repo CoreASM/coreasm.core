@@ -211,13 +211,6 @@ public class CodeFragment {
 	//to child fragments from the initial generate call
 	private String genCode(List<Integer> ids) throws CodeFragmentException{
 		List<String> names = new ArrayList<String>();
-		//if(ids.contains(this.id)){
-		//	System.out.println("code fragment with id " + this.id + " was already compiled!");
-		//	throw new CodeFragmentException("code fragment was already compiled, do not reuse it");
-		//}
-		//ids.add(this.id);
-		
-		
 		
 		VarManager vman = CoreASMCompiler.getEngine().getVarManager();
 		
@@ -309,6 +302,10 @@ public class CodeFragment {
 		return result;
 	}
 
+	/**
+	 * Approximates the size of the code represented by this object
+	 * @return The size of the code in bytes
+	 */
 	public int getByteCount(){
 		int result = sizeInBytes;
 		for(CodeFragment c : children.values()){
@@ -316,24 +313,4 @@ public class CodeFragment {
 		}
 		return result;
 	}
-	
-	/*private List<Integer> getIds(){
-		List<Integer> result = new ArrayList<Integer>();
-		
-		result.add(this.id);
-		for(CodeFragment c : children.values()){
-			result.addAll(c.getIds());
-		}
-		
-		return result;
-	}
-	
-	private CodeFragment findFragment(int id){
-		if(this.id == id) return this;
-		for(CodeFragment c : children.values()){
-			CodeFragment r = c.findFragment(id);
-			if(r != null) return r;
-		}
-		return null;
-	}*/
 }
