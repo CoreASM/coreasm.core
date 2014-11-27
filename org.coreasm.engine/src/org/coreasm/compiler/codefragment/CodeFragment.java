@@ -55,12 +55,19 @@ public class CodeFragment {
 	private Map<Integer, CodeFragment> children;
 	private String generationInfo;
 	private static int errorSnippet = 100; //how long the extracted code for an error text is
+	private int sizeInBytes = 0;
+	private int id;
+	private static int count = 0;
 	
 	/**
 	 * Creates a new CodeFragment with the given code.
 	 * @param s A piece of code
 	 */
 	public CodeFragment(String s){
+		this.id = count;
+		count++;
+		
+		
 		codeList = new ArrayList<String>();
 		children = new HashMap<Integer, CodeFragment>();
 		
@@ -75,17 +82,24 @@ public class CodeFragment {
 	 * @param info An info string
 	 */
 	public CodeFragment(String s, String info){
+		this.id = count;
+		count++;
+		
 		codeList = new ArrayList<String>();
 		children = new HashMap<Integer, CodeFragment>();
 		
 		appendLine(s);
 		this.generationInfo = info;
+		sizeInBytes = this.generationInfo.getBytes().length + 10;
 	}
 	
 	/**
 	 * Creates an empty CodeFragment
 	 */
 	public CodeFragment(){
+		this.id = count;
+		count++;
+		
 		codeList = new ArrayList<String>();
 		children = new HashMap<Integer, CodeFragment>();
 		
@@ -141,6 +155,8 @@ public class CodeFragment {
 			codeList.add(tmp[i]);
 			children.put(codeList.size() - 1, null);
 		}
+		
+		sizeInBytes += s.getBytes().length;
 	}
 
 	/**
@@ -149,7 +165,7 @@ public class CodeFragment {
 	 * of the father will not be viable in this child fragment.
 	 * @param code A CodeFragment
 	 */
-	public void appendFragment(CodeFragment code) {
+	public void appendFragment(CodeFragment code){		
 		children.put(codeList.size() - 1, code);
 		codeList.add("");
 	}
@@ -173,7 +189,10 @@ public class CodeFragment {
 	 * @throws CodeFragmentException If a CodeFragment was incomplete or incorrect.
 	 */
 	public String generateCode() throws CodeFragmentException{
-		String result = genCode();
+		List<Integer> ids = new ArrayList<Integer>();
+		
+		
+		String result = genCode(ids);
 		
 		if(result.contains("@")){
 			String warn = result.substring(result.indexOf("@"));
@@ -190,16 +209,27 @@ public class CodeFragment {
 	
 	//internal function for code generation. Introduced to decide recursive calls
 	//to child fragments from the initial generate call
-	private String genCode() throws CodeFragmentException{
+	private String genCode(List<Integer> ids) throws CodeFragmentException{
 		List<String> names = new ArrayList<String>();
+		//if(ids.contains(this.id)){
+		//	System.out.println("code fragment with id " + this.id + " was already compiled!");
+		//	throw new CodeFragmentException("code fragment was already compiled, do not reuse it");
+		//}
+		//ids.add(this.id);
+		
+		
 		
 		VarManager vman = CoreASMCompiler.getEngine().getVarManager();
 		
 		String result = "";
 		
-		for(int i = 0; i < codeList.size(); i++){
+		List<String> myCodeList = new ArrayList<String>();
+		myCodeList.addAll(codeList);
+		
+		
+		for(int i = 0; i < myCodeList.size(); i++){
 			//replace declarations in own namespace
-			String[] tmp = codeList.get(i).split("@decl");
+			String[] tmp = myCodeList.get(i).split("@decl");
 			result = result + tmp[0];
 			for(int j = 1; j < tmp.length; j++){
 				String declaration,type,name;
@@ -225,8 +255,8 @@ public class CodeFragment {
 					tmp[k] = tmp[k].replaceAll("@" + name + "@", cv.toString());
 				}
 				//replace all occurences in the following codeList entries
-				for(int k = i + 1; k < codeList.size(); k++){
-					codeList.set(k, codeList.get(k).replaceAll("@" + name + "@", cv.toString()));
+				for(int k = i + 1; k < myCodeList.size(); k++){
+					myCodeList.set(k, myCodeList.get(k).replaceAll("@" + name + "@", cv.toString()));
 				}
 				
 				result = result + cv.declare() + tmp[j].substring(tmp[j].indexOf(")") + 1);
@@ -252,7 +282,7 @@ public class CodeFragment {
 			if(generationInfo != null){
 				result = "//-----------------" + generationInfo + "-----------------------\n" + result;
 			}
-			result = result + children.get(i).genCode();
+			result = result + children.get(i).genCode(ids);
 			if(generationInfo != null){
 				result = result + "//--------------------------------------------------------------\n";
 			}
@@ -279,4 +309,31 @@ public class CodeFragment {
 		return result;
 	}
 
+	public int getByteCount(){
+		int result = sizeInBytes;
+		for(CodeFragment c : children.values()){
+			result = result + c.getByteCount();
+		}
+		return result;
+	}
+	
+	/*private List<Integer> getIds(){
+		List<Integer> result = new ArrayList<Integer>();
+		
+		result.add(this.id);
+		for(CodeFragment c : children.values()){
+			result.addAll(c.getIds());
+		}
+		
+		return result;
+	}
+	
+	private CodeFragment findFragment(int id){
+		if(this.id == id) return this;
+		for(CodeFragment c : children.values()){
+			CodeFragment r = c.findFragment(id);
+			if(r != null) return r;
+		}
+		return null;
+	}*/
 }

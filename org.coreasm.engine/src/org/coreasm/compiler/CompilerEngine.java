@@ -18,7 +18,10 @@ import org.coreasm.engine.interpreter.ASTNode;
  *
  */
 public interface CompilerEngine {
-	
+	/**
+	 * Returns a reference to the Logging facility of the compiler
+	 * @return The {@link LoggingHelper}
+	 */
 	public LoggingHelper getLogger();
 	/**
 	 * Returns a reference to the Plugin Loader for access to other plugins

@@ -50,8 +50,7 @@ import de.spellmaker.coreasmc.plugins.dummy.turboasmplugin.TurboASMPlugin;*/
 
 /**
  * Implementation of the Plugin Loader interface.
- * Currently a temporary solution, as it replaces the plugins loaded
- * by the CoreASM Engine with newly created CompilerPlugins.
+ * Loads and manages plugins used by a specification
  *  
  * @author Markus Brenner
  *

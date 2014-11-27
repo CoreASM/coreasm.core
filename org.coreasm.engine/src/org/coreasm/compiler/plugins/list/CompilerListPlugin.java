@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.compiler.classlibrary.ClassLibrary;
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.IncludeException;
@@ -13,7 +12,6 @@ import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.list.code.rcode.ListCompHandler;
 import org.coreasm.compiler.plugins.list.code.rcode.ListTermHandler;
 import org.coreasm.compiler.plugins.list.code.ucode.ShiftRuleHandler;
-import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.list.ConsFunctionElement;
 import org.coreasm.engine.plugins.list.DropFunctionElement;
@@ -25,7 +23,6 @@ import org.coreasm.engine.plugins.list.NthFunctionElement;
 import org.coreasm.engine.plugins.list.ReplicateFunctionElement;
 import org.coreasm.engine.plugins.list.ReverseFunctionElement;
 import org.coreasm.engine.plugins.list.SetNthFunctionElement;
-import org.coreasm.engine.plugins.list.ShiftRuleNode;
 import org.coreasm.engine.plugins.list.TailFunctionElement;
 import org.coreasm.engine.plugins.list.TakeFunctionElement;
 import org.coreasm.engine.plugins.list.ToListFunctionElement;
@@ -34,8 +31,6 @@ import org.coreasm.engine.plugins.list.ZipWithFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeRPlugin;
-import org.coreasm.compiler.interfaces.CompilerCodeUPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
@@ -82,7 +77,7 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 		String result = "";
 		
 		if(token.equals("+")){
-			result += "if((@lhs@ instanceof plugins.ListPlugin.ListElement) || (@rhs@ instanceof plugins.ListPlugin.ListElement)){\n";
+			result += "if((@lhs@ instanceof plugins.ListPlugin.ListElement) && (@rhs@ instanceof plugins.ListPlugin.ListElement)){\n";
 			result += "@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>(((plugins.ListPlugin.ListElement)@lhs@).values());\n";
 			result += "@list@.addAll(((plugins.ListPlugin.ListElement)@rhs@).values());\n";
 			result += "evalStack.push(new plugins.ListPlugin.ListElement(@list@));\n";

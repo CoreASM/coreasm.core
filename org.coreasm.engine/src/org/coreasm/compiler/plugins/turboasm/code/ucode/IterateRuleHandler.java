@@ -12,19 +12,18 @@ public class IterateRuleHandler implements CompilerCodeHandler {
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
-		CodeFragment rule = engine.compile(node.getAbstractChildNodes().get(0), CodeType.U);
-		
+
 		result.appendLine("@decl(CompilerRuntime.AbstractStorage,storage)=CompilerRuntime.RuntimeProvider.getRuntime().getStorage();\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList,composed)=new CompilerRuntime.UpdateList();\n");
 		result.appendLine("@storage@.pushState();\n");
-		result.appendFragment(rule);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(0), CodeType.U));
 		result.appendLine("@decl(CompilerRuntime.UpdateList,current)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
 		result.appendLine("while(!@current@.isEmpty()){\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList,aggreg)=@storage@.performAggregation(@current@);\n");
 		result.appendLine("@composed@ = @storage@.compose(@composed@,@current@);\n");
 		result.appendLine("if(@storage@.isConsistent(@aggreg@)){\n");
 		result.appendLine("@storage@.apply(@aggreg@);\n");
-		result.appendFragment(rule);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(0), CodeType.U));
 		result.appendLine("@current@ = (CompilerRuntime.UpdateList) evalStack.pop();\n");
 		result.appendLine("}\n");
 		result.appendLine("else{\n");

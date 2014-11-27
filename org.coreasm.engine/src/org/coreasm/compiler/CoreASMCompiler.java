@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.classlibrary.CodeWrapperEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.DirectoryNotEmptyException;
@@ -28,8 +29,8 @@ import org.coreasm.engine.Engine;
 import org.coreasm.engine.interpreter.ASTNode;
 
 /**
- * Implementation of the CompilerEngine interface and the actual Compiler.
- * Provides services for plugins and directs the compilation process.
+ * Implementation of the CompilerEngine interface and the actual CoreASM compiler.
+ * Provides services for plugins and controls the compilation process.
  * @author Markus Brenner
  *
  */
@@ -220,68 +221,32 @@ public class CoreASMCompiler implements CompilerEngine {
 		//compile code
 		if(cp instanceof CompilerCodePlugin){
 			CompilerCodePlugin resp = (CompilerCodePlugin) cp;
-			return resp.compile(type, node);			
+			
+			CodeFragment coderes = resp.compile(type, node);
+			
+			//note: code might get too large for java limits (65535 bytes for methods)
+			//check here
+			
+			//System.out.println("------------------generated code:");
+			//System.out.println(coderes);
+			
+			if(coderes.getByteCount() > 40000){
+				
+				this.addWarning("warning: compiled code turned to large, splitting it up");
+				
+				coderes = CodeWrapperEntry.buildWrapper(coderes, "coreasmcompiler " + resp.getClass().toString());
+			}
+			
+			//System.out.println("------------------generated wrapper:");
+			//System.out.println(coderes);
+			
+			return coderes;
 		}
 		else{
 			//not compilable
 			this.addError("plugin " + cp.getName() + " does not register any code handlers");
 			throw new CompilerException("plugin " + cp.getName()  + " does not register any code handlers");
 		}
-		
-		/*switch(type){
-			case BASIC:
-				if(!(cp instanceof CompilerCodeBPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile bCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile bCode");
-				}
-				((CompilerCodeBPlugin) cp).bCode(node);
-				return null;
-			case R:	
-				if(!(cp instanceof CompilerCodeRPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile rCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile rCode");
-				}
-				return ((CompilerCodeRPlugin) cp).rCode(node);
-			case U:	
-				if(!(cp instanceof CompilerCodeUPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile uCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile uCode");
-				}
-				return ((CompilerCodeUPlugin) cp).uCode(node);
-			case L:	
-				if(!(cp instanceof CompilerCodeLPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile lCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile lCode");
-				}
-				return ((CompilerCodeLPlugin) cp).lCode(node);
-			case LU:	
-				if(!(cp instanceof CompilerCodeLUPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile luCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile luCode");
-				}
-				return ((CompilerCodeLUPlugin) cp).luCode(node);
-			case UR:	
-				if(!(cp instanceof CompilerCodeURPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile urCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile urCode");
-				}
-				return ((CompilerCodeURPlugin) cp).urCode(node);
-			case LR:	
-				if(!(cp instanceof CompilerCodeLRPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile lrCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile lrCode");
-				}
-				return ((CompilerCodeLRPlugin) cp).lrCode(node);
-			case LUR:	
-				if(!(cp instanceof CompilerCodeLURPlugin)){
-					this.addError("plugin " + cp.getName() + " does not compile lurCode");
-					throw new CompilerException("plugin " + cp.getName() + " does not compile lurCode");
-				}
-				return ((CompilerCodeLURPlugin) cp).lurCode(node);
-				
-			default: 			CoreASMCompiler.getEngine().getLogger().error(CoreASMCompiler.class, "Unknown compile type requested"); 
-								throw new CompilerException("Unknown compile type: " + type);
-		}*/
 	}
 	
 	private CodeFragment handleOperatorCall(ASTNode node) throws CompilerException{

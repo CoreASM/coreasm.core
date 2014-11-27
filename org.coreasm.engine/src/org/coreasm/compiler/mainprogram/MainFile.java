@@ -295,7 +295,7 @@ public class MainFile implements LibraryEntry{
 			}
 		}
 		finalContent.appendLine("}\ncatch(Exception e){\nSystem.out.println(\"error: conflict while initializing\");\nSystem.exit(0);\n}\n");
-		
+
 		finalContent.appendFragment(smcode);
 			
 			

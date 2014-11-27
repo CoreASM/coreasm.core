@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -37,13 +36,31 @@ public class KernelFunctionRuleTermHandler implements CompilerCodeHandler {
 			result.appendLine("for(@decl(int,__i)=0;@__i@<"
 					+ args.size()
 					+ ";@__i@++)\n@arglist@.add((CompilerRuntime.Element)evalStack.pop());\n");
-			result.appendLine("evalStack.push(new CompilerRuntime.Location(\""
-					+ name + "\", @arglist@));");
+			
+			//build the location, find out, if there is a local value for this location
+			result.appendLine("@decl(Object,o)=localStack.get(\"" + name + "\");\n");
+			result.appendLine("if(@o@ instanceof CompilerRuntime.FunctionElement){\n");
+			result.appendLine("evalStack.push(new CompilerRuntime.Location(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getFunctionName((CompilerRuntime.FunctionElement)@o@), @arglist@));\n");			
+			result.appendLine("}\n");
+			result.appendLine("else{\n");
+			result.appendLine("evalStack.push(new CompilerRuntime.Location(\"" + name + "\", @arglist@));\n");
+			result.appendLine("}\n");
+			
+			//result.appendLine("evalStack.push(new CompilerRuntime.Location(\""
+			//		+ name + "\", @arglist@));");
 		} else {
-			String code = "evalStack.push(new CompilerRuntime.Location(\""
-					+ name
-					+ "\", new java.util.ArrayList<CompilerRuntime.Element>()));";
-			result.appendLine(code);
+			//String code = "evalStack.push(new CompilerRuntime.Location(\""
+			//		+ name
+			//		+ "\", new java.util.ArrayList<CompilerRuntime.Element>()));";
+			//result.appendLine(code);
+			
+			result.appendLine("@decl(Object,o)=localStack.get(\"" + name + "\");\n");
+			result.appendLine("if(@o@ instanceof CompilerRuntime.FunctionElement){\n");
+			result.appendLine("evalStack.push(new CompilerRuntime.Location(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getFunctionName((CompilerRuntime.FunctionElement)@o@), new java.util.ArrayList<CompilerRuntime.Element>()));\n");			
+			result.appendLine("}\n");
+			result.appendLine("else{\n");
+			result.appendLine("evalStack.push(new CompilerRuntime.Location(\"" + name + "\", new java.util.ArrayList<CompilerRuntime.Element>()));\n");
+			result.appendLine("}\n");
 		}
 	}
 

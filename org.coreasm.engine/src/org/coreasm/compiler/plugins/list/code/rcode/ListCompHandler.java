@@ -21,8 +21,6 @@ public class ListCompHandler implements CompilerCodeHandler {
 			throws CompilerException {
 		ListCompNode compnode = (ListCompNode) node;
 		
-		CodeFragment expr = engine.compile(compnode.getListFunction(), CodeType.R);
-		
 		CodeFragment guard = null;
 		if(!(compnode.getGuard() instanceof TrueGuardNode)){
 			guard = engine.compile(compnode.getGuard(), CodeType.R);
@@ -56,13 +54,13 @@ public class ListCompHandler implements CompilerCodeHandler {
 			}
 			
 			if(guard == null){
-				result.appendFragment(expr);
+				result.appendFragment(engine.compile(compnode.getListFunction(), CodeType.R));
 				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
 			}
 			else{
 				result.appendFragment(guard);
 				result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
-				result.appendFragment(expr);
+				result.appendFragment(engine.compile(compnode.getListFunction(), CodeType.R));
 				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
 				result.appendLine("}\n");
 			}

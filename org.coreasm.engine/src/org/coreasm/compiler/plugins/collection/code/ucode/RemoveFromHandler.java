@@ -26,7 +26,7 @@ public class RemoveFromHandler implements CompilerCodeHandler{
 		result.appendLine("@decl(CompilerRuntime.Element, el) = (CompilerRuntime.Element) evalStack.pop();\n");
 		result.appendLine("@decl(plugins.CollectionPlugin.ModifiableCollection, coll) = (plugins.CollectionPlugin.ModifiableCollection)CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@);\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList, ul) = new CompilerRuntime.UpdateList();\n");
-		result.appendLine("@ul@.addAll(@coll@.computeRemoveUpdate(@loc@, @el@, this));\n");
+		result.appendLine("@ul@.addAll(@coll@.computeRemoveUpdate(@loc@, @el@, this.getUpdateResponsible()));\n");
 		result.appendLine("evalStack.push(@ul@);\n");
 	}
 

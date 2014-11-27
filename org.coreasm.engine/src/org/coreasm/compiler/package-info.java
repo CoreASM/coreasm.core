@@ -1,6 +1,6 @@
 
 /**
- * Core classes of the compiler
+ * Core classes of the coreasm compiler
  * @author Markus Brenner
  *
  */

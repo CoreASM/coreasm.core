@@ -49,7 +49,7 @@ public class RuleClassFile extends AbstractLibraryEntry {
 
 		//self handling
 		creation += "if(getAgent() != null) CompilerRuntime.RuntimeProvider.getRuntime().setSelf(Thread.currentThread(), getAgent());\n";
-		
+		creation += "\n//start of generated content\n";
 		CodeFragment ruleBody = null;
 		try {
 			ruleBody = new CodeFragment(
@@ -109,7 +109,7 @@ public class RuleClassFile extends AbstractLibraryEntry {
 			+ "\tpublic CompilerRuntime.RuleResult call() throws Exception{\n"
 			+ "\t\tlocalStack.pushLayer();\n";
 
-	private final String part3 = "\t\t\n"
+	private final String part3 = "//end of generated content\n\t\t\n"
 			+ "\t\tlocalStack.popLayer();\n"
 			+ "\t\t@decl(CompilerRuntime.UpdateList, ulist) = (CompilerRuntime.UpdateList) evalStack.pop();\n"
 			+ "\t\t@decl(CompilerRuntime.Element, val) = CompilerRuntime.Element.UNDEF;\n"

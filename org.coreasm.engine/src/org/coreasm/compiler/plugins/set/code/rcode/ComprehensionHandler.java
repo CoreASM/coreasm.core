@@ -31,8 +31,6 @@ public class ComprehensionHandler implements CompilerCodeHandler {
 		
 		SetCompNode cnode = (SetCompNode) node;
 		
-		//get the exp
-		CodeFragment expr = engine.compile(cnode.getSetFunction(), CodeType.R);
 		//guard might be non existent, so initialize it
 		CodeFragment guard = null;
 		//optimization: the true guard is always true anyway, so if it is existent, leave it out
@@ -66,13 +64,13 @@ public class ComprehensionHandler implements CompilerCodeHandler {
 			}
 			
 			if(guard == null){
-				result.appendFragment(expr);
+				result.appendFragment(engine.compile(cnode.getSetFunction(), CodeType.R));
 				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
 			}
 			else{
 				result.appendFragment(guard);
 				result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
-				result.appendFragment(expr);
+				result.appendFragment(engine.compile(cnode.getSetFunction(), CodeType.R));
 				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
 				result.appendLine("}\n");
 			}

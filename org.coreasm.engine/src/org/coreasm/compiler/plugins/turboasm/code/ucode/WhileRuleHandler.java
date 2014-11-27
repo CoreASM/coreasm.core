@@ -11,13 +11,11 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
-			throws CompilerException {
-		CodeFragment guard = engine.compile(node.getAbstractChildNodes().get(0), CodeType.R);
-		
+			throws CompilerException {		
 		result.appendLine("@decl(CompilerRuntime.AbstractStorage,storage)=CompilerRuntime.RuntimeProvider.getRuntime().getStorage();\n");
 		result.appendLine("@decl(CompilerRuntime.UpdateList,composed)=new CompilerRuntime.UpdateList();\n");
 		result.appendLine("@decl(boolean,guard)=true;\n");
-		result.appendFragment(guard);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(0), CodeType.R));
 		result.appendLine("@guard@=((CompilerRuntime.BooleanElement)evalStack.pop()).getValue();\n");
 		result.appendLine("@storage@.pushState();\n");
 		result.appendLine("if(@guard@){\n");
@@ -28,7 +26,7 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 		result.appendLine("@composed@ = @storage@.compose(@composed@,@current@);\n");
 		result.appendLine("if(@storage@.isConsistent(@aggreg@)){\n");
 		result.appendLine("@storage@.apply(@aggreg@);\n");
-		result.appendFragment(guard);
+		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(0), CodeType.R));
 		result.appendLine("@guard@=((CompilerRuntime.BooleanElement)evalStack.pop()).getValue();\n");
 		result.appendLine("if(!@guard@){\n");
 		result.appendLine("break;\n");

@@ -14,8 +14,6 @@ import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
 
 import CompilerRuntime.PluginCompositionAPI;
-import CompilerRuntime.Rule;
-
 import org.coreasm.engine.absstorage.Update;
 
 import CompilerRuntime.UpdateAggregator;

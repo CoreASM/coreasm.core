@@ -849,6 +849,11 @@ public class HashStorage implements AbstractStorage {
                     return name;
                 }
             }
+
+            for (Entry<String, AbstractUniverse> u : universeElements.table.entrySet()) {
+            	if (u.getValue().equals(function))
+            		return u.getKey();
+            }
             return null;
         }
 

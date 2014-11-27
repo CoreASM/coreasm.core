@@ -2,6 +2,7 @@ package org.coreasm.compiler.plugins.caserule.code.ucode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.CodeWrapperEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -26,15 +27,42 @@ public class CaseRuleHandler implements CompilerCodeHandler {
 			
 			result.appendFragment(guardcode);
 			result.appendLine("@decl(CompilerRuntime.Element,guard)=(CompilerRuntime.Element)evalStack.pop();\n");
-			result.appendLine("@decl(int,exec)=0;\n");
+			//result.appendLine("@decl(int,exec)=0;\n");
+			result.appendLine("evalStack.push(@guard@);\n");
+			result.appendLine("evalStack.push(new Integer(0));\n");
 			
+			CodeFragment condcode = new CodeFragment("");
 			for(int i = 0; i < conditions.length; i++){
+				CodeFragment current = new CodeFragment("");
+				current.appendLine("@decl(int,count) = (Integer) evalStack.pop();\n");
+				current.appendLine("@decl(CompilerRuntime.Element,guard)=(CompilerRuntime.Element)evalStack.pop();\n");
+				current.appendFragment(conditions[i]);
+				current.appendLine("if(@guard@.equals(evalStack.pop())){\n");
+				current.appendFragment(rules[i]);
+				current.appendLine("evalStack.push(@guard@);\n");
+				current.appendLine("evalStack.push(@count@ + 1);\n");
+				current.appendLine("}\n");
+				current.appendLine("else{\n");
+				current.appendLine("evalStack.push(@guard@);\n");
+				current.appendLine("evalStack.push(@count@);\n");
+				current.appendLine("}\n");
+				
+				condcode.appendFragment(current);
+				if(condcode.getByteCount() > 40000){
+					condcode = CodeWrapperEntry.buildWrapper(condcode, "CaseRuleHandler");
+				}
+			}
+			
+			result.appendFragment(condcode);
+			result.appendLine("@decl(int,exec)=(Integer)evalStack.pop();\nevalStack.pop();\n");
+			
+			/*for(int i = 0; i < conditions.length; i++){
 				result.appendFragment(conditions[i]);
 				result.appendLine("if(@guard@.equals(evalStack.pop())){\n");
 				result.appendLine("@exec@++;\n");
 				result.appendFragment(rules[i]);
 				result.appendLine("}\n");
-			}
+			}*/
 			result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
 			result.appendLine("for(@decl(int,i)=0;@i@<@exec@;@i@++){\n");
 			result.appendLine("@ulist@.addAll((CompilerRuntime.UpdateList)evalStack.pop());\n");

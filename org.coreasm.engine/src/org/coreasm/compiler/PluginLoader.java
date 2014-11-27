@@ -72,5 +72,9 @@ public interface PluginLoader {
 	 */
 	public List<CompilerPreprocessorPlugin> getPreprocessorPlugins();
 	
+	/**
+	 * Retrieves a list of all plugins identified to be Code providing plugins
+	 * @return A list of all CompilerCode Plugins
+	 */
 	public List<CompilerCodePlugin> getCompilerCodePlugins();
 }
