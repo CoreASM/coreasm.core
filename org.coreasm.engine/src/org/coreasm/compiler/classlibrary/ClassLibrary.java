@@ -89,7 +89,7 @@ public class ClassLibrary {
 		for(LibraryEntry le : entries){
 			if(le.getFullName().equals(fullName)) return le;
 		}
-		CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "could not find requested library entry " + fullName + " in the class library");
+		CoreASMCompiler.getEngine().getLogger().warn(ClassLibrary.class, "could not find requested library entry " + fullName + " in the class library");
 		return null;
 	}
 	

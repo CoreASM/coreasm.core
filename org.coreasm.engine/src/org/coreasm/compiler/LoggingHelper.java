@@ -108,7 +108,7 @@ public class LoggingHelper {
 	 * @param message The message
 	 */	
 	public void warn(Class<?> clazz, String message){
-		log(Level.DEBUG, clazz, message);
+		log(Level.WARN, clazz, message);
 	}
 	
 	/**

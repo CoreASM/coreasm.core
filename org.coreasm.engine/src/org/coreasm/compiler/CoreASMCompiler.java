@@ -128,7 +128,8 @@ public class CoreASMCompiler implements CompilerEngine {
 			throw ce;
 		}
 		catch(Exception e){
-			System.out.println("uncaught exception:"  + e.getMessage());
+			System.out.println("uncaught exception: "  + e.getMessage());
+			e.printStackTrace();
 		}
 		finally{
 			if(!options.keepTempFiles){
