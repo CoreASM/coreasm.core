@@ -58,7 +58,7 @@ public abstract class AbstractLibraryEntry implements LibraryEntry {
 		} 
 		finally{
 			try{
-				bw.close();
+				if (bw != null) bw.close();
 			}
 			catch(IOException e){
 			}
