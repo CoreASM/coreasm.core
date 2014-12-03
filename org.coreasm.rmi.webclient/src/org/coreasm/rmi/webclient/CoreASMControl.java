@@ -26,7 +26,7 @@ import org.coreasm.rmi.server.remoteinterfaces.*;
 @MultipartConfig
 public class CoreASMControl extends HttpServlet {
 	public enum Command {
-		start, stop, pause, join, update
+		start, stop, pause, join, update, step
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -85,7 +85,10 @@ public class CoreASMControl extends HttpServlet {
 						String loc = (String) request.getParameter("location");
 						String val = (String) request.getParameter("value");
 						ctrl.addUpdate(loc, val);
-						break;						
+						break;
+					case step:
+						ctrl.singleStep();
+						break;
 					}
 				}
 			} else {
@@ -132,17 +135,28 @@ public class CoreASMControl extends HttpServlet {
 				} else {
 					ctrl = server.connectExistingEngine(Id);
 				}
-				engineMap.put(Id, ctrl);
-				UpdateSubImp sub = new UpdateSubImp();
-				ctrl.subscribe(sub);
-				ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
-						.getAttribute("Subscriptions");
-				if (subMap == null) {
-					subMap = new ConcurrentHashMap<String, UpdateSubImp>();
-					session.setAttribute("Subscriptions", subMap);
+				if(ctrl != null) {
+					engineMap.put(Id, ctrl);
+					UpdateSubImp sub = new UpdateSubImp();
+					ErrorSubImp errSub = new ErrorSubImp();
+					ctrl.subscribeUpdates(sub);
+					ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
+							.getAttribute("Subscriptions");
+					if (subMap == null) {
+						subMap = new ConcurrentHashMap<String, UpdateSubImp>();
+						session.setAttribute("Subscriptions", subMap);
+					}
+					subMap.putIfAbsent(Id, sub);
+					
+					ctrl.subscribeErrors(errSub);
+					ConcurrentHashMap<String, ErrorSubImp> errMap = (ConcurrentHashMap<String, ErrorSubImp>) session
+							.getAttribute("Errors");
+					if (errMap == null) {
+						errMap = new ConcurrentHashMap<String, ErrorSubImp>();
+						session.setAttribute("Errors", errMap);
+					}
+					errMap.putIfAbsent(Id, errSub);					
 				}
-				subMap.putIfAbsent(Id, sub);
-				session.setAttribute("UpdateCount", 0);
 			} catch (RemoteException e) {
 			}
 		}

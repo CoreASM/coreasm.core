@@ -25,30 +25,12 @@ public class UpdateSubImp extends UnicastRemoteObject implements
 		updateSets = new ArrayList<String>();
 	}
 
-//	@Override
-//	public void newUpdates(Set<Update> updates) throws RemoteException {
-//		synchronized (updateSets) {
-//			updateSets.add(updates);
-//		}
-//	}
 	@Override
 	public void newUpdates(String updates) throws RemoteException {
 		synchronized (updateSets) {
 			updateSets.add(updates);
 		}
 	}
-	
-//	public List<Set<Update>> getUpdates(boolean deleteOld) {
-//		List<Set<Update>> newList = new ArrayList<Set<Update>>();
-//		
-//		synchronized (updateSets) {
-//			newList.addAll(updateSets);
-//			if (deleteOld) {
-//				updateSets.clear();
-//			}
-//			return newList;			
-//		}
-//	}
 	
 	public List<String> getUpdates(boolean deleteOld) {
 		List<String> newList = new ArrayList<String>();

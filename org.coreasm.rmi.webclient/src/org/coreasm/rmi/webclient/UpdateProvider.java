@@ -51,12 +51,11 @@ public class UpdateProvider extends HttpServlet {
 				UpdateSubImp sub = subMap.get(engId);
 				if (sub != null) {
 
-					int count = (int) session.getAttribute("UpdateCount");
 					List<String> updates = sub.getUpdates(true);
 					Iterator<String> itr = updates.iterator();
 
 					PrintWriter out = response.getWriter();
-					response.setContentType("text/html");
+					response.setContentType("application/json");
 					out.println('[');
 					while (itr.hasNext()) {
 						String updt = itr.next();
@@ -66,11 +65,9 @@ public class UpdateProvider extends HttpServlet {
 						} else {
 							out.println();
 						}
-						count++;
 					}
 					out.println(']');
 
-					session.setAttribute("UpdateCount", count);
 				}
 
 			}

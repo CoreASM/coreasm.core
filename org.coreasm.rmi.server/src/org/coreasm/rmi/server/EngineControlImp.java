@@ -35,6 +35,7 @@ import org.coreasm.engine.plugins.signature.EnumerationElement;
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
+import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
 
 /**
@@ -42,7 +43,8 @@ import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
  *
  */
 public class EngineControlImp extends UnicastRemoteObject implements Runnable,
-		EngineControl, EngineStepObserver, EngineErrorObserver, EngineModeObserver {
+		EngineControl, EngineStepObserver, EngineErrorObserver,
+		EngineModeObserver {
 	private static final long serialVersionUID = 1L;
 	private CoreASMEngine engine;
 	private BufferedReader spec = null;
@@ -59,12 +61,14 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 	private volatile boolean shouldStop = false;
 	private volatile boolean shouldPause = true;
+	private volatile boolean takeSingleStep = false;
 	private volatile EngineDriverInfo driverInfo;
 
 	private List<Set<Update>> previousUpdates;
 	private UpdateMultiset pendingUpdates;
 	private UpdateMultiset queuedUpdates;
-	private List<UpdateSubscription> subscriptions;
+	private List<UpdateSubscription> updateSubscriptions;
+	private List<ErrorSubscription> errorSubscriptions;
 
 	private EngineControlImp() throws RemoteException {
 		super();
@@ -82,9 +86,10 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		stepsLimit = 20;
 
 		previousUpdates = new ArrayList<Set<Update>>();
-		subscriptions = new ArrayList<UpdateSubscription>();
+		updateSubscriptions = new ArrayList<UpdateSubscription>();
+		errorSubscriptions = new ArrayList<ErrorSubscription>();
 		driverInfo = new EngineDriverInfo("", EngineDriverStatus.empty);
-		
+
 		pendingUpdates = new UpdateMultiset();
 		queuedUpdates = new UpdateMultiset();
 	}
@@ -107,12 +112,22 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			synchronized (this) {
 				updateFailed = true;
 			}
+			if (!errorSubscriptions.isEmpty()) {
+				synchronized (errorSubscriptions) {
+					propagateError("Update Failed!");
+				}
+			}
 		}
 
 		// Looking for errors
 		else if (event instanceof EngineErrorEvent) {
 			synchronized (this) {
 				lastError = ((EngineErrorEvent) event).getError();
+			}
+			if (!errorSubscriptions.isEmpty()) {
+				synchronized (errorSubscriptions) {
+					propagateError(lastError);
+				}
 			}
 		}
 
@@ -190,11 +205,18 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	 * .rmi.server.remoteinterfaces.UpdateSubscription)
 	 */
 	@Override
-	public void subscribe(UpdateSubscription sub) throws RemoteException {
-		synchronized (subscriptions) {
-			subscriptions.add(sub);
+	public void subscribeUpdates(UpdateSubscription sub) throws RemoteException {
+		synchronized (updateSubscriptions) {
+			updateSubscriptions.add(sub);
 		}
 
+	}
+
+	@Override
+	public void subscribeErrors(ErrorSubscription sub) throws RemoteException {
+		synchronized (errorSubscriptions) {
+			errorSubscriptions.add(sub);
+		}
 	}
 
 	public void run() {
@@ -230,9 +252,10 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					System.err
 							.println("[!] Run is paused by user. Click on resume to continue...");
 
-					while (shouldPause && !shouldStop)
+					while (shouldPause && !takeSingleStep && !shouldStop)
 						Thread.sleep(100);
 
+						
 					if (!shouldStop)
 						System.err.println("[!] Resuming.");
 
@@ -241,7 +264,9 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				if (shouldStop) {
 					throw new EngineDriverException();
 				}
-
+				
+				takeSingleStep = false;
+				
 				synchronized (queuedUpdates) {
 					pendingUpdates.addAll(queuedUpdates);
 					queuedUpdates.clear();
@@ -269,44 +294,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					break;
 				prevupdates = updates;
 				previousUpdates.add(updates);
-
-				synchronized (subscriptions) {
-					Iterator<UpdateSubscription> itrSub = subscriptions
-							.iterator();
-					Iterator<Update> itrUpdt;
-					Update updt;
-					StringBuilder Update = new StringBuilder();
-					Update.append('[');
-					itrUpdt = prevupdates.iterator();
-					while (itrUpdt.hasNext()) {
-						updt = itrUpdt.next();
-						Update.append("{\"location\":\""
-								+ updt.getLocationString() + '"');
-						Update.append(", \"value\":\""
-								+ updt.getValueString().replaceAll("(\\r|\\n)",
-										"") + '\"');
-						Update.append(", \"action\":\""
-								+ updt.getActionString() + "\"}");
-						if (itrUpdt.hasNext()) {
-							Update.append(", ");
-						}
-					}
-					Update.append(']');
-
-					UpdateSubscription sub;
-					while (itrSub.hasNext()) {
-						sub = itrSub.next();
-						try {
-							sub.newUpdates(Update.toString());
-						} catch (RemoteException e) {
-							itrSub.remove();
-						}
-					}
-					if (subscriptions.isEmpty()) {
-						shouldStop = true;
-					}
-				}
-
+				propagateUpdate(updates);
 			}
 			if (engine.getEngineMode() != EngineMode.emIdle)
 				handleError();
@@ -381,6 +369,64 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		engine.terminate();
 	}
 
+	private void propagateUpdate(Set<Update> updates) {
+		synchronized (updateSubscriptions) {
+			Iterator<UpdateSubscription> itrSub = updateSubscriptions
+					.iterator();
+			Iterator<Update> itrUpdt;
+			Update updt;
+			StringBuilder Update = new StringBuilder();
+			Update.append('[');
+			itrUpdt = updates.iterator();
+			while (itrUpdt.hasNext()) {
+				updt = itrUpdt.next();
+				Update.append("{\"location\":\"" + updt.getLocationString()
+						+ '"');
+				Update.append(", \"value\":\""
+						+ updt.getValueString().replaceAll("(\\r|\\n)", "")
+						+ '\"');
+				Update.append(", \"action\":\"" + updt.getActionString()
+						+ "\"}");
+				if (itrUpdt.hasNext()) {
+					Update.append(", ");
+				}
+			}
+			Update.append(']');
+
+			UpdateSubscription sub;
+			while (itrSub.hasNext()) {
+				sub = itrSub.next();
+				try {
+					sub.newUpdates(Update.toString());
+				} catch (RemoteException e) {
+					itrSub.remove();
+				}
+			}
+			if (updateSubscriptions.isEmpty()) {
+				shouldStop = true;
+			}
+		}
+	}
+
+	private void propagateError(CoreASMError error) {
+		propagateError(error.showError());
+	}
+	
+	private void propagateError(String error) {
+		synchronized (errorSubscriptions) {
+			Iterator<ErrorSubscription> itrSub = errorSubscriptions.iterator();
+			ErrorSubscription sub;
+			while (itrSub.hasNext()) {
+				sub = itrSub.next();
+				try {
+					sub.newError(error);
+				} catch (RemoteException e) {
+					itrSub.remove();
+				}
+			}
+		}
+	}
+
 	@Override
 	public EngineDriverStatus getDriverStatus() throws RemoteException {
 		return driverInfo.getStatus();
@@ -419,4 +465,10 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			}
 		}
 	}
+
+	@Override
+	public void singleStep() throws RemoteException {
+		takeSingleStep = true;
+	}
+
 }

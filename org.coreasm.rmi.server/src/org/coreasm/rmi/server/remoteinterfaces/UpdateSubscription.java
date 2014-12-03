@@ -7,9 +7,6 @@ import java.rmi.RemoteException;
  * @author Stephan
  *
  */
-public interface UpdateSubscription extends Remote {
-	
-//	public void newUpdates(Set<Update> updates) throws RemoteException;
+public interface UpdateSubscription extends Remote {	
 	public void newUpdates(String updates) throws RemoteException;
-
 }
