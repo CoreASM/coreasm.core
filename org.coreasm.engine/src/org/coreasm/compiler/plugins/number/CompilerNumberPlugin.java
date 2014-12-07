@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.number;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 			List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 			ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
 
-			String jarpath = CoreASMCompiler.getEngine().getOptions().enginePath;
+			File jarpath = new File(CoreASMCompiler.getEngine().getOptions().enginePath);
 			
 			try{
 				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");

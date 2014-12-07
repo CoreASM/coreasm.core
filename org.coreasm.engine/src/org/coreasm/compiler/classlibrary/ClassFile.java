@@ -85,12 +85,14 @@ public class ClassFile extends AbstractLibraryEntry{
 
 	@Override
 	protected File getFile() {
-		String pkg = packageName.replace(".", "\\"); //create the path from the packagename
-		if(pkg.equals("")){
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\" + className + ".java");
+		File tempDirectory = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory);
+
+		if(packageName.equals("")){
+			return new File(tempDirectory, className + ".java");
 		}
 		else{
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\" + pkg + "\\" + className + ".java");
+			String pkg = packageName.replace(".", File.separator); //create the path from the packagename
+			return new File(tempDirectory, pkg + File.separator + className + ".java");
 		}
 	}
 	

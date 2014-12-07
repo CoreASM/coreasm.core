@@ -48,9 +48,9 @@ public class EnumFile extends AbstractLibraryEntry{
 	@Override
 	protected File getFile() {
 		if(packageName.equals(""))
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\" + enumName + ".java");
+			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + enumName + ".java");
 		else
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\" + packageName.replace(".", "\\") + "\\" + enumName + ".java");
+			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + packageName.replace(".", File.separator) + File.separator + enumName + ".java");
 	}
 
 	@Override

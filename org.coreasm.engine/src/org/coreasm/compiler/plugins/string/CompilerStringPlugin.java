@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.string;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,26 +54,28 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	
 		try {
 			
-			String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
-			if(enginePath == null){
+			String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+			if(enginePathStr == null){
+				File stringpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(
 						library.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\StringBackgroundElement.java",
+								new File(stringpluginFolder, "StringBackgroundElement.java"),
 								this), EntryType.BACKGROUND, "STRING"));
 	
 				result.add(new MainFileEntry(
 						library.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\StringElement.java",
+								new File(stringpluginFolder, "StringElement.java"),
 								this), EntryType.INCLUDEONLY, ""));
 	
 				result.add(new MainFileEntry(
 						library.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\ToStringFunctionElement.java",
+								new File(stringpluginFolder, "ToStringFunctionElement.java"),
 								this), EntryType.FUNCTION, "toString"));
 	
 				ClassInclude tmp = library
 						.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\StringLengthFunctionElement.java",
+								new File(stringpluginFolder, "StringLengthFunctionElement.java"),
 								this);
 				tmp.addImportReplacement(
 						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
@@ -81,7 +84,7 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	
 				tmp = library
 						.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\StringSubstringFunction.java",
+								new File(stringpluginFolder, "StringSubstringFunction.java"),
 								this);
 				tmp.addImportReplacement(
 						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
@@ -91,10 +94,12 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	
 				result.add(new MainFileEntry(
 						library.includeClass(
-								"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include\\StringMatchingFunction.java",
+								new File(stringpluginFolder, "StringMatchingFunction.java"),
 								this), EntryType.FUNCTION, "matches"));
 			}
 			else{
+				File enginePath = new File(enginePathStr);
+
 				//load classes from jar archive
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringBackgroundElement", "plugins.StringPlugin.StringBackgroundElement");

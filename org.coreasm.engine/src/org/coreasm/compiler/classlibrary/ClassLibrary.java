@@ -1,5 +1,6 @@
 package org.coreasm.compiler.classlibrary;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,7 +129,7 @@ public class ClassLibrary {
 	 * @return A new ClassInclude LibraryEntry for the included class.
 	 * @throws EntryAlreadyExistsException If there already is an entry with the given full name
 	 */
-	public ClassInclude includeClass(String path, CompilerPlugin source) throws EntryAlreadyExistsException{
+	public ClassInclude includeClass(File path, CompilerPlugin source) throws EntryAlreadyExistsException {
 		ClassInclude result = new ClassInclude(path, PLUGINBASEPACKAGE + "." + source.getName());
 		if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
 		this.entries.add(result);
@@ -144,7 +145,7 @@ public class ClassLibrary {
 	 * @throws IncludeException If there was some problem with the jar archive 
 	 * @throws EntryAlreadyExistsException If an entry with the constructed full name already exists
 	 */
-	public ClassInclude includeClass(String jarPath, String classPath, CompilerPlugin source) throws IncludeException, EntryAlreadyExistsException{
+	public ClassInclude includeClass(File jarPath, String classPath, CompilerPlugin source) throws IncludeException, EntryAlreadyExistsException{
 		try{
 			ClassInclude result = new ClassInclude(jarPath, classPath, PLUGINBASEPACKAGE + "." + source.getName());
 			if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
@@ -174,13 +175,13 @@ public class ClassLibrary {
 	 * @return A list of generated files with their full paths. This can be used to compile the generated classes
 	 * @throws LibraryEntryException If a LibraryEntry failed to write its contents to the disk
 	 */
-	public ArrayList<String> dumpClasses() throws LibraryEntryException{
+	public ArrayList<File> dumpClasses() throws LibraryEntryException{
 		CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "starting class dump, library contains the following classes:");
 		//debug output: list all files in the class library
 		for(LibraryEntry e : entries){
 			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, e.getFullName());
 		}
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<File> result = new ArrayList<File>();
 		
 		boolean hadError = false;
 		
@@ -196,20 +197,22 @@ public class ClassLibrary {
 				}
 			}
 			
+			File f = new File(options.tempDirectory + File.separator + e.getFullName().replace(".", File.separator) + ".java");
 			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "current entry: " + e.toString());
-			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "dumping class " + options.tempDirectory + "\\" + e.getFullName().replace(".", "\\") + ".java");
+			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "dumping class " + f);
 			//write the library Entry
 			try{
 				e.writeFile();
 				CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "success");
 			}
 			catch(LibraryEntryException exc){
-				CoreASMCompiler.getEngine().addError("entry " + options.tempDirectory + "\\" + e.getFullName().replace(".", "\\") + ".java" + " had errors");
+				CoreASMCompiler.getEngine().addError("entry " + f + " had errors");
 				hadError = true;
 			}
 			
 			//add the printed file to the list of generated files
-			result.add(options.tempDirectory + "\\" + e.getFullName().replace(".", "\\") + ".java");
+			// TODO: check if the written file has the expected path?
+			result.add(f); // TODO: String!!
 		}
 		
 		if(hadError) throw new LibraryEntryException("");

@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.signature;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,27 +69,29 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException{
 		
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePath == null){
+		if(enginePathStr == null){
 		
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.listplugin.include.ListElement", "plugins.ListPlugin.ListElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.setplugin.include.SetElement", "plugins.SetPlugin.SetElement");
 			
 			
 			try{
+				File signaturepluginFolder = new File(ClassInclude.PLUGIN_BASE + "signatureplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(
-						classLibrary.includeClass(ClassInclude.PLUGIN_BASE + "signatureplugin\\include\\EnumerationBackgroundElement.java",
+						classLibrary.includeClass(new File(signaturepluginFolder, "EnumerationBackgroundElement.java"),
 								this), EntryType.INCLUDEONLY,""));
 				result.add(new MainFileEntry(
-						classLibrary.includeClass(ClassInclude.PLUGIN_BASE + "signatureplugin\\include\\EnumerationElement.java",
+						classLibrary.includeClass(new File(signaturepluginFolder, "EnumerationElement.java"),
 								this), EntryType.INCLUDEONLY,""));
 				result.add(new MainFileEntry(
-						classLibrary.includeClass(ClassInclude.PLUGIN_BASE + "signatureplugin\\include\\FunctionDomainFunctionElement.java",
+						classLibrary.includeClass(new File(signaturepluginFolder, "FunctionDomainFunctionElement.java"),
 								this), EntryType.FUNCTION,"domain"));
 				result.add(new MainFileEntry(
-						classLibrary.includeClass(ClassInclude.PLUGIN_BASE + "signatureplugin\\include\\FunctionRangeFunctionElement.java",
+						classLibrary.includeClass(new File(signaturepluginFolder, "FunctionRangeFunctionElement.java"),
 								this), EntryType.FUNCTION,"range"));
 				
 				
@@ -99,6 +102,8 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 		}
 		else{
 			try {
+				File enginePath = new File(enginePathStr);
+
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationBackgroundElement", "plugins.SignaturePlugin.EnumerationBackgroundElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationElement", "plugins.SignaturePlugin.EnumerationElement");
 				

@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.io;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,32 +42,34 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePath == null){
+		if(enginePathStr == null){
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.stringplugin.include.StringElement", 
 					"plugins.StringPlugin.StringElement");
 			
 			try{
+				File iopluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include\\OutputFunctionElement.java", 
+						new File(iopluginFolder, "OutputFunctionElement.java"),
 						this), EntryType.FUNCTION, "output"));
 		
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include\\InputFunctionElement.java", 
+						new File(iopluginFolder, "InputFunctionElement.java"),
 						this), EntryType.FUNCTION, "input"));
 		
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include\\InputProvider.java", 
+						new File(iopluginFolder, "InputProvider.java"),
 						this), EntryType.INCLUDEONLY, ""));
 		
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include\\IOHelper.java", 
+						new File(iopluginFolder, "IOHelper.java"),
 						this), EntryType.INCLUDEONLY, ""));
 		
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include\\IOAggregator.java", 
+						new File(iopluginFolder, "IOAggregator.java"),
 						this), EntryType.AGGREGATOR, ""));
 			}
 			catch(EntryAlreadyExistsException e){
@@ -75,6 +78,8 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 		}
 		else{			
 			try {
+				File enginePath = new File(enginePathStr);
+
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
 				
 				//add package replacements for classes accessible for other plugins

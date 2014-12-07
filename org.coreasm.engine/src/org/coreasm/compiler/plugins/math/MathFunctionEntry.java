@@ -34,8 +34,8 @@ public class MathFunctionEntry implements LibraryEntry {
 	@Override
 	public void writeFile() throws LibraryEntryException {
 		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
-		File file = new File(options.tempDirectory + "\\plugins\\MathPlugin\\" + name + ".java");
-		File directory = new File(options.tempDirectory + "\\plugins\\MathPlugin\\");
+		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "MathPlugin");
+		File file = new File(directory, name + ".java");
 		
 		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
 		

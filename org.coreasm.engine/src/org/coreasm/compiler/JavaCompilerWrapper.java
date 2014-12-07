@@ -1,5 +1,6 @@
 package org.coreasm.compiler;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class JavaCompilerWrapper {
 	 * @param classes A list of classes which need to be compiled
 	 * @throws CompilerException If an error occured during the compilation process
 	 */
-	public static void compile(CompilerOptions options, ArrayList<String> classes) throws CompilerException{
+	public static void compile(CompilerOptions options, ArrayList<File> classes) throws CompilerException{
 		JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
 		if(jc == null){
 			CoreASMCompiler.getEngine().addError("java compiler not found");
@@ -41,7 +42,7 @@ public class JavaCompilerWrapper {
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		//set up a file manager to provide java sources
 		StandardJavaFileManager fileManager = jc.getStandardFileManager(null, null, null);
-		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromStrings(classes);
+		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(classes);
 		//set compiler options
 		ArrayList<String> copt = new ArrayList<String>();
 		

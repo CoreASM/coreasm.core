@@ -34,7 +34,7 @@ import org.coreasm.compiler.exception.LibraryEntryException;
  */
 public class ClassInclude implements LibraryEntry{
 	
-	private String jarArchive;
+	private File jarArchive;
 	//private JarFile jarArchive;
 	private String className;
 	private File originalPath;
@@ -47,28 +47,32 @@ public class ClassInclude implements LibraryEntry{
 	/**
 	 * The base path to the plugins. Used to make the merge with the coreasm project easier.
 	 */
-	public final static String PLUGIN_BASE = "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\";
+	public static final String PLUGIN_BASE = "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\".replace("\\", File.separator);
 	
 	/**
 	 * Creates a new ClassInclude object referencing a file on the hard disk.
 	 * @param path The path of the source file
 	 * @param packageName The target package name of the include
 	 */
-	public ClassInclude(String path, String packageName){
+	public ClassInclude(File path, String packageName){
+		if (!path.exists()) {
+			CoreASMCompiler.getEngine().addWarning("File " + path.getAbsolutePath() + " does not exist");
+			CoreASMCompiler.getEngine().getLogger().warn(ClassInclude.class, "Error while constructing ClassInclude");
+		}
 		
 		jarArchive = null;
 		
-		originalPath = new File(path);
+		originalPath = path;
 		
 		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
 		
-		targetDirectory = new File(options.tempDirectory + "\\" + packageName.replace(".", "\\"));
+		targetDirectory = new File(options.tempDirectory + File.separator + packageName.replace(".", File.separator));
 		
-		String tFile = options.tempDirectory + "\\" + packageName.replace(".", "\\") + ((!packageName.equals("")) ? "\\" : "") + originalPath.getName();
+		String tFile = originalPath.getName();
 		if(!tFile.endsWith(".java")){
 			tFile += ".java";
 		}
-		targetFile = new File(tFile);
+		targetFile = new File(targetDirectory, tFile);
 		
 		className = originalPath.getName();
 		
@@ -85,19 +89,19 @@ public class ClassInclude implements LibraryEntry{
 	 * @param packageName The target package name
 	 * @throws IOException If the jar archive could not be accessed
 	 */
-	public ClassInclude(String jarPath, String className, String packageName) throws IOException{
+	public ClassInclude(File jarPath, String className, String packageName) throws IOException{
 		jarArchive = jarPath;
 		//jarArchive = new JarFile(jarPath);
 		this.className = className;
 		originalPath = null;
 		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
-		targetDirectory = new File(options.tempDirectory + "\\" + packageName.replace(".", "\\"));
+		targetDirectory = new File(options.tempDirectory + File.separator + packageName.replace(".", File.separator));
 		
-		String tFile = options.tempDirectory + "\\" + packageName.replace(".", "\\") + ((!packageName.equals("")) ? "\\" : "") + className.substring(Math.max(0, className.lastIndexOf("/")));
+		String tFile = className.substring(Math.max(0, className.lastIndexOf("/")));
 		if(!tFile.endsWith(".java")){
 			tFile += ".java";
 		}
-		targetFile = new File(tFile);
+		targetFile = new File(targetDirectory, tFile);
 		this.packageName = packageName;
 		importReplacements = new HashMap<String, String>();
 		populatePackageReplacements();

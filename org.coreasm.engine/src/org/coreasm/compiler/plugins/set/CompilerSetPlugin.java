@@ -1,7 +1,9 @@
 package org.coreasm.compiler.plugins.set;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
@@ -126,29 +128,31 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 	
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePath == null){
+		if(enginePathStr == null){
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberElement", "plugins.NumberPlugin.NumberElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 			
 			try{
+				File setpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include\\SetBackgroundElement.java", 
+						new File(setpluginFolder, "SetBackgroundElement.java"),
 						this), EntryType.BACKGROUND, "SET"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include\\SetCardinalityFunctionElement.java", 
+						new File(setpluginFolder, "SetCardinalityFunctionElement.java"),
 						this), EntryType.FUNCTION, "setCardinality"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include\\SetElement.java", 
+						new File(setpluginFolder, "SetElement.java"),
 						this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include\\ToSetFunctionElement.java", 
+						new File(setpluginFolder, "ToSetFunctionElement.java"),
 						this), EntryType.FUNCTION, "toSet"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include\\SetAggregator.java", 
+						new File(setpluginFolder, "SetAggregator.java"),
 						this), EntryType.AGGREGATOR, ""));
 			}
 			catch(EntryAlreadyExistsException e){
@@ -157,6 +161,8 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 		}
 		else{
 			try {
+				File enginePath = new File(enginePathStr);
+
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
 				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				

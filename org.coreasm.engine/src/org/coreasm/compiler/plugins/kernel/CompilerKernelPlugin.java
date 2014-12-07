@@ -118,39 +118,37 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 		// load runtime classes
 		ArrayList<MainFileEntry> loadedClasses = new ArrayList<MainFileEntry>();
 
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		// if no jar archive is set for the engine, simply copy files from the
 		// runtime directory
-		if (enginePath == null) {
-			File runtimedir = new File(
-					CoreASMCompiler.getEngine().getOptions().runtimeDirectory);// "src\\CompilerRuntime\\");
+		if (enginePathStr == null) {
+			File runtimedir = new File(CoreASMCompiler.getEngine().getOptions().runtimeDirectory);
 			if (!runtimedir.exists()) {
-				runtimedir = new File("CompilerRuntime\\");
+				CoreASMCompiler.getEngine().addWarning(
+						"runtimeDirectory specified in options does not exist, trying \"CompilerRuntime\"");
+				runtimedir = new File("CompilerRuntime");
 				if (!runtimedir.exists()) {
 					CoreASMCompiler.getEngine().addError(
 							"could not find runtime files");
 					throw new CompilerException("could not find runtime files");
 				}
 			}
-			for (String s : runtimedir.list()) {
-				if (s != "." && s != "..")
-					try {
-						classLibrary.addEntry(new ClassInclude(CoreASMCompiler
-								.getEngine().getOptions().runtimeDirectory + s,
-								"CompilerRuntime"));
-					} catch (EntryAlreadyExistsException e) {
-						CoreASMCompiler
-								.getEngine()
-								.getLogger()
-								.error(CompilerKernelPlugin.class,
-										"kernel should not have collisions with itself");
-						e.printStackTrace();
-					}
+			for (File f : runtimedir.listFiles()) {
+				try {
+					classLibrary.addEntry(new ClassInclude(f, "CompilerRuntime"));
+				} catch (EntryAlreadyExistsException e) {
+					CoreASMCompiler
+							.getEngine()
+							.getLogger()
+							.error(CompilerKernelPlugin.class,
+									"kernel should not have collisions with itself");
+					e.printStackTrace();
+				}
 			}
-			String policypath = CoreASMCompiler.getEngine().getOptions().runtimeDirectory
-					+ "..\\org\\coreasm\\engine\\kernel\\include\\DefaultSchedulingPolicy.java";// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\DefaultSchedulingPolicy.java";
-			String aggregatorpath = CoreASMCompiler.getEngine().getOptions().runtimeDirectory
-					+ "..\\org\\coreasm\\engine\\kernel\\include\\KernelAggregator.java";// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\KernelAggregator.java";
+			File policypath = new File(runtimedir.getParent(),
+					"org\\coreasm\\compiler\\plugins\\kernel\\include\\DefaultSchedulingPolicy.java".replace("\\", File.separator));// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\DefaultSchedulingPolicy.java";
+			File aggregatorpath = new File(runtimedir.getParent(),
+					"org\\coreasm\\compiler\\plugins\\kernel\\include\\KernelAggregator.java".replace("\\", File.separator));// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\KernelAggregator.java";
 
 			try {
 				loadedClasses.add(new MainFileEntry(classLibrary.includeClass(
@@ -162,6 +160,8 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 				e.printStackTrace();
 			}
 		} else {
+			File enginePath = new File(enginePathStr);
+
 			// otherwise the runtime is contained in the jar archive
 			JarFile jar = null;
 			try {

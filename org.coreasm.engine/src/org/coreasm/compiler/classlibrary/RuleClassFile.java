@@ -85,7 +85,7 @@ public class RuleClassFile extends AbstractLibraryEntry {
 	
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\Rules\\" + ruleName + ".java");
+		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + "Rules" + File.separator + ruleName + ".java");
 	}
 
 	@Override

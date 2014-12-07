@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.math;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +44,12 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		
-		if(enginePath == null){
+		if(enginePathStr == null){
 			try {
+				File mathpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mathplugin\\include".replace("\\", File.separator));
+
 				classLibrary
 						.addPackageReplacement(
 								"org.coreasm.compiler.dummy.setplugin.include.SetElement",
@@ -58,12 +61,12 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mathplugin\\include\\MathFunction.java",
+										new File(mathpluginFolder, "MathFunction.java"),
 										this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mathplugin\\include\\PowerSetElement.java",
+										new File(mathpluginFolder, "PowerSetElement.java"),
 										this), EntryType.INCLUDEONLY, ""));
 	
 				for (Entry<String, MathFunctionEntry> e : functions.entrySet()) {
@@ -77,6 +80,8 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 		}
 		else{
 			try {
+				File enginePath = new File(enginePathStr);
+
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", "plugins.SetPlugin.SetElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.math.MathFunction", "plugins.MathPlugin.MathFunction");
 				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.math.include.PowerSetElement", "plugins.MathPlugin.PowerSetElement");

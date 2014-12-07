@@ -24,7 +24,7 @@ public class ConstantFunctionLibraryEntry extends AbstractLibraryEntry {
 
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\" + pckg.replace(".", "\\") + "\\" + "const_function_" + fname + ".java");
+		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + pckg.replace(".", File.separator) + File.separator + "const_function_" + fname + ".java");
 	}
 
 	@Override

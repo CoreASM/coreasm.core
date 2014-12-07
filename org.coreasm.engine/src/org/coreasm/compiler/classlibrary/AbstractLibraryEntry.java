@@ -36,7 +36,7 @@ public abstract class AbstractLibraryEntry implements LibraryEntry {
 	@Override
 	public void writeFile() throws LibraryEntryException {
 		File file = getFile();
-		File directory = new File(file.getParent() + "\\");
+		File directory = file.getParentFile();
 		
 		if(file.exists()){
 			throw new LibraryEntryException(new Exception("file " + file.getPath() + " already exists"));

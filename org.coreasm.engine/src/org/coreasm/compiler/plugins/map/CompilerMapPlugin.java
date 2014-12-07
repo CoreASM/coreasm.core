@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.map;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +38,10 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePath == null){
+		if(enginePathStr == null){
 			classLibrary
 					.addPackageReplacement(
 							"org.coreasm.compiler.dummy.collection.include.AbstractListElement",
@@ -67,25 +68,27 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 							"plugins.SetPlugin.SetElement");
 	
 			try {
+				File mappluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include\\MapToPairsFunctionElement.java",
+										new File(mappluginFolder, "MapToPairsFunctionElement.java"),
 										this), EntryType.FUNCTION, "mapToPairs"));
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include\\ToMapFunctionElement.java",
+										new File(mappluginFolder, "ToMapFunctionElement.java"),
 										this), EntryType.FUNCTION, "toMap"));
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include\\MapBackgroundElement.java",
+										new File(mappluginFolder, "MapBackgroundElement.java"),
 										this), EntryType.BACKGROUND, "MAP"));
 				result.add(new MainFileEntry(
 						classLibrary
 								.includeClass(
-										"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include\\MapElement.java",
+										new File(mappluginFolder, "MapElement.java"),
 										this), EntryType.INCLUDEONLY, ""));
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
@@ -94,6 +97,8 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 		}
 		else{
 			try {
+				File enginePath = new File(enginePathStr);
+
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
 				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
