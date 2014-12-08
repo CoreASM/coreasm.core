@@ -118,6 +118,14 @@ public class CommandLineParser {
 					options.keepTempFiles = Boolean.parseBoolean(args[i + 1]);
 					i++;
 				}
+				else if(args[i].equals("-enginePath")){
+					options.enginePath = args[i + 1];
+					i++;
+				}
+				else if(args[i].equals("-runtimeDirectory")){
+					options.runtimeDirectory = args[i + 1];
+					i++;
+				}
 				else{
 					throw new CommandLineException("Unknown command line option: " + args[i]);
 				}
