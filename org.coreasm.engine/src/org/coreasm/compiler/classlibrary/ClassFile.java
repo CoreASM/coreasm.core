@@ -85,7 +85,7 @@ public class ClassFile extends AbstractLibraryEntry{
 
 	@Override
 	protected File getFile() {
-		File tempDirectory = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory);
+		File tempDirectory = CoreASMCompiler.getEngine().getOptions().tempDirectory;
 
 		if(packageName.equals("")){
 			return new File(tempDirectory, className + ".java");

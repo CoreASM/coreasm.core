@@ -160,7 +160,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	private void purgeTempDir(){
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "cleaning up temp directory");
 		
-		purgeDir(new File(options.tempDirectory));
+		purgeDir(options.tempDirectory);
 		
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "cleanup finished");
 	}
@@ -323,7 +323,7 @@ public class CoreASMCompiler implements CompilerEngine {
 			cae.initialize();
 		}
 		
-		cae.loadSpecification(options.SpecificationName);
+		cae.loadSpecification(options.SpecificationName.getAbsolutePath());
 		//wait until parsing has finished
 		cae.waitWhileBusy();
 		if(cae.hasErrorOccurred()){
@@ -404,7 +404,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private void compileSpecification(CompilerInformation info) throws CompilerException{
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
-		File tempDir = new File(options.tempDirectory);
+		File tempDir = options.tempDirectory;
 		if(tempDir.exists()){
 			CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "temp directory already exists");
 			if(tempDir.list().length > 0 && !options.removeExistingFiles){

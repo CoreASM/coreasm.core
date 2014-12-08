@@ -35,7 +35,7 @@ public class JarPacker {
 			manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, "Main");
 			target = new JarOutputStream(new FileOutputStream(options.outputFile), manifest);
-			File root = new File(options.tempDirectory);
+			File root = options.tempDirectory;
 			for(File f : root.listFiles()){
 				addFile(f, target, options);
 			}

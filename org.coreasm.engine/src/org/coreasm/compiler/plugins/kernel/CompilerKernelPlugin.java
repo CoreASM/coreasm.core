@@ -122,7 +122,7 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 		// if no jar archive is set for the engine, simply copy files from the
 		// runtime directory
 		if (enginePathStr == null) {
-			File runtimedir = new File(CoreASMCompiler.getEngine().getOptions().runtimeDirectory);
+			File runtimedir = CoreASMCompiler.getEngine().getOptions().runtimeDirectory;
 			if (!runtimedir.exists()) {
 				CoreASMCompiler.getEngine().addWarning(
 						"runtimeDirectory specified in options does not exist, trying \"CompilerRuntime\"");

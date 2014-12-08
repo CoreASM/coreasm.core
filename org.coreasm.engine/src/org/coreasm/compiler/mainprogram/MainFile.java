@@ -308,7 +308,7 @@ public class MainFile implements LibraryEntry{
 		finalContent.appendLine("}");
 		
 		
-		File directory = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory);
+		File directory = CoreASMCompiler.getEngine().getOptions().tempDirectory;
 		File file = new File(directory, "Main.java");
 		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
 		

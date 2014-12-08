@@ -1,5 +1,7 @@
 package org.coreasm.compiler;
 
+import java.io.File;
+
 /**
  * Parses command line flags into compiler options.
  * Currently checks, if an option i equals one of the known hard coded
@@ -46,16 +48,16 @@ public class CommandLineParser {
 		try{
 			for(int i = 0; i < args.length; i++){
 				if(args[i].equals("-o")){
-						options.outputFile = args[i + 1];
+						options.outputFile = new File(args[i + 1]);
 						i++;
 				}
 				else if(args[i].equals("-t")){
-					options.tempDirectory = args[i + 1];
+					options.tempDirectory = new File(args[i + 1]);
 					i++;
 				}
 				else if(args[i].equals("-i")){
 					if(options.SpecificationName == null){
-						options.SpecificationName = args[i + 1];
+						options.SpecificationName = new File(args[i + 1]);
 						i++;
 					}
 					else{
@@ -123,7 +125,7 @@ public class CommandLineParser {
 					i++;
 				}
 				else if(args[i].equals("-runtimeDirectory")){
-					options.runtimeDirectory = args[i + 1];
+					options.runtimeDirectory = new File(args[i + 1]);
 					i++;
 				}
 				else{

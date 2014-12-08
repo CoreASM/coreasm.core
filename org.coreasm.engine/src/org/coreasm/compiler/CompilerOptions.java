@@ -1,5 +1,6 @@
 package org.coreasm.compiler;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,11 +13,11 @@ public class CompilerOptions {
 	/**
 	 * The name of the provided specification
 	 */
-	public String SpecificationName = null;
+	public File SpecificationName = null;
 	/**
 	 * The target directory for the temporary java classes
 	 */
-	public String tempDirectory = "tmp";
+	public File tempDirectory = new File("tmp");
 	/**
 	 * Path to the engine jar
 	 */
@@ -24,11 +25,11 @@ public class CompilerOptions {
 	/**
 	 * Path to the runtime files
 	 */
-	public String runtimeDirectory = "C:\\Users\\Spellmaker\\git\\pmcoreasm\\org.coreasm.engine\\src\\CompilerRuntime\\";
+	public File runtimeDirectory = new File("CompilerRuntime");//"C:\\Users\\Spellmaker\\git\\pmcoreasm\\org.coreasm.engine\\src\\CompilerRuntime\\";
 	/**
 	 * The final output jar archive
 	 */	
-	public String outputFile = "Main.jar";
+	public File outputFile = new File("Main.jar");
 	/**
 	 * Signals, if the temporary classes should be deleted after the compilation process
 	 */
