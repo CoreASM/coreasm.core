@@ -1,5 +1,6 @@
 package org.coreasm.compiler.plugins.list;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,71 +101,71 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
 		
-		String enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePath==null){
+		if(enginePathStr == null){
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.AbstractListElement", "plugins.CollectionPlugin.AbstractListElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.ModifiableIndexedCollection", "plugins.CollectionPlugin.ModifiableIndexedCollection");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberElement", "plugins.NumberPlugin.NumberElement");
 			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberBackgroundElement", "plugins.NumberPlugin.NumberBackgroundElement");
 			
 			try{
-				
-				
+				File listpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include".replace("\\", File.separator));
+
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ConsFunctionElement.java", 
+						new File(listpluginFolder, "ConsFunctionElement.java"),
 						this), EntryType.FUNCTION, "cons"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\DropFunctionElement.java", 
+						new File(listpluginFolder, "DropFunctionElement.java"),
 						this), EntryType.FUNCTION, "drop"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\FlattenListFunctionElement.java", 
+						new File(listpluginFolder, "FlattenListFunctionElement.java"),
 						this), EntryType.FUNCTION, "flattenList"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\HeadFunctionElement.java", 
+						new File(listpluginFolder, "HeadFunctionElement.java"),
 						this), EntryType.FUNCTION, "head"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\IndexesFunctionElement.java", 
+						new File(listpluginFolder, "IndexesFunctionElement.java"),
 						this), EntryType.FUNCTION, "indices"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\LastFunctionElement.java", 
+						new File(listpluginFolder, "LastFunctionElement.java"),
 						this), EntryType.FUNCTION, "last"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ListBackgroundElement.java", 
+						new File(listpluginFolder, "ListBackgroundElement.java"),
 						this), EntryType.BACKGROUND, "LIST"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ListElement.java", 
+						new File(listpluginFolder, "ListElement.java"),
 						this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ListFunctionElement.java", 
+						new File(listpluginFolder, "ListFunctionElement.java"),
 						this), EntryType.INCLUDEONLY, ""));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\NthFunctionElement.java", 
+						new File(listpluginFolder, "NthFunctionElement.java"),
 						this), EntryType.FUNCTION, "nth"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ReplicateFunctionElement.java", 
+						new File(listpluginFolder, "ReplicateFunctionElement.java"),
 						this), EntryType.FUNCTION, "replicate"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ReverseFunctionElement.java", 
+						new File(listpluginFolder, "ReverseFunctionElement.java"),
 						this), EntryType.FUNCTION, "reverse"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\SetNthFunctionElement.java", 
+						new File(listpluginFolder, "SetNthFunctionElement.java"),
 						this), EntryType.FUNCTION, "setnth"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\TailFunctionElement.java", 
+						new File(listpluginFolder, "TailFunctionElement.java"),
 						this), EntryType.FUNCTION, "tail"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\TakeFunctionElement.java", 
+						new File(listpluginFolder, "TakeFunctionElement.java"),
 						this), EntryType.FUNCTION, "take"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ToListFunctionElement.java", 
+						new File(listpluginFolder, "ToListFunctionElement.java"),
 						this), EntryType.FUNCTION, "toList"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ZipFunctionElement.java", 
+						new File(listpluginFolder, "ZipFunctionElement.java"),
 						this), EntryType.FUNCTION, "zip"));
 				result.add(new MainFileEntry(classLibrary.includeClass(
-						"src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\listplugin\\include\\ZipWithFunctionElement.java", 
+						new File(listpluginFolder, "ZipWithFunctionElement.java"),
 						this), EntryType.FUNCTION, "zipwith"));
 			}
 			catch(EntryAlreadyExistsException e){
@@ -173,6 +174,8 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 		}
 		else{
 			try {
+				File enginePath = new File(enginePathStr);
+
 				//replacements for packages
 				/*classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractListElement", "plugins.CollectionPlugin.AbstractListElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.include.NumberElement", "plugins.NumberPlugin.NumberElement");

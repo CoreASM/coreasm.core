@@ -308,8 +308,8 @@ public class MainFile implements LibraryEntry{
 		finalContent.appendLine("}");
 		
 		
-		File file = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\Main.java");
-		File directory = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\");
+		File directory = new File(CoreASMCompiler.getEngine().getOptions().tempDirectory);
+		File file = new File(directory, "Main.java");
 		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
 		
 		BufferedWriter bw = null;

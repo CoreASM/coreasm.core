@@ -32,8 +32,8 @@ public class EnumBackgroundEntry implements LibraryEntry {
 	@Override
 	public void writeFile() throws LibraryEntryException {
 		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
-		File file = new File(options.tempDirectory + "\\plugins\\SignaturePlugin\\EnumBackground_" + name + ".java");
-		File directory = new File(options.tempDirectory + "\\plugins\\SignaturePlugin\\");
+		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "SignaturePlugin");
+		File file = new File(directory, "EnumBackground_" + name + ".java");
 		
 		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
 		

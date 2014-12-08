@@ -171,8 +171,8 @@ public class CoreASMCompiler implements CompilerEngine {
 				if(!f.delete()) CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "Could not delete file " + f.getAbsolutePath());
 			}
 			else{
-				for(String s : f.list()){
-					purgeDir(new File(f.getAbsolutePath() + "\\" + s));
+				for(File d : f.listFiles()){
+					purgeDir(d);
 				}
 				if(!f.delete()) CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "Could not delete directory " + f.getAbsolutePath());
 			}
@@ -437,7 +437,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private void compileSources(CompilerInformation info) throws CompilerException{
 		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
-		ArrayList<String> classes = null;
+		ArrayList<File> classes = null;
 		try {
 			classes = classLibrary.dumpClasses();
 		} catch (LibraryEntryException e) {
