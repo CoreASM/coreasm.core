@@ -118,50 +118,13 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 		// load runtime classes
 		ArrayList<MainFileEntry> loadedClasses = new ArrayList<MainFileEntry>();
 
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		// if no jar archive is set for the engine, simply copy files from the
 		// runtime directory
-		if (enginePathStr == null) {
-			File runtimedir = CoreASMCompiler.getEngine().getOptions().runtimeDirectory;
-			if (!runtimedir.exists()) {
-				CoreASMCompiler.getEngine().addWarning(
-						"runtimeDirectory specified in options does not exist, trying \"CompilerRuntime\"");
-				runtimedir = new File("CompilerRuntime");
-				if (!runtimedir.exists()) {
-					CoreASMCompiler.getEngine().addError(
-							"could not find runtime files");
-					throw new CompilerException("could not find runtime files");
-				}
-			}
-			for (File f : runtimedir.listFiles()) {
-				try {
-					classLibrary.addEntry(new ClassInclude(f, "CompilerRuntime"));
-				} catch (EntryAlreadyExistsException e) {
-					CoreASMCompiler
-							.getEngine()
-							.getLogger()
-							.error(CompilerKernelPlugin.class,
-									"kernel should not have collisions with itself");
-					e.printStackTrace();
-				}
-			}
-			File policypath = new File(runtimedir.getParent(),
-					"org\\coreasm\\compiler\\plugins\\kernel\\include\\DefaultSchedulingPolicy.java".replace("\\", File.separator));// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\DefaultSchedulingPolicy.java";
-			File aggregatorpath = new File(runtimedir.getParent(),
-					"org\\coreasm\\compiler\\plugins\\kernel\\include\\KernelAggregator.java".replace("\\", File.separator));// "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\kernel\\include\\KernelAggregator.java";
-
-			try {
-				loadedClasses.add(new MainFileEntry(classLibrary.includeClass(
-						aggregatorpath, this), EntryType.AGGREGATOR,
-						"kernelaggregator"));
-				loadedClasses.add(new MainFileEntry(classLibrary.includeClass(
-						policypath, this), EntryType.SCHEDULER, "scheduler"));
-			} catch (EntryAlreadyExistsException e) {
-				e.printStackTrace();
-			}
+		if (enginePath == null) {
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "Loading the runtime from a directory is currently not supported");
+			throw new CompilerException("could not load compiler runtime");
 		} else {
-			File enginePath = new File(enginePathStr);
-
 			// otherwise the runtime is contained in the jar archive
 			JarFile jar = null;
 			try {

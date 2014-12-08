@@ -53,53 +53,12 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 		ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
 	
 		try {
-			
-			String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
-			if(enginePathStr == null){
-				File stringpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\stringplugin\\include".replace("\\", File.separator));
-
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(stringpluginFolder, "StringBackgroundElement.java"),
-								this), EntryType.BACKGROUND, "STRING"));
-	
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(stringpluginFolder, "StringElement.java"),
-								this), EntryType.INCLUDEONLY, ""));
-	
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(stringpluginFolder, "ToStringFunctionElement.java"),
-								this), EntryType.FUNCTION, "toString"));
-	
-				ClassInclude tmp = library
-						.includeClass(
-								new File(stringpluginFolder, "StringLengthFunctionElement.java"),
-								this);
-				tmp.addImportReplacement(
-						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-						"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(tmp, EntryType.FUNCTION, "strlen"));
-	
-				tmp = library
-						.includeClass(
-								new File(stringpluginFolder, "StringSubstringFunction.java"),
-								this);
-				tmp.addImportReplacement(
-						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-						"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(tmp, EntryType.FUNCTION,
-						"stringSubstring"));
-	
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(stringpluginFolder, "StringMatchingFunction.java"),
-								this), EntryType.FUNCTION, "matches"));
+			File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+			if(enginePath == null){
+				CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+				throw new CompilerException("could not load classes");
 			}
 			else{
-				File enginePath = new File(enginePathStr);
-
 				//load classes from jar archive
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringBackgroundElement", "plugins.StringPlugin.StringBackgroundElement");

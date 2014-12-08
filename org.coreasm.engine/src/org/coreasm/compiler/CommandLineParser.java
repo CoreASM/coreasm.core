@@ -121,13 +121,13 @@ public class CommandLineParser {
 					i++;
 				}
 				else if(args[i].equals("-enginePath")){
-					options.enginePath = args[i + 1];
+					options.enginePath = new File(args[i + 1]);
 					i++;
 				}
-				else if(args[i].equals("-runtimeDirectory")){
+				/*else if(args[i].equals("-runtimeDirectory")){
 					options.runtimeDirectory = new File(args[i + 1]);
 					i++;
-				}
+				}*/
 				else{
 					throw new CommandLineException("Unknown command line option: " + args[i]);
 				}

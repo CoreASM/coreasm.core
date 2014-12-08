@@ -51,7 +51,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 			List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 			ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
 
-			File jarpath = new File(CoreASMCompiler.getEngine().getOptions().enginePath);
+			File jarpath = CoreASMCompiler.getEngine().getOptions().enginePath;
 			
 			try{
 				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");

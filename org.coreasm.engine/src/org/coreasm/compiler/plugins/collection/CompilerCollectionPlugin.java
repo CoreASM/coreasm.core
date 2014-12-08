@@ -56,83 +56,12 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 		ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
 		
 		
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
-		if(enginePathStr == null){
-			try {
-				File collectionFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\collection\\include".replace("\\", File.separator));
-
-				// these classes need a replacement import
-				ClassInclude include = library
-						.includeClass(
-								new File(collectionFolder, "AbstractBagElement.java"),
-								this);
-				include.addImportReplacement(
-						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-						"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(include, EntryType.INCLUDEONLY, ""));
-	
-				include = library
-						.includeClass(
-								new File(collectionFolder, "AbstractListElement.java"),
-								this);
-				include.addImportReplacement(
-						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-						"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(include, EntryType.INCLUDEONLY, ""));
-	
-				include = library
-						.includeClass(
-								new File(collectionFolder, "ModifiableIndexedCollection.java"),
-								this);
-				include.addImportReplacement(
-						"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-						"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(include, EntryType.INCLUDEONLY, ""));
-				// add the other classes
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "AbstractMapElement.java"),
-								this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "AbstractSetElement.java"),
-								this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "ModifiableCollection.java"),
-								this), EntryType.INCLUDEONLY, ""));
-	
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "CollectionFunctionElement.java"),
-								this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "FilterFunctionElement.java"),
-								this), EntryType.FUNCTION, FilterName));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "FoldFunctionElement.java"),
-								this), EntryType.FUNCTION, FoldName));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "FoldFunctionElement.java"),
-								this), EntryType.FUNCTION, FoldLName));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "FoldrFunctionElement.java"),
-								this), EntryType.FUNCTION, FoldRName));
-				result.add(new MainFileEntry(
-						library.includeClass(
-								new File(collectionFolder, "MapFunctionElement.java"),
-								this), EntryType.FUNCTION, MapName));
-			} catch (EntryAlreadyExistsException e) {
-				throw new CompilerException(e);
-			}
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
-		else{
-			File enginePath = new File(enginePathStr);
-			
+		else{			
 			try {
 				//add package replacements for imported classes which can be used by other plugins
 				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractBagElement", "plugins.CollectionPlugin.AbstractBagElement");

@@ -69,41 +69,15 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException{
 		
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePathStr == null){
-		
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.listplugin.include.ListElement", "plugins.ListPlugin.ListElement");
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.setplugin.include.SetElement", "plugins.SetPlugin.SetElement");
-			
-			
-			try{
-				File signaturepluginFolder = new File(ClassInclude.PLUGIN_BASE + "signatureplugin\\include".replace("\\", File.separator));
-
-				result.add(new MainFileEntry(
-						classLibrary.includeClass(new File(signaturepluginFolder, "EnumerationBackgroundElement.java"),
-								this), EntryType.INCLUDEONLY,""));
-				result.add(new MainFileEntry(
-						classLibrary.includeClass(new File(signaturepluginFolder, "EnumerationElement.java"),
-								this), EntryType.INCLUDEONLY,""));
-				result.add(new MainFileEntry(
-						classLibrary.includeClass(new File(signaturepluginFolder, "FunctionDomainFunctionElement.java"),
-								this), EntryType.FUNCTION,"domain"));
-				result.add(new MainFileEntry(
-						classLibrary.includeClass(new File(signaturepluginFolder, "FunctionRangeFunctionElement.java"),
-								this), EntryType.FUNCTION,"range"));
-				
-				
-			}
-			catch(EntryAlreadyExistsException e){
-				throw new CompilerException(e);
-			}
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{
 			try {
-				File enginePath = new File(enginePathStr);
-
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationBackgroundElement", "plugins.SignaturePlugin.EnumerationBackgroundElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationElement", "plugins.SignaturePlugin.EnumerationElement");
 				

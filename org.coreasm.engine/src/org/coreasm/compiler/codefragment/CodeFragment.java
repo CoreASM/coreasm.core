@@ -313,4 +313,16 @@ public class CodeFragment {
 		}
 		return result;
 	}
+	
+	/**
+	 * Returns the id of the codefragment.
+	 * Used for debugging purposes. The id of a specific code fragment
+	 * should stay the same over different compiler runs with the same input,
+	 * as the code generation is deterministic.
+	 * The debugger can than stop upon the creation of a specific code fragment.
+	 * @return The id of the code fragment
+	 */
+	public int getId(){
+		return this.id;
+	}
 }

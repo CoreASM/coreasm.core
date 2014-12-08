@@ -21,11 +21,14 @@ public class CompilerOptions {
 	/**
 	 * Path to the engine jar
 	 */
-	public String enginePath = null;
-	/**
-	 * Path to the runtime files
-	 */
-	public File runtimeDirectory = new File("CompilerRuntime");//"C:\\Users\\Spellmaker\\git\\pmcoreasm\\org.coreasm.engine\\src\\CompilerRuntime\\";
+	public File enginePath = null;
+	// loading compiler runtime from a directory is currently no longer supported,
+	// as the runtime is built at runtime from the source files.
+	// The runtime must be provided in an engine .jar, which can be built using maven
+	// /**
+	//  * Path to the runtime files
+	//  */
+	//public File runtimeDirectory = new File("CompilerRuntime");//"C:\\Users\\Spellmaker\\git\\pmcoreasm\\org.coreasm.engine\\src\\CompilerRuntime\\";
 	/**
 	 * The final output jar archive
 	 */	

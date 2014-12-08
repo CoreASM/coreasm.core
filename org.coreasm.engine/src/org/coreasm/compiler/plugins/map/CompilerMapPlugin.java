@@ -38,67 +38,15 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePathStr == null){
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.collection.include.AbstractListElement",
-							"plugins.CollectionPlugin.AbstractListElement");
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.collection.include.AbstractMapElement",
-							"plugins.CollectionPlugin.AbstractMapElement");
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.collection.include.ModifiableCollection",
-							"plugins.CollectionPlugin.ModifiableCollection");
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.listplugin.include.ListElement",
-							"plugins.ListPlugin.ListElement");
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.setplugin.include.SetBackgroundElement",
-							"plugins.SetPlugin.SetBackgroundElement");
-			classLibrary
-					.addPackageReplacement(
-							"org.coreasm.compiler.dummy.setplugin.include.SetElement",
-							"plugins.SetPlugin.SetElement");
-	
-			try {
-				File mappluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mapplugin\\include".replace("\\", File.separator));
-
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mappluginFolder, "MapToPairsFunctionElement.java"),
-										this), EntryType.FUNCTION, "mapToPairs"));
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mappluginFolder, "ToMapFunctionElement.java"),
-										this), EntryType.FUNCTION, "toMap"));
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mappluginFolder, "MapBackgroundElement.java"),
-										this), EntryType.BACKGROUND, "MAP"));
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mappluginFolder, "MapElement.java"),
-										this), EntryType.INCLUDEONLY, ""));
-			} catch (EntryAlreadyExistsException e) {
-				throw new CompilerException(e);
-			}
-		
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{
 			try {
-				File enginePath = new File(enginePathStr);
-
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
 				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");

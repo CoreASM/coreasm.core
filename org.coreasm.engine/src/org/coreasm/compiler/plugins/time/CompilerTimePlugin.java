@@ -35,35 +35,14 @@ public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExt
 			throws CompilerException {
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		
-		if(enginePathStr == null){
-			try {
-				File timepluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\timeplugin\\include".replace("\\", File.separator));
-
-				classLibrary
-						.addPackageReplacement(
-								"de.spellmaker.coreasmc.plugins.dummy.numberplugin.include.NumberElement",
-								"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(timepluginFolder, "NowFunctionElement.java"),
-										this), EntryType.FUNCTION, "now"));
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(timepluginFolder, "StepCountFunctionElement.java"),
-										this), EntryType.FUNCTION_CAPI, "stepcount"));
-			}
-			catch(Exception e){
-				throw new CompilerException(e);
-			}
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{
 			try {
-				File enginePath = new File(enginePathStr);
-
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
 				
 				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/time/NowFunctionElement.java", this), EntryType.FUNCTION, NowFunctionElement.NOW_FUNC_NAME));

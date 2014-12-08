@@ -128,41 +128,15 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 	
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePathStr == null){
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.numberplugin.include.NumberElement", "plugins.NumberPlugin.NumberElement");
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
-			
-			try{
-				File setpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\setplugin\\include".replace("\\", File.separator));
-
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(setpluginFolder, "SetBackgroundElement.java"),
-						this), EntryType.BACKGROUND, "SET"));
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(setpluginFolder, "SetCardinalityFunctionElement.java"),
-						this), EntryType.FUNCTION, "setCardinality"));
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(setpluginFolder, "SetElement.java"),
-						this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(setpluginFolder, "ToSetFunctionElement.java"),
-						this), EntryType.FUNCTION, "toSet"));
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(setpluginFolder, "SetAggregator.java"),
-						this), EntryType.AGGREGATOR, ""));
-			}
-			catch(EntryAlreadyExistsException e){
-				throw new CompilerException(e);
-			}
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{
 			try {
-				File enginePath = new File(enginePathStr);
-
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
 				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
 				

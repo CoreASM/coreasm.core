@@ -42,44 +42,15 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		if(enginePathStr == null){
-			classLibrary.addPackageReplacement("org.coreasm.compiler.dummy.stringplugin.include.StringElement", 
-					"plugins.StringPlugin.StringElement");
-			
-			try{
-				File iopluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\ioplugin\\include".replace("\\", File.separator));
-
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(iopluginFolder, "OutputFunctionElement.java"),
-						this), EntryType.FUNCTION, "output"));
-		
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(iopluginFolder, "InputFunctionElement.java"),
-						this), EntryType.FUNCTION, "input"));
-		
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(iopluginFolder, "InputProvider.java"),
-						this), EntryType.INCLUDEONLY, ""));
-		
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(iopluginFolder, "IOHelper.java"),
-						this), EntryType.INCLUDEONLY, ""));
-		
-				result.add(new MainFileEntry(classLibrary.includeClass(
-						new File(iopluginFolder, "IOAggregator.java"),
-						this), EntryType.AGGREGATOR, ""));
-			}
-			catch(EntryAlreadyExistsException e){
-				throw new CompilerException(e);
-			}
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{			
 			try {
-				File enginePath = new File(enginePathStr);
-
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
 				
 				//add package replacements for classes accessible for other plugins

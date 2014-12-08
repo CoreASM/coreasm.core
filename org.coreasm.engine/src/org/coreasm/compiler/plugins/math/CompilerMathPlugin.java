@@ -44,44 +44,14 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		String enginePathStr = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
 		
-		if(enginePathStr == null){
-			try {
-				File mathpluginFolder = new File("src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\mathplugin\\include".replace("\\", File.separator));
-
-				classLibrary
-						.addPackageReplacement(
-								"org.coreasm.compiler.dummy.setplugin.include.SetElement",
-								"plugins.SetPlugin.SetElement");
-				classLibrary
-						.addPackageReplacement(
-								"org.coreasm.compiler.dummy.numberplugin.include.NumberElement",
-								"plugins.NumberPlugin.NumberElement");
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mathpluginFolder, "MathFunction.java"),
-										this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(
-						classLibrary
-								.includeClass(
-										new File(mathpluginFolder, "PowerSetElement.java"),
-										this), EntryType.INCLUDEONLY, ""));
-	
-				for (Entry<String, MathFunctionEntry> e : functions.entrySet()) {
-					classLibrary.addEntry(e.getValue());
-					result.add(new MainFileEntry(e.getValue(), EntryType.FUNCTION,
-							e.getKey()));
-				}
-			} catch (EntryAlreadyExistsException e) {
-				throw new CompilerException(e);
-			}
+		if(enginePath == null){
+			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			throw new CompilerException("could not load classes");
 		}
 		else{
 			try {
-				File enginePath = new File(enginePathStr);
-
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", "plugins.SetPlugin.SetElement");
 				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.math.MathFunction", "plugins.MathPlugin.MathFunction");
 				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.math.include.PowerSetElement", "plugins.MathPlugin.PowerSetElement");
