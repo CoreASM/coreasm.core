@@ -244,7 +244,7 @@ public class DummyLoader implements PluginLoader {
 	@Override
 	public CompilerPlugin getPlugin(String name) {
 		if(name == null){
-			CoreASMCompiler.getEngine().getLogger().debug(DummyLoader.class, "Warning: null name found, assuming kernel");
+			CoreASMCompiler.getEngine().getLogger().warn(DummyLoader.class, "Warning: null name found, assuming kernel");
 			
 			return plugins.get("Kernel");
 		}
