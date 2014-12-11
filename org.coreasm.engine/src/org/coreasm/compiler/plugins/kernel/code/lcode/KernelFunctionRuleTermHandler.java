@@ -10,12 +10,19 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 
+/**
+ * Handles Location-code for f(t1, t2...tn)
+ * @author Spellmaker
+ *
+ */
 public class KernelFunctionRuleTermHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine) throws CompilerException{
 		FunctionRuleTermNode frtn = (FunctionRuleTermNode) node;
 
+		//TODO: location might also be the name of a ruleparam, which could break stuff
+		
 		String name = frtn.getName();
 		if (frtn.hasArguments()) {
 			// if the function is not a constant, the arguments

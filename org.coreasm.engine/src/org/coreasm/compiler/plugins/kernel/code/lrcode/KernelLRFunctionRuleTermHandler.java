@@ -9,6 +9,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 
+/**
+ * Handles l-r code for f(t1, t2, ... tn)
+ * @author Spellmaker
+ *
+ */
 public class KernelLRFunctionRuleTermHandler implements CompilerCodeHandler {
 
 	@Override
@@ -17,6 +22,8 @@ public class KernelLRFunctionRuleTermHandler implements CompilerCodeHandler {
 		// evaluate the right side of an expression
 		// and push the location of the expression and the value to the
 		// stack
+		
+		//TODO: Maybe it should be considered, that the name could be the name of a rule parameter evaluating to a location?
 
 		result.appendLine("");
 		FunctionRuleTermNode frtn = (FunctionRuleTermNode) node;

@@ -32,7 +32,21 @@ public class ReturnResultHandler implements CompilerCodeHandler {
 			result.appendLine("public void setParams(java.util.Map<String, CompilerRuntime.RuleParam> params){\n");
 			result.appendLine("this.ruleparams = params;\n");
 			result.appendLine("}\n");
-			result.appendLine("public CompilerRuntime.Element evaluate(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+			
+			//try to create code for the location of the parameter
+			result.appendLine("public CompilerRuntime.Location evaluateL(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+			try{
+				CodeFragment tmpl = engine.compile(rulecall.getAbstractChildNodes().get(i), CodeType.L);
+				result.appendFragment(tmpl);
+				result.appendLine("return (CompilerRuntime.Location) evalStack.pop();\n");	
+			}
+			catch(Exception e){
+				result.appendLine("throw new Exception(\"This ruleparam cannot be evaluated as a location\");\n");
+			}
+			result.appendLine("}\n");
+			
+			
+			result.appendLine("public CompilerRuntime.Element evaluateR(CompilerRuntime.LocalStack localStack) throws Exception{\n");
 			result.appendFragment(tmp);
 			result.appendLine("\nreturn (CompilerRuntime.Element)evalStack.pop();\n}\n});\n");
 			result.appendLine("@arglist@.get(@arglist@.size() - 1).setParams(ruleparams);\n");
@@ -44,7 +58,11 @@ public class ReturnResultHandler implements CompilerCodeHandler {
 		result.appendLine("public void setParams(java.util.Map<String, CompilerRuntime.RuleParam> params){\n");
 		result.appendLine("this.ruleparams = params;\n");
 		result.appendLine("}\n");
-		result.appendLine("public CompilerRuntime.Element evaluate(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+		result.appendLine("public CompilerRuntime.Location evaluateL(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+		//location returned is always "result"
+		result.appendLine("return new CompilerRuntime.Location(\"result\", CompilerRuntime.ElementList.NO_ARGUMENT);\n");
+		result.appendLine("}\n");
+		result.appendLine("public CompilerRuntime.Element evaluateR(CompilerRuntime.LocalStack localStack) throws Exception{\n");
 		result.appendFragment(engine.compile(leftpart, CodeType.R));
 		result.appendLine("\nreturn (CompilerRuntime.Element)evalStack.pop();\n}\n});\n");
 		result.appendLine("@arglist@.get(@arglist@.size() - 1).setParams(ruleparams);\n");

@@ -11,6 +11,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 
+/**
+ * Handles r-code for f(t1, t2...tn)
+ * @author Spellmaker
+ *
+ */
 public class KernelFunctionRuleExpressionHandler implements CompilerCodeHandler {
 
 	@Override
@@ -20,6 +25,7 @@ public class KernelFunctionRuleExpressionHandler implements CompilerCodeHandler 
 		String name = frtn.getName();
 
 		if (frtn.getArguments().size() > 0) {
+			//if the term has arguments
 			List<ASTNode> args = frtn.getArguments();
 			CodeFragment[] argcode = new CodeFragment[args.size()];
 			for (int i = 0; i < args.size(); i++) {
@@ -35,14 +41,23 @@ public class KernelFunctionRuleExpressionHandler implements CompilerCodeHandler 
 			result.appendLine("for(@decl(int,__i)=0;@__i@<"
 					+ args.size()
 					+ ";@__i@++)\n@arglist@.add((CompilerRuntime.Element)evalStack.pop());\n");
+			
+			//get the location, if the name is the name of a ruleparam
+			result.appendLine("@decl(Object, rparam) = ruleparams.get(\"" + name + "\");\n");
+			result.appendLine("if(@rparam@ != null){\n");
+			result.appendLine("@decl(CompilerRuntime.Location,loc)=new CompilerRuntime.Location(((CompilerRuntime.RuleParam)@rparam@).evaluateL(localStack).name, @arglist@);");
+			result.appendLine("evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@));\n");
+			result.appendLine("}\n");
+			result.appendLine("else{\n");
 			result.appendLine("evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(new CompilerRuntime.Location(\""
 					+ name + "\", @arglist@)));");
+			result.appendLine("}\n");
 		} else {
 			// look in all different locations
 			// TODO: integrate undef location handlers
 			result.appendLine("@decl(Object, res) = ruleparams.get(\"" + name + "\");\n");
 			result.appendLine("if(@res@ != null){\n");
-			result.appendLine("evalStack.push(((CompilerRuntime.RuleParam) @res@).evaluate(localStack));\n");
+			result.appendLine("evalStack.push(((CompilerRuntime.RuleParam) @res@).evaluateR(localStack));\n");
 			result.appendLine("}\n");
 			result.appendLine("else{\n");
 			result.appendLine("@res@ = localStack.get(\"" + name + "\");\n");

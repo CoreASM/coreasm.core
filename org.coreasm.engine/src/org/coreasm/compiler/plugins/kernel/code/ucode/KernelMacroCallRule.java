@@ -42,7 +42,21 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 				result.appendLine("public void setParams(java.util.Map<String, CompilerRuntime.RuleParam> params){\n");
 				result.appendLine("this.ruleparams = params;\n");
 				result.appendLine("}\n");
-				result.appendLine("public CompilerRuntime.Element evaluate(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+				
+				//a ruleparam can be evaluated as l-context or r-context, but the l-context is not always possible.
+				//try compiling the param as an l-code, but be prepared for failure
+				result.appendLine("public CompilerRuntime.Location evaluateL(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+				try{
+					CodeFragment ltmp = engine.compile(params.getArguments().get(i), CodeType.L);
+					result.appendFragment(ltmp);
+					result.appendLine("return (CompilerRuntime.Location) evalStack.pop();\n");
+				}
+				catch(Exception e){
+					result.appendLine("throw new Exception(\"This ruleparam cannot be evaluated as a location\");\n");					
+				}
+				result.appendLine("}\n");
+				
+				result.appendLine("public CompilerRuntime.Element evaluateR(CompilerRuntime.LocalStack localStack) throws Exception{\n");
 				result.appendFragment(tmp);
 				result.appendLine("\nreturn (CompilerRuntime.Element)evalStack.pop();\n}\n});\n");
 				result.appendLine("@arglist@.get(@arglist@.size() - 1).setParams(ruleparams);\n");
