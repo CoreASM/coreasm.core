@@ -31,6 +31,12 @@ public class UpdateSubImp extends UnicastRemoteObject implements
 			updateSets.add(updates);
 		}
 	}
+	@Override
+	public void newUpdates(List<String> updates) throws RemoteException {
+		synchronized (updateSets) {
+			updateSets.addAll(updates);
+		}
+	}
 	
 	public List<String> getUpdates(boolean deleteOld) {
 		List<String> newList = new ArrayList<String>();
@@ -43,5 +49,4 @@ public class UpdateSubImp extends UnicastRemoteObject implements
 			return newList;			
 		}
 	}
-
 }

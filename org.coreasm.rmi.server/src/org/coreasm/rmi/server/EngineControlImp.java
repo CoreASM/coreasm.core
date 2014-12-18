@@ -11,9 +11,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.coreasm.engine.CoreASMEngine;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngineFactory;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineErrorEvent;
@@ -24,8 +25,10 @@ import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.Update;
@@ -46,7 +49,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		EngineControl, EngineStepObserver, EngineErrorObserver,
 		EngineModeObserver {
 	private static final long serialVersionUID = 1L;
-	private CoreASMEngine engine;
+	private ControlAPI engine;
 	private BufferedReader spec = null;
 	private boolean updateFailed;
 	protected CoreASMError lastError;
@@ -67,12 +70,13 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	private List<Set<Update>> previousUpdates;
 	private UpdateMultiset pendingUpdates;
 	private UpdateMultiset queuedUpdates;
+	private List<UpdateSubscription> newUpdateSubscriptions;
 	private List<UpdateSubscription> updateSubscriptions;
 	private List<ErrorSubscription> errorSubscriptions;
 
 	private EngineControlImp() throws RemoteException {
 		super();
-		engine = CoreASMEngineFactory.createEngine();
+		engine = (ControlAPI) CoreASMEngineFactory.createEngine();
 		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
 		engine.initialize();
 		engine.waitWhileBusy();
@@ -86,6 +90,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		stepsLimit = 20;
 
 		previousUpdates = new ArrayList<Set<Update>>();
+		newUpdateSubscriptions = new ArrayList<UpdateSubscription>();
 		updateSubscriptions = new ArrayList<UpdateSubscription>();
 		errorSubscriptions = new ArrayList<ErrorSubscription>();
 		driverInfo = new EngineDriverInfo("", EngineDriverStatus.empty);
@@ -206,10 +211,27 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	 */
 	@Override
 	public void subscribeUpdates(UpdateSubscription sub) throws RemoteException {
-		synchronized (updateSubscriptions) {
-			updateSubscriptions.add(sub);
-		}
-
+//		if (driverInfo.getStatus() == EngineDriverStatus.paused) {
+//			if (!previousUpdates.isEmpty()) {
+//				synchronized (updateSubscriptions) {
+//					ArrayList<String> updtLst = new ArrayList<String>();
+//					synchronized (previousUpdates) {
+//						for (Set<Update> updt : previousUpdates) {
+//							updtLst.add(getUpdateString(updt));
+//						}
+//					}
+//					try {
+//						sub.newUpdates(updtLst);
+//					} catch (RemoteException e) {
+//						return;
+//					}
+//				}
+//			}
+//		} else {
+			synchronized (newUpdateSubscriptions) {
+				newUpdateSubscriptions.add(sub);
+			}
+//		}
 	}
 
 	@Override
@@ -247,6 +269,29 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				throw new EngineDriverException();
 
 			while (engine.getEngineMode() == EngineMode.emIdle) {
+				if (!previousUpdates.isEmpty()
+						&& !newUpdateSubscriptions.isEmpty()) {
+					UpdateSubscription sub;
+					ArrayList<String> updtLst = new ArrayList<String>();
+					for (Set<Update> updt : previousUpdates) {
+						updtLst.add(getUpdateString(updt));
+					}
+					synchronized (newUpdateSubscriptions) {
+						Iterator<UpdateSubscription> subItr = newUpdateSubscriptions
+								.iterator();
+						while (subItr.hasNext()) {
+							sub = subItr.next();
+							try {
+								sub.newUpdates(updtLst);
+							} catch (RemoteException e) {
+								subItr.remove();
+								continue;
+							}
+							subItr.remove();
+							updateSubscriptions.add(sub);
+						}
+					}
+				}
 				if (shouldPause) {
 					driverInfo.setStatus(EngineDriverStatus.paused);
 					System.err
@@ -255,7 +300,6 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					while (shouldPause && !takeSingleStep && !shouldStop)
 						Thread.sleep(100);
 
-						
 					if (!shouldStop)
 						System.err.println("[!] Resuming.");
 
@@ -264,9 +308,9 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				if (shouldStop) {
 					throw new EngineDriverException();
 				}
-				
+
 				takeSingleStep = false;
-				
+
 				synchronized (queuedUpdates) {
 					pendingUpdates.addAll(queuedUpdates);
 					queuedUpdates.clear();
@@ -369,40 +413,42 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		engine.terminate();
 	}
 
+	private String getUpdateString(Set<Update> updates) {
+		Iterator<Update> itrUpdt;
+		Update updt;
+		StringBuilder Update = new StringBuilder();
+		Update.append('[');
+		itrUpdt = updates.iterator();
+		while (itrUpdt.hasNext()) {
+			updt = itrUpdt.next();
+			Update.append("{\"location\":\"" + updt.getLocationString() + '"');
+			Update.append(", \"value\":\""
+					+ updt.getValueString().replaceAll("(\\r|\\n)", "") + '\"');
+			Update.append(", \"action\":\"" + updt.getActionString() + "\"}");
+			if (itrUpdt.hasNext()) {
+				Update.append(", ");
+			}
+		}
+		Update.append(']');
+		return Update.toString();
+	}
+
 	private void propagateUpdate(Set<Update> updates) {
 		synchronized (updateSubscriptions) {
 			Iterator<UpdateSubscription> itrSub = updateSubscriptions
 					.iterator();
-			Iterator<Update> itrUpdt;
-			Update updt;
-			StringBuilder Update = new StringBuilder();
-			Update.append('[');
-			itrUpdt = updates.iterator();
-			while (itrUpdt.hasNext()) {
-				updt = itrUpdt.next();
-				Update.append("{\"location\":\"" + updt.getLocationString()
-						+ '"');
-				Update.append(", \"value\":\""
-						+ updt.getValueString().replaceAll("(\\r|\\n)", "")
-						+ '\"');
-				Update.append(", \"action\":\"" + updt.getActionString()
-						+ "\"}");
-				if (itrUpdt.hasNext()) {
-					Update.append(", ");
-				}
-			}
-			Update.append(']');
-
+			String Update = getUpdateString(updates);
 			UpdateSubscription sub;
 			while (itrSub.hasNext()) {
 				sub = itrSub.next();
 				try {
-					sub.newUpdates(Update.toString());
+					sub.newUpdates(Update);
 				} catch (RemoteException e) {
 					itrSub.remove();
 				}
 			}
-			if (updateSubscriptions.isEmpty()) {
+			if (updateSubscriptions.isEmpty()
+					&& newUpdateSubscriptions.isEmpty()) {
 				shouldStop = true;
 			}
 		}
@@ -411,7 +457,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	private void propagateError(CoreASMError error) {
 		propagateError(error.showError());
 	}
-	
+
 	private void propagateError(String error) {
 		synchronized (errorSubscriptions) {
 			Iterator<ErrorSubscription> itrSub = errorSubscriptions.iterator();
@@ -440,28 +486,53 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	@Override
 	public void addUpdate(String locationName, String value)
 			throws RemoteException {
+		boolean found = false;
 		String name = locationName.substring(0, locationName.indexOf('('));
 		FunctionElement function = engine.getState().getFunction(name);
+
 		Element val = null;
+		try {
+			val = NumberElement.getInstance(Double.parseDouble(value));
+		} catch (NumberFormatException e) {
+			if (BooleanElement.TRUE_NAME.equals(value))
+				val = BooleanElement.TRUE;
+			else if (BooleanElement.FALSE_NAME.equals(value))
+				val = BooleanElement.FALSE;
+			else if (value.startsWith("\"") && value.endsWith("\""))
+				val = new StringElement(value);
+			else if (Character.isLetterOrDigit(value.charAt(0)))
+				val = new EnumerationElement(value);
+		}
+
 		synchronized (queuedUpdates) {
 			for (Location loc : function.getLocations(name)) {
 				if (loc.toString().equals(locationName)) {
-					try {
-						val = NumberElement.getInstance(Double
-								.parseDouble(value));
-					} catch (NumberFormatException e) {
-						if (BooleanElement.TRUE_NAME.equals(value))
-							val = BooleanElement.TRUE;
-						else if (BooleanElement.FALSE_NAME.equals(value))
-							val = BooleanElement.FALSE;
-						else if (value.startsWith("\"") && value.endsWith("\""))
-							val = new StringElement(value);
-						else if (Character.isLetterOrDigit(value.charAt(0)))
-							val = new EnumerationElement(value);
-					}
+					found = true;
 					queuedUpdates.add(new Update(loc, val,
 							Update.UPDATE_ACTION, (Element) null, null));
 				}
+			}
+
+			if (!found) {
+				String argStr = locationName.substring(
+						locationName.indexOf('(') + 1,
+						locationName.indexOf(')'));
+				if (argStr.isEmpty()) {
+					Location loc = new Location(name, ElementList.NO_ARGUMENT);
+					queuedUpdates.add(new Update(loc, val,
+							Update.UPDATE_ACTION, (Element) null, null));
+				}
+				// else {
+				// String[] argStrLst = argStr.split(", ");
+				// List<Element> args = new ArrayList<Element>();
+				// for (String arg : argStrLst) {
+				// Map<String, AbstractUniverse> univs = engine.getState()
+				// .getUniverses();
+				// for (AbstractUniverse univ : univs.values()) {
+				//
+				// }
+				// }
+				// }
 			}
 		}
 	}

@@ -76,7 +76,7 @@ public class CoreASMControl extends HttpServlet {
 						ctrl.pause();
 						break;
 					case join:
-						request.setAttribute("engineId", engId);
+						request.setAttribute("EngineId", engId);
 						RequestDispatcher disp = getServletContext()
 								.getRequestDispatcher("/engine.jsp");
 						disp.forward(request, response);
