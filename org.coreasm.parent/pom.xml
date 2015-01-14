@@ -12,7 +12,7 @@
 		<module>../org.coreasm.config</module>
 		<module>../org.coreasm.engine</module>
 		<module>../org.coreasm.ui.carma</module>
-		<module>../org.coreasm.eclipse.parent</module>
+		<!--<module>../org.coreasm.eclipse.parent</module>-->
 	</modules>
 
 	<properties>

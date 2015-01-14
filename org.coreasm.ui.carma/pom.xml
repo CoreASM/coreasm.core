@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>org.coreasm.ui.carma</artifactId>
 	<name>CoreASM Carma</name>
+	<version>0.8.1-SNAPSHOT</version>
 
 	<parent>
 		<artifactId>org.coreasm.parent</artifactId>
@@ -104,5 +105,4 @@
 			<version>2.1</version>
 		</dependency>
 	</dependencies>
-	<version>0.8.1-SNAPSHOT</version>
 </project>
