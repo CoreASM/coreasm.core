@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.wizards;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class CompileJob extends Job {
 		conMan.addConsoles(new IConsole[]{myConsole});
 		console = myConsole;
 		
-		options.enginePath = System.getProperty(Tools.COREASM_ENGINE_LIB_PATH);
+		options.enginePath = new File(System.getProperty(Tools.COREASM_ENGINE_LIB_PATH));
 		
 		CoreASMCompiler comp = new CoreASMCompiler(options, CoreASMEngineFactory.createCoreASMEngine());
 		CompilerLogger logger = new CompilerLogger(console);

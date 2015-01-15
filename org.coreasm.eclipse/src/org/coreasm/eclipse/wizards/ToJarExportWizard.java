@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.wizards;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,8 +44,8 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 		//build a compiler options object and fill in information
 		CompilerOptions co = new CompilerOptions();
 
-		co.SpecificationName = page.getSpec();
-		co.tempDirectory = "tmp";
+		co.SpecificationName = new File(page.getSpec());
+		co.tempDirectory = new File("tmp");
 		
 		//create temporary directory
 		Path tmppath = null;
@@ -55,8 +56,8 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 			e.printStackTrace();
 			return false;
 		}
-		co.tempDirectory = tmppath.toAbsolutePath().toString();		
-		co.outputFile = page.getJar();
+		co.tempDirectory = new File(tmppath.toAbsolutePath().toString());		
+		co.outputFile = new File(page.getJar());
 		
 		Map<String, Boolean> settings = page.getSettings();
 		
