@@ -38,7 +38,8 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\plugins\\SignaturePlugin\\DerFunc_" + name + ".java");
+		String p = CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\plugins\\SignaturePlugin\\DerFunc_" + name + ".java";
+		return new File(p.replace("\\", File.separator));
 	}
 
 	@Override
