@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.kernelextensions.CompilerKernelExtensionsPlugin;
 import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.Element;
@@ -71,6 +73,13 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 	private final String[] operators = {"(", ")"};
 
     private ThreadLocal<Map<Node,Node>> terms;
+    
+    private final CompilerPlugin compilerPlugin = new CompilerKernelExtensionsPlugin(this);
+    
+    @Override
+    public CompilerPlugin getCompilerPlugin(){
+    	return compilerPlugin;
+    }
 
 	public KernelExtensionsPlugin() {
 		terms = new ThreadLocal<Map<Node,Node>>() {

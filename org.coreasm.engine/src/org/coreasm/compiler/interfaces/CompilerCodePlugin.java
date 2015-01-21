@@ -66,9 +66,9 @@ public abstract class CompilerCodePlugin {
 		if(h.size() == 0){
 			
 			ASTNode parent = n.getParent();
-			System.out.println("father: (" + parent.toString() + ")");
+			//System.out.println("father: (" + parent.toString() + ")");
 			
-			System.out.println(parent.getAbstractChildNodes().get(0).getAbstractChildNodes().get(0));
+			//System.out.println(parent.getAbstractChildNodes().get(0).getAbstractChildNodes().get(0));
 			
 			
 			for(int i = 0; i < parent.getAbstractChildNodes().size(); i++){
