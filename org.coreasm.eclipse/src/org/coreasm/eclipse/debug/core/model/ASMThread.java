@@ -1,11 +1,12 @@
 package org.coreasm.eclipse.debug.core.model;
 
+import java.util.HashMap;
+
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 
 /**
  * This class is needed by the eclipse debug framework. Incoming calls are redirected to the debug target.
@@ -13,7 +14,7 @@ import org.coreasm.eclipse.engine.debugger.EngineDebugger;
  *
  */
 public class ASMThread extends ASMDebugElement implements IThread {
-	private IStackFrame[] stackFrames;
+	private HashMap<ASMStorage, IStackFrame> stackFrames = new HashMap<ASMStorage, IStackFrame>();
 
 	public ASMThread(ASMDebugTarget debugTarget) {
 		super(debugTarget);
@@ -101,26 +102,16 @@ public class ASMThread extends ASMDebugElement implements IThread {
 		if (isSuspended()) {
 			ASMStorage[] states = EngineDebugger.getRunningInstance().getStates();
 			IStackFrame[] frames = new IStackFrame[states.length];
+			HashMap<ASMStorage, IStackFrame> stackFrames = new HashMap<ASMStorage, IStackFrame>();
 			
-			if (stackFrames == null) {
-				for (int i = 0; i < frames.length; i++)
-					frames[frames.length - 1 - i] = new ASMStackFrame(this, states[i]);
+			for (int i = 0; i < frames.length; i++) {
+				IStackFrame stackFrame = this.stackFrames.get(states[i]);
+				if (stackFrame == null)
+					stackFrame = new ASMStackFrame(this, states[i]);
+				frames[frames.length - 1 - i] = stackFrame;
+				stackFrames.put(states[i], stackFrame);
 			}
-			else {
-				// if there are at least as many states has we have stackframes in cache, just copy all stackframes from cache
-				if (frames.length >= stackFrames.length) {
-					for (int i = 0; i < stackFrames.length; i++)
-						frames[i + frames.length - stackFrames.length] = stackFrames[i];
-					for (int i = stackFrames.length; i < frames.length; i++)
-						frames[frames.length - 1 - i] = new ASMStackFrame(this, states[i]);
-				}
-				else {
-					for (int i = 0; i < frames.length; i++)
-						frames[i] = stackFrames[i + stackFrames.length - states.length];
-				}
-				frames[0] = new ASMStackFrame(this, states[states.length - 1]);
-			}
-			stackFrames = frames;
+			this.stackFrames = stackFrames;
 			
 			return frames;
 		}

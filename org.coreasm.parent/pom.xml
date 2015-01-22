@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.coreasm</groupId>
-	<artifactId>org.coreasm.parent</artifactId>
+	<artifactId>parent</artifactId>
 	<version>1.7.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>CoreASM Parent Project</name>
@@ -12,7 +12,7 @@
 		<module>../org.coreasm.config</module>
 		<module>../org.coreasm.engine</module>
 		<module>../org.coreasm.ui.carma</module>
-		<module>../org.coreasm.eclipse.parent</module>
+		<!--<module>../org.coreasm.eclipse.parent</module>-->
 	</modules>
 
 	<properties>
@@ -67,8 +67,31 @@
 		<url>https://github.com/coreasm/coreasm.core</url>
 	</scm>
 
+	<distributionManagement>
+	  <snapshotRepository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	  </snapshotRepository>
+	  <repository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	  </repository>
+	</distributionManagement>
+	
 	<build>
 		<plugins>
+			<plugin>
+		      <groupId>org.sonatype.plugins</groupId>
+		      <artifactId>nexus-staging-maven-plugin</artifactId>
+		      <version>1.6.3</version>
+		      <extensions>true</extensions>
+		      <configuration>
+		        <serverId>ossrh</serverId>
+		        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+		        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+		      </configuration>
+		    </plugin>
+		    
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

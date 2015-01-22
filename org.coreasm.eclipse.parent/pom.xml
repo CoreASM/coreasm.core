@@ -25,9 +25,31 @@
 		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
 		<kepler-repo.url>http://download.eclipse.org/releases/kepler</kepler-repo.url>
 	</properties>
-
+	
+	<distributionManagement>
+	  <snapshotRepository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	  </snapshotRepository>
+	  <repository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	  </repository>
+	</distributionManagement>
+	
 	<build>
 		<plugins>
+			<plugin>
+		      <groupId>org.sonatype.plugins</groupId>
+		      <artifactId>nexus-staging-maven-plugin</artifactId>
+		      <version>1.6.3</version>
+		      <extensions>true</extensions>
+		      <configuration>
+		        <serverId>ossrh</serverId>
+		        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+		        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+		      </configuration>
+		    </plugin>			
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-versions-plugin</artifactId>
@@ -53,7 +75,6 @@
 					<execution>
 						<id>copy-dependencies</id>
 						<phase>process-resources</phase>
-						<!-- <phase>package</phase> -->
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>

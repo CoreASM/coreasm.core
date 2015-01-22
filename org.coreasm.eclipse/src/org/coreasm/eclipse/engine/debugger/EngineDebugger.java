@@ -74,6 +74,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private String specPath;
 	private Element currentAgent;
 	private int lineNumber;
+	private ASMStorage stateToDropTo;
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
@@ -303,26 +304,35 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	 * @param stateToDropTo State to drop to
 	 */
 	public void dropToState(ASMStorage stateToDropTo) {
+		this.stateToDropTo = stateToDropTo;
+	}
+	
+	private void dropToState() {
 		try {
 			for (ASMStorage state = states.peek(); !stateToDropTo.equals(states.peek()); state = states.pop()) {
 				if (state.getStep() < 0)
-					continue;
-				for (ASMUpdate update : state.getUpdates()) {
-					if (stateToDropTo.getFunction(update.getLocation().name) != null)
-						capi.getState().setValue(update.getLocation(), stateToDropTo.getValue(update.getLocation()));
-					else
-						capi.getState().setValue(update.getLocation(), Element.UNDEF);
+					capi.getInterpreter().getInterpreterInstance().clearTree(state.getPosition());
+				else {
+					for (ASMUpdate update : state.getUpdates()) {
+						if (stateToDropTo.getFunction(update.getLocation().name) != null)
+							capi.getState().setValue(update.getLocation(), stateToDropTo.getValue(update.getLocation()));
+						else
+							capi.getState().setValue(update.getLocation(), Element.UNDEF);
+					}
 				}
 			}
 			ASTNode pos = stateToDropTo.getPosition();
 			if (pos == null) {
 				pos = capi.getInterpreter().getInterpreterInstance().getPosition();
-				while (pos.getParent() != null)
+				while (pos != null && pos.getParent() != null)
 					pos = pos.getParent();
 			}
-			capi.getInterpreter().getInterpreterInstance().clearTree(pos);
-			capi.getInterpreter().getInterpreterInstance().setPosition(pos);
+			if (pos != null) {
+				capi.getInterpreter().getInterpreterInstance().clearTree(pos);
+				capi.getInterpreter().getInterpreterInstance().setPosition(pos);
+			}
 			debugTarget.fireChangeEvent(DebugEvent.CONTENT);
+			this.stateToDropTo = null;
 		} catch (InvalidLocationException e) {
 		}
 	}
@@ -386,6 +396,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
 				}
+				if (stateToDropTo != null)
+					dropToState();
 			}
 			
 			if (this == runningInstance)
@@ -521,8 +533,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 
 	@Override
 	public void beforeNodeEvaluation(ASTNode pos) {
-		if (lastError != null)
-			System.out.println("before");
 		if (isUnvisited(pos)) {
 			sourceName = ASMDebugUtils.getFileName(pos, capi);
 			lineNumber = ASMDebugUtils.getLineNumber(pos, capi);
@@ -574,8 +584,6 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 
 	@Override
 	public void afterNodeEvaluation(ASTNode pos) {
-		if (lastError != null)
-			System.out.println("after");
 		if (pos == stepReturnPos) {
 			shouldStepReturn = false;
 			stepReturnPos = null;

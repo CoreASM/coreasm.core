@@ -25,9 +25,9 @@ import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.interpreter.Interpreter.CallStackElement;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ParserPlugin;
 
@@ -124,12 +124,14 @@ public class ASMStorage extends HashStorage {
 	}
 	
 	public void applyStackedUpdates() {
-		if (getStackedUpdates().isEmpty())
-			pushState();
-		HashSet<Update> updates = new HashSet<Update>();
-		for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet())
-			updates.add(new Update(stackedUpdate.getKey(), stackedUpdate.getValue(), Update.UPDATE_ACTION, (Element)null, null));
-		apply(updates);
+		if (stackedUpdates != null && !stackedUpdates.isEmpty()) {
+			if (getStackedUpdates().isEmpty())
+				pushState();
+			HashSet<Update> updates = new HashSet<Update>();
+			for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet())
+				updates.add(new Update(stackedUpdate.getKey(), stackedUpdate.getValue(), Update.UPDATE_ACTION, (Element)null, null));
+			apply(updates);
+		}
 	}
 	
 	public void discardStackedUpdates() {
@@ -186,5 +188,33 @@ public class ASMStorage extends HashStorage {
 	@Override
 	public boolean isRuleName(String token) {
 		return storage.isRuleName(token);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((pos == null) ? 0 : pos.hashCode());
+		result = prime * result + step;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ASMStorage other = (ASMStorage) obj;
+		if (pos == null) {
+			if (other.pos != null)
+				return false;
+		} else if (pos != other.pos)
+			return false;
+		if (step != other.step)
+			return false;
+		return true;
 	}
 }
