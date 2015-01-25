@@ -784,8 +784,9 @@ public class Engine implements ControlAPI {
 	 */
 	private void loadPlugin(String pName, String className, URL... urls) throws EngineException {
 		URLClassLoader loader = null;
+
 		if (this.classLoader == null)
-			loader = new URLClassLoader(urls);
+			loader = new URLClassLoader(urls, getClass().getClassLoader());
 		else
 			loader = new URLClassLoader(urls, this.classLoader);
 
