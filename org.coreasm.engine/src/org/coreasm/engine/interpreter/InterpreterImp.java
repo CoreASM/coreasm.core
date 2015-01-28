@@ -579,11 +579,11 @@ public class InterpreterImp implements Interpreter {
 						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
 							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
 					} else { // if current node is 'x(...)' (with arguments)
-						if (theRule.getParam().size() == frNode.getArguments().size())
-							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
+						if (theRule.getParam().size() != frNode.getArguments().size())
+							capi.error(	"The number of arguments passed to '" + x  + 
+										"' does not match its signature.", pos, this);
 						else if (pos instanceof MacroCallRuleNode)
-							capi.error("The number of arguments passed to '" + x  + 
-									"' does not match its signature.", pos, this);
+							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
 						else
 							capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
 					}
