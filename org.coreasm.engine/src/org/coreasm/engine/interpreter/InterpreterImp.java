@@ -905,9 +905,14 @@ public class InterpreterImp implements Interpreter {
 			
 			// Hide current environment variables but keep the ones visible that are used in the rule call itself
 			Map<String, Element> envVars = getRequiredEnvVars(args);
-			String functionNameOfRuleCall = pos.getFirst().getFirst().getToken();
-			if (getEnv(functionNameOfRuleCall) != null)
-				envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
+			ASTNode nodeOfRuleCall = pos;
+			while (nodeOfRuleCall != null && !(nodeOfRuleCall instanceof FunctionRuleTermNode))
+				nodeOfRuleCall = nodeOfRuleCall.getFirst();
+			if (nodeOfRuleCall instanceof FunctionRuleTermNode) {
+				String functionNameOfRuleCall = ((FunctionRuleTermNode)nodeOfRuleCall).getName();
+				if (getEnv(functionNameOfRuleCall) != null)
+					envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
+			}
 			hideEnvVars();
 			for (Entry<String, Element> envVar : envVars.entrySet())
 				addEnv(envVar.getKey(), envVar.getValue());
