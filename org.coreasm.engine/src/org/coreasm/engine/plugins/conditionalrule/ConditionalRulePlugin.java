@@ -89,7 +89,7 @@ public class ConditionalRulePlugin extends Plugin
 
 		if (pos instanceof ConditionalRuleNode) {
 			ConditionalRuleNode conditionalNode = (ConditionalRuleNode) pos;
-
+			
 			if (!conditionalNode.getGuard().isEvaluated()) {
 				return conditionalNode.getGuard();
 			}

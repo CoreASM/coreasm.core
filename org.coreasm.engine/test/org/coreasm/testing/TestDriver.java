@@ -1,5 +1,6 @@
 package org.coreasm.testing;
 
+import java.io.File;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class TestDriver {
 	private void init() {
 		casm = (Engine)CoreASMEngineFactory.createEngine();
 		casm.initialize();
+		
 	}
 	
 	private String makeSpec(String s){

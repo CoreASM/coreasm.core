@@ -23,6 +23,9 @@ public class EvalStackModule implements TestingHelperModule {
 		res += "\tpublic void push(Object o){\n";
 		res += "\t\tstack.push(o);\n";
 		res += "\t}\n";
+		res += "\tpublic boolean isEmpty(){\n";
+		res += "\t\treturn this.stack.isEmpty();\n";
+		res += "\t}";
 		res += "}\n";
 		
 		return res;

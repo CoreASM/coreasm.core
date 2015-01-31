@@ -10,14 +10,62 @@ import java.util.Map;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.plugins.conditionalrule.ConditionalRulePlugin;
 import org.coreasm.testing.compiling.ClassCompiler;
+import org.coreasm.testing.drivers.TestCaseDriver;
+import org.coreasm.testing.drivers.TestCaseResult;
 import org.coreasm.testing.loading.LoadingFactory;
 import org.coreasm.testing.modules.BooleanTestingModule;
+import org.coreasm.testing.value.BooleanProvider;
+import org.coreasm.testing.value.ElementProvider;
+import org.coreasm.testing.value.LocationProvider;
+import org.coreasm.testing.value.ParameterProvider;
+import org.coreasm.testing.value.UpdateProvider;
 
 public class Main {
 	private static int nodecount;
 	public static void main(String[] args) throws Exception{
-		TestDriver driver = new TestDriver();
+		TestCaseDriver driver = new TestCaseDriver();
+		driver.init();
+		TestCase test = new TestCase();
+		test.testName = "ConditionalTest";
+		test.testPlugin = new ConditionalRulePlugin();
+		test.codeType = CodeType.U;
+		test.specFile = new File(TestCaseDriver.getRootDir().getAbsolutePath() + "\\testing\\conditionaltest.coreasm");
+		
+		ParameterProvider trueval = new ParameterProvider(BooleanProvider.FALSE);
+		ParameterProvider truerule = new ParameterProvider(new UpdateProvider(new LocationProvider("test"), BooleanProvider.TRUE, "UPDATE_ACTION"));
+		ParameterProvider falserule = new ParameterProvider(new UpdateProvider(new LocationProvider("test"), BooleanProvider.FALSE, "UPDATE_ACTION"));
+		
+		test.parameters.put("guard", trueval);
+		test.parameters.put("truerule", truerule);
+		test.parameters.put("falserule", falserule);
+		test.nodeResult = falserule;
+		
+		TestCaseResult result = driver.executeTestCase(test);
+		driver.dispose();
+
+		for(String s : result.compiler.messages){
+			System.out.println(s);
+		}
+		if(result.compiler.error == null)
+			System.out.println("compiler test succeeded");
+		else{
+			System.out.println("compiler test failed");
+			result.compiler.error.printStackTrace();
+		}
+		
+		for(String s : result.interpreter.messages){
+			System.out.println(s);
+		}
+		if(result.interpreter.error == null)
+			System.out.println("interpreter test succeeded");
+		else{
+			System.out.println("interpreter test failed");
+			result.interpreter.error.printStackTrace();
+		}
+		
+		/*TestDriver driver = new TestDriver();
 		ASTNode root = driver.parseSpec("if PARAM guard then PARAM truerule else PARAM falserule");
 		BufferedWriter bw =  new BufferedWriter(new FileWriter("C:\\Users\\Spellmaker\\git\\dotast\\CoreASM-DotAST\\Test.dot"));
 		printDot(root, bw, 100);
@@ -26,9 +74,9 @@ public class Main {
 		
 		
 		//try 1
-		CompilerDriver cdriver = new CompilerDriver();
+		CompilerMock cdriver = new CompilerMock();
 		
-		cdriver.mockCode.put("guard", "evalStack.push(new BooleanMock(true));\n");
+		cdriver.mockCode.put("guard", BooleanProvider.TRUE.compilerValue());
 		cdriver.mockCode.put("truerule", "System.out.println(\"truerule\");\n");
 		cdriver.mockCode.put("falserule", "System.out.println(\"falserule\");\n");
 		
@@ -43,7 +91,14 @@ public class Main {
 		
 		ClassCompiler cc = new ClassCompiler();
 		cc.addTask(new File("C:\\Users\\Spellmaker\\Desktop\\test\\CoreASMCTest.java"));
-		cc.compile();
+		try{
+			cc.compile();
+		}
+		catch(Exception e){
+			for(String s : cc.getErrors()) System.out.println(s);
+			throw e;
+		}
+		
 		LoadingFactory factory = new LoadingFactory();
 		
 		Class<?> clazz = factory.loadTestClass("C:\\Users\\Spellmaker\\Desktop\\test\\", "CoreASMCTest");
@@ -54,9 +109,9 @@ public class Main {
 		m.invoke(o);
 		
 		//try2
-		cdriver = new CompilerDriver();
+		cdriver = new CompilerMock();
 		
-		cdriver.mockCode.put("guard", "evalStack.push(new BooleanMock(false));\n");
+		cdriver.mockCode.put("guard", BooleanProvider.FALSE.compilerValue());
 		cdriver.mockCode.put("truerule", "System.out.println(\"truerule\");\n");
 		cdriver.mockCode.put("falserule", "System.out.println(\"falserule\");\n");
 		
@@ -71,14 +126,25 @@ public class Main {
 		
 		cc = new ClassCompiler();
 		cc.addTask(new File("C:\\Users\\Spellmaker\\Desktop\\test\\CoreASMCTest.java"));
-		cc.compile();
+		try{
+			cc.compile();
+		}
+		catch(Exception e){
+			for(String s : cc.getErrors()) System.out.println(s);
+			throw e;
+		}
 		//factory = new LoadingFactory();
 		clazz = factory.loadTestClass("C:\\Users\\Spellmaker\\Desktop\\test\\", "CoreASMCTest");
 		
 		o = clazz.getConstructor().newInstance();
 		m = clazz.getMethod("eval");
 		System.out.println(m.toString());
-		m.invoke(o);
+		m.invoke(o);*/
+		
+		
+		
+		
+		
 	}
 	
 	

@@ -12,10 +12,10 @@ public class BooleanTestingModule implements TestingHelperModule{
 	@Override
 	public String getCodeBlock() {
 		String result = "";
-		result += "class BooleanMock{\n";
+		result += "class BooleanMock extends CompilerRuntime.Element{\n";
 		result += "\tpublic static final BooleanMock TRUE = new BooleanMock(true);\n";
 		result += "\tpublic static final BooleanMock FALSE = new BooleanMock(false);\n";
-		result += "\tprivate boolean value;\n";
+		result += "\tpublic boolean value;\n";
 		result += "\tpublic BooleanMock(boolean v){\n";
 		result += "\t\tvalue = v;\n";
 		result += "\t}\n";
