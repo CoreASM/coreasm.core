@@ -36,24 +36,41 @@ public class UpdateListProvider {
 	
 	public boolean equalsCompiler(Object o){
 		if(o == null) return false;
-		if(!(o instanceof ArrayList<?>)) return false;
+		if(!(o instanceof ArrayList<?>)){
+			return false;
+		}
 		
 		ArrayList<?> updates = (ArrayList<?>) o;
-		if(updates.size() != this.updates.size()) return false;
+		if(updates.size() != this.updates.size()){
+			return false;
+		}
 		for(int i = 0; i < this.updates.size(); i++){
-			if(!this.updates.get(i).equalsCompiler(updates.get(i))) return false;
+			boolean found = false;
+			for(int j = 0; j < this.updates.size(); i++){
+				if(this.updates.get(i).equalsCompiler(updates.get(j))){
+					found = true;
+					break;
+				}
+			}
+			if(!found) return false;
 		}
 		return true;
 	}
 	
 	public boolean equalsInterpreter(UpdateMultiset u){
 		if(u == null) return false;
-		int i = 0;
 		if(u.size() != this.updates.size()) return false;
 		
 		for(Iterator<Update> iter = u.iterator(); iter.hasNext(); ){
-			if(!this.updates.get(i).equalsInterpreter(iter.next())) return false;
-			i++;
+			boolean found = false;
+			Update cu = iter.next();
+			for(int j = 0; j < this.updates.size(); j++){
+				if(this.updates.get(j).equalsInterpreter(cu)){
+					found = true;
+					break;
+				}
+			}
+			if(!found) return false;
 		}
 		
 		return true;

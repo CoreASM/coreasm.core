@@ -2,7 +2,7 @@ package org.coreasm.testing.modules;
 
 import org.coreasm.testing.TestingHelperModule;
 
-public class BooleanTestingModule implements TestingHelperModule{
+public class BooleanTestingModule extends TestingHelperModule{
 
 	@Override
 	public String modifyCode(String code) {

@@ -4,14 +4,20 @@ import junit.framework.Assert;
 
 import org.coreasm.testing.drivers.TestCaseDriver;
 import org.coreasm.testing.drivers.TestCaseResult;
-import org.coreasm.testing.junit.tests.conditionalplugin.ConditionalPluginTest;
+import org.coreasm.testing.junit.tests.abstraction.AbstractionPluginTest;
+import org.coreasm.testing.junit.tests.blockrule.BlockRulePluginTest;
+import org.coreasm.testing.junit.tests.caserule.CaseRulePluginTest;
+import org.coreasm.testing.junit.tests.conditional.ConditionalPluginTest;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	ConditionalPluginTest.class
+	ConditionalPluginTest.class,
+	AbstractionPluginTest.class,
+	BlockRulePluginTest.class,
+	CaseRulePluginTest.class
 })
 public class TestSuite {
 	public static TestCaseDriver driver;

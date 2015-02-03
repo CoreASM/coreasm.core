@@ -1,4 +1,4 @@
-package org.coreasm.testing.junit.tests.conditionalplugin;
+package org.coreasm.testing.junit.tests.conditional;
 
 import java.io.File;
 

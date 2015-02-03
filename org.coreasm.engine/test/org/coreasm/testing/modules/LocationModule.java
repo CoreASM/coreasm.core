@@ -2,7 +2,7 @@ package org.coreasm.testing.modules;
 
 import org.coreasm.testing.TestingHelperModule;
 
-public class LocationModule implements TestingHelperModule {
+public class LocationModule extends TestingHelperModule {
 
 	@Override
 	public String modifyCode(String code) {

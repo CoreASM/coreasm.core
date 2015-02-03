@@ -45,7 +45,9 @@ public class LocationProvider {
 	public boolean equalsCompiler(Object o){
 		if(o == null) return false;
 		try{
-			if(!ReflectionHelper.getField(o, "name").equals(name)) return false;
+			if(!ReflectionHelper.getField(o, "name").equals(name)){
+				return false;
+			}
 			List<?> args = (List<?>) ReflectionHelper.getField(o, "args");;
 			if(args.size() != params.size()) return false;
 			

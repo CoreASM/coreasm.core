@@ -1,5 +1,10 @@
 package org.coreasm.testing;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 /**
  * A module for the generation of the final coreasmc testing code.
  * A TestingHelperModule performs two tasks:
@@ -10,7 +15,38 @@ package org.coreasm.testing;
  * @author Spellmaker
  *
  */
-public interface TestingHelperModule {
-	public String modifyCode(String code);
-	public String getCodeBlock();
+public abstract class TestingHelperModule {
+	public static final File basedir = new File(TestingHelperModule.class.getClassLoader().getResource("./modules").getFile());
+	protected String moduleFile;
+	
+	public String modifyCode(String code){
+		return code;
+	}
+	public String getCodeBlock(){
+		if(moduleFile != null){
+			BufferedReader br = null;
+			try{
+				br = new BufferedReader(new FileReader(new File(basedir, moduleFile)));
+				String result = "";
+				String current = br.readLine();
+				while(current != null){
+					result += "\n" + current;
+					current = br.readLine();
+				}
+				return result;
+			}
+			catch(IOException e){
+				return "\n";
+			}
+			finally{
+				if(br != null)
+					try {
+						br.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+			}
+		}
+		return "";
+	}
 }

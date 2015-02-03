@@ -1,11 +1,7 @@
 package org.coreasm.testing.drivers;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.testing.Main;
 import org.coreasm.testing.TestCase;
 import org.coreasm.testing.TestDriver;
 
@@ -24,6 +20,7 @@ public class TestCaseDriver {
 	
 	public void init(){
 		rootDir = new File(TestDriver.class.getClassLoader().getResource("./").getFile());
+		System.out.println(rootDir);
 		parser.init();
 		buildDir();
 		casmcdriver.init();

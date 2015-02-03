@@ -81,7 +81,7 @@ public class CoreASMCTestDriver {
 		
 		CodeBuilder cb = new CodeBuilder();
 		
-		File taskFile = new File(TestCaseDriver.getRootDir().getAbsolutePath() + "\\testCase\\compiler\\" + test.testName + "\\CoreASMCTest.java");
+		File taskFile = new File(TestCaseDriver.getRootDir(), "testCase\\compiler\\" + test.testName + "\\CoreASMCTest.java");//new File(TestCaseDriver.getRootDir().getAbsolutePath() + "\\testCase\\compiler\\" + test.testName + "\\CoreASMCTest.java");
 		try{
 			BufferedWriter bw = new BufferedWriter(new FileWriter(taskFile));
 			bw.write(cb.generateCode(code.generateCode()));

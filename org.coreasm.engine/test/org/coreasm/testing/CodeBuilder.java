@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.testing.modules.BooleanTestingModule;
+import org.coreasm.testing.modules.DummyEnumModule;
 import org.coreasm.testing.modules.ElementModule;
+import org.coreasm.testing.modules.EnumerableModule;
 import org.coreasm.testing.modules.EvalStackModule;
+import org.coreasm.testing.modules.IOModule;
 import org.coreasm.testing.modules.LocationModule;
+import org.coreasm.testing.modules.StringModule;
 import org.coreasm.testing.modules.TestResultModule;
 import org.coreasm.testing.modules.UpdateListModule;
 import org.coreasm.testing.modules.UpdateModule;
@@ -23,6 +27,10 @@ public class CodeBuilder {
 		modules.add(new LocationModule());
 		modules.add(new UpdateListModule());
 		modules.add(new BooleanTestingModule());
+		modules.add(new StringModule());
+		modules.add(new IOModule());
+		modules.add(new EnumerableModule());
+		modules.add(new DummyEnumModule());
 	}
 	
 	public void addModule(TestingHelperModule mod){
@@ -43,6 +51,9 @@ public class CodeBuilder {
 		res += "\tjava.util.List<CompilerRuntime.Element> __init_param_list__;\n";
 		res += "\tjava.util.List<CompilerRuntime.Update> __init_update_list__;\n";
 		res += "\tEvalStack evalStack = new EvalStack();\n";
+		res += "\tElement getUpdateResponsible(){\n";
+		res += "\t\treturn null;\n";
+		res += "\t}\n";
 		res += "\tpublic TestResult eval(){\n";
 		res += "\t\tEvalStack evalStack = new EvalStack();\n";
 		res += code;
