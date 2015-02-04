@@ -9,7 +9,6 @@ import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.testing.TestCase;
 import org.coreasm.testing.TestingNode;
-import org.coreasm.util.CoreASMGlobal;
 
 /**
  * Part of the testing framework, used to parse test specification.

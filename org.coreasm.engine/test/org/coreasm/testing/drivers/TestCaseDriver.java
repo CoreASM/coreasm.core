@@ -3,7 +3,6 @@ package org.coreasm.testing.drivers;
 import java.io.File;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.testing.TestCase;
-import org.coreasm.testing.TestDriver;
 
 public class TestCaseDriver {
 	private TestCaseParser parser;
@@ -19,7 +18,7 @@ public class TestCaseDriver {
 	
 	
 	public void init(){
-		rootDir = new File(TestDriver.class.getClassLoader().getResource("./").getFile());
+		rootDir = new File(TestCaseDriver.class.getClassLoader().getResource("./").getFile());
 		System.out.println(rootDir);
 		parser.init();
 		buildDir();

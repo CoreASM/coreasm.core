@@ -2,22 +2,15 @@ package org.coreasm.testing;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.conditionalrule.ConditionalRulePlugin;
-import org.coreasm.testing.compiling.ClassCompiler;
 import org.coreasm.testing.drivers.TestCaseDriver;
 import org.coreasm.testing.drivers.TestCaseResult;
-import org.coreasm.testing.loading.LoadingFactory;
-import org.coreasm.testing.modules.BooleanTestingModule;
 import org.coreasm.testing.value.BooleanProvider;
-import org.coreasm.testing.value.ElementProvider;
 import org.coreasm.testing.value.LocationProvider;
 import org.coreasm.testing.value.ParameterProvider;
 import org.coreasm.testing.value.UpdateProvider;

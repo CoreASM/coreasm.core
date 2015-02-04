@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.testing.modules.BooleanTestingModule;
-import org.coreasm.testing.modules.DummyEnumModule;
 import org.coreasm.testing.modules.ElementModule;
 import org.coreasm.testing.modules.EnumerableModule;
 import org.coreasm.testing.modules.EvalStackModule;
@@ -30,7 +29,6 @@ public class CodeBuilder {
 		modules.add(new StringModule());
 		modules.add(new IOModule());
 		modules.add(new EnumerableModule());
-		modules.add(new DummyEnumModule());
 	}
 	
 	public void addModule(TestingHelperModule mod){
