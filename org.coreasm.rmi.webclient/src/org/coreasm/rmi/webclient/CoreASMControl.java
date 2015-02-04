@@ -3,6 +3,7 @@ package org.coreasm.rmi.webclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +27,7 @@ import org.coreasm.rmi.server.remoteinterfaces.*;
 @MultipartConfig
 public class CoreASMControl extends HttpServlet {
 	public enum Command {
-		start, stop, pause, join, update, step
+		start, stop, pause, join, update, step, getAgents
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -82,12 +83,19 @@ public class CoreASMControl extends HttpServlet {
 						disp.forward(request, response);
 						break;
 					case update:
+						String agent = (String) request.getParameter("agent");
 						String loc = (String) request.getParameter("location");
 						String val = (String) request.getParameter("value");
-						ctrl.addUpdate(loc, val);
+						ctrl.addUpdate(loc, val, agent);
 						break;
 					case step:
 						ctrl.singleStep();
+						break;
+					case getAgents:
+						String agents = ctrl.getAgentlist();
+						PrintWriter out = response.getWriter();
+						response.setContentType("application/json");
+						out.println(agents);
 						break;
 					}
 				}

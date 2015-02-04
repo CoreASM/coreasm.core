@@ -8,6 +8,7 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript">
 	var states = [];
+	var agents = [];
 	
 	function refreshStateTable(stateNr) {
 		if (stateNr < states.length && stateNr > -1) {
@@ -28,6 +29,7 @@
 			$.ajaxSetup({
 				cache : false
 			});
+			
 			function update() {
 				$.ajax({
 					cache : false,
@@ -102,9 +104,24 @@
 						}
 					}
 				});
+				
+				$.post("Control",					
+					{
+						command : "getAgents",
+						engineId : "${requestScope.EngineId}"
+					},
+					function(data) {
+						if(data.length > 0) {
+							$("#agentList").empty();
+							for (i = 0; i < data.length; i++) {
+								$("#agentList").append("<li> Agent" + (i+1) + ": " + data[i].name + "</li>");			
+							}
+						}
+					},
+					"json"); 
 			}
 			
-			
+ 			 
 
 			var auto_refresh = setInterval(function() {
 				update()
@@ -124,7 +141,8 @@
 					command : "update",
 					engineId : "${requestScope.EngineId}",
 					location : $("#location").val(),
-					value : $("#value").val()
+					value : $("#value").val(),
+					agent : $("#agent").val()
 				})
 			});
 			
@@ -142,27 +160,32 @@
 	<button class="command" value="pause" type="button">Pause</button>
 	<button class="command" value="step" type="button">Step</button>
 	<div id="updateDiv">
-		<input type="text" id="location" /> <input type="text" id="value" />
+		<input type="text" id="agent" /> <input type="text" id="location" /> <input type="text" id="value" />
 		<button type="button" id="updateBtn">Update</button>
 	</div>
-	
-	<div id="errors" style="width:100%; height:50px; overflow:auto">
-			<ul id="errorList"></ul>
+
+	<div id="errors" style="width: 100%; height: 50px; overflow: auto">
+		<ul id="errorList"></ul>
 	</div>
-	
+
 	<div>
-	<select id ="stateSelect">
-		<option value="0">0</option>
-	</select>
-	<button type="button" id="selectBtn">Select</button>
-	<table id="stateTable" border="1" style="width:100%"></table>
-	</div>	
-	
+		<select id="stateSelect">
+			<option value="0">0</option>
+		</select>
+		<button type="button" id="selectBtn">Select</button>
+		<table id="stateTable" border="1" style="width: 100%"></table>
+	</div>
+	<div id="agents"
+			style="height: 50px; overflow: auto">
+			<ul id="agentList"></ul>
+	</div>
 	<div>
-		<div id="updates" style="float:left; width:50%; height:500px; overflow:auto">
+		<div id="updates"
+			style="float: left; width: 50%; height: 500px; overflow: auto">
 			<ul id="updateList"></ul>
 		</div>
-		<div id="output" style="float:left; width:50%; height:500px; overflow:auto">
+		<div id="output"
+			style="float: left; width: 50%; height: 500px; overflow: auto">
 			<ul id="outputList"></ul>
 		</div>
 	</div>

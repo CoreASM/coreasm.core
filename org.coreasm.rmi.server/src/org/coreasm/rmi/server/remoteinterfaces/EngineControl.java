@@ -22,7 +22,8 @@ public interface EngineControl extends Remote {
 	public void load(byte[] specification) throws RemoteException;
 	public void subscribeUpdates(UpdateSubscription sub) throws RemoteException;
 	public void subscribeErrors(ErrorSubscription sub) throws RemoteException;
-	public void addUpdate(String locationName, String value) throws RemoteException;
+	public void addUpdate(String locationName, String value, String agent) throws RemoteException;
 	public EngineDriverStatus getDriverStatus() throws RemoteException;
 	public EngineDriverInfo getDriverInfo() throws RemoteException;
+	public String getAgentlist() throws RemoteException;
 }
