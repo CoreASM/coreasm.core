@@ -1,7 +1,6 @@
 package org.coreasm.engine.loader;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
@@ -39,13 +37,13 @@ import org.slf4j.LoggerFactory;
 
 public class PluginLoader {
 	private static final Logger logger = LoggerFactory.getLogger(PluginLoader.class);
-	private static final String PLUGIN_CLASSPATH_PROPERTY_NAME = "classpath";
-	private static final String PLUGIN_CLASSPATH_SEPARATOR = ":";
-	private static final String PLUGIN_ID_FILE_NAME = "CoreASMPlugin.id";
-	private static final String PLUGIN_ID_PROPERTY_NAME = "mainclass";
+	public static final String PLUGIN_CLASSPATH_PROPERTY_NAME = "classpath";
+	public static final String PLUGIN_CLASSPATH_SEPARATOR = ":";
+	public static final String PLUGIN_ID_FILE_NAME = "CoreASMPlugin.id";
+	public static final String PLUGIN_ID_PROPERTY_NAME = "mainclass";
 	
 	//Constants for plugin loading
-	private static final String PLUGIN_PROPERTIES_FILE_NAME = "CoreASMPlugin.properties";
+	public static final String PLUGIN_PROPERTIES_FILE_NAME = "CoreASMPlugin.properties";
 	
 	/** Map of available plugin names to available plugins. */
 	private Map<String, Plugin> allPlugins;
@@ -214,7 +212,7 @@ public class PluginLoader {
 		try {
 			// checking if the path points to a directory (folder)
 			if (file.isDirectory())
-				loadPluginClassesFromDirectory(file);
+				DirectoryLoader.loadPluginClassesFromDirectory(file, this);
 			else
 			// checking if the path points to a ZIP file
 			if (file.getName().toUpperCase().endsWith(".ZIP"))
@@ -440,59 +438,6 @@ public class PluginLoader {
 		} else
 			logger.error(
 						"Invalid plugin '{}'. This class does not extend the CoreASM Plugin class.", className);
-	}
-
-	/*
-	 * Loads a single plugin from a directory
-	 */
-	private void loadPluginClassesFromDirectory(File file) throws EngineException {
-		String[] contents = file.list();
-		if (contents == null)
-			throw new EngineException("Plugin folder is empty.");
-		else {
-			// if there is a properties file
-			if (Tools.find(PLUGIN_PROPERTIES_FILE_NAME, contents) > -1) {
-				Properties properties = new Properties();
-
-				// load the properties
-				try {
-					properties.load(
-							new FileInputStream(
-									file.getAbsolutePath() + File.separator + PLUGIN_PROPERTIES_FILE_NAME
-									)
-							);
-				} catch (IOException e) {
-					throw new EngineException("Cannot load plugin properties file.");
-				}
-
-				// get the main class name
-				final String className = properties.getProperty(PLUGIN_ID_PROPERTY_NAME);
-				if (className == null | className.length() == 0)
-					throw new EngineException("Plugin class file name is invalid.");
-
-				// get the classpath
-				final String classpath = properties.getProperty(PLUGIN_CLASSPATH_PROPERTY_NAME);
-				ArrayList<File> pathList = new ArrayList<File>();
-				for (String folder: Tools.tokenize(classpath, PLUGIN_CLASSPATH_SEPARATOR))
-					if (folder.length() != 0)
-						pathList.add(new File(file.getAbsolutePath() + File.separator + folder));
-
-				// load the plugin
-				loadPlugin(file.getName(), className, pathList.toArray(new File[]{}));
-
-			} else
-				if (Tools.find(PLUGIN_ID_FILE_NAME, contents) > -1) {
-					String className = "";
-					try {
-						className = LoadingTools.getPluginClassName(
-								new FileInputStream(file.getAbsolutePath() + File.separator + PLUGIN_ID_FILE_NAME));
-					} catch (IOException e) {
-						throw new EngineException("Cannot read plugin identification file.");
-					}
-					loadPlugin(file.getName(), className, file);
-				} else
-					throw new EngineException("Cannot detect plugin.");
-		}
 	}
 
 	public Collection<? extends OperatorRule> getOperatorRules() {
