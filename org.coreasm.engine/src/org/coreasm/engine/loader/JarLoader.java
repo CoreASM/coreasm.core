@@ -11,12 +11,13 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import org.coreasm.engine.EngineException;
+import org.coreasm.engine.plugin.Plugin;
 
 public class JarLoader {
 	/*
 	 * Loads a plugin from a Jar file.
 	 */
-	public static void loadPluginClassesFromJarFile(File file, PluginLoader loader) throws EngineException{
+	public static Plugin loadPluginClassesFromJarFile(File file) throws EngineException{
 		String className = null;
 		try {
 			className = getJarPluginClassName(new FileInputStream(file));
@@ -25,13 +26,13 @@ public class JarLoader {
 		} catch (EngineException e) {
 			throw e;
 		}
-		loader.loadPlugin(file.getName(), className, file);
+		return PluginClassLoader.loadPlugin(file.getName(), className, file);//loader.loadPlugin(file.getName(), className, file);
 	}
 
 	/*
 	 * Loads a plugin from a Jar file.
 	 */
-	public static void loadPluginClassesFromJarFile(JarFile jar, JarEntry entry, PluginLoader loader) throws EngineException {
+	public static Plugin loadPluginClassesFromJarFile(JarFile jar, JarEntry entry) throws EngineException {
 		String className = null;
 		try {
 			className = getJarPluginClassName(jar.getInputStream(entry));
@@ -43,11 +44,12 @@ public class JarLoader {
 			throw e;
 		}
 		try {
-			loader.loadPlugin(entry.getName(), className, new URL("jar", "", jar.getName() + "!/" + entry.getName()));
+			return PluginClassLoader.loadPlugin(entry.getName(), className, new URL("jar", "", jar.getName() + "!/" + entry.getName()));//loader.loadPlugin(entry.getName(), className, new URL("jar", "", jar.getName() + "!/" + entry.getName()));
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	/**
 	 * Given a Jar file name, looks for the name of the plugin class.

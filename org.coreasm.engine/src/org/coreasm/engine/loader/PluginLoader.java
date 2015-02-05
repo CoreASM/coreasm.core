@@ -37,14 +37,6 @@ import org.slf4j.LoggerFactory;
 
 public class PluginLoader {
 	private static final Logger logger = LoggerFactory.getLogger(PluginLoader.class);
-	public static final String PLUGIN_CLASSPATH_PROPERTY_NAME = "classpath";
-	public static final String PLUGIN_CLASSPATH_SEPARATOR = ":";
-	public static final String PLUGIN_ID_FILE_NAME = "CoreASMPlugin.id";
-	public static final String PLUGIN_ID_PROPERTY_NAME = "mainclass";
-	
-	//Constants for plugin loading
-	public static final String PLUGIN_PROPERTIES_FILE_NAME = "CoreASMPlugin.properties";
-	
 	/** Map of available plugin names to available plugins. */
 	private Map<String, Plugin> allPlugins;
 	/** List of operator rules gathered from plugins */
@@ -72,94 +64,11 @@ public class PluginLoader {
 		//allPlugins.clear();
 	}
 	
-	/**
-	 * Loads plugin catalog. This method looks for all available plugins, and
-	 * creates a map of plugin names to plugin objects. This method does NOT
-	 * initialize any plugin.
-	 *
-	 * @throws IOException
-	 *
-	 */
-	public void loadCatalog() throws IOException {
-		logger.debug(
-				"Loading plugin catalog...");
-
-		try {
-			loadCatalog(getClass(), "plugins/");
-		}
-		catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
-		// looking to the extended plugin folders
-		String pluginFolders = capi.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
-		if (pluginFolders != null) {
-			for (String pluginFolder : Tools.tokenize(pluginFolders, EngineProperties.PLUGIN_FOLDERS_DELIM)) {
-				File folder = new File(pluginFolder);
-				if (folder.isDirectory()) {
-					for (File file : folder.listFiles())
-						loadPluginClasses(file);
-				}
-			}
-		}
+	public void loadCatalog() throws IOException{
+		allPlugins = PluginClassLoader.loadCatalog(capi);
 	}
-
-	private void loadCatalog(Class<?> clazz, String dir) throws URISyntaxException, IOException {
-		URL dirURL = clazz.getClassLoader().getResource(dir);
-		//1st case: file
-		if (dirURL != null && dirURL.getProtocol().equals("file")) {
-			/* A file path: easy enough */
-			File[] files = new File(dirURL.toURI()).listFiles();
-			for (File file : files)
-				loadPluginClasses(file);
-		}
-		else {
-			if (dirURL == null) {
-				/*
-				 * In case of a jar file, we can't actually find a directory.
-				 * Have to assume the same jar as clazz.
-				 */
-				String me = clazz.getName().replace(".", "/") + ".class";
-				dirURL = clazz.getClassLoader().getResource(me);
-			}
 	
-			//2nd case: jar
-			if (dirURL.getProtocol().equals("jar")) {
-				/* A JAR path */
-				String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!")); //strip out only the JAR file
-				JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
-				Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
-				Set<JarEntry> result = new HashSet<JarEntry>(); //avoid duplicates in case it is a subdirectory
-				while (entries.hasMoreElements()) {
-					JarEntry entry = entries.nextElement();
-					String name = entry.getName();
-					if (name.startsWith(dir) && !name.substring(dir.length()).contains("/")) { //filter according to the path
-						if (result.add(entry))
-							loadPluginClasses(jar, entry);
-					}
-				}
-			}
-			//3rd case: bundle resource
-			else if (dirURL.getProtocol().equals("bundleresource")) {
-				/* A JAR path */
-				if (System.getProperty(Tools.COREASM_ENGINE_LIB_PATH) == null)
-					throw new NullPointerException("path to engine library has not been set.");
-				JarFile jar = new JarFile(System.getProperty(Tools.COREASM_ENGINE_LIB_PATH));
-				Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
-				Set<JarEntry> result = new HashSet<JarEntry>(); //avoid duplicates in case it is a subdirectory
-				while (entries.hasMoreElements()) {
-					JarEntry entry = entries.nextElement();
-					String name = entry.getName();
-					if (name.startsWith(dir) && !name.substring(dir.length()).contains("/")) { //filter according to the path
-						if (result.add(entry))
-							loadPluginClasses(jar, entry);
-					}
-				}
-			}
-			else
-				throw new UnsupportedOperationException("Cannot list files for URL " + dirURL);
-		}
-	}
+	
 	
 	public ClassLoader getClassLoader(){
 		return this.classLoader;
@@ -205,54 +114,6 @@ public class PluginLoader {
 								  // "loadedPlugins" collection
 	}
 	
-	/*
-	 * Loads a single plugin
-	 */
-	private void loadPluginClasses(File file) {
-		try {
-			// checking if the path points to a directory (folder)
-			if (file.isDirectory())
-				DirectoryLoader.loadPluginClassesFromDirectory(file, this);
-			else
-			// checking if the path points to a ZIP file
-			if (file.getName().toUpperCase().endsWith(".ZIP"))
-				ZipLoader.loadPluginClassesFromZipFile(file);
-			else
-			// checking if the path points to a JAR file
-			if (file.getName().toUpperCase().endsWith(".JAR"))
-				JarLoader.loadPluginClassesFromJarFile(file, this);
-			else
-				throw new EngineException("Cannot detect plugin.");
-		} catch (EngineException e) {
-			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", file.getName(), e.getMessage());
-		}
-	}
-	
-	/*
-	 * Loads a single plugin
-	 */
-	private void loadPluginClasses(JarFile jar, JarEntry entry) {
-		try {
-			// checking if the path points to a directory (folder)
-			if (entry.isDirectory())
-				;
-			//				loadPluginClassesFromDirectory(entry);
-			else
-			// checking if the path points to a ZIP file
-			if (entry.getName().toUpperCase().endsWith(".ZIP"))
-				ZipLoader.loadPluginClassesFromZipFile(entry);
-			else
-			// checking if the path points to a JAR file
-			if (entry.getName().toUpperCase().endsWith(".JAR"))
-				JarLoader.loadPluginClassesFromJarFile(jar, entry, this);
-			else
-				throw new EngineException("Cannot detect plugin.");
-		}
-		catch (EngineException e) {
-			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", entry.getName(), e.getMessage());
-		}
-	}
-
 	/**
 	 * Loads plugins identified by the current specification.
 	 */
@@ -298,6 +159,7 @@ public class PluginLoader {
 
 	public void setClassLoader(ClassLoader loader){
 		this.classLoader = loader;
+		PluginClassLoader.classLoader = loader;
 	}
 	private void init(ControlAPI capi, ClassLoader classLoader){
 		this.capi = capi;
@@ -380,64 +242,6 @@ public class PluginLoader {
 			operatorRules.addAll(((OperatorProvider) p).getOperatorRules());
 
 		loadedPlugins.add(p);
-	}
-
-	/*
-	 * Loads a single plugin class from the given list of resources.
-	 */
-	public void loadPlugin(String pName, String className, File... resources) throws EngineException {
-		URL[] urls = new URL[resources.length];
-		try {
-			for (int i=0; i < resources.length; i++)
-				urls[i] = resources[i].toURI().toURL();
-		} catch (MalformedURLException e) {
-			throw new EngineException("Cannot locate plugin.");
-		}
-		loadPlugin(pName, className, urls);
-	}
-
-	/*
-	 * Loads a single plugin class from the given list of resources.
-	 */
-	public void loadPlugin(String pName, String className, URL... urls) throws EngineException {
-		URLClassLoader loader = null;
-		if (this.classLoader == null)
-			loader = new URLClassLoader(urls);
-		else
-			loader = new URLClassLoader(urls, this.classLoader);
-
-		Object o = null;
-		Class<?> pc = null;
-		try {
-			logger.debug( "Loading plugin: {}", className);
-			pc = loader.loadClass(className);
-			/*
-			MinimumEngineVersion minVersion = (MinimumEngineVersion)pc.getAnnotation(MinimumEngineVersion.class);
-			Object[] annots = pc.getAnnotations();
-			if (minVersion != null) {
-				VersionInfo vreq = VersionInfo.valueOf(minVersion.value());
-				if (vreq != null && vreq.compareTo(this.VERSION_INFO) > 0) {
-					Logger.log(Logger.ERROR, Logger.controlAPI,
-							"Cannot load plugin '" + fullName +
-							"' as it is built for a more recent version" +
-							"of the engine (" + vreq + " and above). Skipping this plugin.");
-					continue;
-				}
-			}
-			*/
-			o = pc.newInstance();
-		} catch (Exception e) {
-			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", pName, e.getMessage());
-			return;
-		}
-		if (o instanceof Plugin) {
-			Plugin p = (Plugin) o;
-			p.setControlAPI(this.capi);
-			logger.debug("Plugin '{}' is usable.", p.getName());
-			allPlugins.put(p.getName(), p);
-		} else
-			logger.error(
-						"Invalid plugin '{}'. This class does not extend the CoreASM Plugin class.", className);
 	}
 
 	public Collection<? extends OperatorRule> getOperatorRules() {
