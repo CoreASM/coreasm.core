@@ -36,12 +36,12 @@ public class PluginClassLoader {
 	 * @throws IOException
 	 *
 	 */
-	public static Map<String, Plugin> loadCatalog(ControlAPI capi, Class<?> clazz) throws IOException {
+	public static Map<String, Plugin> loadCatalog(ControlAPI capi) throws IOException {
 		Map<String, Plugin> result = new HashMap<String, Plugin>();
 		logger.debug("Loading plugin catalog...");
 
 		try {
-			result.putAll(loadCatalog(clazz, "plugins/"));
+			result.putAll(loadCatalog(PluginClassLoader.class, "plugins/"));
 		}
 		catch (URISyntaxException e) {
 			e.printStackTrace();
