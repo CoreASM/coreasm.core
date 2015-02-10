@@ -10,17 +10,12 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "Head of [1,2,3,4]: 1\n"
- * @require "Head of [ head([ [8],[9] ]),[10] ]= [8]\n"
- * @require "Head of [ head(toList({ [8],[9] })),[10] ]= [9]\n"
+ * @require "Head of [1,2,3,4]: 1\nHead of [ head([ [8],[9] ]),[10] ]= [8]\n"
  */
 rule Start =
 	seqblock
 		list1 := [1,2,3,4]
-		list2 := ["Hel","lo","Wor","ld"]
 		print "Head of [1,2,3,4]: " + head(list1)
 		//Head operation that includes a head operation -> result = 8
 		print "Head of [ head([ [8],[9] ]),[10] ]= " + head([ head([ [8],[9] ]),[10] ])
-		//Head operation that includes a head operation on a toList operation -> result = 9 (toList changes the order from 8,9 to 9,8)
-		print "Head of [ head(toList({ [8],[9] })),[10] ]= " + head([ head(toList({ [8],[9] })),[10] ])
 	endseqblock

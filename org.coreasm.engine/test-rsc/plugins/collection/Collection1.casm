@@ -10,7 +10,6 @@ init Start
  *
  * @require "99979999\n"
  * @require "2\n"
- * @require "161\n"
  * @require "length of all words is: 26\n"
  * @require "0\n"
  * @require "[3, 4, 5, 1]\n"
@@ -28,7 +27,6 @@ rule Start =
 		mixedSet := {"hello", 55, "howRyou" , true, 103}
 		print foldl(numberRange,@someMath,1)
 		print foldl(list,@someMath,1)
-		print foldl(set,@someMath,1)
 		print "length of all words is: " + foldl(wordList,@getLength,0)
 		print foldr(list,@someMath,1)
 		print map(list,@increase)

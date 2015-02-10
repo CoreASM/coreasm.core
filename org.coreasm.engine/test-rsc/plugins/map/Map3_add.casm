@@ -8,20 +8,41 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{3->c, 2->b, 1->a, 4->d}\n"
- * @require "{2->b, 1->a}\n"
- * @require "{3->z, 2->b, 1->a}\n"
+ * @require "{ -> }\n{ -> }\n{0->0}\n"
+ * @require "1->a"
+ * @require "2->b"
+ * @require "3->c"
+ * @require "4->d"
+ * @require "3->z"
+ * @require "1->u"
+ * @require "2->v"
+ * @require "3->w"
  */
 rule Start =
 	seqblock
-		map5 := {1->"a",2->"b"}
-		map6 := {3-> "c", 4->"d"}
-		map7 := {1-> "x", 2->"y", 3->"z"}
-		map1 := {->}
-		add map5 to map6
-		add map1 to map5
-		add map5 to map7
+		map0 := {->}
+		map1 := {0->"0"}
+		map2 := {1->"a", 2->"b"}
+		map3 := {3->"c", 4->"d"}
+		map4 := {1->"x", 2->"y", 3->"z"}
+		map5 := {1->"u", 2->"v", 3->"w"}
+		map6 := {->}
+		map7 := {->}
+		map8 := {->}
+		print map0
+		add map0 to map0
+		print map0
+		add map0 to map1
+		print map1
+		add map2 to map6
+		add map3 to map6
 		print map6
-		print map5
+		add map4 to map7
+		add map2 to map7
+// @refuse "1->x"
+// @refuse "2->y"
 		print map7
+		add map4 to map8
+		add map5 to map8
+		print map8
 	endseqblock
