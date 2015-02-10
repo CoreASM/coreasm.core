@@ -837,7 +837,7 @@ public class Engine implements ControlAPI {
 
 						case emLoadingCatalog:
 							try {
-								pluginLoader.loadCatalog();
+								pluginLoader.loadCatalog(getClass());
 								next(EngineMode.emLoadingCorePlugins);
 							} catch (IOException e) {
 								error(e);

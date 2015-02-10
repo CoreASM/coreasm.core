@@ -53,8 +53,8 @@ public class PluginManager {
 		//allPlugins.clear();
 	}
 	
-	public void loadCatalog() throws IOException{
-		allPlugins = PluginClassLoader.loadCatalog(capi);
+	public void loadCatalog(Class<?> clazz) throws IOException{
+		allPlugins = PluginClassLoader.loadCatalog(capi, clazz);
 	}
 	
 	
