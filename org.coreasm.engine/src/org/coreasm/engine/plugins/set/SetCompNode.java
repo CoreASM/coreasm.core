@@ -13,7 +13,7 @@
  
 package org.coreasm.engine.plugins.set;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.coreasm.engine.EngineException;
@@ -60,7 +60,7 @@ public class SetCompNode extends ASTNode {
 		if (varMapCache == null) {
 			ASTNode curVar = getSetFunction().getNext();
 			ASTNode curDomain = curVar.getNext();
-			varMapCache = new HashMap<String,ASTNode>();
+			varMapCache = new LinkedHashMap<String,ASTNode>();
 			
 			while (curDomain != null) {
 				if (varMapCache.containsKey(curVar)) 
