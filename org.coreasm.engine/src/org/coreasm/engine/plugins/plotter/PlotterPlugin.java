@@ -46,7 +46,6 @@ import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.engine.plugins.options.OptionsPlugin;
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.engine.plugins.string.StringPlugin;
 import org.slf4j.Logger;
@@ -150,7 +149,7 @@ public class PlotterPlugin extends Plugin implements
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new PlotRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

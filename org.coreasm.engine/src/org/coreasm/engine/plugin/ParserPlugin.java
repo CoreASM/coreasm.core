@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Token;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.GrammarRule;
 

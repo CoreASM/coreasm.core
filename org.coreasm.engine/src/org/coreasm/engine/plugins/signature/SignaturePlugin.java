@@ -33,7 +33,6 @@ import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.ElementBackgroundElement;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -99,8 +98,7 @@ public class SignaturePlugin extends Plugin
     private Set<String>	dependencyNames;
     private Map<String, GrammarRule> parsers = null;
     private Map<EngineMode, Integer> sourceModes = null;
-    private ElementBackgroundElement elementBackground = null;
-
+    
     public static enum CheckMode {cmOff, cmWarn, cmStrict};
     private CheckMode typeCheckingMode;    
     private CheckMode idCheckingMode;    
@@ -174,7 +172,7 @@ public class SignaturePlugin extends Plugin
 							pTools.getOprParser("}"),
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new EnumerationNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -197,7 +195,7 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new UniverseNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -221,7 +219,7 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new ASTNode(
 				            		SignaturePlugin.PLUGIN_NAME,
 				            		ASTNode.DECLARATION_CLASS,
@@ -279,7 +277,7 @@ public class SignaturePlugin extends Plugin
 						).optional()
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new FunctionNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -299,7 +297,7 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							ScannerInfo info = null;
 							if (vals[0] != null)
 								info = ((Node)((Object[])vals[0])[0]).getScannerInfo();
@@ -324,7 +322,7 @@ public class SignaturePlugin extends Plugin
 						}).map(
 						new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-							public Node map(Object... vals) {
+							public Node map(Object[] vals) {
 								Node node = new ASTNode(
 					        			SignaturePlugin.PLUGIN_NAME,
 					        			ASTNode.DECLARATION_CLASS,
@@ -732,11 +730,6 @@ public class SignaturePlugin extends Plugin
     		functions.put(name, function);
     }
     
-    private void addRule(String name, RuleElement rule, ASTNode node, Interpreter interpreter) {
-    	if (checkNameUniqueness(name, "derived function", node, interpreter))
-    		rules.put(name, rule);
-    }
-    
     private boolean checkNameUniqueness(String name, String type, ASTNode node, Interpreter interpreter) {
     	boolean result = true;
         if (rules.containsKey(name)) {
@@ -786,17 +779,6 @@ public class SignaturePlugin extends Plugin
         }        
     }
     
-    /*
-     * Returns a new element. 
-     * 
-     * This method is kept as a record and is not used in this class.
-     */
-    private Element getNewElement() {
-    	if (elementBackground == null) 
-    		elementBackground = (ElementBackgroundElement)capi.getStorage().getUniverse(ElementBackgroundElement.ELEMENT_BACKGROUND_NAME);
-    	return elementBackground.getNewValue();
-    }
-    	
     /**
      * @param currentSignature
      */

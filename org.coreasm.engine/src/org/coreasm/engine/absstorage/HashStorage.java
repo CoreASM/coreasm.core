@@ -619,7 +619,8 @@ public class HashStorage implements AbstractStorage {
 		public void setValue(String name, E value) {
 			table.put(name, value);
 		}
-		
+
+    	@SuppressWarnings("unchecked")
         public void setValue(List<? extends Element> args, Element value) throws UnmodifiableFunctionException {
             if (args.size() == 1){
                 try {

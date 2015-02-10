@@ -16,25 +16,21 @@ package org.coreasm.engine.plugins.plotter;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
 
-import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.plugins.number.NumberElement;
-import org.coreasm.util.Tools;
 
 public class InfoPanel extends JPanel {
 	/* keeps the mapping of functions to colors */
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1318175237865999621L;
 	private Map<FunctionElement, Color> fColors;
 	private Map<FunctionElement, String> fNames; 
 	private static final int MINIMUM_WIDTH = 100;
@@ -61,16 +57,16 @@ public class InfoPanel extends JPanel {
 	public void paint(Graphics g) {
 		super.paint(g);
 
-		int w = this.getWidth();
-		int h = this.getHeight();
-		int delta = 25;
-		int hp = h - 2 * delta;
-		int wp = w - 2 * delta;
+		//int w = this.getWidth();
+		//int h = this.getHeight();
+		//int delta = 25;
+		//int hp = h - 2 * delta;
+		//int wp = w - 2 * delta;
 		
-		double minX = Double.MAX_VALUE;
-		double minY = Double.MAX_VALUE;
-		double maxX = Double.MIN_VALUE;
-		double maxY = Double.MIN_VALUE;
+		//double minX = Double.MAX_VALUE;
+		//double minY = Double.MAX_VALUE;
+		//double maxX = Double.MIN_VALUE;
+		//double maxY = Double.MIN_VALUE;
 		
 		int x = 10;
 		int y = 30;

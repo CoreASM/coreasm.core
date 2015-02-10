@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Scanners;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.Engine;
@@ -129,9 +128,6 @@ public class Kernel extends Plugin
 	
 	private Map<String,BackgroundElement> backgroundElements = null;
 	private Map<String,RuleElement> ruleElements = null;
-
-	/** The object that creates the expression grammar rule */
-	private ExpressionParserFactory exprFactory = null;
 	
     /** List of update actions provided by this plugin (empty). */
     public static final String[] UPDATE_ACTIONS = {};
@@ -299,12 +295,11 @@ public class Kernel extends Plugin
 			// Here we have to call getLexer() so that the 
 			// ParserTools also gets initialized
 			// jetzt �berfl�ssig?
-			Set<Parser<? extends Object>> lexers = getLexers();
-			Parser<Object> tokenizer = Parsers.or(lexers);
+			 getLexers();
 			
 			// Ignore-Parser
-			Parser<Void> ignoreParser = 
-					Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES).skipMany();
+			//Parser<Void> ignoreParser = 
+			//		Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES).skipMany();
 			
 			Parser<Node> idParser = parserTools.getIdParser();
 	
@@ -517,7 +512,7 @@ public class Kernel extends Plugin
     private Parser<Node> createTermParser(Map<String, GrammarRule> parsers) {
     	
     	ParserTools parserTools = ParserTools.getInstance(capi);
-    	Parser<Node> idParser = parserTools.getIdParser();
+    	//Parser<Node> idParser = parserTools.getIdParser();
     	
     	// Term : ... // placeholder for expression to use
        	parsers.put("Term", 
@@ -594,7 +589,7 @@ public class Kernel extends Plugin
     	List<Parser<Node>> exps = new ArrayList<Parser<Node>>();
     	
     	ParserTools parserTools = ParserTools.getInstance(capi);
-    	Parser<Node> idParsr = parserTools.getIdParser();
+    	//Parser<Node> idParsr = parserTools.getIdParser();
     	  	
     	// Expression : ... // Open for future extensions
     	Parser.Reference<Node> refExpParser = Parser.newReference();
@@ -672,7 +667,7 @@ public class Kernel extends Plugin
     	
     	// creating an expression parser based on the operators 
     	// provided by the plugins
-    	Set<Plugin> plugins = new HashSet<Plugin>();
+    	//Set<Plugin> plugins = new HashSet<Plugin>();
     	ExpressionParserFactory expFactory = 
     		new ExpressionParserFactory(
     				capi,

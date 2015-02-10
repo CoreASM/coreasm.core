@@ -30,6 +30,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class FieldReadNode extends ASTNode {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8341407601953686395L;
+
+	/**
 	 * @see ASTNode#ASTNode(ASTNode)
 	 */
 	public FieldReadNode(FieldReadNode node) {

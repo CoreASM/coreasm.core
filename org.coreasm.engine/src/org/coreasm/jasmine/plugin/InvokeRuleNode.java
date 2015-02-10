@@ -27,6 +27,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class InvokeRuleNode extends ASTNode {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7843096318742864554L;
+
+	/**
 	 * @see ASTNode#ASTNode(ASTNode)
 	 */
 	public InvokeRuleNode(InvokeRuleNode node) {

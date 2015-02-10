@@ -13,14 +13,13 @@
  
 package org.coreasm.jasmine.plugin;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.BooleanElement;
@@ -108,23 +107,23 @@ public class JasmineUtil {
 		else
 		if (obj instanceof Set) {
 			Set<Element> tempSet = new HashSet<Element>();
-			for (Object sm: (Set)obj)
+			for (Object sm: (Set<?>)obj)
 				tempSet.add(toCoreASM(sm));
 			return new SetElement(tempSet);
 		}
 		else
 		if (obj instanceof List) {
 			List<Element> tempList = new ArrayList<Element>();
-			for (Object lm: (List)obj)
+			for (Object lm: (List<?>)obj)
 				tempList.add(toCoreASM(lm));
 			return new ListElement(tempList);
 		}
 		else
 		if (obj instanceof Map) {
 			Map<Element, Element> tempMap = new HashMap<Element, Element>();
-			for (Object pair: ((Map)obj).entrySet()) {
+			for (Object pair: ((Map<?, ?>)obj).entrySet()) {
 				// TODO this needs to be tested
-				Entry pairEntry = (Entry)pair;
+				Entry<?, ?> pairEntry = (Entry<?, ?>)pair;
 				tempMap.put(toCoreASM(pairEntry.getKey()), toCoreASM(pairEntry.getValue()));
 			}
 			return new MapElement(tempMap);

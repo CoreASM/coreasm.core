@@ -16,9 +16,7 @@ package org.coreasm.jasmine.plugin;
 
 import java.util.List;
 
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.Element;
-
 import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.util.Logger;
 
@@ -58,7 +56,7 @@ public class ConvertorWithTypeFunctionElement extends org.coreasm.engine.absstor
 				}
 
 				result = JasmineUtil.javaValue(value);
-				Class actualClass = result.object.getClass();
+				Class<?> actualClass = result.object.getClass();
 				
 				if (!actualClass.equals(requestedClass)) {
 					try {

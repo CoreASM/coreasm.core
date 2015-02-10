@@ -90,6 +90,7 @@ public class TemplateManager {
 		return CoreASMPlugin.getDefault().getPreferenceStore();
 	}
 
+	@SuppressWarnings("deprecation")
 	public void savePluginPreferences() {
 		CoreASMPlugin.getDefault().savePluginPreferences();
 	}

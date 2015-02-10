@@ -9,7 +9,6 @@
 package org.coreasm.engine.registry;
 
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * The interface to the plugin registry of CoreASM.

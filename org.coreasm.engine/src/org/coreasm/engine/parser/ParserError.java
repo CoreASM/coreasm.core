@@ -21,6 +21,7 @@ package org.coreasm.engine.parser;
  * 
  */
 public class ParserError extends Error {
+	private static final long serialVersionUID = 8632506195271246615L;
 
 	public ParserError() {
 	}

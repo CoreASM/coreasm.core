@@ -305,7 +305,7 @@ public class ExpressionParserFactory {
 	/* Special unary map class */
 	public static class UnaryMap implements Unary<Node> {
 		
-		private String pluginNames;
+		//private String pluginNames;
 		private String opr;
 		private Object[] cnodes;
 		private OpType type;
@@ -320,7 +320,7 @@ public class ExpressionParserFactory {
 		 */
 		public UnaryMap(String opr, String pluginNames, OpType type, Object[] nodes) {
 			this.opr = opr;
-			this.pluginNames = pluginNames;
+			//this.pluginNames = pluginNames;
 			//this.cnodes = (Object[])nodes[1];
 			this.cnodes = nodes;
 			this.type = type;
@@ -373,10 +373,10 @@ public class ExpressionParserFactory {
 	/* Special binary map class */
 	public static class BinaryMap implements Binary<Node> {
 		
-		private String pluginNames;
+		//private String pluginNames;
 		private String opr;
 		private Object[] cnodes;
-		private OpType type;
+		//private OpType type;
 		
 		/**
 		 * Creates a new BinaryMap.
@@ -388,8 +388,8 @@ public class ExpressionParserFactory {
 		 */
 		public BinaryMap(String opr, String pluginNames, OpType type, Object[] cnodes) {
 			this.opr = opr;
-			this.pluginNames = pluginNames;
-			this.type = type;
+			//this.pluginNames = pluginNames;
+			//this.type = type;
 			//this.cnodes = (Object[])cnodes[1];
 			this.cnodes = cnodes;
 		}
@@ -432,11 +432,11 @@ public class ExpressionParserFactory {
 	/* Special index map class */
 	public static class IndexMap implements Unary<Node> {
 		
-		private String pluginNames;
+		//private String pluginNames;
 		private String opr1;
 		private String opr2;
 		private Object[] cnodes;
-		private OpType type;
+		//private OpType type;
 		
 		/**
 		 * Creates a new IndexMap.
@@ -450,9 +450,9 @@ public class ExpressionParserFactory {
 		public IndexMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
 			this.opr1 = opr1;
 			this.opr2 = opr2;
-			this.pluginNames = pluginNames;
+			//this.pluginNames = pluginNames;
 			this.cnodes = nodes;
-			this.type = type;
+			//this.type = type;
 		}
 
 		/**

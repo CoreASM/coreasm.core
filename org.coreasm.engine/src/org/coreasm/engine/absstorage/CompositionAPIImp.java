@@ -100,11 +100,11 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 	 */
 	private class UpdatePluginPair {
 		public final Update update;
-		public final Plugin plugin;
+		//private final Plugin plugin;
 		
 		public UpdatePluginPair(Update u, Plugin p) {
 			this.update = u;
-			this.plugin = p;
+			//this.plugin = p;
 		}
 	}
 }

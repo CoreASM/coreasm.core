@@ -16,7 +16,6 @@ package org.coreasm.engine.kernel;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
-import org.coreasm.engine.parser.ParseMap5;
 import org.coreasm.engine.parser.ParseMapN;
 
 /** 
@@ -26,8 +25,6 @@ import org.coreasm.engine.parser.ParseMapN;
  * 
  */
 public class RuleSignatureParseMap extends ParseMapN<Node> {
-
-	private static final long serialVersionUID = 1L;
 
 	public RuleSignatureParseMap() {
 		super(Kernel.PLUGIN_NAME);

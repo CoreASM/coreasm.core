@@ -19,8 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -37,7 +35,7 @@ public class CoreASMGlobal {
 	protected static final Logger logger = LoggerFactory.getLogger(CoreASMGlobal.class);
 
 	/** The binary folder of CoreASM */
-	private static final String BIN_FOLDER = "/bin";
+	//private static final String BIN_FOLDER = "/bin";
 	
 	/** The config folder of CoreASM */
 	private static final String CONFIG_FOLDER = "/config";
@@ -46,12 +44,12 @@ public class CoreASMGlobal {
 	private static final String KERNEL_CONF_FILE_NAME = "kernel.conf";
 	
     /** The environment variable giving the CoreASM root directory. */
-    private static final String COREASM_ROOT_ENV_VAR = "COREASM_HOME";
+    //private static final String COREASM_ROOT_ENV_VAR = "COREASM_HOME";
     
 	/** Holds the absolute path to the root folder, if it is not
 	 * defined in the global properties
 	 */
-	private static String ROOT_FOLDER = null;
+	//private static String ROOT_FOLDER = null;
 	
 	/** If set, defines the root fodler of the engine. */
 	public static final String ROOT_FOLDER_PROPERTY = "engine.rootFolder";
@@ -65,7 +63,7 @@ public class CoreASMGlobal {
 	 * @param rootFolder string pointing to the root folder
 	 */
 	public synchronized static void setRootFolder(String rootFolder) {
-		ROOT_FOLDER = rootFolder;
+		//ROOT_FOLDER = rootFolder;
 	}
 
 	/**
@@ -111,10 +109,11 @@ public class CoreASMGlobal {
 		globalProperties.setProperty(key, value);
 	}
 	
+	/*
 	/**
 	 * Tries to find the value of root folder. It assumes that
 	 * the binary files are located in a <code>[CoreASM]/bin</code> folder. 
-	 */
+	 * /
 	private synchronized static void findsRootFolder() {
 		// Finding data folder
 		String sampleClassFile = "/org/coreasm/util/CoreASMGlobal.class";
@@ -132,22 +131,22 @@ public class CoreASMGlobal {
 		}
 		
 		if (ROOT_FOLDER.indexOf("file:") > -1) {
-			/* old way */
+			/* old way * /
 			// ROOT_FOLDER = ROOT_FOLDER.replaceFirst("file:", "").replaceFirst(BIN_FOLDER + sampleClassFile, "");
-			/* new way */
+			/* new way * /
 			ROOT_FOLDER = ROOT_FOLDER.replaceFirst("file:", "").replaceFirst(sampleClassFile, "");
 			ROOT_FOLDER = ROOT_FOLDER.substring(0, ROOT_FOLDER.lastIndexOf('/'));
 		} 
 		if (ROOT_FOLDER.indexOf("jar:") > -1) {
 			ROOT_FOLDER = ROOT_FOLDER.replaceFirst("jar:", "");
 			ROOT_FOLDER = ROOT_FOLDER.replaceFirst("!" + sampleClassFile, "");
-			/* old way */
+			/* old way * /
 			// ROOT_FOLDER = ROOT_FOLDER.substring(0, ROOT_FOLDER.lastIndexOf(BIN_FOLDER)+1);
-			/* new way */
+			/* new way * /
 			ROOT_FOLDER = ROOT_FOLDER.substring(0, ROOT_FOLDER.lastIndexOf('/'));
 			logger.debug("Root folder is detected as {}.", ROOT_FOLDER);
 		}
-	}
+	}*/
 	
 	/**
 	 * Provides default kernel configuration in form of a <code>Properties</code> object.

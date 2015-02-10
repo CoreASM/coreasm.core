@@ -145,7 +145,7 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 			
 			Parser<Node> ruleParser = kernel.getRuleParser();
 			Parser<Node> termParser = kernel.getTermParser();
-			Parser<Node> guardParser = kernel.getGuardParser();
+			//Parser<Node> guardParser = kernel.getGuardParser();
 			
 			ParserTools pTools = ParserTools.getInstance(capi);
 			Parser<Node> idParser = pTools.getIdParser();
@@ -395,7 +395,6 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	 *   
 	 * @author Roozbeh Farahbod
 	 */
-	@SuppressWarnings("serial")
 	public static class SignalRuleParseMap extends ParserTools.ArrayParseMap {
 
 	    String nextChildName = "alpha";
@@ -404,7 +403,7 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... v) {
+		public Node map(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new SignalRuleNode(((Node)v[0]).getScannerInfo());
 
@@ -432,14 +431,13 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	 *   
 	 * @author Roozbeh Farahbod
 	 */
-	@SuppressWarnings("serial")
 	public static class OnSignalRuleParseMap extends ParserTools.ArrayParseMap {
 
 	    public OnSignalRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... v) {
+		public Node map(Object[] v) {
 			ASTNode node = new OnSignalRuleNode(((Node)v[0]).getScannerInfo());
 			addChildren(node, v);
 			return node;

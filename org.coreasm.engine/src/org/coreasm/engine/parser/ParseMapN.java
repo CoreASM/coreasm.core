@@ -23,7 +23,6 @@ import org.coreasm.engine.plugin.Plugin;
  * 
  */
 
-@SuppressWarnings("serial")
 public abstract class ParseMapN<R> {
 
 	public final String pluginName;

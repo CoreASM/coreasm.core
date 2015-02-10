@@ -17,14 +17,12 @@ package org.coreasm.engine.plugins.blockrule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.util.Tools;

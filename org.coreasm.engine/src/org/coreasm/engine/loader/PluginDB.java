@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.Plugin;

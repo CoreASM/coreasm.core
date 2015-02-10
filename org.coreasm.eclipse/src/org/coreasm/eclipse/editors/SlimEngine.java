@@ -222,7 +222,9 @@ public class SlimEngine implements ControlAPI {
 			//Field f = Engine.class.getDeclaredField("allPlugins");
 			f.setAccessible(true);
 			Object o = f.get(loader);//f.get(fullEngine);
+			@SuppressWarnings("unchecked")
 			Map<String,Plugin> m = (Map<String, Plugin>) o;
+
 			plugins = new HashSet<Plugin>(m.values());
 		} catch (Exception e) {
 			e.printStackTrace();
