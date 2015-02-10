@@ -187,7 +187,6 @@ public class PluginClassLoader {
 			else
 				throw new EngineException("Cannot detect plugin.");
 		} catch (EngineException e) {
-			e.printStackTrace();
 			logger.error("Cannot load plugin '{}'. Skipping this plugin. Error: {}", file.getName(), e.getMessage());
 		}
 		return null;
