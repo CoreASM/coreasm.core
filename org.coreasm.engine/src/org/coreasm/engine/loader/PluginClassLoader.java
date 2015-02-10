@@ -196,6 +196,7 @@ public class PluginClassLoader {
 	 * Loads a single plugin class from the given list of resources.
 	 */
 	public static Plugin loadPlugin(String pName, String className, File... resources) throws EngineException {
+		for(File f : resources) System.out.println(f);
 		URL[] urls = new URL[resources.length];
 		try {
 			for (int i=0; i < resources.length; i++)
@@ -210,6 +211,7 @@ public class PluginClassLoader {
 	 * Loads a single plugin class from the given list of resources.
 	 */
 	public static Plugin loadPlugin(String pName, String className, URL... urls) throws EngineException {
+		for(URL u : urls) System.out.println(u);
 		URLClassLoader loader = null;
 		if (classLoader == null)
 			loader = new URLClassLoader(urls);
@@ -227,7 +229,6 @@ public class PluginClassLoader {
 			//System.out.println(pName);
 			
 			pc = loader.loadClass(className);
-			loader.close();
 			/*
 			MinimumEngineVersion minVersion = (MinimumEngineVersion)pc.getAnnotation(MinimumEngineVersion.class);
 			Object[] annots = pc.getAnnotations();
