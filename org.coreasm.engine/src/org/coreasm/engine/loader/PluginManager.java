@@ -1,26 +1,16 @@
 package org.coreasm.engine.loader;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineException;
@@ -31,12 +21,11 @@ import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PluginLoader {
-	private static final Logger logger = LoggerFactory.getLogger(PluginLoader.class);
+public class PluginManager {
+	private static final Logger logger = LoggerFactory.getLogger(PluginManager.class);
 	/** Map of available plugin names to available plugins. */
 	private Map<String, Plugin> allPlugins;
 	/** List of operator rules gathered from plugins */
@@ -48,18 +37,18 @@ public class PluginLoader {
 	/** Set of loaded plugins */
 	private PluginDB loadedPlugins;
 	
-	public PluginLoader(ControlAPI capi){
+	public PluginManager(ControlAPI capi){
 		init(capi, null);
 	}
 	
-	public PluginLoader(ControlAPI capi, ClassLoader classLoader){
+	public PluginManager(ControlAPI capi, ClassLoader classLoader){
 		init(capi, classLoader);
 	}
 	
 	public void clear(){
 		loadedPlugins.clear();
 		operatorRules.clear();
-		//not sure yet, appearently the original code never
+		//not sure yet, apparently the original code never
 		//cleared the allplugins mapping
 		//allPlugins.clear();
 	}

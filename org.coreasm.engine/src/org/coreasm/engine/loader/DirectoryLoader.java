@@ -20,14 +20,14 @@ public class DirectoryLoader {
 			throw new EngineException("Plugin folder is empty.");
 		else {
 			// if there is a properties file
-			if (Tools.find(PluginLoaderConstants.PLUGIN_PROPERTIES_FILE_NAME, contents) > -1) {
+			if (Tools.find(LoadingTools.PLUGIN_PROPERTIES_FILE_NAME, contents) > -1) {
 				Properties properties = new Properties();
 
 				// load the properties
 				try {
 					properties.load(
 							new FileInputStream(
-									file.getAbsolutePath() + File.separator + PluginLoaderConstants.PLUGIN_PROPERTIES_FILE_NAME
+									file.getAbsolutePath() + File.separator + LoadingTools.PLUGIN_PROPERTIES_FILE_NAME
 									)
 							);
 				} catch (IOException e) {
@@ -35,14 +35,14 @@ public class DirectoryLoader {
 				}
 
 				// get the main class name
-				final String className = properties.getProperty(PluginLoaderConstants.PLUGIN_ID_PROPERTY_NAME);
+				final String className = properties.getProperty(LoadingTools.PLUGIN_ID_PROPERTY_NAME);
 				if (className == null | className.length() == 0)
 					throw new EngineException("Plugin class file name is invalid.");
 
 				// get the classpath
-				final String classpath = properties.getProperty(PluginLoaderConstants.PLUGIN_CLASSPATH_PROPERTY_NAME);
+				final String classpath = properties.getProperty(LoadingTools.PLUGIN_CLASSPATH_PROPERTY_NAME);
 				ArrayList<File> pathList = new ArrayList<File>();
-				for (String folder: Tools.tokenize(classpath, PluginLoaderConstants.PLUGIN_CLASSPATH_SEPARATOR))
+				for (String folder: Tools.tokenize(classpath, LoadingTools.PLUGIN_CLASSPATH_SEPARATOR))
 					if (folder.length() != 0)
 						pathList.add(new File(file.getAbsolutePath() + File.separator + folder));
 
@@ -50,11 +50,11 @@ public class DirectoryLoader {
 				return PluginClassLoader.loadPlugin(file.getName(), className, pathList.toArray(new File[]{}));//loader.loadPlugin(file.getName(), className, pathList.toArray(new File[]{}));
 
 			} else
-				if (Tools.find(PluginLoaderConstants.PLUGIN_ID_FILE_NAME, contents) > -1) {
+				if (Tools.find(LoadingTools.PLUGIN_ID_FILE_NAME, contents) > -1) {
 					String className = "";
 					try {
 						className = LoadingTools.getPluginClassName(
-								new FileInputStream(file.getAbsolutePath() + File.separator + PluginLoaderConstants.PLUGIN_ID_FILE_NAME));
+								new FileInputStream(file.getAbsolutePath() + File.separator + LoadingTools.PLUGIN_ID_FILE_NAME));
 					} catch (IOException e) {
 						throw new EngineException("Cannot read plugin identification file.");
 					}

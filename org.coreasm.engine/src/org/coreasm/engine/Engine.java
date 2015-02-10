@@ -56,7 +56,7 @@ import org.coreasm.engine.interpreter.InterpreterImp;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.loader.PluginLoader;
+import org.coreasm.engine.loader.PluginManager;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.JParsecParser;
 import org.coreasm.engine.parser.OperatorRule;
@@ -102,7 +102,7 @@ public class Engine implements ControlAPI {
 	private final Interpreter interpreter;
 	
 	/** Loader used to obtain plugin classes */
-	private PluginLoader pluginLoader;
+	private PluginManager pluginLoader;
 
 	/** List of grammar rules gathered from plugins */
 	private ArrayList<GrammarRule> grammarRules = null;
@@ -182,7 +182,7 @@ public class Engine implements ControlAPI {
 		commandQueue = new CommandQueue();
 		//allPlugins = new HashMap<String, Plugin>();
 		//loadedPlugins = new PluginDB();
-		pluginLoader = new PluginLoader(this);
+		pluginLoader = new PluginManager(this);
 		grammarRules = new ArrayList<GrammarRule>();
 		operatorRules = new ArrayList<OperatorRule>();
 		engineMode = EngineMode.emIdle;

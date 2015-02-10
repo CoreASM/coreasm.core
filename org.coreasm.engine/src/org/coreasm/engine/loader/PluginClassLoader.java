@@ -50,10 +50,14 @@ public class PluginClassLoader {
 		// looking to the extended plugin folders
 		String pluginFolders = capi.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
 		if (pluginFolders != null) {
+			System.out.println("found the plugin folder at");
+			System.out.println(pluginFolders);
 			for (String pluginFolder : Tools.tokenize(pluginFolders, EngineProperties.PLUGIN_FOLDERS_DELIM)) {
+				System.out.println(pluginFolder);
 				File folder = new File(pluginFolder);
 				if (folder.isDirectory()) {
 					for (File file : folder.listFiles()){
+						System.out.println(file);
 						Plugin p = loadPluginClasses(file);
 						if(p != null){
 							result.put(p.getName(), p);
