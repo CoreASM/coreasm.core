@@ -220,11 +220,6 @@ public class PluginClassLoader {
 		Class<?> pc = null;
 		try {
 			logger.debug( "Loading plugin: {}", className);
-
-			//System.out.println("urls: ");
-			//for(URL url : urls) System.out.println(url);
-			//System.out.println(className);
-			//System.out.println(pName);
 			
 			pc = loader.loadClass(className);
 			/*
