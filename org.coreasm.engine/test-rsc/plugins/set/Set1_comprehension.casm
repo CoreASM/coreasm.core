@@ -9,7 +9,25 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{0, -6, 6, 2, -2, 10, -10, -4, 4, 8, -8}\n{}\n{}\n{6, 2, 10, 4, 8}\n{6, 2, 10, 4, 8}\n{6, 2, 10, 4, 8}\n"
+ * @require "\n{}\n{}\n"
+ * @require "0"
+ * @require "-6"
+ * @require "6"
+ * @require "2"
+ * @require "-2"
+ * @require "10"
+ * @require "-10"
+ * @require "-4"
+ * @require "4"
+ * @require "8" 
+ * @require "-8"
+ * @require "1"
+ * @require "9"
+ * @require "5"
+ * @require "3"
+ * @require "7"
+ * @require "16"
+ * @require "{8}"
  */
 rule Start =
 	seqblock
@@ -23,10 +41,10 @@ rule Start =
 		set3 := {x is a | a in {1,2,3,4} with x > 10000}
 		print set3
 		// set-comprehension inside set-comprehension
-		set4 := {x is a | a in {y is b^(1/2) | b in [1..100 step 1]} with isEvenNumber(a)}
+		set4 := {x is a | a in {y is 2^b | b in [3..4 step 1]}}
 		print set4
-		// set-comprehension inside set-comprehension with basic derived math function sqrt -> doesnt work
-		set5 := {x is a | a in {y is sqrt(b) | b in [1..100 step 1]} with isEvenNumber(a)}
+		// set-comprehension inside set-comprehension with basic derived math function sqrt
+		set5 := {x is a | a in {y is sqrt(b) | b in [1..100 step 1]} with isOddNumber(a)}
 		print set5
 		// handling values from two different sets
 		set6 := {x is a | a in set1, b in set4 with a = b }

@@ -8,12 +8,11 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{3->z, 2->y}\n"
- * @require "{3->z, 2->y}\n"
- * @require "{6->f, 5->e}\n"
- * @require "{6->f, 5->e}\n"
- * @require "{2->y}\n"
- * @require "{2->y}\n"
+ * @require "2->y"
+ * @require "3->z"
+ * @require "6->f"
+ * @require "5->e"
+ * @require "{2->y}\n{2->y}\n"
  */
 rule Start =
 	seqblock

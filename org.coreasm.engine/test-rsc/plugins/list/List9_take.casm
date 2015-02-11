@@ -12,15 +12,13 @@ init Start
  *
  * @require "[6, 8]\n"
  * @require "[1, 2]\n"
- * @require "[3, 6]\n"
  * @require "[1]\n"
  * @require "[]\n"
  */
 rule Start =
 	seqblock
 		print take([6,8,9],2)
-		print take(take([1,2,3,4,5,6,7],3),2)// toList(set) destroys order
-		print take(take(toList({1,2,3,4,5,6,7}),3),2)
+		print take(take([1,2,3,4,5,6,7],3),2)
 		print take([1],5)
 		print take([1,2,3],0)
 	endseqblock

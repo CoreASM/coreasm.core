@@ -8,9 +8,24 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{[2, 1], [1, Hello], [3, 1]}\n"
- * @require "{[a, {3->4, 1->2}], [c, {3->{ -> }, 2->World, 1->Hello}], [b, 2]}\n"
- * @require "{[a, {[1, 2], [3, 4]}], [b, 2], [c, {[3, { -> }], [2, World], [1, Hello]}]}\n"
+ * @require "[2, 1]"
+ * @require "[1, Hello]"
+ * @require "[3, 1]"
+ * @require "[a, {"
+ * @require "3->4"
+ * @require "1->2"
+ * @require "[c, {"
+ * @require "3->{ -> }"
+ * @require "2->World"
+ * @require "1->Hello"
+ * @require "[b, 2]"
+ * @require "[1, 2]"
+ * @require "[3, 4]"
+ * @require "[b, 2]"
+ * @require "[c, {"
+ * @require "[3, { -> }]"
+ * @require "[2, World]"
+ * @require "[1, Hello]"
  */
 rule Start =
 	seqblock

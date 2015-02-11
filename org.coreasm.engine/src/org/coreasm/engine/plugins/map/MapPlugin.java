@@ -322,7 +322,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 
 					// create all possible combination of values for variables
 					createAllPossibleBindings(
-							allVariables, possibleValues, allVariables.size() - 1, possibleBindings, new HashMap<String,Element>());
+							allVariables, possibleValues, 0, possibleBindings, new HashMap<String,Element>());
 
 					// set the superset of values
 					tobeConsidered.put(pos, possibleBindings);
@@ -439,10 +439,10 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 			currentBinding.put(var, value);
 			
 			// if this is not the last variable in the list
-			if (index > 0) {
+			if (index < allVariables.size() - 1) {
 				// get all the possible values for the remaining variables
 				createAllPossibleBindings(
-						allVariables, possibleValues, index-1, possibleBindings, currentBinding);
+						allVariables, possibleValues, index + 1, possibleBindings, currentBinding);
 			} 
 			
 			// if this is the last variable
