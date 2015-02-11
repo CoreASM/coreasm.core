@@ -189,7 +189,7 @@ public class IOPlugin extends Plugin implements
 					npTools.getKeywParser("print", PLUGIN_NAME),
 					termParser
 					}).map(new org.codehaus.jparsec.functors.Map<Object[],Node>() { 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new PrintRuleNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

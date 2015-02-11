@@ -25,6 +25,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class EmptyNode extends ASTNode {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8936982237213357521L;
+
+	/**
 	 * Creates an empty node with the given scanner information.
 	 */
 	public EmptyNode(ScannerInfo scannerInfo) {

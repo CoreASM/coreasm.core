@@ -185,15 +185,13 @@ public class CaseRulePlugin extends Plugin
 
 	public static class CaseParseMap //extends ParseMapN<Node> {
 	extends ParserTools.ArrayParseMap {
-
-		private static final long serialVersionUID = 1L;
 		String nextChildName;
 		
 		public CaseParseMap() {
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			nextChildName = "alpha";
             Node node = new CaseRuleNode(((Node)vals[0]).getScannerInfo());
             addChildren(node, vals);

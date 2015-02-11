@@ -33,9 +33,8 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.ParserFragments;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -116,7 +115,7 @@ public class StepPlugin extends Plugin implements ParserPlugin,
 			parsers = new ParserFragments();
 			KernelServices kernel = (KernelServices)capi.getPlugin("Kernel").getPluginInterface();
 			
-			Parser<Node> termParser = kernel.getTermParser();
+			//Parser<Node> termParser = kernel.getTermParser();
 			Parser<Node> ruleParser = kernel.getRuleParser();
 			
 			ParserTools pTools = ParserTools.getInstance(capi);
@@ -133,7 +132,7 @@ public class StepPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new StepRuleNode(((Node)vals[0]).getScannerInfo());
 							boolean first = true;
 							for (Object o: vals) {
@@ -166,7 +165,7 @@ public class StepPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new StepBlockRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

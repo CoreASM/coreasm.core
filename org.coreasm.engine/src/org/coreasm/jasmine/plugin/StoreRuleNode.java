@@ -27,6 +27,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class StoreRuleNode extends ASTNode {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1617318616162102928L;
+
+	/**
 	 * @see ASTNode#ASTNode(ASTNode)
 	 */
 	public StoreRuleNode(StoreRuleNode node) {

@@ -10,15 +10,12 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "[2, 2, 2, 2]\n"
- * @require "[Whats up? , Whats up? , Whats up? ]\n"
- * @require "[[[], [], []], [[], [], []]]\n"
- * @require "[{6, 2, 10, 4, 8}, {6, 2, 10, 4, 8}, {6, 2, 10, 4, 8}]\n"
+ * @require "[2, 2, 2, 2]\n[Whats up? , Whats up? , Whats up? ]\n[[[], [], []], [[], [], []]]\n"
  */
 rule Start =
 	seqblock
 		print replicate(2,4)
 		print replicate("Whats up? ",3)
 		print replicate(replicate([],3),2)
-		print replicate({x is a | a in {y is b^(1/2) | b in [1..100 step 1]} with isEvenNumber(a)},3)
+		print replicate([a | a in [b^(1/2) | b in [1..100 step 1]] with isEvenNumber(a)],3)
 	endseqblock

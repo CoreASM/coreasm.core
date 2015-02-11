@@ -26,8 +26,6 @@ import org.coreasm.engine.parser.ParseMapN;
  */
 public class CoreASMParseMap extends ParseMapN<Node> {
 
-	private static final long serialVersionUID = 1L;
-
 	public CoreASMParseMap() {
 		super(Kernel.PLUGIN_NAME);
 	}

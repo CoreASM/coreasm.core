@@ -15,11 +15,8 @@ package org.coreasm.jasmine.plugin;
 
 import java.util.List;
 
-import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.plugins.signature.DerivedFunctionElement;
 
 /** 
  * This function element provides type conversion between CoreASM and Java.

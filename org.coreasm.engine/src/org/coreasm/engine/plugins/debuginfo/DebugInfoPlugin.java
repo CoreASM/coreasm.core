@@ -34,7 +34,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -157,7 +156,7 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new DebugInfoNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

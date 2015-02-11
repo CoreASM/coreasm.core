@@ -38,7 +38,6 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -180,7 +179,7 @@ public class ExtendRulePlugin extends Plugin implements ParserPlugin, Interprete
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			Node node = new ExtendRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

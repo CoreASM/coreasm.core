@@ -28,20 +28,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Terminals;
 import org.codehaus.jparsec.Token;
 import org.codehaus.jparsec.Tokens;
 import org.codehaus.jparsec.Tokens.Fragment;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
@@ -61,11 +60,10 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMap;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParseMap;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InterpreterPlugin;
@@ -260,7 +258,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	private Parser<Node> getBasicJavaIdParser() {
 		if (basicJavaIdParser == null)
 		{
-			ParserTools pTools = ParserTools.getInstance(capi);
+			ParserTools.getInstance(capi);
 			Parser<Token> tokp = Parsers.ANY_TOKEN.token();
 			
 			basicJavaIdParser = tokp.map( new org.codehaus.jparsec.functors.Map<Token,Node>() {
@@ -472,9 +470,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			
 			// pattern: 'import' 'native' x 'into' l
 			if (argsNode.size() == 0) {
-				Constructor cons = null;
 				try {
-					cons = c.getConstructor();
+					c.getConstructor();
 				} catch (Exception e) {
 					capi.error("Constructor not found.", node, interpreter);
 					Logger.log(Logger.ERROR, Logger.plugins, e.getMessage());
@@ -507,9 +504,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 						*/
 					}
 				
-				Constructor cons = null;
 				try {
-					cons = findConstructor(c, argsInJava);
+					findConstructor(c, argsInJava);
 				} catch (Exception e) {
 					capi.error("Constructor not found.", node, interpreter);
 					Logger.log(Logger.ERROR, Logger.plugins, e.getMessage());
@@ -538,11 +534,9 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			Element objectElement = objectNode.getValue();
 			if (objectElement != null && objectElement instanceof JObjectElement) {
 				JObjectElement jobj = (JObjectElement)objectElement;
-				Field field = null;
-				
 				// get the field
 				try {
-					field = jobj.jType().getField(fieldName);
+					jobj.jType().getField(fieldName);
 				} catch (Exception e) {
 					capi.error("Field '" + fieldName + "' not found.", objectNode.getNext(), interpreter);
 					Logger.log(Logger.ERROR, Logger.plugins, e.getMessage());
@@ -602,7 +596,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 					loc = locNode.getLocation();
 				}
 				
-				Class clazz = ((JObjectElement)jobj).object.getClass();
+				Class<?> clazz = ((JObjectElement)jobj).object.getClass();
 				String methodName = jnode.getNext().getToken();
 				
 				List<Object> argsInJava = new ArrayList<Object>();
@@ -619,9 +613,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 						*/
 					}
 				
-				Method m = null;
 				try {
-					m = findMethod(clazz, methodName, argsInJava);
+					findMethod(clazz, methodName, argsInJava);
 				} catch (Exception e) {
 					capi.error("Java method '" + methodName + "' not found.", node, interpreter);
 					Logger.log(Logger.ERROR, Logger.plugins, e.getMessage());
@@ -641,8 +634,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	 * Finds a method with the given name that matches the given list of arguments.
 	 * TODO if more than one method match the arguments, it picks the first one it finds.
 	 */
-	private Method findMethod(Class clazz, String name, List<? extends Object> arguments) throws NoSuchMethodException {
-		Class[] classes = new Class[arguments.size()];
+	private Method findMethod(Class<?> clazz, String name, List<? extends Object> arguments) throws NoSuchMethodException {
+		Class<?>[] classes = new Class[arguments.size()];
 		int i = 0;
 		for (Object obj: arguments) {
 			if (obj == null)
@@ -657,7 +650,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		Method[] methods = clazz.getMethods();
 		for (Method m: methods) {
 			if (m.getName().equals(name)) {
-				Class[] paramClasses = m.getParameterTypes();
+				Class<?>[] paramClasses = m.getParameterTypes();
 				if (JasmineUtil.classesMatch(paramClasses, classes, values))
 					return m;
 			}
@@ -670,13 +663,13 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	 * Finds a constructor of clazz that matches the given arguments. 
 	 * TODO if more than one constructor match the arguments, it picks the first one it finds.
 	 */
-	private Constructor findConstructor(Class clazz, List<? extends Object> arguments) throws SecurityException, NoSuchMethodException {
+	private Constructor<?> findConstructor(Class<?> clazz, List<? extends Object> arguments) throws SecurityException, NoSuchMethodException {
 		// if looking for the default constructor
 		if (arguments.size() == 0) 
 			return clazz.getConstructor();
 	
 		// otherwise
-		Class[] classes = new Class[arguments.size()];
+		Class<?>[] classes = new Class[arguments.size()];
 		int i = 0;
 		for (Object obj: arguments) {
 			if (obj == null)
@@ -688,9 +681,9 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		
 		Object[] values = arguments.toArray();
 		
-		Constructor[] constructors = clazz.getConstructors();
-		for (Constructor cons: constructors) {
-			Class[] paramClasses = cons.getParameterTypes();
+		Constructor<?>[] constructors = clazz.getConstructors();
+		for (Constructor<?> cons: constructors) {
+			Class<?>[] paramClasses = cons.getParameterTypes();
 			if (JasmineUtil.classesMatch(paramClasses, classes, values))
 				return cons;
 		}
@@ -756,7 +749,6 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	/*
 	 * @param arguments a list of Java object
 	 */
-	@SuppressWarnings("unchecked")
 	private void evaluateImport(ASTNode pos, Element self, ScannerInfo sinfo, Location l, String className, List<Object> arguments) {
 		/*
 		List args = new ArrayList();
@@ -882,10 +874,10 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			if (jue.type == Type.Create) {
 				Location l = jue.getCoreASMLocation();
 				String className = (String)jue.arguments.get(1);  // the 'x' in (l, x, <...>)
-				List args = (List)jue.arguments.get(2);  // the '<...>' in (l, x, <...>)
+				List<?> args = (List<?>)jue.arguments.get(2);  // the '<...>' in (l, x, <...>)
 
 				// get the class object
-				Class c = null;
+				Class<?> c = null;
 				try {
 					c = JasmineUtil.getJavaClass(className, this.loader);
 				} catch (ClassNotFoundException e) {
@@ -894,7 +886,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 					pluginAgg.handleInconsistentAggregationOnLocation(channelLocation, this);
 					return;
 				}
-				Constructor cons = null;
+				Constructor<?> cons = null;
 				Object result = null;
 				
 				// if there is no argument
@@ -932,7 +924,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 					// get the instance
 					try {
 						Object[] array = args.toArray();
-						Class[] classes = cons.getParameterTypes();
+						Class<?>[] classes = cons.getParameterTypes();
 						JasmineUtil.adjustArgumentTypes(classes, array);
 						result = cons.newInstance(array);
 					} catch (Exception e) {
@@ -986,8 +978,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 				Location l = jue.getCoreASMLocation();
 				Object obj = ((JObjectElement)jue.arguments.get(1)).object; // 'value(alpha)' 
 				String methodName = (String)jue.arguments.get(2);  // the 'x'
-				List<? extends Object> args = (List<? extends Object>)jue.arguments.get(3);  // method arguments 
-
+				List<? extends Object> args = (List<?>)jue.arguments.get(3);  // method arguments 
+				
 				Method method = null;
 				Object result = null;
 				
@@ -1004,7 +996,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 				// call the method
 				try {
 					Object[] array = args.toArray();
-					Class[] classes = method.getParameterTypes();
+					Class<?>[] classes = method.getParameterTypes();
 					JasmineUtil.adjustArgumentTypes(classes, array);
 					result = method.invoke(obj, array);
 				} catch (InvocationTargetException e) {
@@ -1309,10 +1301,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 					throw new InterpreterException("Field '" + fieldName + "' not found.");
 				}
 				
-				// get the value of the field
-				Object fieldValue = null;
 				try {
-					fieldValue = field.get(jobj.object);
+					field.get(jobj.object);
 				} catch (Exception e) {
 					Logger.log(Logger.ERROR, Logger.plugins, e.getMessage());
 					throw new InterpreterException("Field '" + fieldName + "' is not accessible.");
@@ -1371,7 +1361,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			resultSeen = false;
 			Node node = new InvokeRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
@@ -1408,7 +1398,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... nodes) {
+		public Node map(Object[] nodes) {
 			Node node = new StoreRuleNode(((Node)nodes[0]).getScannerInfo());
 			addChildren(node, nodes);
 			return node;
@@ -1426,7 +1416,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			nextIsLocation = false;
 			Node node = new NativeImportRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);

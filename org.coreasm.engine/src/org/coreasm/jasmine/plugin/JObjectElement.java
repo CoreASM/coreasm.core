@@ -80,7 +80,7 @@ public class JObjectElement extends Element {
 	/**
 	 * Returns the class of the referred Java object.
 	 */
-	public Class jType() {
+	public Class<?> jType() {
 		return object.getClass();
 	}
 	

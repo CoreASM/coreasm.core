@@ -17,7 +17,6 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
 
 /** 
  * A parser map for CoreASM module declarations.
@@ -27,13 +26,11 @@ import org.coreasm.engine.parser.ParseMapN;
  */
 public class CoreModuleParseMap extends ParserTools.ArrayParseMap {
 
-	private static final long serialVersionUID = 1L;
-
 	public CoreModuleParseMap() {
 		super(ModularityPlugin.PLUGIN_NAME);
 	}
 	
-	public Node map(Object... vals) {
+	public Node map(Object[] vals) {
 		ScannerInfo info = null;
 		
 		// consider the possibility of starting with a 

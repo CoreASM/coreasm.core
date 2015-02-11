@@ -9,7 +9,7 @@ public class PreferenceConstants {
 
 	// von Markus: Habe long-Variable "prefChanged" ersetzt mit boolean-Variable "flagPrefChanged"
 	// (zur Vermeidung von mehrfachem Erzeugen neuer Engines beim Start)
-	private static volatile long prefChanged = 0;
+	//private static volatile long prefChanged = 0;
 	private static volatile boolean flagPrefChanged = false;
 	
 	public static final String ROOT_FOLDER = "rootFolder";

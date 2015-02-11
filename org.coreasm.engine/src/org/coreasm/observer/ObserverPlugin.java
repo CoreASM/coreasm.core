@@ -25,27 +25,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
-
-import javax.xml.transform.dom.DOMSource; 
-
-import javax.xml.transform.stream.StreamResult; 
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.coreasm.engine.CoreASMEngine;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
-import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.Update;
@@ -192,17 +187,17 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 	private Element state2XML() {
 		Element state = output.createElement("state");
 		state.setAttribute("systime", String.valueOf(System.currentTimeMillis()));
-		AbstractStorage storage = capi.getStorage();
+		//AbstractStorage storage = capi.getStorage();
 		
 		/*
 		 * Add universes
 		 */
-		Map<String,AbstractUniverse> universes = storage.getUniverses();
-		for (Entry<String, AbstractUniverse> e: universes.entrySet()) {
+		//Map<String,AbstractUniverse> universes = storage.getUniverses();
+		//for (Entry<String, AbstractUniverse> e: universes.entrySet()) {
 			
 			// TODO INCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			
-		}
+		//}
 				
 		return state;
 	}

@@ -25,9 +25,9 @@ import javax.swing.JPanel;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.CoreASMEngine;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementBackgroundElement;
@@ -43,7 +43,6 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InitializationFailedException;
@@ -291,12 +290,12 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 			
 			KernelServices kernel = (KernelServices)capi.getPlugin("Kernel").getPluginInterface();
 			
-			Parser<Node> ruleParser = kernel.getRuleParser();
+			//Parser<Node> ruleParser = kernel.getRuleParser();
 			Parser<Node> termParser = kernel.getTermParser();
-			Parser<Node> guardParser = kernel.getGuardParser();
+			//Parser<Node> guardParser = kernel.getGuardParser();
 			
 			ParserTools pTools = ParserTools.getInstance(capi);
-			Parser<Node> idParser = pTools.getIdParser();
+			//Parser<Node> idParser = pTools.getIdParser();
 			
 			// NewEdgeTerm : 'newedge' Term
 			Parser<Node> newEdgeParser = Parsers.array( 
@@ -306,7 +305,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object... nodes) {
+						public Node map(Object[] nodes) {
 							NewEdgeNode node = new NewEdgeNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;
@@ -323,7 +322,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 					
 						@Override
-						public Node map(Object... nodes) {
+						public Node map(Object[] nodes) {
 							ShowGraphNode node = new ShowGraphNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;
@@ -442,7 +441,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 	    JGraphLayout layout = new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_CIRCLE);
 
 	    layout.run(facade); // Run the layout on the facade. Note that layouts do not implement the Runnable interface, to avoid confusion
-	    Map nested = facade.createNestedMap(true, true); // Obtain a map of the resulting attribute changes from the facade
+	    Map<?,?> nested = facade.createNestedMap(true, true); // Obtain a map of the resulting attribute changes from the facade
 	    	    
 	    jgraph.getGraphLayoutCache().edit(nested); // Apply the results to the actual graph
 	    

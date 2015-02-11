@@ -21,8 +21,6 @@ import java.util.Set;
 
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.plugins.bag.BagUpdateElement.BagUpdateType;
-import org.coreasm.util.HashMultiset;
-import org.coreasm.util.Multiset;
 
 /** 
  * Collection of bag updates.
@@ -234,7 +232,7 @@ public class BagUpdateContainer extends BagAbstractUpdateElement {
 		switch(nextUpdate.type) {
 		
 		case ADD:
-			BagUpdateElement removeU = new BagUpdateElement(BagUpdateType.REMOVE, nextUpdate.value);
+			//BagUpdateElement removeU = new BagUpdateElement(BagUpdateType.REMOVE, nextUpdate.value);
 				updates.add(nextUpdate);
 			break;
 

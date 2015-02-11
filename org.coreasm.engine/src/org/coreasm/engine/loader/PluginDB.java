@@ -11,7 +11,7 @@
  *
  */
  
-package org.coreasm.engine;
+package org.coreasm.engine.loader;
 
 import java.util.ArrayList;
 import java.util.Collection;

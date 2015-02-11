@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
@@ -27,7 +26,6 @@ import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.Terminals;
 import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.TokenMap;
 import org.codehaus.jparsec.Tokens;
 import org.codehaus.jparsec.Tokens.Fragment;
 import org.codehaus.jparsec.Tokens.Tag;
@@ -50,10 +48,9 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;
-import org.coreasm.engine.parser.ParseMapN;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
@@ -157,7 +154,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	@Override
 	public void setControlAPI(ControlAPI capi) {
 		super.setControlAPI(capi);
-		ParserTools npTools = ParserTools.getInstance(capi);
+		//ParserTools npTools = ParserTools.getInstance(capi);
 		exposedParsers.put("Number", refNumberTermParser.lazy());
 		exposedParsers.put("NumberRangeTerm", refNumberRangeParser.lazy());
 	}
@@ -336,7 +333,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 								termParser).optional(),
 						pTools.getOprParser("]")
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new NumberRangeNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -355,7 +352,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 						termParser,
 						pTools.getOprParser("|")
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new SizeOfEnumNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

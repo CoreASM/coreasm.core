@@ -140,7 +140,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							String str = objectToString(vals);
 							return new ASTNode(
 									PLUGIN_NAME,
@@ -191,7 +191,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 				}).map(
 				new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-					public Node map(Object... vals) {
+					public Node map(Object[] vals) {
 						Node node = new OptionNode(((Node)vals[0]).getScannerInfo());
 						addChildren(node, vals);
 						return node;
@@ -208,7 +208,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 					},
 					new ParseMapN<Node>(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Object[] nodes = (Object[])vals[0];
 							if (nodes.length == 0)
 								return null;
@@ -265,7 +265,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	 * Looks into the abstract syntax tree and loads the properties
 	 * specified in the specification into the engine.
 	 */
-	private void OLD_loadProperties() {
+	/*private void OLD_loadProperties() {
         ASTNode node = capi.getParser().getRootNode().getFirst();
         //Properties specProperties = new Properties();
 
@@ -293,7 +293,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
             currentNode = currentNode.getNext();
         }
         
-	}
+	}*/
 
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.ExtensionPointPlugin#getSourceModes()
