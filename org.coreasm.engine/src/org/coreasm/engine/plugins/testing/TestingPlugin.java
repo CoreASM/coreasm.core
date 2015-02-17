@@ -12,15 +12,11 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParseMap2;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.ParserTools.ArrayParseMap;
 import org.coreasm.engine.plugin.InitializationFailedException;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugins.conditionalrule.ConditionalRulePlugin;
-import org.coreasm.engine.plugins.conditionalrule.ConditionalTermNode;
-import org.coreasm.engine.plugins.conditionalrule.ConditionalRulePlugin.ConditionalParseMap;
 
 public class TestingPlugin extends Plugin implements ParserPlugin {
 

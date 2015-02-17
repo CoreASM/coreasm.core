@@ -15,21 +15,14 @@
 
 package org.coreasm.engine.kernel;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.ControlAPI;
@@ -57,7 +50,6 @@ import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
@@ -74,9 +66,6 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
 import org.slf4j.Logger;

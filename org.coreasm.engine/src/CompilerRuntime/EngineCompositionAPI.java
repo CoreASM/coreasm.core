@@ -13,8 +13,6 @@
  
 package CompilerRuntime;
 
-import org.coreasm.engine.absstorage.Location;
-
 /** 
  * Interface providing all composition actions/services required by the engine
  * to perform and get information about composition performed by plugins.

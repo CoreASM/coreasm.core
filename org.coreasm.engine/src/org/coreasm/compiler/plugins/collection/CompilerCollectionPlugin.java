@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.compiler.classlibrary.ClassInclude;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;

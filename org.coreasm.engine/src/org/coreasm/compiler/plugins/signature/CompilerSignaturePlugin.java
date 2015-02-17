@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.coreasm.compiler.classlibrary.ClassInclude;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;

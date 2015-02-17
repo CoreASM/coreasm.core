@@ -12,8 +12,6 @@
 
 package org.coreasm.engine.plugins.conditionalrule;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,20 +24,15 @@ import org.coreasm.compiler.plugins.conditionalrule.CompilerConditionalRulePlugi
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BooleanElement;
-import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
-import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.OperatorContributor;
-import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.ParserTools.ArrayParseMap;
 import org.coreasm.engine.plugin.InterpreterPlugin;
-import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 
