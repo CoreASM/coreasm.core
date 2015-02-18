@@ -5,10 +5,12 @@ import java.io.StringReader;
 import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngineFactory;
 import org.coreasm.engine.Engine;
+import org.coreasm.engine.EngineProperties;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.testing.TestCase;
 import org.coreasm.testing.TestingNode;
+import org.coreasm.util.Tools;
 
 /**
  * Part of the testing framework, used to parse test specification.
@@ -33,6 +35,12 @@ public class TestCaseParser {
 	 */
 	public ASTNode parseSpec(TestCase test) {
 		CoreASMEngine engine = (Engine) CoreASMEngineFactory.createEngine();
+		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
+		String pluginFolders = Tools.getRootFolder(Engine.class)+"/plugins";
+		if (System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY) != null)
+			pluginFolders += EngineProperties.PLUGIN_FOLDERS_DELIM
+					+ System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
+		engine.setProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY, pluginFolders);
 		engine.initialize();
 		//wait for the initialization to complete
 		while(engine.isBusy());

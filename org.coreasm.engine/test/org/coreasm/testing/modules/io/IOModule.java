@@ -1,4 +1,4 @@
-package org.coreasm.testing.modules;
+package org.coreasm.testing.modules.io;
 
 import org.coreasm.engine.plugins.io.IOPlugin;
 import org.coreasm.testing.TestingHelperModule;

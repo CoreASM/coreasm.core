@@ -3,16 +3,16 @@ package org.coreasm.testing;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.testing.modules.BooleanTestingModule;
-import org.coreasm.testing.modules.ElementModule;
-import org.coreasm.testing.modules.EnumerableModule;
-import org.coreasm.testing.modules.EvalStackModule;
-import org.coreasm.testing.modules.IOModule;
-import org.coreasm.testing.modules.LocationModule;
-import org.coreasm.testing.modules.StringModule;
-import org.coreasm.testing.modules.TestResultModule;
-import org.coreasm.testing.modules.UpdateListModule;
-import org.coreasm.testing.modules.UpdateModule;
+import org.coreasm.testing.modules.io.IOModule;
+import org.coreasm.testing.modules.kernel.BooleanTestingModule;
+import org.coreasm.testing.modules.kernel.ElementModule;
+import org.coreasm.testing.modules.kernel.EnumerableModule;
+import org.coreasm.testing.modules.kernel.EvalStackModule;
+import org.coreasm.testing.modules.kernel.LocationModule;
+import org.coreasm.testing.modules.kernel.TestResultModule;
+import org.coreasm.testing.modules.kernel.UpdateListModule;
+import org.coreasm.testing.modules.kernel.UpdateModule;
+import org.coreasm.testing.modules.string.StringModule;
 
 public class CodeBuilder {
 	private List<TestingHelperModule> modules;

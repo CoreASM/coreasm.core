@@ -1,4 +1,4 @@
-package org.coreasm.testing.modules;
+package org.coreasm.testing.modules.kernel;
 
 import org.coreasm.testing.TestingHelperModule;
 

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -30,10 +29,12 @@ public class TestAllCasm {
 
 	@BeforeClass
 	public static void onlyOnce() {
+		//setup the test by finding the test specifications
 		URL url = TestAllCasm.class.getClassLoader().getResource("./without_test_class");
 
 		try {
 			testFiles = new LinkedList<File>();
+			//recursively search for specifications
 			getTestFiles(testFiles, new File(url.toURI()));
 		}
 		catch (URISyntaxException e) {
@@ -44,8 +45,8 @@ public class TestAllCasm {
 	private final ByteArrayOutputStream logContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-	private final static PrintStream origOutput = System.out;
-	private final static PrintStream origError = System.err;
+	final static PrintStream origOutput = System.out;
+	final static PrintStream origError = System.err;
 
 	public static List<String> getFilteredOutput(File file, String filter) {
 		List<String> filteredOutputList = new LinkedList<String>();
@@ -151,23 +152,23 @@ public class TestAllCasm {
 	@Test
 	public void performTest() {
 		TestReport t = null;
-		boolean succesful = true;
-		//check if their are files for testing for this class
+		boolean successful = true;
+		//check if there are files for testing for this class
 		if (testFiles.isEmpty()) {
 			t = new TestReport(null, "no test file found!", -1, false);
-			succesful = false;
+			successful = false;
 		}
-		//perform test for all test files, output result, and modify test result if test has been failed
+		//perform test for all test files, output result, and modify test result if test has failed
 		for (File testFile : testFiles) {
 			t = runSpecification(testFile);
 			if (!t.successful())
-				succesful = false;
+				successful = false;
 			t.print();
 			t = null;
 		}
 		//report overall test result
-		//test failed if at least one test has been failed
-		if (!succesful)
+		//test failed if at least one test has failed
+		if (!successful)
 			Assert.fail("Test failed for class: " + TestAllCasm.class.getSimpleName());
 
 	}
@@ -243,70 +244,6 @@ public class TestAllCasm {
 		else {
 			failMessage = "No test result for test class " + TestAllCasm.class.getSimpleName();
 			return new TestReport(testFile, failMessage, steps, false);
-		}
-	}
-
-	static class TestReport {
-		private static ArrayList<TestReport> reports = new ArrayList<TestReport>();
-		private File file;
-		private String message;
-		private int steps;
-		private boolean successful;
-
-		public TestReport(File file, int steps) {
-			this(file, "", steps);
-		}
-
-		public TestReport(File file, String message, int steps) {
-			this(file, message, steps, true);
-		}
-
-		public TestReport(File file, String message, int steps, boolean successful) {
-			this.file = file;
-			this.message = message;
-			this.successful = successful;
-			this.steps = steps;
-			if (!TestReport.reports.isEmpty()
-					&& TestReport.getLast().getFile() == this.file)
-				origOutput
-						.println("Last report has been for the same file. Check if your test produces a unique result.");
-			reports.add(this);
-		}
-
-		private File getFile() {
-			return this.file;
-		}
-
-		public void print() {
-			if (this.successful) {
-				String success = "Test of " + this.file.getName() + " successful after " + steps
-						+ (steps == 1 ? " step" : " steps");
-				origOutput.println(this.message.isEmpty() ? success : success + "; " + this.message);
-			}
-			else
-				origError.println("An error occurred after " + steps + " steps in " + this.file.getName() + ": "
-						+ this.message);
-		}
-
-		public void printTestReports() {
-			for (TestReport report : reports) {
-				report.print();
-			}
-		}
-
-		public boolean successful() {
-			return this.successful;
-		}
-
-		public static TestReport getLast() {
-			if (reports.isEmpty())
-				return null;
-			else
-				return reports.get(reports.size() - 1);
-		}
-
-		public String getMessage() {
-			return this.message;
 		}
 	}
 

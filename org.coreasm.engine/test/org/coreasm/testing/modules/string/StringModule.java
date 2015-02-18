@@ -1,4 +1,4 @@
-package org.coreasm.testing.modules;
+package org.coreasm.testing.modules.string;
 
 import org.coreasm.testing.TestingHelperModule;
 

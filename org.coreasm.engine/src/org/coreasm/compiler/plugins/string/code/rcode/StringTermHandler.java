@@ -15,8 +15,8 @@ public class StringTermHandler implements CompilerCodeHandler {
 						+ replaceEscapeSeq(node.getToken()) + "\"));\n");
 	}
 	
-	private String replaceEscapeSeq(String o){
-		return o.replaceAll("\n", "\\n").
+	private String replaceEscapeSeq(String o){		
+		return o.replaceAll("\n", "\\\\n").
 				replaceAll("\\\"", "\\\\\"");
 	}
 
