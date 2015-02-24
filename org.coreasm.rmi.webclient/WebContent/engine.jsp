@@ -140,7 +140,6 @@
 				$.post("Control", {
 					command : "update",
 					engineId : "${requestScope.EngineId}",
-					location : $("#location").val(),
 					value : $("#value").val(),
 					agent : $("#agent").val()
 				})
@@ -160,7 +159,7 @@
 	<button class="command" value="pause" type="button">Pause</button>
 	<button class="command" value="step" type="button">Step</button>
 	<div id="updateDiv">
-		<input type="text" id="agent" /> <input type="text" id="location" /> <input type="text" id="value" />
+		<label for="agent">Agent:</label> <input type="text" id="agent" /> <label for="value">Code:</label> <input type="text" id="value" />
 		<button type="button" id="updateBtn">Update</button>
 	</div>
 

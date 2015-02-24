@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.codehaus.jparsec.Parser;
 import org.coreasm.engine.ControlAPI;
@@ -23,7 +22,6 @@ import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineErrorObserver;
 import org.coreasm.engine.EngineEvent;
-import org.coreasm.engine.EngineModeEvent;
 import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.StepFailedEvent;
@@ -38,12 +36,10 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
-import org.coreasm.engine.scheduler.Scheduler;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
-
 
 /**
  * @author Stephan
@@ -102,6 +98,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 		pendingUpdates = new HashMap<String, ArrayList<String>>();
 		updateMap = new HashMap<String, ArrayList<String>>();
+		parentCache = new HashMap<ASTNode, ASTNode>();
 	}
 
 	public EngineControlImp(String id) throws RemoteException {
@@ -244,7 +241,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 		engine.addObserver(this);
 		engine.addInterpreterListener(this);
-		
+
 		Set<Update> updates, prevupdates = null;
 
 		try {
@@ -310,7 +307,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				}
 
 				takeSingleStep = false;
-				
+
 				synchronized (updateMap) {
 					if (!pendingUpdates.isEmpty()) {
 						updateMap.putAll(pendingUpdates);
@@ -318,7 +315,6 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					}
 				}
 
-				
 				driverInfo.setStatus(EngineDriverStatus.running);
 
 				engine.step();
@@ -343,6 +339,9 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				synchronized (previousUpdates) {
 					previousUpdates.add(updates);
 				}
+				
+				resetParents();
+				
 				propagateUpdate(updates);
 			}
 			if (engine.getEngineMode() != EngineMode.emIdle)
@@ -369,6 +368,13 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		}
 		engine.terminate();
 		driverInfo.setStatus(EngineDriverStatus.stopped);
+	}
+
+	private void resetParents() {
+		for (Map.Entry<ASTNode, ASTNode> nodePair : parentCache.entrySet()) {
+			nodePair.getKey().setParent(nodePair.getValue());			
+		}		
+		parentCache.clear();
 	}
 
 	private boolean terminated(int step, Set<Update> updates,
@@ -491,15 +497,14 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	}
 
 	@Override
-	public void addUpdate(String locationName, String value, String agent)
-			throws RemoteException {
+	public void addUpdate(String value, String agent) throws RemoteException {
 		synchronized (updateMap) {
 			ArrayList<String> updtLst = pendingUpdates.get(agent);
 			if (updtLst == null) {
 				updtLst = new ArrayList<String>();
 				pendingUpdates.put(agent, updtLst);
 			}
-			updtLst.add(locationName + " := " + value);
+			updtLst.add(value);
 		}
 	}
 
@@ -533,61 +538,64 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	@Override
 	public void beforeNodeEvaluation(ASTNode pos) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void afterNodeEvaluation(ASTNode pos) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	//only called on evaluation of an agent
+	// only called on evaluation of an agent
 	@Override
 	public void initProgramExecution(Element agent, RuleElement program) {
+		ArrayList<String> updtLst = null;
 		synchronized (updateMap) {
 			if ((updateMap.size() != 0) && (agent instanceof EnumerationElement)) {
 				String agentName = ((EnumerationElement)agent).getName();
-				ArrayList<String> updtLst = updateMap.remove(agentName);
-				
-				//generating a par-block containing all updates queued for the passed agent
-				if (updtLst != null && !updtLst.isEmpty()) {
-				String updtCode = "par ";
-				for (String update : updtLst) {
-					updtCode += update + ' ';
-				}
-				updtCode += "endpar";
-	
-				//parsing the generated block
-	            Parser<Node> blockParser = ((ParserPlugin) engine
-	                    .getPlugin("BlockRulePlugin")).getParsers().get(
-	                    "Rule").parser;
-	            ParserTools parserTools = ParserTools.getInstance(engine);
-	            Parser<Node> parser = blockParser.from(
-	                    parserTools.getTokenizer(), parserTools.getIgnored());
-	            ASTNode updtTree = (ASTNode) parser.parse(updtCode);    
-	            
-	            //inserting the block as root of the calling interpreter
-	            Interpreter intr = engine.getInterpreter().getInterpreterInstance();          
-				updtTree.addChildAfter(updtTree.getFirst(), "", intr.getPosition());			
-				intr.setPosition(updtTree);
-				}
+				updtLst = updateMap.remove(agentName);				
 			}
-		}		
+		}	
+		
+		//generating a par-block containing all updates queued for the passed agent
+		if (updtLst != null && !updtLst.isEmpty()) {
+			String updtCode = "par ";
+			for (String update : updtLst) {
+				updtCode += update + ' ';
+			}
+			updtCode += "endpar";
+
+			//parsing the generated block
+            Parser<Node> blockParser = ((ParserPlugin) engine
+                    .getPlugin("BlockRulePlugin")).getParsers().get(
+                    "Rule").parser;
+            ParserTools parserTools = ParserTools.getInstance(engine);
+            Parser<Node> parser = blockParser.from(
+                    parserTools.getTokenizer(), parserTools.getIgnored());
+            ASTNode updtTree = (ASTNode) parser.parse(updtCode);    
+            
+            //inserting the block as root of the calling interpreter
+            Interpreter intr = engine.getInterpreter().getInterpreterInstance();
+            ASTNode node = intr.getPosition();
+            parentCache.put(node, node.getParent());
+			updtTree.addChildAfter(updtTree.getFirst(), "", node);			
+			intr.setPosition(updtTree);
+		}
 	}
 
 	@Override
 	public void onRuleCall(RuleElement rule, List<ASTNode> args, ASTNode pos,
 			Element agent) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos,
 			Element agent) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

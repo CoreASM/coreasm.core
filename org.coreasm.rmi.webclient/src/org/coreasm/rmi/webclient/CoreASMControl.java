@@ -84,9 +84,8 @@ public class CoreASMControl extends HttpServlet {
 						break;
 					case update:
 						String agent = (String) request.getParameter("agent");
-						String loc = (String) request.getParameter("location");
 						String val = (String) request.getParameter("value");
-						ctrl.addUpdate(loc, val, agent);
+						ctrl.addUpdate(val, agent);
 						break;
 					case step:
 						ctrl.singleStep();
