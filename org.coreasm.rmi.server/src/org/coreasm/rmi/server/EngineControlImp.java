@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.coreasm.rmi.server;
 
 import java.io.BufferedReader;
@@ -40,11 +37,8 @@ import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
+import org.coreasm.engine.plugins.schedulingpolicies.SchedulingPoliciesPlugin;
 
-/**
- * @author Stephan
- *
- */
 public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		EngineControl, EngineStepObserver, EngineErrorObserver,
 		EngineModeObserver, InterpreterListener {
@@ -81,6 +75,8 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
 		engine.initialize();
 		engine.waitWhileBusy();
+		engine.setProperty(SchedulingPoliciesPlugin.POLICY_PROPERTY,
+				SchedulingPoliciesPlugin.ALL_FIRST_NAME);
 
 		stopOnEmptyUpdates = false;
 		stopOnStableUpdates = false;
@@ -293,9 +289,13 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					driverInfo.setStatus(EngineDriverStatus.paused);
 					System.err
 							.println("[!] Run is paused by user. Click on resume to continue...");
-
-					while (shouldPause && !takeSingleStep && !shouldStop)
+					int pausecount = 0;
+					while (shouldPause && !takeSingleStep && !shouldStop) {
 						Thread.sleep(100);
+						pausecount++;
+						if (pausecount == 18000)
+							shouldStop = true;
+					}
 
 					if (!shouldStop)
 						System.err.println("[!] Resuming.");
@@ -339,9 +339,9 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				synchronized (previousUpdates) {
 					previousUpdates.add(updates);
 				}
-				
+
 				resetParents();
-				
+
 				propagateUpdate(updates);
 			}
 			if (engine.getEngineMode() != EngineMode.emIdle)
@@ -372,8 +372,8 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 	private void resetParents() {
 		for (Map.Entry<ASTNode, ASTNode> nodePair : parentCache.entrySet()) {
-			nodePair.getKey().setParent(nodePair.getValue());			
-		}		
+			nodePair.getKey().setParent(nodePair.getValue());
+		}
 		parentCache.clear();
 	}
 
@@ -552,13 +552,15 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	public void initProgramExecution(Element agent, RuleElement program) {
 		ArrayList<String> updtLst = null;
 		synchronized (updateMap) {
-			if ((updateMap.size() != 0) && (agent instanceof EnumerationElement)) {
-				String agentName = ((EnumerationElement)agent).getName();
-				updtLst = updateMap.remove(agentName);				
+			if ((updateMap.size() != 0)
+					&& (agent instanceof EnumerationElement)) {
+				String agentName = ((EnumerationElement) agent).getName();
+				updtLst = updateMap.remove(agentName);
 			}
-		}	
-		
-		//generating a par-block containing all updates queued for the passed agent
+		}
+
+		// generating a par-block containing all updates queued for the passed
+		// agent
 		if (updtLst != null && !updtLst.isEmpty()) {
 			String updtCode = "par ";
 			for (String update : updtLst) {
@@ -566,20 +568,19 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			}
 			updtCode += "endpar";
 
-			//parsing the generated block
-            Parser<Node> blockParser = ((ParserPlugin) engine
-                    .getPlugin("BlockRulePlugin")).getParsers().get(
-                    "Rule").parser;
-            ParserTools parserTools = ParserTools.getInstance(engine);
-            Parser<Node> parser = blockParser.from(
-                    parserTools.getTokenizer(), parserTools.getIgnored());
-            ASTNode updtTree = (ASTNode) parser.parse(updtCode);    
-            
-            //inserting the block as root of the calling interpreter
-            Interpreter intr = engine.getInterpreter().getInterpreterInstance();
-            ASTNode node = intr.getPosition();
-            parentCache.put(node, node.getParent());
-			updtTree.addChildAfter(updtTree.getFirst(), "", node);			
+			// parsing the generated block
+			Parser<Node> blockParser = ((ParserPlugin) engine
+					.getPlugin("BlockRulePlugin")).getParsers().get("Rule").parser;
+			ParserTools parserTools = ParserTools.getInstance(engine);
+			Parser<Node> parser = blockParser.from(parserTools.getTokenizer(),
+					parserTools.getIgnored());
+			ASTNode updtTree = (ASTNode) parser.parse(updtCode);
+
+			// inserting the block as root of the calling interpreter
+			Interpreter intr = engine.getInterpreter().getInterpreterInstance();
+			ASTNode node = intr.getPosition();
+			parentCache.put(node, node.getParent());
+			updtTree.addChildAfter(updtTree.getFirst(), "", node);
 			intr.setPosition(updtTree);
 		}
 	}
