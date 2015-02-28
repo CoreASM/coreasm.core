@@ -168,7 +168,7 @@ public class ASMDocument
 		return 0;
 	}
 	
-	public static int calculateLength(Node node) {
+	public int calculateLength(Node node) {
 		if (node != null) {
 			Node lastChild = node;
 			while (lastChild.getFirstCSTNode() != null) {
@@ -176,10 +176,7 @@ public class ASMDocument
 				while (lastChild.getNextCSTNode() != null)
 					lastChild = lastChild.getNextCSTNode();
 			}
-			int len = 0;
-			if (lastChild.getToken() != null)
-				len = lastChild.getToken().length();
-			return lastChild.getScannerInfo().charPosition + len - node.getScannerInfo().charPosition;
+			return getNodePosition(lastChild) + lastChild.unparse().length() - getNodePosition(node);
 		}
 		return 0;
 	}

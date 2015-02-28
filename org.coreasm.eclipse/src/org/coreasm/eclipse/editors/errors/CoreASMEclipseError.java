@@ -16,7 +16,7 @@ public class CoreASMEclipseError extends AbstractError {
 		super(ErrorType.COREASM_ERROR);
 		set(AbstractError.DESCRIPTION, "CoreASM Error: " + error.showError(null, null));
 		set(AbstractError.POSITION, document.getCharPosition(error.getPos(), error.getSpec()));
-		set(AbstractError.LENGTH, ASMDocument.calculateLength(error.node));
+		set(AbstractError.LENGTH, document.calculateLength(error.node));
 	}
 	
 	protected CoreASMEclipseError(Map<String, String> attributes)

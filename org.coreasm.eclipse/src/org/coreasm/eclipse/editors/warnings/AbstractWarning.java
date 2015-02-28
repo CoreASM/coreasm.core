@@ -1,5 +1,8 @@
 package org.coreasm.eclipse.editors.warnings;
 
+import org.coreasm.eclipse.editors.ASMDocument;
+import org.coreasm.engine.interpreter.Node;
+
 
 /**
  * An abstract implementation of a warning
@@ -12,6 +15,10 @@ public abstract class AbstractWarning {
 	private final int position;
 	private final int length;
 	
+	public AbstractWarning(String description, String data, Node node, ASMDocument document) {
+		this(description, data, document.getNodePosition(node), document.calculateLength(node));
+	}
+
 	public AbstractWarning(String description, String data, int position, int length) {
 		this.description = description;
 		this.data = data;

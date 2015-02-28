@@ -158,7 +158,7 @@ public class ASMAstTreeView extends ViewPart implements ILinkedWithASMEditorView
 		if (element instanceof Node) {
 			Node node = (Node) element;
 			ASMDocument document = (ASMDocument) asmEditor.getInputDocument();
-			asmEditor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node)), ASMDocument.calculateLength(node), true);
+			asmEditor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node)), document.calculateLength(node), true);
 		} else
 			asmEditor.resetHighlightRange();
 	}
