@@ -166,8 +166,10 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 							if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
 								ParserPlugin parserPlugin = (ParserPlugin)plugin;
 								for (String keyword : parserPlugin.getKeywords()) {
-									if (isSimilar(undefinedRule, keyword))
+									if (isSimilar(undefinedRule, keyword)) {
 										proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
+										break;
+									}
 								}
 							}
 						}
@@ -211,8 +213,10 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 					if (!Kernel.PLUGIN_NAME.equals(plugin.getName()) && plugin instanceof ParserPlugin) {
 						ParserPlugin parserPlugin = (ParserPlugin)plugin;
 						for (String keyword : parserPlugin.getKeywords()) {
-							if (isSimilar(syntaxError.getEncountered(), keyword))
+							if (isSimilar(syntaxError.getEncountered(), keyword)) {
 								proposals.add(new UsePluginProposal(plugin.getName(), IconManager.getIcon("/icons/editor/package.gif")));
+								break;
+							}
 						}
 					}
 				}
