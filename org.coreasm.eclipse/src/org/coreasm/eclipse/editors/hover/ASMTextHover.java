@@ -14,24 +14,12 @@ import org.coreasm.eclipse.editors.ASMDocument;
 import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.quickfix.ASMQuickAssistProcessor;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
-import org.coreasm.engine.EngineException;
 import org.coreasm.engine.Specification.FunctionInfo;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
-import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.RuleOrFuncElementNode;
-import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
-import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
-import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
-import org.coreasm.engine.plugins.letrule.LetRuleNode;
-import org.coreasm.engine.plugins.list.ListCompNode;
-import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
-import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
-import org.coreasm.engine.plugins.set.SetCompNode;
-import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
-import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
@@ -195,9 +183,9 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 						FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 						if (frNode.hasName() && hoverRegion.getOffset() + hoverRegion.getLength() < offset + frNode.getName().length()) {
 							String value = getExpressionValue(textViewer.getDocument(), frNode.getName());
-							if (isEnvironmentVariable(frNode))
+							if (ASMDeclarationWatcher.isEnvironmentVariable(frNode))
 								return new HoverInfo("Environment Variable: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
-							if (isLocalFunction(frNode))
+							if (ASMDeclarationWatcher.isLocalFunction(frNode))
 								return new HoverInfo("Local function: " + frNode.getName() + (value != null ? " = " + value : "") + "\nParser Info: " + frNode);
 							FunctionInfo pluginFunction = getPluginFunction(frNode.getName());
 							if (pluginFunction != null)
@@ -257,251 +245,6 @@ implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IDebugContextL
 				return declaration.toString();
 			}
 		}
-		return null;
-	}
-	
-	private boolean isEnvironmentVariable(FunctionRuleTermNode frNode) {
-		if (isParam(frNode))
-			return true;
-		if (isInLetVariableMap(frNode))
-			return true;
-		if (isForallRuleVariable(frNode))
-			return true;
-		if (isForallExpVariable(frNode))
-			return true;
-		if (isExistsExpVariable(frNode))
-			return true;
-		if (isChooseVariable(frNode))
-			return true;
-		if (isExtendRuleVariable(frNode))
-			return true;
-		if (isSetComprehensionConstrainerVariable(frNode))
-			return true;
-		if (isListComprehensionVariable(frNode))
-			return true;
-		if (isImportRuleVariable(frNode))
-			return true;
-		return false;
-	}
-	
-	private boolean isParam(FunctionRuleTermNode frNode) {
-		final ASTNode ruleNode = getParentRuleNode(frNode);
-		if (ruleNode != null) {
-			final ASTNode idNode = ruleNode.getFirst().getFirst();
-			for (ASTNode paramNode = idNode.getNext(); paramNode != null; paramNode = paramNode.getNext()) {
-				if (paramNode.getToken().equals(frNode.getName()))
-					return true;
-			}
-		}
-		return false;
-	}
-	
-	private ASTNode getParentRuleNode(ASTNode node) {
-		ASTNode parentRuleNode = node.getParent();
-		while (parentRuleNode != null && !Kernel.GR_RULEDECLARATION.equals(parentRuleNode.getGrammarRule()) && !"DerivedFunctionDeclaration".equals(parentRuleNode.getGrammarRule()))
-			parentRuleNode = parentRuleNode.getParent();
-		return parentRuleNode;
-	}
-	
-	private boolean isInLetVariableMap(FunctionRuleTermNode frNode) {
-		for (LetRuleNode letRuleNode = getParentLetRuleNode(frNode); letRuleNode != null; letRuleNode = getParentLetRuleNode(letRuleNode)) {
-			try {
-				if (letRuleNode.getVariableMap().containsKey(frNode.getName()))
-					return true;
-			} catch (Exception e) {
-			}
-		}
-		return false;
-	}
-
-	private LetRuleNode getParentLetRuleNode(ASTNode node) {
-		ASTNode letRuleNode = node.getParent();
-		while (letRuleNode != null && !(letRuleNode instanceof LetRuleNode))
-			letRuleNode = letRuleNode.getParent();
-		if (letRuleNode instanceof LetRuleNode)
-			return (LetRuleNode)letRuleNode;
-		return null;
-	}
-	
-	private boolean isLocalFunction(FunctionRuleTermNode frNode) {
-		for (LocalRuleNode localRuleNode = getParentLocalRuleNode(frNode); localRuleNode != null; localRuleNode = getParentLocalRuleNode(localRuleNode)) {
-			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
-				return true;
-		}
-		if (isReturnRuleExpression(frNode))
-			return true;
-		return false;
-	}
-	
-	private LocalRuleNode getParentLocalRuleNode(ASTNode node) {
-		ASTNode localRuleNode = node.getParent();
-		while (localRuleNode != null && !(localRuleNode instanceof LocalRuleNode))
-			localRuleNode = localRuleNode.getParent();
-		if (localRuleNode instanceof LocalRuleNode)
-			return (LocalRuleNode)localRuleNode;
-		return null;
-	}
-	
-	private boolean isForallRuleVariable(FunctionRuleTermNode frNode) {
-		for (ForallRuleNode forallRuleNode = getParentForallRuleNode(frNode); forallRuleNode != null; forallRuleNode = getParentForallRuleNode(forallRuleNode)) {
-			if (forallRuleNode.getVariableMap().containsKey(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ForallRuleNode getParentForallRuleNode(ASTNode node) {
-		ASTNode forallRuleNode = node.getParent();
-		while (forallRuleNode != null && !(forallRuleNode instanceof ForallRuleNode))
-			forallRuleNode = forallRuleNode.getParent();
-		if (forallRuleNode instanceof ForallRuleNode)
-			return (ForallRuleNode)forallRuleNode;
-		return null;
-	}
-	
-	private boolean isForallExpVariable(FunctionRuleTermNode frNode) {
-		for (ForallExpNode forallExpNode = getParentForallExpNode(frNode); forallExpNode != null; forallExpNode = getParentForallExpNode(forallExpNode)) {
-			if (forallExpNode.getVariable().getToken().equals(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ForallExpNode getParentForallExpNode(ASTNode node) {
-		ASTNode forallExpNode = node.getParent();
-		while (forallExpNode != null && !(forallExpNode instanceof ForallExpNode))
-			forallExpNode = forallExpNode.getParent();
-		if (forallExpNode instanceof ForallExpNode)
-			return (ForallExpNode)forallExpNode;
-		return null;
-	}
-	
-	private boolean isExistsExpVariable(FunctionRuleTermNode frNode) {
-		for (ExistsExpNode existsExpNode = getParentExistsExpNode(frNode); existsExpNode != null; existsExpNode = getParentExistsExpNode(existsExpNode)) {
-			if (existsExpNode.getVariable().getToken().equals(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ExistsExpNode getParentExistsExpNode(ASTNode node) {
-		ASTNode existsExpNode = node.getParent();
-		while (existsExpNode != null && !(existsExpNode instanceof ExistsExpNode))
-			existsExpNode = existsExpNode.getParent();
-		if (existsExpNode instanceof ExistsExpNode)
-			return (ExistsExpNode)existsExpNode;
-		return null;
-	}
-	
-	private boolean isChooseVariable(FunctionRuleTermNode frNode) {
-		for (ChooseRuleNode chooseRuleNode = getParentChooseRuleNode(frNode); chooseRuleNode != null; chooseRuleNode = getParentChooseRuleNode(chooseRuleNode)) {
-			if (chooseRuleNode.getVariableMap().containsKey(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ChooseRuleNode getParentChooseRuleNode(ASTNode node) {
-		ASTNode chooseRuleNode = node.getParent();
-		while (chooseRuleNode != null && !(chooseRuleNode instanceof ChooseRuleNode))
-			chooseRuleNode = chooseRuleNode.getParent();
-		if (chooseRuleNode instanceof ChooseRuleNode)
-			return (ChooseRuleNode)chooseRuleNode;
-		return null;
-	}
-	
-	private boolean isExtendRuleVariable(FunctionRuleTermNode frNode) {
-		for (ExtendRuleNode extendRuleNode = getParentExtendRuleNode(frNode); extendRuleNode != null; extendRuleNode = getParentExtendRuleNode(extendRuleNode)) {
-			if (extendRuleNode.getIdNode().getToken().equals(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ExtendRuleNode getParentExtendRuleNode(ASTNode node) {
-		ASTNode extendRuleNode = node.getParent();
-		while (extendRuleNode != null && !(extendRuleNode instanceof ExtendRuleNode))
-			extendRuleNode = extendRuleNode.getParent();
-		if (extendRuleNode instanceof ExtendRuleNode)
-			return (ExtendRuleNode)extendRuleNode;
-		return null;
-	}
-	
-	private boolean isSetComprehensionConstrainerVariable(FunctionRuleTermNode frNode) {
-		for (SetCompNode setCompNode = getParentSetCompNode(frNode); setCompNode != null; setCompNode = getParentSetCompNode(setCompNode)) {
-			try {
-				if (setCompNode.getVarBindings().containsKey(frNode.getName()))
-					return true;
-			} catch (EngineException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return false;
-	}
-	
-	private SetCompNode getParentSetCompNode(ASTNode node) {
-		ASTNode setCompNode = node.getParent();
-		while (setCompNode != null && !(setCompNode instanceof SetCompNode))
-			setCompNode = setCompNode.getParent();
-		if (setCompNode instanceof SetCompNode)
-			return (SetCompNode)setCompNode;
-		return null;
-	}
-	
-	private boolean isListComprehensionVariable(FunctionRuleTermNode frNode) {
-		for (ListCompNode listCompNode = getParentListCompNode(frNode); listCompNode != null; listCompNode = getParentListCompNode(listCompNode)) {
-			try {
-				if (listCompNode.getVarBindings().containsKey(frNode.getName()))
-					return true;
-			} catch (EngineException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return false;
-	}
-	
-	private ListCompNode getParentListCompNode(ASTNode node) {
-		ASTNode listCompNode = node.getParent();
-		while (listCompNode != null && !(listCompNode instanceof ListCompNode))
-			listCompNode = listCompNode.getParent();
-		if (listCompNode instanceof ListCompNode)
-			return (ListCompNode)listCompNode;
-		return null;
-	}
-	
-	private boolean isReturnRuleExpression(FunctionRuleTermNode frNode) {
-		for (ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode); returnRuleNode != null; returnRuleNode = getParentReturnRuleNode(returnRuleNode)) {
-			if (returnRuleNode.getExpressionNode().getFirst().getToken().equals(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ReturnRuleNode getParentReturnRuleNode(ASTNode node) {
-		ASTNode returnRuleNode = node.getParent();
-		while (returnRuleNode != null && !(returnRuleNode instanceof ReturnRuleNode))
-			returnRuleNode = returnRuleNode.getParent();
-		if (returnRuleNode instanceof ReturnRuleNode)
-			return (ReturnRuleNode)returnRuleNode;
-		return null;
-	}
-	
-	private boolean isImportRuleVariable(FunctionRuleTermNode frNode) {
-		for (ASTNode importRuleNode = getParentImportRuleNode(frNode); importRuleNode != null; importRuleNode = getParentImportRuleNode(importRuleNode)) {
-			if (importRuleNode.getFirst().getToken().equals(frNode.getName()))
-				return true;
-		}
-		return false;
-	}
-	
-	private ASTNode getParentImportRuleNode(ASTNode node) {
-		ASTNode importRuleNode = node.getParent();
-		while (importRuleNode != null && !"ImportRule".equals(importRuleNode.getGrammarRule()))
-			importRuleNode = importRuleNode.getParent();
-		if (importRuleNode != null && "ImportRule".equals(importRuleNode.getGrammarRule()))
-			return importRuleNode;
 		return null;
 	}
 	
