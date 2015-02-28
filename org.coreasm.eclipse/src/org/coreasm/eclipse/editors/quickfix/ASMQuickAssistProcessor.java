@@ -17,6 +17,7 @@ import org.coreasm.eclipse.editors.errors.PluginErrorRecognizer;
 import org.coreasm.eclipse.editors.errors.RuleErrorRecognizer;
 import org.coreasm.eclipse.editors.errors.SimpleError;
 import org.coreasm.eclipse.editors.errors.SyntaxError;
+import org.coreasm.eclipse.editors.quickfix.proposals.AddEndifProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateFunctionProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateRuleProposal;
 import org.coreasm.eclipse.editors.quickfix.proposals.CreateUniverseProposal;
@@ -154,6 +155,8 @@ public class ASMQuickAssistProcessor implements IQuickAssistProcessor {
 				}
 				proposals.add(new CompletionProposal(data[1] + "(" + params + ")", start, end - start, data[1].length() + 1, IconManager.getIcon("/icons/editor/bullet.gif"), "Replace with '" + data[1] + "(" + params + ")'", null, null));
 			}
+			else if ("DanglingElse".equals(data[0]))
+				proposals.add(new AddEndifProposal(Integer.parseInt(data[1]), IconManager.getIcon("/icons/editor/option.gif")));
 		}
 		else {
 			AbstractError error = AbstractError.createFromMarker(marker);
