@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
+import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngineFactory;
 import org.coreasm.engine.CoreASMError;
@@ -75,8 +76,8 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
 		engine.initialize();
 		engine.waitWhileBusy();
-		engine.setProperty(SchedulingPoliciesPlugin.POLICY_PROPERTY,
-				SchedulingPoliciesPlugin.ALL_FIRST_NAME);
+		// engine.setProperty(SchedulingPoliciesPlugin.POLICY_PROPERTY,
+		// SchedulingPoliciesPlugin.ALL_FIRST_NAME);
 
 		stopOnEmptyUpdates = false;
 		stopOnStableUpdates = false;
@@ -562,11 +563,11 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		// generating a par-block containing all updates queued for the passed
 		// agent
 		if (updtLst != null && !updtLst.isEmpty()) {
-			String updtCode = "par ";
+			String updtCode = "par\n";
 			for (String update : updtLst) {
-				updtCode += update + ' ';
+				updtCode += update + '\n';
 			}
-			updtCode += "endpar";
+			updtCode += "endpar\n";
 
 			// parsing the generated block
 			Parser<Node> blockParser = ((ParserPlugin) engine
@@ -574,14 +575,23 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			ParserTools parserTools = ParserTools.getInstance(engine);
 			Parser<Node> parser = blockParser.from(parserTools.getTokenizer(),
 					parserTools.getIgnored());
-			ASTNode updtTree = (ASTNode) parser.parse(updtCode);
+			ASTNode updtTree = null;
+			try {
+				updtTree = (ASTNode) parser.parse(updtCode);
+			} catch (ParserException e) {
+				propagateError(e.getMessage());
+				updtTree = null;
+			}
 
-			// inserting the block as root of the calling interpreter
-			Interpreter intr = engine.getInterpreter().getInterpreterInstance();
-			ASTNode node = intr.getPosition();
-			parentCache.put(node, node.getParent());
-			updtTree.addChildAfter(updtTree.getFirst(), "", node);
-			intr.setPosition(updtTree);
+			if (updtTree != null) {
+				// inserting the block as root of the calling interpreter
+				Interpreter intr = engine.getInterpreter()
+						.getInterpreterInstance();
+				ASTNode node = intr.getPosition();
+				parentCache.put(node, node.getParent());
+				updtTree.addChildAfter(null, "", node);
+				intr.setPosition(updtTree);
+			}
 		}
 	}
 
