@@ -60,7 +60,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.abs(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.abs(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -72,7 +72,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.acos(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.acos(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -84,7 +84,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.asin(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.asin(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -96,7 +96,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.atan(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.atan(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -108,7 +108,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.atan2(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.atan2(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -120,7 +120,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -132,7 +132,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -144,7 +144,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.ceil(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.ceil(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -156,7 +156,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cos(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.cos(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -168,7 +168,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cosh(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.cosh(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -180,7 +180,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.exp(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.exp(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -192,7 +192,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.expm1(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.expm1(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -204,7 +204,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.floor(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.floor(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -216,7 +216,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.hypot(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.hypot(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -228,7 +228,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.IEEEremainder(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.IEEEremainder(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -240,7 +240,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.log(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -252,7 +252,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log10(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.log10(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -264,7 +264,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log1p(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.log1p(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -276,7 +276,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.max(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.max(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else {" + 
 				 "					Element arg = args.get(0);" + 
 				 "					if (args.size() == 1 && arg != null && arg instanceof Enumerable ) {" + 
@@ -302,7 +302,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.min(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.min(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else {" + 
 				 "					Element arg = args.get(0);" + 
 				 "					if (args.size() == 1 && arg != null && arg instanceof Enumerable ) {" + 
@@ -329,7 +329,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.pow(ithValue(args, 0), ithValue(args, 1), engine));" + 
+				 "					return NumberElement.getInstance(Math.pow(ithValue(args, 0), ithValue(args, 1)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -370,7 +370,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.round(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.round(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -382,7 +382,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.signum(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.signum(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -394,7 +394,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sin(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.sin(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -406,7 +406,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sinh(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.sinh(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -418,7 +418,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sqrt(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.sqrt(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -430,7 +430,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.tan(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.tan(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -442,7 +442,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.tanh(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.tanh(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -454,7 +454,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.toDegrees(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.toDegrees(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
@@ -466,7 +466,7 @@ public class MathPluginHelper {
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.toRadians(ithValue(args, 0), engine));" + 
+				 "					return NumberElement.getInstance(Math.toRadians(ithValue(args, 0)));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 

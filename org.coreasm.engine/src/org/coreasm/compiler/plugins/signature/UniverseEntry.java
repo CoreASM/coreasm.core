@@ -28,6 +28,7 @@ public class UniverseEntry implements LibraryEntry {
 	public UniverseEntry(String name, String[] elements, CompilerEngine engine) {
 		this.name = name;
 		this.elements = elements;
+		this.engine = engine;
 	}
 
 	@Override
