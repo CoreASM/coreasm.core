@@ -1,6 +1,8 @@
 package org.coreasm.compiler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,6 +27,7 @@ import org.coreasm.compiler.mainprogram.MainFile;
 import org.coreasm.compiler.preprocessor.Information;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.compiler.variablemanager.VarManager;
+import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngineFactory;
 import org.coreasm.engine.Engine;
@@ -258,7 +261,23 @@ public class CoreASMCompiler implements CompilerEngine {
 		if(cp instanceof CompilerCodePlugin){
 			CompilerCodePlugin resp = (CompilerCodePlugin) cp;
 			
-			CodeFragment coderes = resp.compile(type, node);
+			CodeFragment coderes = null;
+			try{
+				coderes = resp.compile(type, node);
+			}
+			catch(CompilerException e){
+				//try to build information about the node
+				if(!e.isEvaluated()){
+					this.addError(CompilationErrorHelper.makeErrorMessage(node, (ControlAPI) coreasm, e.getMessage(), cp.getClass().getName()));
+					throw new CompilerException(e, true);
+				}
+				throw e;
+			}
+			catch(Exception e){
+				this.addError(CompilationErrorHelper.makeErrorMessage(node, (ControlAPI) coreasm, e.getMessage(), cp.getClass().getName()));
+				throw new CompilerException(e, true);
+			}
+			
 			
 			//note: code might get too large for java limits (65535 bytes for methods)
 			//check here
@@ -351,6 +370,17 @@ public class CoreASMCompiler implements CompilerEngine {
 		lastTime = System.nanoTime();
 		//create an engine and parse the specification
 		Engine cae = null;
+		//mute the coreasm engine
+		
+		PrintStream origOutput = null;
+		PrintStream devnull = null;
+		if(getOptions().hideCoreASMOutput){
+			getLogger().warn(this.getClass(), "CoreASM output is hidden");
+			origOutput = System.out;
+			devnull = new PrintStream(new ByteArrayOutputStream());
+			System.setOut(devnull);
+		}
+		
 		if(coreasm != null){
 			cae = (Engine) coreasm;
 		}
@@ -369,6 +399,13 @@ public class CoreASMCompiler implements CompilerEngine {
 			throw new CompilerException("could not load specification");
 		}
 		cae.terminate();
+		
+
+		if(getOptions().hideCoreASMOutput){
+			System.setOut(origOutput);
+			devnull.close();
+		}
+		
 		cTime = System.nanoTime();
 		addTiming("Load and parse");
 		
@@ -381,8 +418,8 @@ public class CoreASMCompiler implements CompilerEngine {
 			System.out.println("Plugins loaded");
 		}
 		catch(NotCompilableException nce){
-			nce.printStackTrace();
-			System.out.println("error: " + nce.getMessage());
+			//nce.printStackTrace();
+			//System.out.println("error: " + nce.getMessage());
 			throw new CompilerException(nce);
 		}
 		catch(Throwable t){
@@ -400,7 +437,7 @@ public class CoreASMCompiler implements CompilerEngine {
 			preprocessor.preprocessSpecification(info.root);
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			//e.printStackTrace();
 			addError("preprocessor had errors: " + e.getMessage());
 			throw new CompilerException(e);
 		}

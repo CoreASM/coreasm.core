@@ -110,6 +110,14 @@ public class CompilerOptions {
 	 */
 	public boolean logTimings = false;
 	/**
+	 * Amount of time the preprocessor should run before it is terminated
+	 */
+	public int preprocessorRuns = 10;
+	/**
+	 * If set to true the compiler will hide the output from the coreasm engine
+	 */
+	public boolean hideCoreASMOutput = true;
+	/**
 	 * General properties provided by plugins
 	 * Any Plugin can store options for other plugins here
 	 */

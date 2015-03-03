@@ -154,6 +154,8 @@ public class ClassInclude implements LibraryEntry{
 				if (jarjar != null) jarjar.close();
 			}
 			catch(Exception e){
+				//Note: Print Stack Trace is in here, as I don't really know when this error
+				//could ever occur
 				e.printStackTrace();
 				engine.getLogger().error(ClassInclude.class, "Could not close in and out streams");
 			}

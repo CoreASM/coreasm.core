@@ -7,6 +7,7 @@ package org.coreasm.compiler.exception;
  */
 public class CompilerException extends Exception {
 	private static final long serialVersionUID = -3225927157444291083L;
+	private boolean evaluated;
 	
 	/**
 	 * Builds a new exception with the given child
@@ -22,5 +23,14 @@ public class CompilerException extends Exception {
 	 */
 	public CompilerException(String s){
 		super(s);
+	}
+	
+	public CompilerException(Exception e, boolean evaluated){
+		super(e);
+		this.evaluated = evaluated;
+	}
+	
+	public boolean isEvaluated(){
+		return evaluated;
 	}
 }

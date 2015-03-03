@@ -277,7 +277,7 @@ public class Preprocessor {
 	 * Might not terminate, if a cycle exists in the rules provided by plugins
 	 * @param specRoot The root of the specification
 	 */
-	public void preprocessSpecification(ASTNode specRoot) {
+	public void preprocessSpecification(ASTNode specRoot) throws Exception{
 		if(root == null) root = specRoot;
 		int runCounter = 0;
 		boolean changed = false;
@@ -287,7 +287,10 @@ public class Preprocessor {
 			changed = processTopDown(specRoot) || changed;
 			
 			runCounter++;
-			if(runCounter == 10) System.out.println("preprocessor message: run is taking longer than normal. Maybe a cycle in the analysis classes?");
+			if(runCounter == engine.getOptions().preprocessorRuns){
+				engine.addError("Preprocessor exceeded maximum run duration");
+				throw new Exception("Preprocessor exceeded maximum run duration");
+			}
 		}while(changed);
 	}
 
