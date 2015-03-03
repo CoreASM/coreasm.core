@@ -28,10 +28,10 @@ public class SignatureHandler implements CompilerCodeHandler {
 			throws CompilerException {
 		ASTNode root = node.getAbstractChildNodes().get(0);
 		if (root.getGrammarRule().equals("UniverseDefinition")) {
-			parseUniverse(root);
+			parseUniverse(root, engine);
 			return;
 		} else if (root.getGrammarRule().equals("EnumerationDefinition")) {
-			parseEnum(root);
+			parseEnum(root, engine);
 			return;
 		} else if (root.getGrammarRule().equals("FunctionSignature")) {
 			parseFunction(root, engine);
@@ -43,7 +43,7 @@ public class SignatureHandler implements CompilerCodeHandler {
 
 	}
 
-	private void parseUniverse(ASTNode node) {
+	private void parseUniverse(ASTNode node, CompilerEngine engine) {
 		String name = node.getAbstractChildNodes().get(0).getToken();
 		String[] elements = new String[node.getAbstractChildNodes().size() - 1];
 		for (int i = 1; i < node.getAbstractChildNodes().size(); i++) {
@@ -51,11 +51,11 @@ public class SignatureHandler implements CompilerCodeHandler {
 		}
 
 		parent.addEntry(name, parent.new IncludeEntry(
-				SignatureEntryType.UNIVERSE, new UniverseEntry(name, elements)));
+				SignatureEntryType.UNIVERSE, new UniverseEntry(name, elements, engine)));
 		// universes.put(name, new UniverseEntry(name, elements));
 	}
 
-	private void parseEnum(ASTNode node) {
+	private void parseEnum(ASTNode node, CompilerEngine engine) {
 		String name = node.getAbstractChildNodes().get(0).getToken();
 		String[] elements = new String[node.getAbstractChildNodes().size() - 1];
 		for (int i = 1; i < node.getAbstractChildNodes().size(); i++) {
@@ -63,7 +63,7 @@ public class SignatureHandler implements CompilerCodeHandler {
 		}
 
 		parent.addEntry(name, parent.new IncludeEntry(SignatureEntryType.ENUM,
-				new EnumBackgroundEntry(name, elements)));
+				new EnumBackgroundEntry(name, elements, engine)));
 		// enums.put(name, new EnumBackgroundEntry(name, elements));
 	}
 
@@ -102,7 +102,7 @@ public class SignatureHandler implements CompilerCodeHandler {
 		// add the function element
 		parent.addEntry(name, parent.new IncludeEntry(
 				SignatureEntryType.FUNCTION, new FunctionEntry(name, fclass,
-						domain, range, init)));
+						domain, range, init, engine)));
 		// functions.put(name, new FunctionEntry(name, fclass, domain, range,
 		// init));
 	}
@@ -137,7 +137,7 @@ public class SignatureHandler implements CompilerCodeHandler {
 			params[i - 1] = signature.getAbstractChildNodes().get(i).getToken();
 		}
 		
-		parent.addEntry(name, parent.new IncludeEntry(SignatureEntryType.DERIVED, new DerivedFunctionEntry(name, params, body)));
+		parent.addEntry(name, parent.new IncludeEntry(SignatureEntryType.DERIVED, new DerivedFunctionEntry(name, params, body, engine)));
 		//derived.put(name, new DerivedFunctionEntry(name, params, body));
 	}
 }

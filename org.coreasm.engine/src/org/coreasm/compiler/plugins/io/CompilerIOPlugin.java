@@ -15,7 +15,7 @@ import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
 import org.coreasm.compiler.plugins.io.code.ucode.PrintRuleHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
@@ -42,11 +42,11 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{			
@@ -97,5 +97,10 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 	@Override
 	public void registerCodeHandlers() throws CompilerException {
 		register(new PrintRuleHandler(), CodeType.U, "Rule", "PrintRule", null);
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 }

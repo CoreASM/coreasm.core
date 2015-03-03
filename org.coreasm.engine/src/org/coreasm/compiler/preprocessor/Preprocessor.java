@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.compiler.preprocessor.Information;
@@ -33,12 +33,14 @@ public class Preprocessor {
 	private Map<String, InheritRule> defaultInheritBehaviour;
 	private ASTNode root;
 	private PreprocessorDataManager manager;
+	private CompilerEngine engine;
 
 	/**
 	 * Initializes a new preprocessor.
 	 * The preprocessor is not ready to provide information, until the loadPlugins and preprocessSpecification methods have been called.
 	 */
-	public Preprocessor() {
+	public Preprocessor(CompilerEngine engine) {
+		this.engine = engine;
 		informationMap = new HashMap<ASTNode, Map<String, Information>>();
 		defaultSynthBehaviour = new HashMap<String, SynthesizeRule>();
 		defaultInheritBehaviour = new HashMap<String, InheritRule>();
@@ -64,7 +66,7 @@ public class Preprocessor {
 	 * @throws Exception If a plugin tries to register a default behaviour for a name which has already been registered
 	 */
 	public void loadPlugins(List<CompilerPreprocessorPlugin> list) throws Exception {
-		CoreASMCompiler.getEngine().getLogger().debug(Preprocessor.class, "loading preprocessor plugins");
+		engine.getLogger().debug(Preprocessor.class, "loading preprocessor plugins");
 		manager = new PreprocessorDataManager(list);
 		
 		for (CompilerPreprocessorPlugin p : list) {
@@ -73,10 +75,10 @@ public class Preprocessor {
 				//Main.getEngine().addWarning("warning : plugin " + ((CompilerPlugin) p).getName() + " provided a null synth behaviour list");
 				for (Entry<String, SynthesizeRule> d : p.getSynthDefaultBehaviours().entrySet()) {
 					if (defaultSynthBehaviour.containsKey(d.getKey())){
-						CoreASMCompiler.getEngine().addError("Preprocessor: a default synth behaviour for information '"	+ d.getKey() + "' was already registered");
+						engine.addError("Preprocessor: a default synth behaviour for information '"	+ d.getKey() + "' was already registered");
 						throw new Exception("a default synth behaviour for information '"	+ d.getKey() + "' was already registered");
 					}
-					CoreASMCompiler.getEngine().getLogger().debug(Preprocessor.class, "loaded default synthesize behaviour for entry '" + d.getKey() + "'");
+					engine.getLogger().debug(Preprocessor.class, "loaded default synthesize behaviour for entry '" + d.getKey() + "'");
 					defaultSynthBehaviour.put(d.getKey(), d.getValue());
 				}
 			}
@@ -85,10 +87,10 @@ public class Preprocessor {
 				//Main.getEngine().addWarning("warning : plugin " + ((CompilerPlugin) p).getName() + " provided a null inherit behaviour list");
 				for (Entry<String, InheritRule> d : p.getInheritDefaultBehaviours().entrySet()) {
 					if (defaultInheritBehaviour.containsKey(d.getKey())){
-						CoreASMCompiler.getEngine().addError("Preprocessor: a default inherit behaviour for information '"	+ d.getKey() + "' was already registered");
+						engine.addError("Preprocessor: a default inherit behaviour for information '"	+ d.getKey() + "' was already registered");
 						throw new Exception("a default inherit behaviour for information '"	+ d.getKey() + "' was already registered");
 					}
-					CoreASMCompiler.getEngine().getLogger().debug(Preprocessor.class, "loaded default inheritance behaviour for entry '" + d.getKey() + "'");
+					engine.getLogger().debug(Preprocessor.class, "loaded default inheritance behaviour for entry '" + d.getKey() + "'");
 					defaultInheritBehaviour.put(d.getKey(), d.getValue());
 				}
 			}
@@ -157,7 +159,7 @@ public class Preprocessor {
 		
 		for(String s : colliding){
 			System.out.println("warning, polluted entry for " + s);
-			CoreASMCompiler.getEngine().addWarning("warning: colliding entries in preprocessor for entry " + s);
+			engine.addWarning("warning: colliding entries in preprocessor for entry " + s);
 			current.remove(s);
 		}
 		colliding.clear();
@@ -211,7 +213,7 @@ public class Preprocessor {
 		for(InheritRule t : manager.getInheritRules(root)){
 			List<Map<String, Information>> res = t.transform(root, currentNode);
 			if(res == null || res.size() != root.getAbstractChildNodes().size()){
-				CoreASMCompiler.getEngine().addWarning("warning: wrong size of return list in preprocessor inherit rule for node (" + root.getPluginName() + ", " + root.getGrammarClass() + ", " + root.getGrammarRule() + ", " + root.getToken() + ")");
+				engine.addWarning("warning: wrong size of return list in preprocessor inherit rule for node (" + root.getPluginName() + ", " + root.getGrammarClass() + ", " + root.getGrammarRule() + ", " + root.getToken() + ")");
 				continue;
 			}
 			else{
@@ -230,7 +232,7 @@ public class Preprocessor {
 		for(int i = 0; i < colliding.size(); i++){
 			for(String s : colliding.get(i)){
 				System.out.println("warning, polluted entry for " + s);
-				CoreASMCompiler.getEngine().addWarning("warning: colliding entries in preprocessor for entry " + s);
+				engine.addWarning("warning: colliding entries in preprocessor for entry " + s);
 				current.get(i).remove(s);
 			}
 			colliding.get(i).clear();

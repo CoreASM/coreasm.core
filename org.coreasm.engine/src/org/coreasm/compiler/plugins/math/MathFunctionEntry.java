@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -20,20 +20,22 @@ import org.coreasm.compiler.exception.LibraryEntryException;
 public class MathFunctionEntry implements LibraryEntry {
 	private String name;
 	private CodeFragment body;
+	private CompilerEngine engine;
 	
 	/**
 	 * Initializes the function entry
 	 * @param name The name of the function
 	 * @param body The code body of the function
 	 */
-	public MathFunctionEntry(String name, CodeFragment body){
+	public MathFunctionEntry(String name, CodeFragment body, CompilerEngine engine){
 		this.name = name;
 		this.body = body;
+		this.engine = engine;
 	}
 
 	@Override
 	public void writeFile() throws LibraryEntryException {
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "MathPlugin");
 		File file = new File(directory, name + ".java");
 		
@@ -70,7 +72,7 @@ public class MathFunctionEntry implements LibraryEntry {
 				+ "import plugins.NumberPlugin.NumberElement;\n"
 				+ "public class " + name + " extends MathFunction{\n";
 		
-		result += body.generateCode();
+		result += body.generateCode(engine);
 		
 		result += "}\n";
 	

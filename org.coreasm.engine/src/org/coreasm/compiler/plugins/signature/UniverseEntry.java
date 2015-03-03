@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
@@ -18,20 +18,21 @@ import org.coreasm.compiler.exception.LibraryEntryException;
 public class UniverseEntry implements LibraryEntry {
 	private String name;
 	private String[] elements;
+	private CompilerEngine engine;
 	
 	/**
 	 * Creates a new universe entry
 	 * @param name The name of the final universe
 	 * @param elements The elements of the universe
 	 */
-	public UniverseEntry(String name, String[] elements) {
+	public UniverseEntry(String name, String[] elements, CompilerEngine engine) {
 		this.name = name;
 		this.elements = elements;
 	}
 
 	@Override
 	public void writeFile() throws LibraryEntryException {
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "SignaturePlugin");
 		File file = new File(directory, "Universe_" + name + ".java");
 		

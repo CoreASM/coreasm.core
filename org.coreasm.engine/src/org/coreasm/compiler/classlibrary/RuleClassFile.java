@@ -3,7 +3,7 @@ package org.coreasm.compiler.classlibrary;
 import java.io.File;
 import java.util.List;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -22,6 +22,7 @@ public class RuleClassFile extends AbstractLibraryEntry {
 	private String ruleName;
 	private List<String> arguments;
 	private CodeFragment body;
+	private CompilerEngine engine;
 
 	/**
 	 * Creates a new rule with the given parameters
@@ -29,10 +30,11 @@ public class RuleClassFile extends AbstractLibraryEntry {
 	 * @param arguments The arguments of the rule, may not be null
 	 * @param body The code of the rule
 	 */
-	public RuleClassFile(String ruleName, List<String> arguments, CodeFragment body){
+	public RuleClassFile(String ruleName, List<String> arguments, CodeFragment body, CompilerEngine engine){
 		this.ruleName = ruleName;
 		this.arguments = arguments;
 		this.body = body;
+		this.engine = engine;
 	}
 
 	private String generateRule() throws LibraryEntryException {
@@ -70,10 +72,10 @@ public class RuleClassFile extends AbstractLibraryEntry {
 		}
 
 		try {
-			CoreASMCompiler.getEngine().getVarManager().startContext();
-			String result = ruleBody.generateCode();
+			engine.getVarManager().startContext();
+			String result = ruleBody.generateCode(engine);
 			try {
-				CoreASMCompiler.getEngine().getVarManager().endContext();
+				engine.getVarManager().endContext();
 			} catch (EmptyContextStackException e) {
 				//should never happen
 			}
@@ -85,7 +87,7 @@ public class RuleClassFile extends AbstractLibraryEntry {
 	
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + "Rules" + File.separator + ruleName + ".java");
+		return new File(engine.getOptions().tempDirectory + File.separator + "Rules" + File.separator + ruleName + ".java");
 	}
 
 	@Override

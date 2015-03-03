@@ -21,7 +21,7 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.signature.FunctionDomainFunctionElement;
 import org.coreasm.engine.plugins.signature.FunctionRangeFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -68,11 +68,11 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException{
 		
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{
@@ -231,7 +231,7 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 	}
 
 	private CheckMode getTypeCheckMode() {
-    	String mode = CoreASMCompiler.getEngine().getOptions().properties.get("Signature.TypeChecking");
+    	String mode = engine.getOptions().properties.get("Signature.TypeChecking");
     	typeCheckingMode = CheckMode.cmOff;
     	if (mode != null) {
     		if (mode.equals("warning"))
@@ -254,5 +254,10 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 	@Override
 	public void registerCodeHandlers() throws CompilerException {
 		register(new SignatureHandler(this), CodeType.BASIC, "Declaration", "Signature", null);
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 }

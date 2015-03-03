@@ -1,6 +1,7 @@
 package org.coreasm.compiler.plugins.kernelextensions;
 
 import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -30,6 +31,11 @@ public class CompilerKernelExtensionsPlugin extends CompilerCodePlugin implement
 		//TODO: Write missing code handlers for the kernel extensions plugin
 		register(new CompilerExtendedFunctionRuleTermHandler(), CodeType.R, null, "ExtendedFunctionRuleTermNode", null);
 		
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 
 }

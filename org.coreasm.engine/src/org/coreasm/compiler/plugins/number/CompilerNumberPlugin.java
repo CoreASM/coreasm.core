@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.classlibrary.ConstantFunctionLibraryEntry;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
@@ -40,6 +40,11 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 	public CompilerNumberPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
+	}
 	
 	@Override
 	public Plugin getInterpreterPlugin(){
@@ -49,9 +54,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 		@Override
 		public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
 			List<MainFileEntry> result = new ArrayList<MainFileEntry>();
-			ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
+			ClassLibrary library = engine.getClassLibrary();
 
-			File jarpath = CoreASMCompiler.getEngine().getOptions().enginePath;
+			File jarpath = engine.getOptions().enginePath;
 			
 			try{
 				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
@@ -111,7 +116,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 								this), EntryType.FUNCTION,
 						"toNumber"));
 				
-				LibraryEntry le = new ConstantFunctionLibraryEntry("infinity", "plugins.NumberPlugin", "plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY");
+				LibraryEntry le = new ConstantFunctionLibraryEntry("infinity", "plugins.NumberPlugin", "plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY", engine);
 				library.addEntry(le);
 				
 				result.add(new MainFileEntry(
@@ -287,7 +292,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 					throw new CompilerException(
 							"wrong number of arguments for function " + fname);
 
-				CodeFragment param = CoreASMCompiler.getEngine().compile(children.get(1),
+				CodeFragment param = engine.compile(children.get(1),
 						CodeType.R);
 				result.appendFragment(param);
 				result.appendLine("try{\n");
@@ -310,7 +315,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).isInteger()));\n");
@@ -325,7 +330,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).isNatural()));\n");
@@ -340,7 +345,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() < 0));\n");
@@ -355,7 +360,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() % 2 != 0));\n");
@@ -370,7 +375,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() >= 0));\n");
@@ -385,7 +390,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("@decl(plugins.NumberPlugin.NumberElement,tmp)=(plugins.NumberPlugin.NumberElement) evalStack.pop();\n");
@@ -401,7 +406,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("@decl(CompilerRuntime.Enumerable,tmp) = (CompilerRuntime.Enumerable) evalStack.pop();\n");
@@ -423,7 +428,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				CodeFragment result = new CodeFragment("");
-				result.appendFragment(CoreASMCompiler.getEngine().compile(children.get(1),
+				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(Double.parseDouble(evalStack.pop().toString())));\n");

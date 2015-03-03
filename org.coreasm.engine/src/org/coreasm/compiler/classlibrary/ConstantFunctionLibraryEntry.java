@@ -2,19 +2,20 @@ package org.coreasm.compiler.classlibrary;
 
 import java.io.File;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
 public class ConstantFunctionLibraryEntry extends AbstractLibraryEntry {
-
+	private CompilerEngine engine;
 	private String fname;
 	private String pckg;
 	private String value;
 	
-	public ConstantFunctionLibraryEntry(String name, String pckg, String value){
+	public ConstantFunctionLibraryEntry(String name, String pckg, String value, CompilerEngine engine){
 		this.fname = name;
 		this.pckg = pckg;
 		this.value = value;
+		this.engine = engine;
 	}
 	
 	@Override
@@ -24,7 +25,7 @@ public class ConstantFunctionLibraryEntry extends AbstractLibraryEntry {
 
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + pckg.replace(".", File.separator) + File.separator + "const_function_" + fname + ".java");
+		return new File(engine.getOptions().tempDirectory + File.separator + pckg.replace(".", File.separator) + File.separator + "const_function_" + fname + ".java");
 	}
 
 	@Override

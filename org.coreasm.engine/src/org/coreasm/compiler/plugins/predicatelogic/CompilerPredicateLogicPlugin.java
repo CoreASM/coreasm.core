@@ -7,6 +7,7 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.predicatelogic.PredicateLogicPlugin;
 import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.plugins.predicatelogic.code.rcode.ExistsExpHandler;
@@ -18,6 +19,11 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 	
 	public CompilerPredicateLogicPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 	
 	@Override

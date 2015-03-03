@@ -20,7 +20,7 @@ import org.coreasm.engine.plugins.string.StringPlugin;
 import org.coreasm.engine.plugins.string.StringSubstringFunction;
 import org.coreasm.engine.plugins.string.ToStringFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
@@ -49,12 +49,12 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
-		ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
+		//ClassLibrary library = engine.getClassLibrary();
 	
 		try {
-			File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+			File enginePath = engine.getOptions().enginePath;
 			if(enginePath == null){
-				CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+				engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 				throw new CompilerException("could not load classes");
 			}
 			else{
@@ -137,7 +137,7 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 						"wrong number of arguments for function " + fname);
 
 			CodeFragment result = new CodeFragment("");
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(1), CodeType.R));
 			result.appendLine("try{\n");
 			result.appendLine("@decl(plugins.StringPlugin.StringElement, tmp1)=(plugins.StringPlugin.StringElement)evalStack.pop();\n");
@@ -152,9 +152,9 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 				throw new CompilerException(
 						"wrong number of arguments for function " + fname);
 			CodeFragment result = new CodeFragment("");
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(1), CodeType.R));
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(2), CodeType.R));
 			result.appendLine("try{\n");
 			result.appendLine("@decl(plugins.StringPlugin.StringElement, regex)=(plugins.StringPlugin.StringElement)evalStack.pop();\n");
@@ -170,11 +170,11 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 				throw new CompilerException(
 						"wrong number of arguments for function " + fname);
 			CodeFragment result = new CodeFragment("");
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(1), CodeType.R));
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(2), CodeType.R));
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(3), CodeType.R));
 			result.appendLine("try{\n");
 			result.appendLine("@decl(plugins.NumberPlugin.NumberElement, value2)=(plugins.NumberPlugin.NumberElement)evalStack.pop();\n");
@@ -192,7 +192,7 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 				throw new CompilerException(
 						"wrong number of arguments for function " + fname);
 			CodeFragment result = new CodeFragment("");
-			result.appendFragment(CoreASMCompiler.getEngine().compile(
+			result.appendFragment(engine.compile(
 					children.get(1), CodeType.R));
 			result.appendLine("try{\n");
 			result.appendLine("@decl(CompilerRuntime.Element, tmp1)=(CompilerRuntime.Element)evalStack.pop();\n");
@@ -211,5 +211,10 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	@Override
 	public void registerCodeHandlers() throws CompilerException {
 		register(new StringTermHandler(), CodeType.R, "Expression", "StringTerm", null);
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 }

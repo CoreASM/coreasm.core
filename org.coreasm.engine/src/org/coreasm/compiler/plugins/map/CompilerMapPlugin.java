@@ -16,7 +16,7 @@ import org.coreasm.engine.plugins.map.MapBackgroundElement;
 import org.coreasm.engine.plugins.map.MapToPairsFunctionElement;
 import org.coreasm.engine.plugins.map.ToMapFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
@@ -36,13 +36,18 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 	}
 
 	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
+	}
+
+	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{

@@ -30,7 +30,7 @@ import org.coreasm.engine.plugins.list.ToListFunctionElement;
 import org.coreasm.engine.plugins.list.ZipFunctionElement;
 import org.coreasm.engine.plugins.list.ZipWithFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -101,11 +101,11 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
 		
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{
@@ -160,5 +160,10 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 		register(new ShiftRuleHandler(), CodeType.U, "Rule", "ShiftRule", null);
 		register(new ListTermHandler(), CodeType.R, "Expression", "ListTerm", null);
 		register(new ListCompHandler(), CodeType.R, "Expression", "ListComprehension", null);
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 }

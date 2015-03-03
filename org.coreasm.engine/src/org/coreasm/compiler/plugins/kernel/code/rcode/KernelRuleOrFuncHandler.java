@@ -1,7 +1,6 @@
 package org.coreasm.compiler.plugins.kernel.code.rcode;
 
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -18,7 +17,7 @@ public class KernelRuleOrFuncHandler implements CompilerCodeHandler {
 			String name = node.getAbstractChildNodes().get(0).getToken();
 								
 			//get rule names
-			Preprocessor prep = CoreASMCompiler.getEngine().getPreprocessor();
+			Preprocessor prep = engine.getPreprocessor();
 			Information inf = prep.getGeneralInfo().get("RuleDeclaration");
 			
 			if (inf.getChildren().contains(name)) {

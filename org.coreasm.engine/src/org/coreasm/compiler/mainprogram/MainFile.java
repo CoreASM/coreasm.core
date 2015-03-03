@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.coreasm.compiler.CoreASMCompiler;
+
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -38,14 +39,16 @@ public class MainFile implements LibraryEntry{
 	private ArrayList<MainFileEntry> extensions;
 	private ArrayList<CodeFragment> initCodes;	
 	private String initRule;
+	private CompilerEngine engine;
 	
 	/**
 	 * Constructs a new, empty Main File
 	 */
-	public MainFile(){
-		stateMachine = new StateMachine();
+	public MainFile(CompilerEngine engine){
+		stateMachine = new StateMachine(engine);
 		extensions = new ArrayList<MainFileEntry>();
 		initCodes = new ArrayList<CodeFragment>();
+		this.engine = engine;
 	}
 	
 	/**
@@ -121,15 +124,15 @@ public class MainFile implements LibraryEntry{
 	
 	private void loadVocabExtender(CompilerVocabularyExtender cve) throws CompilerException{
 		try{
-			extensions.addAll(cve.loadClasses(CoreASMCompiler.getEngine().getClassLibrary()));
+			extensions.addAll(cve.loadClasses(engine.getClassLibrary()));
 		}
 		catch(CompilerException e){
 			if(e.getCause() instanceof EntryAlreadyExistsException){
 				String tmp = ((EntryAlreadyExistsException)e.getCause()).getEntryName();
-				CoreASMCompiler.getEngine().addError("Plugin " + cve.getName() + " could not load all its classes, an entry with the name " + tmp + " already exists");
+				engine.addError("Plugin " + cve.getName() + " could not load all its classes, an entry with the name " + tmp + " already exists");
 			}
 			else{
-				CoreASMCompiler.getEngine().addError("Plugin " + cve.getName() + " could not load all its classes");
+				engine.addError("Plugin " + cve.getName() + " could not load all its classes");
 			}
 			throw e;
 		}
@@ -155,7 +158,7 @@ public class MainFile implements LibraryEntry{
 		//build the main class of the specification
 		
 		//generate the state machine
-		MainFileHelper.populateStateMachine(this.stateMachine);
+		MainFileHelper.populateStateMachine(this.stateMachine, engine);
 		//generate the state machines code
 		CodeFragment smcode = null;	
 		smcode = new CodeFragment("");
@@ -168,20 +171,20 @@ public class MainFile implements LibraryEntry{
 			if(mfe.entryType == EntryType.SCHEDULER){
 				if(scheduler == null) scheduler = mfe.classFile;
 				else{
-					CoreASMCompiler.getEngine().addError("more than one scheduler provided, currently only one is allowed");
+					engine.addError("more than one scheduler provided, currently only one is allowed");
 					throw new LibraryEntryException("only one scheduling policy can be used");
 				}
 			}
 		}
 		if(scheduler == null){
-			CoreASMCompiler.getEngine().addError("no scheduler selected");
+			engine.addError("no scheduler selected");
 			throw new LibraryEntryException("no scheduler selected");		
 		}
 		
 		try {
 			smcode = stateMachine.generateClasses();
 		} catch (Exception e) {
-			CoreASMCompiler.getEngine().addError("state machine generated invalid code");
+			engine.addError("state machine generated invalid code");
 			throw new LibraryEntryException(e);
 		}
 		
@@ -308,7 +311,7 @@ public class MainFile implements LibraryEntry{
 		finalContent.appendLine("}");
 		
 		
-		File directory = CoreASMCompiler.getEngine().getOptions().tempDirectory;
+		File directory = engine.getOptions().tempDirectory;
 		File file = new File(directory, "Main.java");
 		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
 		
@@ -320,13 +323,13 @@ public class MainFile implements LibraryEntry{
 		
 			bw = new BufferedWriter(new FileWriter(file));
 			
-			bw.write(finalContent.generateCode());
+			bw.write(finalContent.generateCode(engine));
 		} 
 		catch (IOException e) {
-			CoreASMCompiler.getEngine().addError("writing the main file resulted in an io error: " + e.getMessage());
+			engine.addError("writing the main file resulted in an io error: " + e.getMessage());
 			throw new LibraryEntryException(e);
 		} catch (CodeFragmentException e) {
-			CoreASMCompiler.getEngine().addError("generating the main class code resulted in a codefragment error");
+			engine.addError("generating the main class code resulted in a codefragment error");
 			throw new LibraryEntryException(e);
 		}
 		finally{

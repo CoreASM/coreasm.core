@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.LibraryEntryException;
@@ -25,6 +25,7 @@ public class ClassFile extends AbstractLibraryEntry{
 	private ArrayList<String> imports;
 	private String extend;
 	private ArrayList<String> interfaces;
+	private CompilerEngine engine;
 	
 	/**
 	 * Creates a new ClassFile with the given class name and the given
@@ -32,13 +33,14 @@ public class ClassFile extends AbstractLibraryEntry{
 	 * @param className The name of the class
 	 * @param packageName The package of the class
 	 */
-	public ClassFile(String className, String packageName){
+	public ClassFile(String className, String packageName, CompilerEngine engine){
 		this.className = className;
 		this.packageName = packageName;
 		this.classBody = null;
 		this.imports = new ArrayList<String>();
 		this.interfaces = new ArrayList<String>();
 		this.extend = null;
+		this.engine = engine;
 	}
 	
 	/**
@@ -85,7 +87,7 @@ public class ClassFile extends AbstractLibraryEntry{
 
 	@Override
 	protected File getFile() {
-		File tempDirectory = CoreASMCompiler.getEngine().getOptions().tempDirectory;
+		File tempDirectory = engine.getOptions().tempDirectory;
 
 		if(packageName.equals("")){
 			return new File(tempDirectory, className + ".java");
@@ -121,9 +123,9 @@ public class ClassFile extends AbstractLibraryEntry{
 		
 		s = s + ("{\n");
 		try{
-			CoreASMCompiler.getEngine().getVarManager().startContext();
-			s += classBody.generateCode();
-			CoreASMCompiler.getEngine().getVarManager().endContext();
+			engine.getVarManager().startContext();
+			s += classBody.generateCode(engine);
+			engine.getVarManager().endContext();
 		}
 		catch(Exception e){
 			throw new LibraryEntryException(e);

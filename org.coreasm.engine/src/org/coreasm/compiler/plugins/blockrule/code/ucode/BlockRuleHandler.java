@@ -24,7 +24,7 @@ public class BlockRuleHandler implements CompilerCodeHandler {
 			tmpresult.appendLine("//blockrule child " + i + " start\n");
 			tmpresult.appendFragment(engine.compile(node.getAbstractChildNodes().get(i), CodeType.U));
 			if(tmpresult.getByteCount() > 40000){
-				tmpresult = CodeWrapperEntry.buildWrapper(tmpresult, "blockrulehandler");
+				tmpresult = CodeWrapperEntry.buildWrapper(tmpresult, "blockrulehandler", engine);
 			}
 		}
 	

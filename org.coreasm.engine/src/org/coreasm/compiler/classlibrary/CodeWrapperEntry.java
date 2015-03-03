@@ -2,7 +2,7 @@ package org.coreasm.compiler.classlibrary;
 
 import java.io.File;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
 import org.coreasm.compiler.exception.CompilerException;
@@ -20,12 +20,14 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 	private CodeFragment body;
 	private String name;
 	private String responsible;
+	private CompilerEngine engine;
 	
-	private CodeWrapperEntry(CodeFragment body, String responsible){
+	private CodeWrapperEntry(CodeFragment body, String responsible, CompilerEngine engine){
 		this.body = body;
 		this.name = "codewrapper_" + count;
 		count++;
 		this.responsible = responsible;
+		this.engine = engine;
 	}
 	
 	/**
@@ -38,10 +40,10 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 	 * @return A code fragment which executes the code wrapper
 	 * @throws CompilerException If an error occured during the creation
 	 */
-	public static CodeFragment buildWrapper(CodeFragment body, String responsible) throws CompilerException{
-		LibraryEntry repl = new CodeWrapperEntry(body, responsible);
+	public static CodeFragment buildWrapper(CodeFragment body, String responsible, CompilerEngine engine) throws CompilerException{
+		LibraryEntry repl = new CodeWrapperEntry(body, responsible, engine);
 		try{
-			CoreASMCompiler.getEngine().getClassLibrary().addEntry(repl);
+			engine.getClassLibrary().addEntry(repl);
 		}
 		catch(EntryAlreadyExistsException e){
 			throw new CompilerException(e);
@@ -63,7 +65,7 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 
 	@Override
 	protected File getFile() {
-		return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\plugins\\Kernel\\" + name + ".java");
+		return new File(engine.getOptions().tempDirectory + "\\plugins\\Kernel\\" + name + ".java");
 	}
 
 	@Override
@@ -88,7 +90,7 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 		result += "public void eval() throws Exception{\n";
 		result += "//start of generated content\n";
 		try{
-			result += body.generateCode();
+			result += body.generateCode(engine);
 		}
 		catch(CodeFragmentException e){
 			throw new LibraryEntryException(e);

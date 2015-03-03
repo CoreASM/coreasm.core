@@ -1,5 +1,6 @@
 package org.coreasm.compiler.interfaces;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.engine.plugin.Plugin;
 
 /**
@@ -10,6 +11,11 @@ import org.coreasm.engine.plugin.Plugin;
  *
  */
 public interface CompilerPlugin {
+	/**
+	 * Initializes the plugin, providing a reference to the compiler
+	 * @param engine
+	 */
+	public void init(CompilerEngine engine);
 	/**
 	 * Provides the name of the plugin
 	 * @return The name of the plugin

@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.LoggingHelper;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
@@ -51,7 +50,6 @@ public class CoreASMCTestDriver {
 		}
 		
 		Mockito.doReturn(new LoggingHelper()).when(mockCompiler).getLogger();
-		CoreASMCompiler.setEngine(mockCompiler);
 		
 		CompilerPlugin p = test.testPlugin.getCompilerPlugin();
 		if(p == null || !(p instanceof CompilerCodePlugin)){
@@ -84,7 +82,7 @@ public class CoreASMCTestDriver {
 		File taskFile = new File(TestCaseDriver.getRootDir(), "testCase\\compiler\\" + test.testName + "\\CoreASMCTest.java");//new File(TestCaseDriver.getRootDir().getAbsolutePath() + "\\testCase\\compiler\\" + test.testName + "\\CoreASMCTest.java");
 		try{
 			BufferedWriter bw = new BufferedWriter(new FileWriter(taskFile));
-			bw.write(cb.generateCode(code.generateCode()));
+			bw.write(cb.generateCode(code.generateCode(mockCompiler)));
 			bw.close();
 		}
 		catch(Exception e){

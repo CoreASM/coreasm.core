@@ -3,7 +3,7 @@ package org.coreasm.compiler.classlibrary;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
 import org.coreasm.compiler.exception.ElementAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
@@ -17,16 +17,18 @@ public class EnumFile extends AbstractLibraryEntry{
 	private String enumName;
 	private String packageName;
 	private ArrayList<String> elements;
+	private CompilerEngine engine;
 	
 	/**
 	 * Creates a new, empty enum with the given name and package
 	 * @param enumName the name of the enum
 	 * @param packageName the package of the enum
 	 */
-	public EnumFile(String enumName, String packageName){
+	public EnumFile(String enumName, String packageName, CompilerEngine engine){
 		this.enumName = enumName;
 		this.packageName = packageName;
 		this.elements = new ArrayList<String>();
+		this.engine = engine;
 	}
 	
 	public String getFullName(){
@@ -48,9 +50,9 @@ public class EnumFile extends AbstractLibraryEntry{
 	@Override
 	protected File getFile() {
 		if(packageName.equals(""))
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + enumName + ".java");
+			return new File(engine.getOptions().tempDirectory + File.separator + enumName + ".java");
 		else
-			return new File(CoreASMCompiler.getEngine().getOptions().tempDirectory + File.separator + packageName.replace(".", File.separator) + File.separator + enumName + ".java");
+			return new File(engine.getOptions().tempDirectory + File.separator + packageName.replace(".", File.separator) + File.separator + enumName + ".java");
 	}
 
 	@Override

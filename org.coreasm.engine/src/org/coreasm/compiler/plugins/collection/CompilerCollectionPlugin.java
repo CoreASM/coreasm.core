@@ -18,7 +18,7 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.collection.FilterFunctionElement;
 import org.coreasm.engine.plugins.collection.MapFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -37,11 +37,11 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 		return interpreterPlugin;
 	}
 
-	private final String FilterName = "filter";
+	//private final String FilterName = "filter";
 	private final String FoldName = "fold";
 	private final String FoldLName = "foldl";
 	private final String FoldRName = "foldr";
-	private final String MapName = "map";
+	//private final String MapName = "map";
 
 	@Override
 	public String getName() {
@@ -52,12 +52,12 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
-		ClassLibrary library = CoreASMCompiler.getEngine().getClassLibrary();
+		ClassLibrary library = engine.getClassLibrary();
 		
 		
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{			
@@ -114,5 +114,10 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 	public void registerCodeHandlers() throws CompilerException {
 		register(new AddToHandler(), CodeType.U, "Rule", "AddToCollectionRule", null);
 		register(new RemoveFromHandler(), CodeType.U, "Rule", "RemoveFromCollectionRule", null);
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 }

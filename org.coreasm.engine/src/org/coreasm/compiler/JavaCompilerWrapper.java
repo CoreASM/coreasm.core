@@ -30,12 +30,12 @@ public class JavaCompilerWrapper {
 	 * @param classes A list of classes which need to be compiled
 	 * @throws CompilerException If an error occured during the compilation process
 	 */
-	public static void compile(CompilerOptions options, ArrayList<File> classes) throws CompilerException{
+	public static void compile(CompilerOptions options, ArrayList<File> classes, CompilerEngine engine) throws CompilerException{
 		JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
 		if(jc == null){
-			CoreASMCompiler.getEngine().addError("java compiler not found");
+			engine.addError("java compiler not found");
 			
-			CoreASMCompiler.getEngine().getLogger().error(JavaCompilerWrapper.class, "javac.exe not found");
+			engine.getLogger().error(JavaCompilerWrapper.class, "javac.exe not found");
 			throw new CompilerException("java compiler not found - is there a jdk installed?");
 		}
 		//create a diagnostics object to collect errors
@@ -58,11 +58,11 @@ public class JavaCompilerWrapper {
 		
 		for(Diagnostic<?> error : diagnostics.getDiagnostics()){
 			if(error.getKind() == Diagnostic.Kind.ERROR){
-				CoreASMCompiler.getEngine().addError("javac.exe: " + error.toString());
+				engine.addError("javac.exe: " + error.toString());
 				hasError = true;
 			}
 			else if(error.getKind() == Diagnostic.Kind.WARNING){
-				CoreASMCompiler.getEngine().addWarning("javac.exe: " + error.getMessage(null));
+				engine.addWarning("javac.exe: " + error.getMessage(null));
 			}
 		}	
 		

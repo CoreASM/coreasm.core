@@ -2,7 +2,7 @@ package org.coreasm.compiler.plugins.signature;
 
 import java.io.File;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -18,6 +18,7 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 	private String name;
 	private String[] params;
 	private CodeFragment body;
+	private CompilerEngine engine;
 	
 	/**
 	 * Builds a new derived function entry
@@ -25,10 +26,11 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 	 * @param params The parameters of the function
 	 * @param body The body of the function
 	 */
-	public DerivedFunctionEntry(String name, String[] params, CodeFragment body){
+	public DerivedFunctionEntry(String name, String[] params, CodeFragment body, CompilerEngine engine){
 		this.name = name;
 		this.params = params;
 		this.body = body;
+		this.engine = engine;
 	}
 	
 	@Override
@@ -38,7 +40,7 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 
 	@Override
 	protected File getFile() {
-		String p = CoreASMCompiler.getEngine().getOptions().tempDirectory + "\\plugins\\SignaturePlugin\\DerFunc_" + name + ".java";
+		String p = engine.getOptions().tempDirectory + "\\plugins\\SignaturePlugin\\DerFunc_" + name + ".java";
 		return new File(p.replace("\\", File.separator));
 	}
 
@@ -70,7 +72,7 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 		result += "try{\n";
 		
 		try {
-			result += body.generateCode();
+			result += body.generateCode(engine);
 		} catch (CodeFragmentException e) {
 			throw new LibraryEntryException(e);
 		}

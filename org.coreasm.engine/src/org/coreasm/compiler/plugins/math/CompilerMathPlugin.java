@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
@@ -36,18 +36,23 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 	}
 
 	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
+	}
+
+	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary)
 			throws CompilerException {
 
 		Map<String, MathFunctionEntry> functions = MathPluginHelper
-				.createFunctions();
+				.createFunctions(engine);
 
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{

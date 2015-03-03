@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
@@ -18,20 +18,22 @@ import org.coreasm.compiler.exception.LibraryEntryException;
 public class EnumBackgroundEntry implements LibraryEntry {
 	private String name;
 	private String[] elements;
+	private CompilerEngine engine;
 	
 	/**
 	 * Builds a new enum background
 	 * @param name The name of the enum
 	 * @param elements The elements of the enum
 	 */
-	public EnumBackgroundEntry(String name, String[] elements){
+	public EnumBackgroundEntry(String name, String[] elements, CompilerEngine engine){
 		this.name = name;
 		this.elements = elements;
+		this.engine = engine;
 	}
 	
 	@Override
 	public void writeFile() throws LibraryEntryException {
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "SignaturePlugin");
 		File file = new File(directory, "EnumBackground_" + name + ".java");
 		

@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.ClassFile;
 import org.coreasm.compiler.classlibrary.ClassInclude;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
@@ -37,16 +37,18 @@ public class ClassLibrary {
 	private ArrayList<LibraryEntry> entries;
 	private CompilerOptions options;
 	private Map<String, String> packageReplacements;
+	private CompilerEngine engine;
 	
 	/**
 	 * constructs an empty class library with the given options
 	 * @param options An option object, containing the parameters
 	 * for this library, mainly paths to the temporary directory
 	 */
-	public ClassLibrary(CompilerOptions options){
+	public ClassLibrary(CompilerOptions options, CompilerEngine engine){
 		entries = new ArrayList<LibraryEntry>();
 		this.options = options;
 		packageReplacements = new HashMap<String, String>();
+		this.engine = engine;
 	}
 	
 	/**
@@ -61,7 +63,7 @@ public class ClassLibrary {
 			this.entries.add(cf);
 		}
 		else{
-			CoreASMCompiler.getEngine().addError("an entry with name " + cf.getFullName() + " already exists");
+			engine.addError("an entry with name " + cf.getFullName() + " already exists");
 			throw new EntryAlreadyExistsException("Class already exists");
 		}
 	}
@@ -86,11 +88,11 @@ public class ClassLibrary {
 	 * @return A library entry with the given full name or null, if the entry was not found
 	 */
 	public LibraryEntry findEntry(String fullName){
-		CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "searching for entry \"" + fullName + "\"");
+		engine.getLogger().debug(ClassLibrary.class, "searching for entry \"" + fullName + "\"");
 		for(LibraryEntry le : entries){
 			if(le.getFullName().equals(fullName)) return le;
 		}
-		CoreASMCompiler.getEngine().getLogger().warn(ClassLibrary.class, "could not find requested library entry " + fullName + " in the class library");
+		engine.getLogger().warn(ClassLibrary.class, "could not find requested library entry " + fullName + " in the class library");
 		return null;
 	}
 	
@@ -112,8 +114,8 @@ public class ClassLibrary {
 	 */
 	public ClassFile createClass(String name, CompilerPlugin source) throws EntryAlreadyExistsException{
 		ClassFile cf = null;
-		if(source == null) 	cf = new ClassFile(name, "");
-		else 				cf = new ClassFile(name, PLUGINBASEPACKAGE + "." + source.getName());
+		if(source == null) 	cf = new ClassFile(name, "", engine);
+		else 				cf = new ClassFile(name, PLUGINBASEPACKAGE + "." + source.getName(), engine);
 		
 		if(!this.entries.contains(cf)){
 			this.entries.add(cf);
@@ -130,7 +132,7 @@ public class ClassLibrary {
 	 * @throws EntryAlreadyExistsException If there already is an entry with the given full name
 	 */
 	public ClassInclude includeClass(File path, CompilerPlugin source) throws EntryAlreadyExistsException {
-		ClassInclude result = new ClassInclude(path, PLUGINBASEPACKAGE + "." + source.getName());
+		ClassInclude result = new ClassInclude(path, PLUGINBASEPACKAGE + "." + source.getName(), engine);
 		if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
 		this.entries.add(result);
 		return result;
@@ -147,14 +149,14 @@ public class ClassLibrary {
 	 */
 	public ClassInclude includeClass(File jarPath, String classPath, CompilerPlugin source) throws IncludeException, EntryAlreadyExistsException{
 		try{
-			ClassInclude result = new ClassInclude(jarPath, classPath, PLUGINBASEPACKAGE + "." + source.getName());
+			ClassInclude result = new ClassInclude(jarPath, classPath, PLUGINBASEPACKAGE + "." + source.getName(), engine);
 			if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
 			this.entries.add(result);
 			return result;
 		}
 		catch(IOException e){
-			CoreASMCompiler.getEngine().addError("jar file " + jarPath + " could not be accessed");
-			CoreASMCompiler.getEngine().getLogger().error(ClassLibrary.class, "Could not add file");
+			engine.addError("jar file " + jarPath + " could not be accessed");
+			engine.getLogger().error(ClassLibrary.class, "Could not add file");
 			throw new IncludeException("could not add file from jar " + jarPath + " " + classPath);
 		}
 	}
@@ -176,10 +178,10 @@ public class ClassLibrary {
 	 * @throws LibraryEntryException If a LibraryEntry failed to write its contents to the disk
 	 */
 	public ArrayList<File> dumpClasses() throws LibraryEntryException{
-		CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "starting class dump, library contains the following classes:");
+		engine.getLogger().debug(ClassLibrary.class, "starting class dump, library contains the following classes:");
 		//debug output: list all files in the class library
 		for(LibraryEntry e : entries){
-			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, e.getFullName());
+			engine.getLogger().debug(ClassLibrary.class, e.getFullName());
 		}
 		ArrayList<File> result = new ArrayList<File>();
 		
@@ -198,15 +200,15 @@ public class ClassLibrary {
 			}
 			
 			File f = new File(options.tempDirectory + File.separator + e.getFullName().replace(".", File.separator) + ".java");
-			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "current entry: " + e.toString());
-			CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "dumping class " + f);
+			engine.getLogger().debug(ClassLibrary.class, "current entry: " + e.toString());
+			engine.getLogger().debug(ClassLibrary.class, "dumping class " + f);
 			//write the library Entry
 			try{
 				e.writeFile();
-				CoreASMCompiler.getEngine().getLogger().debug(ClassLibrary.class, "success");
+				engine.getLogger().debug(ClassLibrary.class, "success");
 			}
 			catch(LibraryEntryException exc){
-				CoreASMCompiler.getEngine().addError("entry " + f + " had errors");
+				engine.addError("entry " + f + " had errors");
 				hadError = true;
 			}
 			

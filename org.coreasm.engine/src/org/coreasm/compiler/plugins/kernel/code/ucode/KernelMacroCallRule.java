@@ -2,7 +2,6 @@ package org.coreasm.compiler.plugins.kernel.code.ucode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -33,7 +32,7 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 
 			for (int i = 0; i < paramCode.length; i++) {
 				// create the code for the parameter
-				CodeFragment tmp = CoreASMCompiler.getEngine().compile(
+				CodeFragment tmp = engine.compile(
 						params.getArguments().get(i), CodeType.R);
 				// create the param object and push it onto the stack
 				result.appendLine("\n@arglist@.add(new CompilerRuntime.RuleParam(){\n");
@@ -65,14 +64,14 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 		// cf.appendLine("\n@decl(CompilerRuntime.Rule,macrorule)=new Rules."
 		// + name + "(@arglist, localStack);");
 		
-		Preprocessor prep = CoreASMCompiler.getEngine().getPreprocessor();
+		Preprocessor prep = engine.getPreprocessor();
 		Information inf = prep.getGeneralInfo().get("RuleDeclaration");
 		
 		if (inf.getChildren().contains(name)) {
 			// check parameter count
 			if (inf.getInformation(name).getChildren().size() != params
 					.getArguments().size()) {
-				CoreASMCompiler.getEngine().addError("wrong number of parameters in rulecall to rule " + name);
+				engine.addError("wrong number of parameters in rulecall to rule " + name);
 				throw new CompilerException(
 						"wrong number of parameters for Rulecall to Rule "
 								+ name);

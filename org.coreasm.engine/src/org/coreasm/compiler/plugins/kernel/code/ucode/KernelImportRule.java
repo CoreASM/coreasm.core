@@ -2,7 +2,6 @@ package org.coreasm.compiler.plugins.kernel.code.ucode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -16,7 +15,7 @@ public class KernelImportRule implements CompilerCodeHandler {
 		// import x do {}
 		// get the identifier
 		result.appendLine("");
-		CodeFragment name = CoreASMCompiler.getEngine().compile(
+		CodeFragment name = engine.compile(
 				node.getAbstractChildNodes().get(0), CodeType.L);
 		result.appendFragment(name);
 		result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
@@ -24,7 +23,7 @@ public class KernelImportRule implements CompilerCodeHandler {
 
 		result.appendLine("localStack.pushLayer();\n");
 		result.appendLine("localStack.put(@nameloc@.name, new CompilerRuntime.Element());\n");
-		result.appendFragment(CoreASMCompiler.getEngine().compile(
+		result.appendFragment(engine.compile(
 				node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("localStack.popLayer();\n");
 	}

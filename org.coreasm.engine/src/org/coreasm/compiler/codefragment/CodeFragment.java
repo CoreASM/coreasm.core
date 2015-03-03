@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.variablemanager.CompilerVariable;
 import org.coreasm.compiler.variablemanager.VarManager;
-
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
 
@@ -188,11 +187,11 @@ public class CodeFragment {
 	 * @return The generated string of this CodeFragment
 	 * @throws CodeFragmentException If a CodeFragment was incomplete or incorrect.
 	 */
-	public String generateCode() throws CodeFragmentException{
+	public String generateCode(CompilerEngine engine) throws CodeFragmentException{
 		List<Integer> ids = new ArrayList<Integer>();
 		
 		
-		String result = genCode(ids);
+		String result = genCode(ids, engine);
 		
 		if(result.contains("@")){
 			String warn = result.substring(result.indexOf("@"));
@@ -200,8 +199,8 @@ public class CodeFragment {
 				warn = warn.substring(0, errorSnippet);
 			}
 			String text = "Warning: '@' symbol detected in generated code near '" + warn + "' - maybe a java annotation?";
-			CoreASMCompiler.getEngine().getLogger().warn(CodeFragment.class, text);
-			CoreASMCompiler.getEngine().addWarning(text);
+			engine.getLogger().warn(CodeFragment.class, text);
+			engine.addWarning(text);
 		}
 		
 		return result;
@@ -209,12 +208,12 @@ public class CodeFragment {
 	
 	//internal function for code generation. Introduced to decide recursive calls
 	//to child fragments from the initial generate call
-	private String genCode(List<Integer> ids) throws CodeFragmentException{
+	private String genCode(List<Integer> ids, CompilerEngine engine) throws CodeFragmentException{
 		List<String> names = new ArrayList<String>();
 		
-		VarManager vman = CoreASMCompiler.getEngine().getVarManager();
+		VarManager vman = engine.getVarManager();
 		
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		
 		List<String> myCodeList = new ArrayList<String>();
 		myCodeList.addAll(codeList);
@@ -223,7 +222,7 @@ public class CodeFragment {
 		for(int i = 0; i < myCodeList.size(); i++){
 			//replace declarations in own namespace
 			String[] tmp = myCodeList.get(i).split("@decl");
-			result = result + tmp[0];
+			result.append(tmp[0]);
 			for(int j = 1; j < tmp.length; j++){
 				String declaration,type,name;
 				try{
@@ -252,7 +251,8 @@ public class CodeFragment {
 					myCodeList.set(k, myCodeList.get(k).replaceAll("@" + name + "@", cv.toString()));
 				}
 				
-				result = result + cv.declare() + tmp[j].substring(tmp[j].indexOf(")") + 1);
+				result.append(cv.declare());
+				result.append(tmp[j].substring(tmp[j].indexOf(")") + 1));
 			}
 			if(children.get(i) == null){
 				if(i == codeList.size() - 1){
@@ -273,33 +273,30 @@ public class CodeFragment {
 				}
 			}
 			if(generationInfo != null){
-				result = "//-----------------" + generationInfo + "-----------------------\n" + result;
+				result.insert(0, "//-----------------" + generationInfo + "-----------------------\n");
 			}
-			result = result + children.get(i).genCode(ids);
+			result.append(children.get(i).genCode(ids, engine));
 			if(generationInfo != null){
-				result = result + "//--------------------------------------------------------------\n";
+				result.append("//--------------------------------------------------------------\n");
 			}
 		}
-		
-		
-		
-		return result;
+		return result.toString();
 	}
 	
 	@Override
 	public String toString(){
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		for(int i = 0; i < codeList.size(); i++){
-			result = result + codeList.get(i);
+			result.append(codeList.get(i));
 			if(children.get(i) == null){
 				if(i == codeList.size() - 1) continue;
-				result = result + "\n[NULL]\n";
+				result.append("\n[NULL]\n");
 			}
 			else{
-				result = result + children.get(i).toString();
+				result.append(children.get(i).toString());
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**

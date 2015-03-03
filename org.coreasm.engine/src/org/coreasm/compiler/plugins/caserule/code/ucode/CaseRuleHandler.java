@@ -49,7 +49,7 @@ public class CaseRuleHandler implements CompilerCodeHandler {
 				
 				condcode.appendFragment(current);
 				if(condcode.getByteCount() > 40000){
-					condcode = CodeWrapperEntry.buildWrapper(condcode, "CaseRuleHandler");
+					condcode = CodeWrapperEntry.buildWrapper(condcode, "CaseRuleHandler", engine);
 				}
 			}
 			

@@ -23,7 +23,7 @@ import org.junit.Test;
 public class TestAllCCasm {
 	//streams for in and output
 	private final ByteArrayOutputStream logContent = new ByteArrayOutputStream();
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+	//private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 	final static PrintStream origOutput = System.out;
 	final static PrintStream origError = System.err;

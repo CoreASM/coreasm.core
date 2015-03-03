@@ -1,8 +1,7 @@
 package org.coreasm.compiler.mainprogram.statemachine;
 
 import org.coreasm.compiler.codefragment.CodeFragment;
-
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.mainprogram.statemachine.EngineState;
 
 /**
@@ -13,14 +12,16 @@ import org.coreasm.compiler.mainprogram.statemachine.EngineState;
 public class EngineState {
 	private String name;
 	private CodeFragment code;
+	private CompilerEngine engine;
 	
 	/**
 	 * Builds a new engine state with the given name.
 	 * @param name The name of the engine state
 	 */
-	public EngineState(String name){
+	public EngineState(String name, CompilerEngine engine){
 		this.name = name;
 		code = new CodeFragment("");
+		this.engine = engine;
 	}
 	
 	/**
@@ -30,7 +31,7 @@ public class EngineState {
 	public void appendCode(CodeFragment cf){
 		if(cf != null) this.code.appendFragment(cf);
 		else
-			CoreASMCompiler.getEngine().addWarning("attempted to add a 'null' CodeFragment to state " + this.name);
+			engine.addWarning("attempted to add a 'null' CodeFragment to state " + this.name);
 	}
 	
 	/**

@@ -6,6 +6,7 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.options.OptionsPlugin;
 import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.options.code.bcode.PropertyHandler;
@@ -16,6 +17,11 @@ public class CompilerOptionsPlugin extends CompilerCodePlugin implements Compile
 	
 	public CompilerOptionsPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 	
 	@Override

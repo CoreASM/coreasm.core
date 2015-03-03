@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.LoggingHelper;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
@@ -28,7 +27,6 @@ public class CompilerMock {
 			Mockito.doReturn(new CodeFragment(mockCode.get(s).compilerValue())).when(mockCompiler).compile(Mockito.eq(new TestingNode(s)), Mockito.any(CodeType.class));
 		}
 		Mockito.doReturn(new LoggingHelper()).when(mockCompiler).getLogger();
-		CoreASMCompiler.setEngine(mockCompiler);
 
 		CompilerConditionalRulePlugin sut = new CompilerConditionalRulePlugin(null);
 		sut.registerCodeHandlers();

@@ -11,6 +11,7 @@ import org.coreasm.compiler.plugins.turboasm.code.ucode.WhileRuleHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
 import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -21,6 +22,11 @@ public class CompilerTurboASMPlugin extends CompilerCodePlugin implements Compil
 	
 	public CompilerTurboASMPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 	
 	@Override

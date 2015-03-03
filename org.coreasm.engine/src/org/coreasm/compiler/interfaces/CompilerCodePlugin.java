@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -19,8 +19,9 @@ import org.coreasm.engine.interpreter.ASTNode;
  * @author Spellmaker
  *
  */
-public abstract class CompilerCodePlugin {
+public abstract class CompilerCodePlugin implements CompilerPlugin{
 	private Mapper handlers;
+	protected CompilerEngine engine;
 	
 	/**
 	 * Registers code handlers of this plugin
@@ -88,7 +89,7 @@ public abstract class CompilerCodePlugin {
 		CompilerCodeHandler current = (CompilerCodeHandler) h.get(0);
 		CodeFragment result = new CodeFragment();
 		
-		current.compile(result, n, CoreASMCompiler.getEngine());
+		current.compile(result, n, engine);
 		
 		return result;
 	}

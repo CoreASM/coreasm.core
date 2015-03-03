@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.ClassInclude;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.exception.LibraryEntryException;
@@ -43,6 +43,7 @@ public class ClassInclude implements LibraryEntry{
 	private String packageName;
 	private Map<String, String> importReplacements;
 	private Map<String, String> importPackageReplacements;
+	private CompilerEngine engine;
 	
 	/**
 	 * The base path to the plugins. Used to make the merge with the coreasm project easier.
@@ -54,17 +55,18 @@ public class ClassInclude implements LibraryEntry{
 	 * @param path The path of the source file
 	 * @param packageName The target package name of the include
 	 */
-	public ClassInclude(File path, String packageName){
+	public ClassInclude(File path, String packageName, CompilerEngine engine){
+		this.engine = engine;
 		if (!path.exists()) {
-			CoreASMCompiler.getEngine().addWarning("File " + path.getAbsolutePath() + " does not exist");
-			CoreASMCompiler.getEngine().getLogger().warn(ClassInclude.class, "Error while constructing ClassInclude");
+			engine.addWarning("File " + path.getAbsolutePath() + " does not exist");
+			engine.getLogger().warn(ClassInclude.class, "Error while constructing ClassInclude");
 		}
 		
 		jarArchive = null;
 		
 		originalPath = path;
 		
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		
 		targetDirectory = new File(options.tempDirectory + File.separator + packageName.replace(".", File.separator));
 		
@@ -89,12 +91,13 @@ public class ClassInclude implements LibraryEntry{
 	 * @param packageName The target package name
 	 * @throws IOException If the jar archive could not be accessed
 	 */
-	public ClassInclude(File jarPath, String className, String packageName) throws IOException{
+	public ClassInclude(File jarPath, String className, String packageName, CompilerEngine engine) throws IOException{
+		this.engine = engine;
 		jarArchive = jarPath;
 		//jarArchive = new JarFile(jarPath);
 		this.className = className;
 		originalPath = null;
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		targetDirectory = new File(options.tempDirectory + File.separator + packageName.replace(".", File.separator));
 		
 		String tFile = className.substring(Math.max(0, className.lastIndexOf("/")));
@@ -140,8 +143,8 @@ public class ClassInclude implements LibraryEntry{
 			copyContent(br, bw);	
 		}
 		catch(IOException e){
-			CoreASMCompiler.getEngine().addError("IO Error while processing include " + this.getFullName() + ": " + e.getMessage());
-			CoreASMCompiler.getEngine().getLogger().error(ClassInclude.class, "Error while copying file");
+			engine.addError("IO Error while processing include " + this.getFullName() + ": " + e.getMessage());
+			engine.getLogger().error(ClassInclude.class, "Error while copying file");
 			throw new LibraryEntryException(e);
 		}
 		finally{
@@ -152,7 +155,7 @@ public class ClassInclude implements LibraryEntry{
 			}
 			catch(Exception e){
 				e.printStackTrace();
-				CoreASMCompiler.getEngine().getLogger().error(ClassInclude.class, "Could not close in and out streams");
+				engine.getLogger().error(ClassInclude.class, "Could not close in and out streams");
 			}
 		}
 	}

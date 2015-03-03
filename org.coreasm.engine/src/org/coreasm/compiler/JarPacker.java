@@ -28,7 +28,7 @@ public class JarPacker {
 	 * @param options Options for the compilation process
 	 * @throws CompilerException If the jar archive could not be packed
 	 */
-	public static void packJar(CompilerOptions options) throws CompilerException{
+	public static void packJar(CompilerOptions options, CompilerEngine engine) throws CompilerException{
 		JarOutputStream target = null;
 		try{
 			Manifest manifest = new Manifest();
@@ -41,7 +41,7 @@ public class JarPacker {
 			}
 		}
 		catch(Exception e){
-			CoreASMCompiler.getEngine().addError("Could not pack jar: " + e.getMessage());
+			engine.addError("Could not pack jar: " + e.getMessage());
 			throw new CompilerException(e);
 		}
 		finally{
@@ -49,7 +49,7 @@ public class JarPacker {
 				try {
 					target.close();
 				} catch (IOException e) {
-					CoreASMCompiler.getEngine().getLogger().error(JarPacker.class, "Could not close jar stream");
+					engine.getLogger().error(JarPacker.class, "Could not close jar stream");
 				}
 		}
 	}

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
@@ -18,11 +18,16 @@ import org.coreasm.engine.plugins.time.NowFunctionElement;
 import org.coreasm.engine.plugins.time.StepCountFunctionElement;
 
 public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExtender {
-
+	private CompilerEngine engine;
 	private Plugin interpreterPlugin;
 	
 	public CompilerTimePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 	
 	@Override
@@ -35,10 +40,10 @@ public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExt
 			throws CompilerException {
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{

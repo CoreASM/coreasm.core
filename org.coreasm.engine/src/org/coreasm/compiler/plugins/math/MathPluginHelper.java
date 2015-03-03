@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 
 /**
@@ -17,7 +18,7 @@ public class MathPluginHelper {
 	 * Create the function entries
 	 * @return A map containing the generated functions with the corresponding names
 	 */
-	public static Map<String, MathFunctionEntry> createFunctions(){
+	public static Map<String, MathFunctionEntry> createFunctions(CompilerEngine engine){
 		Map<String, MathFunctionEntry> result = new HashMap<String, MathFunctionEntry>();
 		
 		result.put("MathPI", new MathFunctionEntry("MathPI", new CodeFragment("" + 
@@ -35,7 +36,7 @@ public class MathPluginHelper {
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("MathE", new MathFunctionEntry("MathE", new CodeFragment("" + 
 				 "" + 
@@ -52,230 +53,230 @@ public class MathPluginHelper {
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("abs", new MathFunctionEntry("abs", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.abs(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.abs(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("acos", new MathFunctionEntry("acos", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.acos(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.acos(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("asin", new MathFunctionEntry("asin", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.asin(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.asin(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("atan", new MathFunctionEntry("atan", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.atan(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.atan(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("atan2", new MathFunctionEntry("atan2", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.atan2(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.atan2(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("cuberoot", new MathFunctionEntry("cuberoot", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("cbrt", new MathFunctionEntry("cbrt", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.cbrt(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("ceil", new MathFunctionEntry("ceil", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.ceil(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.ceil(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("cos", new MathFunctionEntry("cos", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cos(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.cos(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("cosh", new MathFunctionEntry("cosh", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.cosh(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.cosh(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("exp", new MathFunctionEntry("exp", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.exp(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.exp(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("expm1", new MathFunctionEntry("expm1", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.expm1(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.expm1(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("floor", new MathFunctionEntry("floor", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.floor(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.floor(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("hypot", new MathFunctionEntry("hypot", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.hypot(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.hypot(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("IEEEremainder", new MathFunctionEntry("IEEEremainder", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.IEEEremainder(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.IEEEremainder(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("log", new MathFunctionEntry("log", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.log(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("log10", new MathFunctionEntry("log10", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log10(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.log10(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("log1p", new MathFunctionEntry("log1p", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.log1p(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.log1p(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("max", new MathFunctionEntry("max", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.max(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.max(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else {" + 
 				 "					Element arg = args.get(0);" + 
 				 "					if (args.size() == 1 && arg != null && arg instanceof Enumerable ) {" + 
@@ -294,14 +295,14 @@ public class MathPluginHelper {
 				 "				}" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("min", new MathFunctionEntry("min", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.min(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.min(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else {" + 
 				 "					Element arg = args.get(0);" + 
 				 "					if (args.size() == 1 && arg != null && arg instanceof Enumerable ) {" + 
@@ -321,19 +322,19 @@ public class MathPluginHelper {
 				 "				}" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("pow", new MathFunctionEntry("pow", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(2, args))" + 
-				 "					return NumberElement.getInstance(Math.pow(ithValue(args, 0), ithValue(args, 1)));" + 
+				 "					return NumberElement.getInstance(Math.pow(ithValue(args, 0), ithValue(args, 1), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("powerset", new MathFunctionEntry("powerset", new CodeFragment("" + 
 				 "" + 
@@ -345,7 +346,7 @@ public class MathPluginHelper {
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("random", new MathFunctionEntry("random", new CodeFragment("" + 
 				 "" + 
@@ -362,115 +363,115 @@ public class MathPluginHelper {
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("round", new MathFunctionEntry("round", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.round(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.round(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("signum", new MathFunctionEntry("signum", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.signum(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.signum(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("sin", new MathFunctionEntry("sin", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sin(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.sin(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("sinh", new MathFunctionEntry("sinh", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sinh(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.sinh(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("sqrt", new MathFunctionEntry("sqrt", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.sqrt(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.sqrt(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("tan", new MathFunctionEntry("tan", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.tan(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.tan(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("tanh", new MathFunctionEntry("tanh", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.tanh(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.tanh(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("toDegrees", new MathFunctionEntry("toDegrees", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.toDegrees(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.toDegrees(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("toRadians", new MathFunctionEntry("toRadians", new CodeFragment("" + 
 				 "" + 
 				 "			" + 
 				 "			public Element calcFunction(List<? extends Element> args) {" + 
 				 "				if (checkNumberArguments(1, args))" + 
-				 "					return NumberElement.getInstance(Math.toRadians(ithValue(args, 0)));" + 
+				 "					return NumberElement.getInstance(Math.toRadians(ithValue(args, 0), engine));" + 
 				 "				else" + 
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 				result.put("sum", new MathFunctionEntry("sum", new CodeFragment("" + 
 				 "" + 
@@ -523,7 +524,7 @@ public class MathPluginHelper {
 				 "					return Element.UNDEF;" + 
 				 "			}" + 
 				 "			" + 
-				 "		")));
+				 "		"), engine));
 
 
 

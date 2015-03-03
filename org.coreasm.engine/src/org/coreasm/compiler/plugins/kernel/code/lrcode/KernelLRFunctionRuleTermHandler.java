@@ -2,7 +2,6 @@ package org.coreasm.compiler.plugins.kernel.code.lrcode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -32,7 +31,7 @@ public class KernelLRFunctionRuleTermHandler implements CompilerCodeHandler {
 
 		if (frtn.hasArguments()) {
 			for (ASTNode child : frtn.getArguments()) {
-				result.appendFragment(CoreASMCompiler.getEngine().compile(child,
+				result.appendFragment(engine.compile(child,
 						CodeType.R));
 				result.appendLine("@args@.add((CompilerRuntime.Element)evalStack.pop());\n");
 			}

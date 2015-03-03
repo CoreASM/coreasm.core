@@ -35,9 +35,7 @@ import org.coreasm.engine.interpreter.ASTNode;
  *
  */
 
-public class CoreASMCompiler implements CompilerEngine {
-	private static CompilerEngine engine;
-	
+public class CoreASMCompiler implements CompilerEngine {	
 	private LoggingHelper logging;
 	
 	private CompilerOptions options;
@@ -72,16 +70,14 @@ public class CoreASMCompiler implements CompilerEngine {
 		init(options, casm);
 	}
 	
-	private void init(CompilerOptions options, CoreASMEngine casm){
-		engine = this;
-		
+	private void init(CompilerOptions options, CoreASMEngine casm){		
 		//initialize components
 		this.options = options;
-		pluginLoader = new DummyLoader();
-		classLibrary = new ClassLibrary(options);
+		pluginLoader = new DummyLoader(this);
+		classLibrary = new ClassLibrary(options, this);
 		varManager = new VarManager();
-		mainFile = new MainFile();
-		preprocessor = new Preprocessor();
+		mainFile = new MainFile(this);
+		preprocessor = new Preprocessor(this);
 		
 		logging = new LoggingHelper();
 		
@@ -103,25 +99,25 @@ public class CoreASMCompiler implements CompilerEngine {
 	 */
 	public void compile() throws CompilerException{
 		try{	
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "starting compiler");
+			getLogger().debug(CoreASMCompiler.class, "starting compiler");
 			CompilerInformation info = new CompilerInformation();
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading specification");
+			getLogger().debug(CoreASMCompiler.class, "loading specification");
 			loadSpecification(info);
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "preprocessing specification");
+			getLogger().debug(CoreASMCompiler.class, "preprocessing specification");
 			preprocessSpecification(info);
 			//load plugins, which have to be loaded first
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading first set of plugins");
+			getLogger().debug(CoreASMCompiler.class, "loading first set of plugins");
 			applyFirstPlugins(info);
 			//compile specification first, so that plugins may
 			//provide objects based on the parse tree
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "compiling specification");
+			getLogger().debug(CoreASMCompiler.class, "compiling specification");
 			compileSpecification(info);
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "applying second set of plugins");
+			getLogger().debug(CoreASMCompiler.class, "applying second set of plugins");
 			applyPlugins(info);
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "building main file");
+			getLogger().debug(CoreASMCompiler.class, "building main file");
 			//note: most operations will actually happen in the next step
 			buildMain(info);
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "compiling java sources");
+			getLogger().debug(CoreASMCompiler.class, "compiling java sources");
 			compileSources(info);
 		}
 		catch(CompilerException ce){
@@ -158,23 +154,23 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void purgeTempDir(){
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "cleaning up temp directory");
+		getLogger().debug(CoreASMCompiler.class, "cleaning up temp directory");
 		
 		purgeDir(options.tempDirectory);
 		
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "cleanup finished");
+		getLogger().debug(CoreASMCompiler.class, "cleanup finished");
 	}
 	
 	private void purgeDir(File f){
 		if(f.exists()){
 			if(f.isFile()){
-				if(!f.delete()) CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "Could not delete file " + f.getAbsolutePath());
+				if(!f.delete()) getLogger().warn(CoreASMCompiler.class, "Could not delete file " + f.getAbsolutePath());
 			}
 			else{
 				for(File d : f.listFiles()){
 					purgeDir(d);
 				}
-				if(!f.delete()) CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "Could not delete directory " + f.getAbsolutePath());
+				if(!f.delete()) getLogger().warn(CoreASMCompiler.class, "Could not delete directory " + f.getAbsolutePath());
 			}
 		}
 	}
@@ -191,7 +187,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	@Override
 	public CodeFragment compile(ASTNode node, CodeType type) throws CompilerException {
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, type + " requested for node(" + node.getGrammarRule() + ", " + node.getPluginName() + ")");
+		getLogger().debug(CoreASMCompiler.class, type + " requested for node(" + node.getGrammarRule() + ", " + node.getPluginName() + ")");
 		CompilerPlugin cp = pluginLoader.getPlugin(node.getPluginName());
 		
 		//----------------------------------------
@@ -203,17 +199,17 @@ public class CoreASMCompiler implements CompilerEngine {
 		
 		//test, if the node is a function call
 		if(node.getGrammarClass().equals("FunctionRule") && node.getGrammarRule().equals("FunctionRuleTerm") && type == CodeType.R && node.getPluginName().equals("Kernel")){
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Function call detected - checking for Function Plugin");
+			getLogger().debug(CoreASMCompiler.class, "Function call detected - checking for Function Plugin");
 			//get the function name
 			String functionname = node.getAbstractChildNodes().get(0).getToken();
 			CompilerFunctionPlugin cfp = functionMapping.get(functionname);
 			//if a function is registered for this identifier, compile it; otherwise use the generic code
 			if(cfp != null){
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Function Plugin found");
+				getLogger().debug(CoreASMCompiler.class, "Function Plugin found");
 				return cfp.compileFunctionCall(node);
 			}
 			else{
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "No Function Plugin found for '" + functionname + "' using default case");
+				getLogger().debug(CoreASMCompiler.class, "No Function Plugin found for '" + functionname + "' using default case");
 			}
 		}
 		
@@ -235,7 +231,7 @@ public class CoreASMCompiler implements CompilerEngine {
 				
 				this.addWarning("warning: compiled code turned to large, splitting it up");
 				
-				coderes = CodeWrapperEntry.buildWrapper(coderes, "coreasmcompiler " + resp.getClass().toString());
+				coderes = CodeWrapperEntry.buildWrapper(coderes, "coreasmcompiler " + resp.getClass().toString(), this);
 			}
 			
 			//System.out.println("------------------generated wrapper:");
@@ -256,8 +252,8 @@ public class CoreASMCompiler implements CompilerEngine {
 			Information inf = preprocessor.getNodeInformation(node).get("value");
 			try{
 				String val = (String) inf.getInformation("code").getValue();
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "optimization point found");
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "replacing operator node with '" + val + "'");
+				getLogger().debug(CoreASMCompiler.class, "optimization point found");
+				getLogger().debug(CoreASMCompiler.class, "replacing operator node with '" + val + "'");
 				return new CodeFragment("evalStack.push(" + val + ");\n");
 			}
 			catch(NullPointerException e){
@@ -333,8 +329,8 @@ public class CoreASMCompiler implements CompilerEngine {
 			throw new CompilerException("could not load specification");
 		}
 		cae.terminate();
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Parsing finished");
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "Loading plugins");
+		getLogger().debug(CoreASMCompiler.class, "Parsing finished");
+		getLogger().debug(CoreASMCompiler.class, "Loading plugins");
 		try{
 			pluginLoader.loadPlugins(cae);
 			System.out.println("Plugins loaded");
@@ -358,29 +354,29 @@ public class CoreASMCompiler implements CompilerEngine {
 		}
 		catch(Exception e){
 			e.printStackTrace();
-			CoreASMCompiler.getEngine().addError("preprocessor had errors: " + e.getMessage());
+			addError("preprocessor had errors: " + e.getMessage());
 			throw new CompilerException(e);
 		}
 	}
 	
 	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
 		//operator plugins
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading operators");
+		getLogger().debug(CoreASMCompiler.class, "loading operators");
 		List<CompilerOperatorPlugin> ops = pluginLoader.getOperatorPlugins();
 		for(CompilerOperatorPlugin cop : ops){
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading operators of plugin " + cop.getName());
+			getLogger().debug(CoreASMCompiler.class, "loading operators of plugin " + cop.getName());
 			for(String s : cop.unaryOperations()){
 				if(unaryOperators.get(s) == null) unaryOperators.put(s, new ArrayList<CompilerPlugin>());
 				unaryOperators.get(s).add(cop);
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loaded unary Operator " + s);
+				getLogger().debug(CoreASMCompiler.class, "loaded unary Operator " + s);
 			}
 			for(String s : cop.binaryOperations()){
 				if(binaryOperators.get(s) == null) binaryOperators.put(s, new ArrayList<CompilerPlugin>());
 				binaryOperators.get(s).add(cop);
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loaded binary Operator " + s);
+				getLogger().debug(CoreASMCompiler.class, "loaded binary Operator " + s);
 			}
 		}
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "loading additional functions");
+		getLogger().debug(CoreASMCompiler.class, "loading additional functions");
 		//function plugins
 		for(CompilerFunctionPlugin cfp : pluginLoader.getFunctionPlugins()){
 			for(String s : cfp.getCompileFunctionNames()){
@@ -403,17 +399,17 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void compileSpecification(CompilerInformation info) throws CompilerException{
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
+		getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
 		File tempDir = options.tempDirectory;
 		if(tempDir.exists()){
-			CoreASMCompiler.getEngine().getLogger().warn(CoreASMCompiler.class, "temp directory already exists");
+			getLogger().warn(CoreASMCompiler.class, "temp directory already exists");
 			if(tempDir.list().length > 0 && !options.removeExistingFiles){
-				CoreASMCompiler.getEngine().getLogger().error(CoreASMCompiler.class, "temp directory is not empty");
+				getLogger().error(CoreASMCompiler.class, "temp directory is not empty");
 				this.addError("temporary directory is not empty. Use -removeExistingFiles true to purge the temporary directory before the run");
 				throw new CompilerException(new DirectoryNotEmptyException(""));
 			}
 			else if(tempDir.list().length > 0){
-				CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "temp directory is not empty, purging existing files");
+				getLogger().debug(CoreASMCompiler.class, "temp directory is not empty, purging existing files");
 				purgeTempDir();
 				if(!tempDir.exists()) tempDir.mkdir();
 			}
@@ -436,7 +432,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void compileSources(CompilerInformation info) throws CompilerException{
-		CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
+		getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
 		ArrayList<File> classes = null;
 		try {
 			classes = classLibrary.dumpClasses();
@@ -445,21 +441,21 @@ public class CoreASMCompiler implements CompilerEngine {
 		}
 		
 		if(!options.noCompile){
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "class dump complete");
+			getLogger().debug(CoreASMCompiler.class, "class dump complete");
 			
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "starting java compiler");
+			getLogger().debug(CoreASMCompiler.class, "starting java compiler");
 			
-			JavaCompilerWrapper.compile(options, classes);
+			JavaCompilerWrapper.compile(options, classes, this);
 			
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "java compilation successfull");
+			getLogger().debug(CoreASMCompiler.class, "java compilation successfull");
 			
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "packing jar archive");
+			getLogger().debug(CoreASMCompiler.class, "packing jar archive");
 			
-			JarPacker.packJar(options);
+			JarPacker.packJar(options, this);
 			
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "packing successfull");
+			getLogger().debug(CoreASMCompiler.class, "packing successfull");
 			
-			CoreASMCompiler.getEngine().getLogger().debug(CoreASMCompiler.class, "compilation operation successfull");
+			getLogger().debug(CoreASMCompiler.class, "compilation operation successfull");
 		}
 	}
 	
@@ -480,23 +476,6 @@ public class CoreASMCompiler implements CompilerEngine {
 	@Override
 	public void addWarning(String msg) {
 		if(!warnings.contains(msg)) warnings.add(msg);
-	}
-
-	/**
-	 * Helper methods for tests to inject mock Compiler Engines.
-	 * @param e The new CompilerEngine
-	 */
-	public static void setEngine(CompilerEngine e){
-		engine = e;
-	}
-
-	/**
-	 * Static method to get a handle to the running CompilerEngine
-	 * without having to pass it around as a parameter
-	 * @return The running CompilerEngine
-	 */
-	public static CompilerEngine getEngine(){
-		return engine;
 	}
 
 	@Override

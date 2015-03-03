@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.RuleClassFile;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
@@ -36,9 +35,9 @@ public class KernelRuleDeclarationHandler implements CompilerCodeHandler {
 			}
 	
 			// compile the body
-			CodeFragment cbody = CoreASMCompiler.getEngine().compile(body, CodeType.U);
+			CodeFragment cbody = engine.compile(body, CodeType.U);
 			RuleClassFile r = new RuleClassFile(ruleName, ruleParameters,
-					cbody);
+					cbody, engine);
 			engine.getClassLibrary().addEntry(r);
 	
 			engine.getLogger().debug(CompilerKernelPlugin.class, "end rule creation");

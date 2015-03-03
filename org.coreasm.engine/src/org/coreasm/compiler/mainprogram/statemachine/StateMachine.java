@@ -10,8 +10,7 @@ import org.coreasm.compiler.exception.ElementAlreadyExistsException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.InvalidCodeException;
 import org.coreasm.compiler.exception.InvalidStateMachineException;
-
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.mainprogram.statemachine.EngineState;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
 
@@ -46,11 +45,13 @@ public class StateMachine {
 	private HashMap<String, ArrayList<EngineTransition>> onEnter;
 	private HashMap<String, ArrayList<EngineTransition>> onLeave;
 	private ArrayList<EngineTransition> general;
+	private CompilerEngine engine;
 	
 	/**
 	 * Builds an empty state machine
 	 */
-	public StateMachine(){
+	public StateMachine(CompilerEngine engine){
+		this.engine = engine;
 		states = new ArrayList<org.coreasm.compiler.mainprogram.statemachine.EngineState>();
 		transitions = new HashMap<String, HashMap<String, ArrayList<org.coreasm.compiler.mainprogram.statemachine.EngineTransition>>>();
 		onEnter = new HashMap<String, ArrayList<org.coreasm.compiler.mainprogram.statemachine.EngineTransition>>();
@@ -129,7 +130,7 @@ public class StateMachine {
 			result.appendFragment(finalTransitions.get(i).getCode());
 		}
 		
-		if(CoreASMCompiler.getEngine().getOptions().logStateTransition) 
+		if(engine.getOptions().logStateTransition) 
 			result.appendLine("System.out.println(\"Transit from " + start + " to " + end + "\");\n");
 		
 		result.appendFragment(new CodeFragment("\t\t\t\t//Transit from " + start + " to " + end + "\n\t\t\t\tengineState = CompilerRuntime.EngineState." + end + ";\n\t\t\t\tcontinue;\n"));
@@ -190,7 +191,7 @@ public class StateMachine {
 		if(states.size() == 0){
 			throw new InvalidStateMachineException();
 		}
-		EnumFile se = new EnumFile("EngineState", "CompilerRuntime");
+		EnumFile se = new EnumFile("EngineState", "CompilerRuntime", engine);
 		CodeFragment mainBody = new CodeFragment("\t\tCompilerRuntime.EngineState engineState = CompilerRuntime.EngineState." + states.get(0).getName() + ";\n\t\twhile(isRunning){\n\t\t\t");
 		
 		for(int i = 0; i < states.size(); i++){
@@ -212,7 +213,7 @@ public class StateMachine {
 		mainBody.appendLine("\t\t}\n");
 		
 		try {
-			CoreASMCompiler.getEngine().getClassLibrary().addEntry(se);
+			engine.getClassLibrary().addEntry(se);
 		} catch (EntryAlreadyExistsException e) {
 			throw new InvalidStateMachineException(e);
 		}

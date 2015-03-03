@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -29,7 +28,7 @@ public class KernelFunctionRuleExpressionHandler implements CompilerCodeHandler 
 			List<ASTNode> args = frtn.getArguments();
 			CodeFragment[] argcode = new CodeFragment[args.size()];
 			for (int i = 0; i < args.size(); i++) {
-				argcode[i] = CoreASMCompiler.getEngine().compile(args.get(i),
+				argcode[i] = engine.compile(args.get(i),
 						CodeType.R);
 			}
 

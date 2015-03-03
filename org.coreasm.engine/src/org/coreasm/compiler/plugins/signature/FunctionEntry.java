@@ -6,8 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerOptions;
-import org.coreasm.compiler.CoreASMCompiler;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -24,6 +24,7 @@ public class FunctionEntry implements LibraryEntry {
 	private List<String> domain;
 	private String range;
 	private CodeFragment init;
+	private CompilerEngine engine;
 
 	/**
 	 * Builds a new function entry
@@ -33,17 +34,18 @@ public class FunctionEntry implements LibraryEntry {
 	 * @param range The range of the function type
 	 * @param init A code fragment generating the initial values for the function
 	 */
-	public FunctionEntry(String name, String fclass, List<String> domain, String range, CodeFragment init){
+	public FunctionEntry(String name, String fclass, List<String> domain, String range, CodeFragment init, CompilerEngine engine){
 		this.name = name;
 		this.fclass = fclass;
 		this.domain = domain;
 		this.range = range;
 		this.init = init;
+		this.engine = engine;
 	}
 	
 	@Override
 	public void writeFile() throws LibraryEntryException {
-		CompilerOptions options = CoreASMCompiler.getEngine().getOptions();
+		CompilerOptions options = engine.getOptions();
 		File directory = new File(options.tempDirectory + File.separator + "plugins" + File.separator + "SignaturePlugin");
 		File file = new File(directory, "Func_" + name + ".java");
 		
@@ -95,7 +97,7 @@ public class FunctionEntry implements LibraryEntry {
 				result += "CompilerRuntime.EvalStack evalStack = new CompilerRuntime.EvalStack();\n";
 				result += "CompilerRuntime.LocalStack localStack = new CompilerRuntime.LocalStack();\n";
 				result += "java.util.Map<String, CompilerRuntime.RuleParam> ruleparams = new java.util.HashMap<String, CompilerRuntime.RuleParam>();\n";
-				result += init.generateCode();
+				result += init.generateCode(engine);
 				result += "CompilerRuntime.Element initValue = (CompilerRuntime.Element) evalStack.pop();\n";
 				if(this.domain.size() == 0){
 					result += "try {\n";

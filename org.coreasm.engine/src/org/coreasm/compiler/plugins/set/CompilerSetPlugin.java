@@ -17,7 +17,7 @@ import org.coreasm.engine.plugins.set.SetBackgroundElement;
 import org.coreasm.engine.plugins.set.SetCardinalityFunctionElement;
 import org.coreasm.engine.plugins.set.ToSetFunctionElement;
 import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CoreASMCompiler;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -29,6 +29,11 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 	
 	public CompilerSetPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
+	}
+
+	@Override
+	public void init(CompilerEngine engine) {
+		this.engine = engine;
 	}
 	
 	@Override
@@ -128,11 +133,11 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 	
 	@Override
 	public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
-		File enginePath = CoreASMCompiler.getEngine().getOptions().enginePath;
+		File enginePath = engine.getOptions().enginePath;
 		List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 		
 		if(enginePath == null){
-			CoreASMCompiler.getEngine().getLogger().error(getClass(), "loading classes from a directory is currently not supported");
+			engine.getLogger().error(getClass(), "loading classes from a directory is currently not supported");
 			throw new CompilerException("could not load classes");
 		}
 		else{
