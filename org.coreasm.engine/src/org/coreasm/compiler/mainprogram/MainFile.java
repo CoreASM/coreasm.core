@@ -155,6 +155,7 @@ public class MainFile implements LibraryEntry{
 	
 	@Override
 	public void writeFile() throws LibraryEntryException {
+		long start = System.nanoTime();
 		//build the main class of the specification
 		
 		//generate the state machine
@@ -339,6 +340,8 @@ public class MainFile implements LibraryEntry{
 			catch(IOException e){
 			}
 		}
+		long end = System.nanoTime();
+		engine.addTiming("Main File building", end - start);
 	}
 
 	@Override

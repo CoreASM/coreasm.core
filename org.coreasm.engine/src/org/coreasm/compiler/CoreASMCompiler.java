@@ -3,6 +3,8 @@ package org.coreasm.compiler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +55,10 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private CoreASMEngine coreasm;
 	
+	private List<String> timings;
+	private long lastTime;
+	private long cTime;
+	
 	/**
 	 * Constructs a new CoreASMCompiler instance with the given options
 	 * @param options The options for the compilation process
@@ -71,6 +77,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void init(CompilerOptions options, CoreASMEngine casm){		
+		lastTime = System.nanoTime();
 		//initialize components
 		this.options = options;
 		pluginLoader = new DummyLoader(this);
@@ -90,6 +97,18 @@ public class CoreASMCompiler implements CompilerEngine {
 		errors = new ArrayList<String>();
 		
 		coreasm = casm;
+		
+		timings = new LinkedList<String>();
+		cTime = System.nanoTime();
+		addTiming("Initialization");
+	}
+	
+	public void addTiming(String name, long time){
+		timings.add(name + ": " + (time));
+	}
+	
+	private void addTiming(String name){
+		timings.add(name + ": " + (cTime - lastTime));
 	}
 
 	/**
@@ -101,22 +120,32 @@ public class CoreASMCompiler implements CompilerEngine {
 		try{	
 			getLogger().debug(CoreASMCompiler.class, "starting compiler");
 			CompilerInformation info = new CompilerInformation();
+			
 			getLogger().debug(CoreASMCompiler.class, "loading specification");
 			loadSpecification(info);
+			
+			lastTime = System.nanoTime();
 			getLogger().debug(CoreASMCompiler.class, "preprocessing specification");
 			preprocessSpecification(info);
+			cTime = System.nanoTime();
+			addTiming("Preprocessing");
+			
 			//load plugins, which have to be loaded first
 			getLogger().debug(CoreASMCompiler.class, "loading first set of plugins");
 			applyFirstPlugins(info);
+			
 			//compile specification first, so that plugins may
 			//provide objects based on the parse tree
 			getLogger().debug(CoreASMCompiler.class, "compiling specification");
 			compileSpecification(info);
+			
 			getLogger().debug(CoreASMCompiler.class, "applying second set of plugins");
 			applyPlugins(info);
+			
 			getLogger().debug(CoreASMCompiler.class, "building main file");
 			//note: most operations will actually happen in the next step
 			buildMain(info);
+			
 			getLogger().debug(CoreASMCompiler.class, "compiling java sources");
 			compileSources(info);
 		}
@@ -128,6 +157,7 @@ public class CoreASMCompiler implements CompilerEngine {
 			e.printStackTrace();
 		}
 		finally{
+			lastTime = System.nanoTime();
 			if(!options.keepTempFiles){
 				purgeTempDir();
 			}
@@ -139,6 +169,15 @@ public class CoreASMCompiler implements CompilerEngine {
 			System.out.println("" + warnings.size() + " warning(s) were issued" + ((warnings.size() != 0) ? ":" : ""));
 			for(String s : warnings){
 				System.out.println(" *\t" + s.replace("\n", "\n\t"));
+			}
+			cTime = System.nanoTime();
+			addTiming("Cleanup");
+			
+			if(options.logTimings){
+				Iterator<String> it = timings.iterator();
+				while(it.hasNext()){
+					System.out.println(it.next());
+				}
 			}
 		}
 	}
@@ -309,6 +348,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	//----------------------start of helper functions for the actual compilation process------------------------
 	
 	private void loadSpecification(CompilerInformation info) throws CompilerException{
+		lastTime = System.nanoTime();
 		//create an engine and parse the specification
 		Engine cae = null;
 		if(coreasm != null){
@@ -329,8 +369,13 @@ public class CoreASMCompiler implements CompilerEngine {
 			throw new CompilerException("could not load specification");
 		}
 		cae.terminate();
+		cTime = System.nanoTime();
+		addTiming("Load and parse");
+		
 		getLogger().debug(CoreASMCompiler.class, "Parsing finished");
 		getLogger().debug(CoreASMCompiler.class, "Loading plugins");
+		
+		lastTime = System.nanoTime();
 		try{
 			pluginLoader.loadPlugins(cae);
 			System.out.println("Plugins loaded");
@@ -343,6 +388,8 @@ public class CoreASMCompiler implements CompilerEngine {
 		catch(Throwable t){
 			System.out.println("throwable: " + t.getMessage());
 		}
+		cTime = System.nanoTime();
+		addTiming("Plugin loading");
 		//store the root node
 		info.root = (ASTNode) cae.getSpec().getRootNode();
 	}
@@ -361,6 +408,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
 		//operator plugins
+		lastTime = System.nanoTime();
 		getLogger().debug(CoreASMCompiler.class, "loading operators");
 		List<CompilerOperatorPlugin> ops = pluginLoader.getOperatorPlugins();
 		for(CompilerOperatorPlugin cop : ops){
@@ -376,29 +424,51 @@ public class CoreASMCompiler implements CompilerEngine {
 				getLogger().debug(CoreASMCompiler.class, "loaded binary Operator " + s);
 			}
 		}
+		cTime = System.nanoTime();
+		addTiming("Operator loading");
+		
 		getLogger().debug(CoreASMCompiler.class, "loading additional functions");
+		lastTime = System.nanoTime();
 		//function plugins
 		for(CompilerFunctionPlugin cfp : pluginLoader.getFunctionPlugins()){
 			for(String s : cfp.getCompileFunctionNames()){
 				functionMapping.put(s, cfp);
 			}
 		}
+		cTime = System.nanoTime();
+		addTiming("Function plugins");
 		//compiler plugins
+		
+		lastTime = System.nanoTime();
 		for(CompilerCodePlugin ccp : pluginLoader.getCompilerCodePlugins()){
 			ccp.registerCodeHandlers();
 		}
+		cTime = System.nanoTime();
+		addTiming("Code Handlers");
 	}
 	
 	private void applyPlugins(CompilerInformation info) throws CompilerException{
 		//init Plugins
+		lastTime = System.nanoTime();
 		mainFile.processInitCodePlugins(pluginLoader.getInitCodePlugins());
+		cTime = System.nanoTime();
+		addTiming("Init Code plugins");
+		
 		//extension point plugins
+		lastTime = System.nanoTime();
 		mainFile.processExtensionPlugins(pluginLoader.getExtensionPointPlugins());
+		cTime = System.nanoTime();
+		addTiming("Extension Plugins");
+		
 		//vocabulary extenders plugins
+		lastTime = System.nanoTime();
 		mainFile.processVocabularyExtenderPlugins(pluginLoader.getVocabularyExtenderPlugins());
+		cTime = System.nanoTime();
+		addTiming("Vocabulary Extender Plugins");
 	}
 	
 	private void compileSpecification(CompilerInformation info) throws CompilerException{
+		lastTime = System.nanoTime();
 		getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
 		File tempDir = options.tempDirectory;
 		if(tempDir.exists()){
@@ -417,7 +487,10 @@ public class CoreASMCompiler implements CompilerEngine {
 		else{
 			tempDir.mkdir();
 		}
+		cTime = System.nanoTime();
+		addTiming("Directory preparation");
 
+		lastTime = System.nanoTime();
 		varManager.startContext();
 		
 		//errors in here have to be made public separately
@@ -429,29 +502,41 @@ public class CoreASMCompiler implements CompilerEngine {
 			this.addError("final variable context already ended - check plugin code");
 			throw new CompilerException(e1);
 		}
+		cTime = System.nanoTime();
+		addTiming("Compilation");
 	}
 	
 	private void compileSources(CompilerInformation info) throws CompilerException{
 		getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
+		
+		lastTime = System.nanoTime();
 		ArrayList<File> classes = null;
 		try {
 			classes = classLibrary.dumpClasses();
 		} catch (LibraryEntryException e) {
 			throw new CompilerException(e);
 		}
+		cTime = System.nanoTime();
+		addTiming("Class dump");
 		
 		if(!options.noCompile){
 			getLogger().debug(CoreASMCompiler.class, "class dump complete");
 			
 			getLogger().debug(CoreASMCompiler.class, "starting java compiler");
 			
+			lastTime = System.nanoTime();
 			JavaCompilerWrapper.compile(options, classes, this);
+			cTime = System.nanoTime();
+			addTiming("Javac");
 			
 			getLogger().debug(CoreASMCompiler.class, "java compilation successfull");
 			
 			getLogger().debug(CoreASMCompiler.class, "packing jar archive");
 			
+			lastTime = System.nanoTime();
 			JarPacker.packJar(options, this);
+			cTime = System.nanoTime();
+			addTiming("Jar packing");
 			
 			getLogger().debug(CoreASMCompiler.class, "packing successfull");
 			

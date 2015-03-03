@@ -105,6 +105,11 @@ public class CompilerOptions {
 	 */
 	public boolean noCompile = false;
 	/**
+	 * If set to true, the compiler will print the amount of time
+	 * spend in different compilation stages
+	 */
+	public boolean logTimings = false;
+	/**
 	 * General properties provided by plugins
 	 * Any Plugin can store options for other plugins here
 	 */

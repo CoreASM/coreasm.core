@@ -96,4 +96,11 @@ public interface CompilerEngine {
 	 * @return A list of warnings
 	 */
 	public List<String> getWarnings();
+	/**
+	 * Adds a timing to the engine.
+	 * A Timing is an information about how long a certain operation took.
+	 * @param s The name of the timing
+	 * @param l The duration of the operation
+	 */
+	public void addTiming(String s, long l);
 }
