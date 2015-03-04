@@ -9,9 +9,15 @@ init Start
  * @maxsteps 1
  *
  * @require "{ -> }\n"
- * @require "{3->{ -> }, 2->World, 1->Hello}\n"
- * @require "{3->1, 2->1, 1->Hello}\n"
- * @require "{b->2, c->{3->{ -> }, 2->World, 1->Hello}, a->{3->4, 1->2}}\n"
+ * @require "3->{ -> }"
+ * @require "2->World"
+ * @require "1->Hello"
+ * @require "3->1"
+ * @require "2->1"
+ * @require "1->Hello"
+ * @require "a->{"
+ * @require "b->2"
+ * @require "c->{"
  */
 rule Start =
 	seqblock

@@ -26,8 +26,6 @@ import org.coreasm.engine.parser.ParseMapN;
  */
 public class RuleDeclarationParseMap extends ParseMapN<Node> {
 
-	private static final long serialVersionUID = 1L;
-
 	public RuleDeclarationParseMap() {
 		super(Kernel.PLUGIN_NAME);
 	}

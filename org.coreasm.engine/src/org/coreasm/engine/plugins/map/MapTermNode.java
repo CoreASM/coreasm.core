@@ -23,6 +23,7 @@ import org.coreasm.engine.interpreter.Node;
  * 
  */
 public class MapTermNode extends ASTNode {
+	private static final long serialVersionUID = 2295836328143514054L;
 
 	public MapTermNode(Node firstNode) {
 		super(MapPlugin.PLUGIN_NAME,

@@ -81,7 +81,7 @@ public class InterpreterImp implements Interpreter {
 	private Stack<Map<String,Stack<Element>>> hiddenEnvMaps;
 	
 	/** Work copy of a tree */
-	private final Map<ASTNode,ASTNode> workCopy;
+	private final Map<ASTNode,Map<String, ASTNode>> workCopies;
 	
 	/** Link to the abstract storage module */
 	private final AbstractStorage storage;
@@ -102,7 +102,7 @@ public class InterpreterImp implements Interpreter {
 		this.hiddenEnvMaps = new Stack<Map<String, Stack<Element>>>();
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
-		this.workCopy = new IdentityHashMap<ASTNode,ASTNode>();
+		this.workCopies = new IdentityHashMap<ASTNode,Map<String, ASTNode>>();
 		interpreters.set(this);
 	}
 	
@@ -579,11 +579,11 @@ public class InterpreterImp implements Interpreter {
 						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
 							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
 					} else { // if current node is 'x(...)' (with arguments)
-						if (theRule.getParam().size() == frNode.getArguments().size())
-							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
+						if (theRule.getParam().size() != frNode.getArguments().size())
+							capi.error(	"The number of arguments passed to '" + x  + 
+										"' does not match its signature.", pos, this);
 						else if (pos instanceof MacroCallRuleNode)
-							capi.error("The number of arguments passed to '" + x  + 
-									"' does not match its signature.", pos, this);
+							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
 						else
 							capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
 					}
@@ -891,9 +891,14 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
-		ASTNode wCopy = workCopy.get(pos);
+		Map<String, ASTNode> workCopies = this.workCopies.get(pos);
+		if (workCopies == null) {
+			workCopies = new HashMap<String, ASTNode>();
+			this.workCopies.put(pos, workCopies);
+		}
+		ASTNode wCopy = workCopies.get(rule.getName());
 		// If there is no work copy created for this rule call
-		if (wCopy == null) {
+		if (wCopy == null || !wCopy.isEvaluated()) {
 			// checking the parameters and the arguments
 			// as their number should match
 			ruleCallStack.push(new CallStackElement(rule));
@@ -901,18 +906,24 @@ public class InterpreterImp implements Interpreter {
 				capi.error("Number of arguments does not match the number of parameters.", pos, this);
 				return pos;
 			}
-			wCopy = copyTreeSub(rule.getBody(), params, args);
+			if (wCopy == null)
+				wCopy = copyTreeSub(rule.getBody(), params, args);
 			
 			// Hide current environment variables but keep the ones visible that are used in the rule call itself
 			Map<String, Element> envVars = getRequiredEnvVars(args);
-			String functionNameOfRuleCall = pos.getFirst().getFirst().getToken();
-			if (getEnv(functionNameOfRuleCall) != null)
-				envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
+			ASTNode nodeOfRuleCall = pos;
+			while (nodeOfRuleCall != null && !(nodeOfRuleCall instanceof FunctionRuleTermNode))
+				nodeOfRuleCall = nodeOfRuleCall.getFirst();
+			if (nodeOfRuleCall instanceof FunctionRuleTermNode) {
+				String functionNameOfRuleCall = ((FunctionRuleTermNode)nodeOfRuleCall).getName();
+				if (getEnv(functionNameOfRuleCall) != null)
+					envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
+			}
 			hideEnvVars();
 			for (Entry<String, Element> envVar : envVars.entrySet())
 				addEnv(envVar.getKey(), envVar.getValue());
 			
-			workCopy.put(pos, wCopy);
+			workCopies.put(rule.getName(), wCopy);
 			wCopy.setParent(pos);
 			notifyOnRuleCall(rule, args, pos, self);
 			return wCopy; // as new value of 'pos'
@@ -922,13 +933,10 @@ public class InterpreterImp implements Interpreter {
 				value = Element.UNDEF;
 			pos.setNode(null, wCopy.getUpdates(), value);
 		
-			// making it easier for the garbage collector 
-			// to throw this copy out! :)
-			wCopy.dipose();
+			clearTree(wCopy);
 			
 			unhideEnvVars();
 			
-			workCopy.remove(pos);
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
 			return pos;
@@ -1272,7 +1280,6 @@ public class InterpreterImp implements Interpreter {
 
 	public void cleanUp() {
 		interpreters.set(this);
-		workCopy.clear();
 		envMap.clear();
 		ruleCallStack.clear();
 	}

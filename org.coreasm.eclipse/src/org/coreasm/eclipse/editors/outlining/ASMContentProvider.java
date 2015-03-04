@@ -139,7 +139,7 @@ public class ASMContentProvider implements ITreeContentProvider
 							IFile parentFile = node.getParentFile();
 							Utilities.openEditor(parentFile);
 							ASMDocument document = (ASMDocument)getEditor(parentFile).getInputDocument();
-							getEditor(parentFile).setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), ASMDocument.calculateLength(node.getNode()), true);
+							getEditor(parentFile).setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), document.calculateLength(node.getNode()), true);
 						}
 					} catch (IllegalArgumentException exeption) {
 					} catch (PartInitException e) {

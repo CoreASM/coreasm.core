@@ -13,7 +13,6 @@
  
 package org.coreasm.engine.parser;
 
-import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.Plugin;
 
 import org.codehaus.jparsec.functors.Map;

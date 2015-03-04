@@ -567,11 +567,11 @@ public class TreeNodeElement extends Element implements Enumerable {
 			child.setParent(null);
 			child.setNext(null);
 		} else {
-			TreeNodeElement prevChild = child;
+			//TreeNodeElement prevChild = child;
 			child = child.getTempNext();
 			int i = 2;
 			while(i < index && child != null) {
-				prevChild = child;
+				//prevChild = child;
 				child = child.getTempNext();
 				i++;
 			} // while

@@ -16,7 +16,6 @@ package org.coreasm.engine.plugins.tree;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +29,6 @@ import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
-import org.coreasm.engine.absstorage.PluginAggregationAPI;
-import org.coreasm.engine.absstorage.PluginCompositionAPI;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
 import org.coreasm.engine.absstorage.Update;
@@ -44,12 +41,10 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.ParserTools;
-import org.coreasm.engine.parser.ParseMapN;
-import org.coreasm.engine.plugin.Aggregator;
 import org.coreasm.engine.plugin.InitializationFailedException;
-import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.InterpreterPlugin;
+import org.coreasm.engine.plugin.ParserPlugin;
+import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
 import org.coreasm.engine.plugins.list.ListElement;
 import org.coreasm.engine.plugins.number.NumberElement;
@@ -180,7 +175,6 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 	} // getLexers
 
 
-	@SuppressWarnings({ "unchecked", "serial" })
 	public Map<String, GrammarRule> getParsers() {		
 		if(parsers == null) {
 			parsers = new HashMap<String, GrammarRule>();
@@ -211,7 +205,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 			treeTermParserArray[0] = Parsers.mapn("TreeTerm", 
 					new Parser[] {createTreeParser_step1},
 					new ParseMapN<Node>(PLUGIN_NAME) {
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new TreeTermNode();
 							addChildren(node, vals);
 							node.setScannerInfo(node.getFirstCSTNode());
@@ -241,7 +235,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 					termParser
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-				public Node map(Object... vals) {
+				public Node map(Object[] vals) {
 					Node node = new MakeTreeRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -272,7 +266,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object... vals) {
+				public Node map(Object[] vals) {
 					Node node = new AddChildToRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -299,7 +293,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object... vals) {
+				public Node map(Object[] vals) {
 					Node node = new RemoveChildFromRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -326,7 +320,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object... vals) {
+				public Node map(Object[] vals) {
 					Node node = new RemoveChildAtRuleNode();
 					addChildren(node, vals);
 					return node;

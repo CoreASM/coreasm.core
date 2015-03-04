@@ -13,8 +13,8 @@
 package org.coreasm.engine.plugins.number;
 
 import org.coreasm.engine.absstorage.BackgroundElement;
-import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.BooleanElement;
+import org.coreasm.engine.absstorage.Element;
 
 /** 
  *	Class for NumberRange Background Elements

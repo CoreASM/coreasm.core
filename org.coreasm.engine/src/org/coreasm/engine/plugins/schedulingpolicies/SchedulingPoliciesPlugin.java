@@ -185,7 +185,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new AgentManagementRuleNode(((Node)vals[0]).getScannerInfo(), "SuspendAgentRule");
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);
@@ -202,7 +202,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new AgentManagementRuleNode(((Node)vals[0]).getScannerInfo(), "ResumeAgentRule");
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);
@@ -219,7 +219,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new AgentManagementRuleNode(((Node)vals[0]).getScannerInfo(), "TerminateAgentRule");
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

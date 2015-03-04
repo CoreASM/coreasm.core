@@ -216,7 +216,7 @@ public class ConditionalRulePlugin extends Plugin
 		}
 
 		@Override
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			nextChildName = "guard";
 			Node node = new ConditionalRuleNode(((Node) vals[0]).getScannerInfo());
 			addChildren(node, vals);

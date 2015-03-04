@@ -90,9 +90,9 @@ public class ParserTools
 	
 	public Parser<Node> getKeywParser(String keyword, final String pluginName) {
 		if ( ! keywParsers.containsKey(keyword) ) {
-			Parser<Node> parser = terminals_keyw.token(keyword).map(new Map() {
+			Parser<Node> parser = terminals_keyw.token(keyword).map(new Map<Token, Node>() {
 				@Override
-				public Object map(Object from) {
+				public Node map(Token from) {
 					int index = -1;
 					if (from instanceof Token)
 						index = ((Token)from).index();
@@ -111,9 +111,9 @@ public class ParserTools
 	
 	public Parser<Node> getOprParser(String operator) {
 		if ( ! oprParsers.containsKey(operator) ) {
-			Parser<Node> parser = terminals_keyw.token(operator).map(new Map() {
+			Parser<Node> parser = terminals_keyw.token(operator).map(new Map<Token, Node>() {
 				@Override
-				public Object map(Object from) {
+				public Node map(Token from) {
 					int index = -1;
 					if (from instanceof Token)
 						index = ((Token)from).index();
@@ -196,7 +196,6 @@ public class ParserTools
 	public static class RuleSignatureParseMap
 	extends ArrayParseMap
 	{
-		private static final long serialVersionUID = 1L;
 
 		public RuleSignatureParseMap() {
 			super(Kernel.PLUGIN_NAME);
@@ -220,13 +219,12 @@ public class ParserTools
 	public static class RuleDeclarationParseMap
 	extends ArrayParseMap
 	{
-		private static final long serialVersionUID = 1L;
 
 		public RuleDeclarationParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			ScannerInfo info = null;
 			info = ((Node)vals[0]).getScannerInfo();
 			
@@ -261,13 +259,12 @@ public class ParserTools
 	public static class CoreASMParseMap
 	extends ArrayParseMap
 	{
-		private static final long serialVersionUID = 1L;
 
 		public CoreASMParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
 		
-		public Node map(Object... vals) {
+		public Node map(Object[] vals) {
 			ScannerInfo info = null;
 			
 			// consider the possiblity of starting with a 
@@ -297,13 +294,12 @@ public class ParserTools
 	public static class FunctionRuleTermParseMap
 	extends ArrayParseMap
 	{
-		private static final long serialVersionUID = 1L;
 
 		public FunctionRuleTermParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
 		
-		public Node map(Object... v) {
+		public Node map(Object[] v) {
 			Node node = new FunctionRuleTermNode(((Node)v[0]).getScannerInfo());
 			node.addChild("alpha", (Node)v[0]); // ID
 			
@@ -358,7 +354,7 @@ public class ParserTools
 	 *  
 	 * @param parsers parsers to be sequenced
 	 */
-	public Parser<Object[]> seq(Parser<? extends Object>...parsers) {
+	public Parser<Object[]> seq(Parser<?>...parsers) {
 		return seq("parser", parsers);
 	}
 	

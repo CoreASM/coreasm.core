@@ -117,7 +117,7 @@ public class ASMOutlinePage extends ContentOutlinePage implements Observer {
 						return;
 
 					ASMDocument document = (ASMDocument)editor.getInputDocument();
-					editor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), ASMDocument.calculateLength(node.getNode()), true);
+					editor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), document.calculateLength(node.getNode()), true);
 				}
 				else
 					editor.resetHighlightRange();

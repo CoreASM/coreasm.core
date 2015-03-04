@@ -23,7 +23,7 @@ import org.coreasm.engine.interpreter.Node;
  * tag which is used by the getQuickFixes() method to deliver the right set
  * of QuickFixes.</li>
  * </ul>
- * @author Markus Müller
+ * @author Markus Mï¿½ller
  */
 public class SimpleError
 extends AbstractError
@@ -94,6 +94,7 @@ extends AbstractError
 			Class<?> errorParser = Class.forName(getClassname());
 			Method method = errorParser.getMethod("getQuickFixes", String.class);
 			Object o = method.invoke(null, getErrorID());
+			@SuppressWarnings("unchecked")
 			List<AbstractQuickFix> l = (List<AbstractQuickFix>) o;
 			// Sort out fixes which are not applicable for the given error
 			for (AbstractQuickFix fix: l)

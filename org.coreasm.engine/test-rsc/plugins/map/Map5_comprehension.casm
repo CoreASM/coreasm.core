@@ -9,7 +9,25 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "{0->0, -6->-6, 6->6, 2->2, -2->-2, 10->10, -10->-10, -4->-4, 4->4, 8->8, -8->-8}\n{ -> }\n{ -> }\n{6->6, 2->2, 10->10, 4->4, 8->8}\n{6->6, 2->2, 10->10, 4->4, 8->8}\n{[2, 2]->[2, 2], [4, 4]->[4, 4], [6, 6]->[6, 6], [8, 8]->[8, 8], [10, 10]->[10, 10]}\n{3->6, 2->4, 1->4}"
+ * @require "\n{ -> }\n{ -> }\n"
+ * @require "0->0"
+ * @require "-6->-6"
+ * @require "6->6"
+ * @require "2->2"
+ * @require "-2->-2"
+ * @require "10->10"
+ * @require "-10->-10"
+ * @require "-4->-4"
+ * @require "4->4"
+ * @require "8->8"
+ * @require "-8->-8"
+ * @require "1->1"
+ * @require "9->9"
+ * @require "5->5"
+ * @require "3->3"
+ * @require "7->7"
+ * @require "16->16"
+ * @require "{[8, 8]->[8, 8]}"
  */
 rule Start =
 	seqblock
@@ -23,13 +41,12 @@ rule Start =
 		map3 := {a -> a | a in {1,2,3,4} with x > 10000}
 		print map3
 		// map-comprehension inside map-comprehension
-		map4 := {a -> a | a in {b^(1/2) | b in [1..100 step 1]} with isEvenNumber(a)}
+		map4 := {a -> a | a in {2^b | b in [3..4 step 1]}}
 		print map4
 		// map-comprehension inside map-comprehension with basic derived math function sqrt
-		map5 := {a -> a | a in {sqrt(b) | b in [1..100 step 1]} with isEvenNumber(a)}
+		map5 := {a -> a | a in {sqrt(b) | b in [1..100 step 1]} with isOddNumber(a)}
 		print map5
 		// handling values from two different maps
 		map6 := {a -> b | a in map1, b in map4 with a = b }
 		print map6
-		print {a -> b | a in [1,2,3], b in [4,5,6]}
 	endseqblock

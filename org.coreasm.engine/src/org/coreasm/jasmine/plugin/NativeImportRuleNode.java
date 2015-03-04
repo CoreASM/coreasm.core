@@ -27,6 +27,11 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class NativeImportRuleNode extends ASTNode {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5341613508073097169L;
+
+	/**
 	 * @see ASTNode#ASTNode(ASTNode)
 	 */
 	public NativeImportRuleNode(NativeImportRuleNode node) {

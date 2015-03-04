@@ -30,14 +30,13 @@ import org.coreasm.engine.interpreter.ScannerInfo;
  * @author Roozbeh Farahbod
  * @version $Revision: 130 $, Last modified: $Date: 2010-03-31 01:27:47 +0200 (Mi, 31 Mrz 2010) $
  */
-@SuppressWarnings("unchecked")
 public class JasmineUpdateElement extends JasmineAbstractUpdateElement {
 
 	// type of actions
 	enum Type {Create, Store, Invoke};
 	
 	public final Type type;
-	public final List arguments;
+	public final List<Object> arguments;
 	public final Element agent;
 	public final ScannerInfo sinfo;
 	private final Set<Element> agents;
@@ -54,7 +53,7 @@ public class JasmineUpdateElement extends JasmineAbstractUpdateElement {
 	 */
 	public JasmineUpdateElement(Element agent, Type type, ScannerInfo sinfo, Object... args) {
 		this.type = type;
-		List arguments = new ArrayList();
+		List<Object> arguments = new ArrayList<Object>();
 		for (Object arg: args)
 			arguments.add(arg);
 		this.arguments = Collections.unmodifiableList(arguments);

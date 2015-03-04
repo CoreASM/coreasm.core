@@ -215,10 +215,16 @@ public class SlimEngine implements ControlAPI {
 		
 		// get the private allPlugins map from the engine
 		try {
-			Field f = Engine.class.getDeclaredField("allPlugins");
+			Field tmp = Engine.class.getDeclaredField("pluginLoader");//Engine.class.getMethod(name, parameterTypes)
+			tmp.setAccessible(true);
+			Object loader = tmp.get(fullEngine);
+			Field f = loader.getClass().getDeclaredField("allPlugins");
+			//Field f = Engine.class.getDeclaredField("allPlugins");
 			f.setAccessible(true);
-			Object o = f.get(fullEngine);
+			Object o = f.get(loader);//f.get(fullEngine);
+			@SuppressWarnings("unchecked")
 			Map<String,Plugin> m = (Map<String, Plugin>) o;
+
 			plugins = new HashSet<Plugin>(m.values());
 		} catch (Exception e) {
 			e.printStackTrace();

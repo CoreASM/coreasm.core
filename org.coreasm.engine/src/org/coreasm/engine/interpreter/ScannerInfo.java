@@ -72,7 +72,6 @@ public class ScannerInfo implements Serializable {
 	 * 
 	 * @param data a {@link Tok} object
 	 */
-	@SuppressWarnings("deprecation")
 	public ScannerInfo(Token data) {
 		charPosition = data.index();
 	}

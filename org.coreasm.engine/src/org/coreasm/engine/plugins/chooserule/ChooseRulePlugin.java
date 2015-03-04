@@ -153,7 +153,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 								termParser).optional()
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new PickExpNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -713,7 +713,6 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 	 *   
 	 * @author Roozbeh Farahbod
 	 */
-	@SuppressWarnings("serial")
 	public static class ChooseParseMap extends ParserTools.ArrayParseMap {
 
 	    String nextChildName = "alpha";
@@ -722,7 +721,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 		
-		public Node map(Object... v) {
+		public Node map(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new ChooseRuleNode(((Node)v[0]).getScannerInfo());
 

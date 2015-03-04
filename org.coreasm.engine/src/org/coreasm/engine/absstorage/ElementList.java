@@ -99,7 +99,7 @@ public class ElementList extends ArrayList<Element> {
 	public boolean equals(Object obj) {
 		boolean result = false;
 		if (obj instanceof List) {
-			List list = (List)obj;
+			List<?> list = (List<?>)obj;
 			result = list.size() == this.size();
 			if (result && this.size() > 0) {
 				for (int i = 0; i < this.size(); i++)

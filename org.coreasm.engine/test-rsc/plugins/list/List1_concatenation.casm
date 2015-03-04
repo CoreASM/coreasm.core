@@ -10,13 +10,12 @@ init Start
  * @minsteps 1
  * @maxsteps 1
  *
- * @require "[1, 2, 3, 4, Hel, lo, Wor, ld, 1, 2, 3, 4, 0, 9, 8, 7]\n"
- * @require "[that, is, set, a, 1, 34, 67, 100]\n"
+ * @require "[1, 2, 3, 4, Hel, lo, Wor, ld, 1, 2, 3, 4, 0, 9, 8, 7]\n[set, 1, 34, 67, 100]\n"
  */
 rule Start =
 	seqblock
 		list1 := [1,2,3,4]
 		list2 := ["Hel","lo","Wor","ld"]
 		print list1 + list2 + list1 + [0,9,8,7]
-		print toList({"that", "is", "a", "set"}) + toList([1..100 step 33]) + toList({})
+		print toList({"set"}) + toList([1..100 step 33]) + toList({})
 	endseqblock

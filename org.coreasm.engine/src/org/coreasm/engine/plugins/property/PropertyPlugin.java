@@ -31,10 +31,9 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.GrammarRule;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.parser.OperatorRule;
-import org.coreasm.engine.parser.ParseMapN;
 import org.coreasm.engine.parser.OperatorRule.OpType;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -172,7 +171,7 @@ public class PropertyPlugin extends Plugin implements ParserPlugin, OperatorProv
  			super(PLUGIN_NAME);
  		}
  		
- 		public Node map(Object... vals) {
+ 		public Node map(Object[] vals) {
 	        PropertyListNode node = new PropertyListNode(null);
 	        addChildren(node, vals);
 	        node.setScannerInfo(node.getFirstCSTNode());

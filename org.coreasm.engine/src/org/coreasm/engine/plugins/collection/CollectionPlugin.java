@@ -126,7 +126,7 @@ public class CollectionPlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new AddToRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -146,7 +146,7 @@ public class CollectionPlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object... vals) {
+						public Node map(Object[] vals) {
 							Node node = new RemoveFromRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
