@@ -46,7 +46,7 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 				//try compiling the param as an l-code, but be prepared for failure
 				result.appendLine("public CompilerRuntime.Location evaluateL(CompilerRuntime.LocalStack localStack) throws Exception{\n");
 				try{
-					CodeFragment ltmp = engine.compile(params.getArguments().get(i), CodeType.L);
+					CodeFragment ltmp = engine.tryCompile(params.getArguments().get(i), CodeType.L);
 					result.appendFragment(ltmp);
 					result.appendLine("return (CompilerRuntime.Location) evalStack.pop();\n");
 				}

@@ -57,6 +57,8 @@ public interface CompilerEngine {
 	 * @return The {@link MainFile}
 	 */
 	public MainFile getMainFile();
+	
+	CodeFragment tryCompile(ASTNode node, CodeType type) throws CompilerException;
 	/**
 	 * Instructs the compiler engine to generate code for the given node.
 	 * Even though plugins could be called directly to compile code,

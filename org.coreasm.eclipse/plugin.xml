@@ -551,7 +551,7 @@
        </category>
        <wizard
              category="org.coreasm.eclipse.wizard"
-             class="org.coreasm.eclipse.wizards.ToJarExportWizard"
+             class="org.coreasm.eclipse.wizards.compiler.ToJarExportWizard"
              icon="icons/CoreASM-Logo.png"
              id="org.coreasm.eclipse.coreasmtojar"
              name="CoreASM to Jar Export">

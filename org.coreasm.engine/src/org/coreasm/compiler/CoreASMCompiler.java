@@ -62,6 +62,8 @@ public class CoreASMCompiler implements CompilerEngine {
 	private long lastTime;
 	private long cTime;
 	
+	private boolean tryCompiling = false;
+	
 	/**
 	 * Constructs a new CoreASMCompiler instance with the given options
 	 * @param options The options for the compilation process
@@ -225,6 +227,19 @@ public class CoreASMCompiler implements CompilerEngine {
 	@Override
 	public VarManager getVarManager() {
 		return this.varManager;
+	}
+	
+	@Override
+	public CodeFragment tryCompile(ASTNode node, CodeType type) throws CompilerException{
+		this.tryCompiling = true;
+		CodeFragment result = null;
+		try{
+			result = compile(node, type);
+		}
+		finally{
+			this.tryCompiling = false;
+		}
+		return result;
 	}
 	
 	@Override
@@ -592,12 +607,16 @@ public class CoreASMCompiler implements CompilerEngine {
 
 	@Override
 	public void addError(String msg) {
-		if(!errors.contains(msg)) errors.add(msg);
+		if(!this.tryCompiling){
+			if(!errors.contains(msg)) errors.add(msg);
+		}
 	}
 
 	@Override
 	public void addWarning(String msg) {
-		if(!warnings.contains(msg)) warnings.add(msg);
+		if(!this.tryCompiling){
+			if(!warnings.contains(msg)) warnings.add(msg);
+		}
 	}
 
 	@Override

@@ -247,7 +247,8 @@ public class DummyLoader implements PluginLoader {
 	@Override
 	public CompilerPlugin getPlugin(String name) {
 		if(name == null){
-			engine.getLogger().warn(DummyLoader.class, "Warning: null name found, assuming kernel");
+			//NOTE: This actually hides a bug in the parser. In some cases, the plugin name field is null instead of kernel
+			//engine.getLogger().warn(DummyLoader.class, "Warning: null name found, assuming kernel");
 			
 			return plugins.get("Kernel");
 		}
@@ -262,7 +263,7 @@ public class DummyLoader implements PluginLoader {
 			pluginList.add(cae.getPlugin(n.getPluginName()));
 		}
 		else{
-			engine.getLogger().warn(DummyLoader.class, "Found null plugin, replacing with kernel");
+			//engine.getLogger().warn(DummyLoader.class, "Found null plugin, replacing with kernel");
 			pluginList.add(cae.getPlugin("Kernel"));
 		}
 			

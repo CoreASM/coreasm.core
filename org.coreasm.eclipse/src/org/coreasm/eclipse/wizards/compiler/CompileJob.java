@@ -1,4 +1,4 @@
-package org.coreasm.eclipse.wizards;
+package org.coreasm.eclipse.wizards.compiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class CompileJob extends Job {
 		CoreASMCompiler comp = new CoreASMCompiler(options, CoreASMEngineFactory.createCoreASMEngine());
 		CompilerLogger logger = new CompilerLogger(console);
 		
-		comp.getLogger().addListener(Level.DEBUG, logger);
+		//comp.getLogger().addListener(Level.DEBUG, logger);
 		comp.getLogger().addListener(Level.ERROR, logger);
 		comp.getLogger().addListener(Level.WARN, logger);
 				

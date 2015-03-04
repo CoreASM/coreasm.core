@@ -1,4 +1,4 @@
-package org.coreasm.eclipse.wizards;
+package org.coreasm.eclipse.wizards.compiler;
 
 import java.io.IOException;
 
