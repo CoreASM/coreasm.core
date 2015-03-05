@@ -1,5 +1,8 @@
 package org.coreasm.eclipse.actions;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,14 +23,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.Version;
-
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.engine.CoreASMEngineFactory;
 import org.coreasm.eclipse.preferences.PreferenceConstants;
@@ -45,13 +50,15 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 	public static final Version version = ((BundleReference) org.coreasm.eclipse.CoreASMPlugin.class.getClassLoader())
 			.getBundle().getVersion();
 
-	public static final String ABOUT_TEXT = "Version " + version.toString().split(".qualifier")[0]
-			+ "\nCopyright (c) 2005-2014\n\n" + "www.github.com/CoreASM\n" + "www.coreasm.org";
+	private static final String COREASM_WEBSITE = "http://www.github.com/CoreASM";
 
-	public static final String DEVELOPERS = "Marcel Dausend\n" + "Roozbeh Farahbod\n" + "Vincenzo Gervasi\n"
+	public static final String ABOUT_TEXT = "Version " + version.toString().split(".qualifier")[0]
+			+ "\nCopyright (c) 2005-2015\n\n" + COREASM_WEBSITE+"\n" + "www.coreasm.org";
+
+	public static final String DEVELOPERS = "Markus Brenner\n" + "Marcel Dausend\n" + "Roozbeh Farahbod\n" + "Vincenzo Gervasi\n"
 			+ "George Ma\n" + "Mashaal Memon\n" + "Markus Müller\n" + "Michael Stegmaier";
 
-	public static final String FOOTER = "visit us at <A>www.github.com/CoreASM/coreasm.core</A>";
+	public static final String FOOTER = "visit us at <A>"+COREASM_WEBSITE+"</A>";
 
 	public static final String ACKNOWLEDGEMENTS = "Thanks to the ASM community, especially to Alexander\n"
 			+ "Raschke, Helmuth Partsch, Uwe Glässer, and Egon Börger\n"
@@ -116,7 +123,7 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 		Label lblCoreasmDevelopers = new Label(comp_north, SWT.NONE);
 		setFont(lblCoreasmDevelopers, 9, SWT.BOLD);
 		lblCoreasmDevelopers.setBackground(new Color(display, new RGB(255, 255, 255)));
-		lblCoreasmDevelopers.setText("CoreASM Developers");
+		lblCoreasmDevelopers.setText("Developers");
 
 		Label aboutLabel = new Label(comp_north, SWT.NONE);
 		aboutLabel.setBackground(new Color(display, new RGB(255, 255, 255)));
@@ -142,7 +149,8 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 		Label lblAvailPlugins = new Label(pluginTable, SWT.NONE);
 		lblAvailPlugins.setBackground(new Color(display, new RGB(255, 255, 255)));
 		lblAvailPlugins.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
-		lblAvailPlugins.setText("available plugins");
+		lblAvailPlugins.setText("installed plugins");
+		setFont(lblAvailPlugins, 9, SWT.ITALIC);
 
 		Label lblPluginName = new Label(pluginTable, SWT.NONE);
 		setFont(lblPluginName, 9, SWT.BOLD);
@@ -190,15 +198,25 @@ public class CoreASMAboutAction implements IWorkbenchWindowActionDelegate {
 		Link link = new Link(composite, SWT.NONE);
 		link.setBackground(new Color(display, new RGB(255, 255, 255)));
 		link.setText(FOOTER);
+		link.addListener(SWT.Selection,new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				try {
+					java.awt.Desktop.getDesktop().browse(new URI(COREASM_WEBSITE));
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 		shell.setText("About CoreASM");
 		shell.setSize(375, 550);
-
 		scrolledComposite.setContent(composite);
-		scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-
+		Point minSize = composite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		scrolledComposite.setMinSize(minSize.x + 10, minSize.y);
 		return shell;
-
 	}
 
 	@Override
