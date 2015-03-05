@@ -58,6 +58,8 @@ public interface CompilerEngine {
 	 */
 	public MainFile getMainFile();
 	
+	public CompilerPathConfig getPath();
+	
 	CodeFragment tryCompile(ASTNode node, CodeType type) throws CompilerException;
 	/**
 	 * Instructs the compiler engine to generate code for the given node.

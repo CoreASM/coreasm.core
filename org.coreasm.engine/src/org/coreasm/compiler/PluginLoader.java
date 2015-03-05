@@ -7,6 +7,7 @@ import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
+import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
@@ -77,4 +78,6 @@ public interface PluginLoader {
 	 * @return A list of all CompilerCode Plugins
 	 */
 	public List<CompilerCodePlugin> getCompilerCodePlugins();
+	
+	public List<CompilerPathPlugin> getCompilerPathPlugins();
 }

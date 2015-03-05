@@ -22,6 +22,7 @@ import org.coreasm.compiler.exception.NotCompilableException;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
+import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.mainprogram.MainFile;
 import org.coreasm.compiler.preprocessor.Information;
@@ -52,6 +53,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	private Map<String, List<CompilerPlugin>> binaryOperators;
 	private Map<String, CompilerFunctionPlugin> functionMapping;
 	private Preprocessor preprocessor;
+	private CompilerPathConfig paths;
 	
 	private List<String> warnings;
 	private List<String> errors;
@@ -102,6 +104,8 @@ public class CoreASMCompiler implements CompilerEngine {
 		errors = new ArrayList<String>();
 		
 		coreasm = casm;
+		
+		paths = new DefaultPaths();
 		
 		timings = new LinkedList<String>();
 		cTime = System.nanoTime();
@@ -459,6 +463,17 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
+		//path plugin´
+		List<CompilerPathPlugin> pathplugins = pluginLoader.getCompilerPathPlugins();
+		if(pathplugins.size() > 1){
+			this.addError("Only one path configurator can be active");
+			throw new CompilerException("Only one path configurator can be active");
+		}
+		else if(!pathplugins.isEmpty()){
+			this.paths = pathplugins.get(0).getPathConfig();
+			getLogger().debug(CoreASMCompiler.class, "loaded path config from plugin " + pathplugins.get(0).getName());
+		}
+		
 		//operator plugins
 		lastTime = System.nanoTime();
 		getLogger().debug(CoreASMCompiler.class, "loading operators");
@@ -632,5 +647,10 @@ public class CoreASMCompiler implements CompilerEngine {
 	@Override
 	public LoggingHelper getLogger() {
 		return logging;
+	}
+
+	@Override
+	public CompilerPathConfig getPath() {
+		return paths;
 	}
 }

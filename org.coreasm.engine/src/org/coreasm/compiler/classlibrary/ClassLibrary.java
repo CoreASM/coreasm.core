@@ -27,13 +27,6 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
  *
  */
 public class ClassLibrary {
-	/**
-	 * Base package all plugin generated objects will reside in.
-	 * The full package path for a class clazz created by plugin foo
-	 * will be PLUGINBASEPACKAGE.foo.clazz
-	 */
-	public static final String PLUGINBASEPACKAGE = "plugins";
-	
 	private ArrayList<LibraryEntry> entries;
 	private CompilerOptions options;
 	private Map<String, String> packageReplacements;
@@ -77,9 +70,10 @@ public class ClassLibrary {
 	 * assumed to reside in PLUGINBASEPACKAGE
 	 * @return The full name of the class in the generated code
 	 */
-	public String getClassName(String name, CompilerPlugin classSource){
+	public String getClassName(String name, CompilerPlugin classSource, boolean isDynamic){
 		if(classSource == null) return name;
-		return PLUGINBASEPACKAGE + "." + classSource.getName() + "." + name;
+		if(isDynamic) return engine.getPath().pluginDynamicPkg() + "." + classSource.getName() + "." + name;
+		return engine.getPath().pluginStaticPkg() + "." + classSource.getName() + "." + name;
 	}
 	
 	/**
@@ -112,10 +106,13 @@ public class ClassLibrary {
 	 * @return The new ClassFile object.
 	 * @throws EntryAlreadyExistsException if an entry with the constructed full name already exists
 	 */
-	public ClassFile createClass(String name, CompilerPlugin source) throws EntryAlreadyExistsException{
+	public ClassFile createClass(String name, CompilerPlugin source, boolean isDynamic) throws EntryAlreadyExistsException{
 		ClassFile cf = null;
 		if(source == null) 	cf = new ClassFile(name, "", engine);
-		else 				cf = new ClassFile(name, PLUGINBASEPACKAGE + "." + source.getName(), engine);
+		else if(isDynamic)
+			cf = new ClassFile(name, engine.getPath().pluginDynamicPkg() + "."+ source.getName(), engine);
+		else
+			cf = new ClassFile(name, engine.getPath().pluginStaticPkg() + "."+ source.getName(), engine);
 		
 		if(!this.entries.contains(cf)){
 			this.entries.add(cf);
@@ -131,8 +128,8 @@ public class ClassLibrary {
 	 * @return A new ClassInclude LibraryEntry for the included class.
 	 * @throws EntryAlreadyExistsException If there already is an entry with the given full name
 	 */
-	public ClassInclude includeClass(File path, CompilerPlugin source) throws EntryAlreadyExistsException {
-		ClassInclude result = new ClassInclude(path, PLUGINBASEPACKAGE + "." + source.getName(), engine);
+	public ClassInclude includeClass(File path, CompilerPlugin source, boolean isDynamic) throws EntryAlreadyExistsException {
+		ClassInclude result = new ClassInclude(path, (isDynamic ? engine.getPath().pluginDynamicPkg() : engine.getPath().pluginStaticPkg()) + "." + source.getName(), engine);
 		if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
 		this.entries.add(result);
 		return result;
@@ -147,9 +144,9 @@ public class ClassLibrary {
 	 * @throws IncludeException If there was some problem with the jar archive 
 	 * @throws EntryAlreadyExistsException If an entry with the constructed full name already exists
 	 */
-	public ClassInclude includeClass(File jarPath, String classPath, CompilerPlugin source) throws IncludeException, EntryAlreadyExistsException{
+	public ClassInclude includeClass(File jarPath, String classPath, CompilerPlugin source, boolean isDynamic) throws IncludeException, EntryAlreadyExistsException{
 		try{
-			ClassInclude result = new ClassInclude(jarPath, classPath, PLUGINBASEPACKAGE + "." + source.getName(), engine);
+			ClassInclude result = new ClassInclude(jarPath, classPath, (isDynamic ? engine.getPath().pluginDynamicPkg() : engine.getPath().pluginStaticPkg()) + "." + source.getName(), engine);
 			if(this.entries.contains(result)) throw new EntryAlreadyExistsException(result.getFullName());
 			this.entries.add(result);
 			return result;

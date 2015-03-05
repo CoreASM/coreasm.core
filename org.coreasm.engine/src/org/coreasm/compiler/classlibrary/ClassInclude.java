@@ -46,11 +46,6 @@ public class ClassInclude implements LibraryEntry{
 	private CompilerEngine engine;
 	
 	/**
-	 * The base path to the plugins. Used to make the merge with the coreasm project easier.
-	 */
-	public static final String PLUGIN_BASE = "src\\de\\spellmaker\\coreasmc\\plugins\\dummy\\".replace("\\", File.separator);
-	
-	/**
 	 * Creates a new ClassInclude object referencing a file on the hard disk.
 	 * @param path The path of the source file
 	 * @param packageName The target package name of the include
@@ -113,8 +108,8 @@ public class ClassInclude implements LibraryEntry{
 	private void populatePackageReplacements(){
 		importPackageReplacements = new HashMap<String, String>();
 		
-		importPackageReplacements.put("org.coreasm.engine.absstorage", "CompilerRuntime");
-		importPackageReplacements.put("org.coreasm.engine.CoreASMError", "CompilerRuntime.CoreASMError");
+		importPackageReplacements.put("org.coreasm.engine.absstorage", engine.getPath().runtimePkg());
+		importPackageReplacements.put("org.coreasm.engine.CoreASMError", engine.getPath().runtimePkg() + ".CoreASMError");
 	}
 	
 	@Override

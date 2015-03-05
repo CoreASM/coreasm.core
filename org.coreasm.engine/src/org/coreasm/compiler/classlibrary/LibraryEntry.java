@@ -1,26 +1,23 @@
 package org.coreasm.compiler.classlibrary;
 
-import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
-import org.coreasm.compiler.exception.LibraryEntryException;
+import java.io.InputStream;
 
-/**
- * Basic interface for a class library entry.
- * Every class that somehow wants to be entered into the class library
- * needs to implement this interface.
- * As the writeFile method is not implemented here, using {@link AbstractLibraryEntry}
- * for easier use is recommended.
- * @author Markus Brenner
- *
- */
-public interface LibraryEntry {
-	/**
-	 * Writes the file to its target destination
-	 * @throws LibraryEntryException If an error occured
-	 */
-	public void writeFile() throws LibraryEntryException;
-	/**
-	 * Provides the full name (with packages) of the class represented by this entry.
-	 * @return The full name of the entry
-	 */
-	public String getFullName();
+public abstract class LibraryEntry extends InputStream {
+	public abstract String getName();
+	public abstract String getSource();
+	public abstract LibraryEntryType getType();
+	public abstract void open();
+	
+	public boolean equals(Object o){
+		if(o instanceof LibraryEntry){
+			LibraryEntry l = (LibraryEntry) o;
+			return getName().equals(l.getName()) && getSource().equals(l.getSource()) && getType().equals(l.getType());
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString(){
+		return "[" + this.getClass().getName() + ":" + getName() + ":" + getSource() + ":" + getType() + "]";
+	}
 }
