@@ -57,6 +57,9 @@ public class PluginManager {
 		allPlugins = PluginClassLoader.loadCatalog(capi);
 	}
 	
+	public Map<String, Plugin> getAllPlugins(){
+		return Collections.unmodifiableMap(allPlugins);
+	}
 	
 	
 	public ClassLoader getClassLoader(){
