@@ -1,9 +1,8 @@
 package org.coreasm.compiler.plugins.signature;
 
-import java.io.File;
-
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.classlibrary.MemoryInclude;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
 import org.coreasm.compiler.exception.LibraryEntryException;
@@ -14,11 +13,10 @@ import org.coreasm.compiler.exception.LibraryEntryException;
  * @author Markus Brenner
  *
  */
-public class DerivedFunctionEntry extends AbstractLibraryEntry{
+public class DerivedFunctionEntry extends MemoryInclude{
 	private String name;
 	private String[] params;
 	private CodeFragment body;
-	private CompilerEngine engine;
 	
 	/**
 	 * Builds a new derived function entry
@@ -27,43 +25,31 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 	 * @param body The body of the function
 	 */
 	public DerivedFunctionEntry(String name, String[] params, CodeFragment body, CompilerEngine engine){
-		this.name = name;
+		super(engine, "DerFunc_" + name, "SignaturePlugin", LibraryEntryType.DYNAMIC);
+		this.name = "DerFunc_" + name;
 		this.params = params;
 		this.body = body;
-		this.engine = engine;
 	}
-	
 	@Override
-	public String getFullName() {
-		return "plugins.SignaturePlugin.DerFunc_" + name;
-	}
-
-	@Override
-	protected File getFile() {
-		String p = engine.getOptions().tempDirectory + "\\plugins\\SignaturePlugin\\DerFunc_" + name + ".java";
-		return new File(p.replace("\\", File.separator));
-	}
-
-	@Override
-	protected String generateContent() throws LibraryEntryException {
+	protected String buildContent(String entryName) throws LibraryEntryException {
 		String result = "";
 		
-		result += "package plugins.SignaturePlugin;\n";
-		result += "public class DerFunc_" + name + " extends CompilerRuntime.FunctionElement{\n";
+		result += "package " + getPackage(entryName) + ";\n";
+		result += "public class " + name + " extends " + runtimePkg() + ".FunctionElement{\n";
 		//result += "private CompilerRuntime.EvalStack evalStack;\n";
 		//result += "private CompilerRuntime.LocalStack localStack;\n";
-		result += "public CompilerRuntime.Rule getUpdateResponsible(){return null;}\n";
-		result += "public DerFunc_" + name + "() throws Exception{\n";
+		result += "public " + runtimePkg() + ".Rule getUpdateResponsible(){return null;}\n";
+		result += "public " + name + "() throws Exception{\n";
 		//result += "evalStack = new CompilerRuntime.EvalStack();\n";
 		//result += "localStack = new CompilerRuntime.LocalStack();\n";
-		result += "setFClass(CompilerRuntime.FunctionElement.FunctionClass.fcDerived);\n";
+		result += "setFClass(" + runtimePkg() + ".FunctionElement.FunctionClass.fcDerived);\n";
 		result += "}\n";
 		result += "@Override\n";
-		result += "public CompilerRuntime.Element getValue(java.util.List<? extends CompilerRuntime.Element> args) {\n";
-		result += "\tCompilerRuntime.EvalStack evalStack = new CompilerRuntime.EvalStack();\n";
-		result += "\tCompilerRuntime.LocalStack localStack = new CompilerRuntime.LocalStack();\n";
-		result += "java.util.Map<String, CompilerRuntime.RuleParam> ruleparams = new java.util.HashMap<String, CompilerRuntime.RuleParam>();\n";
-		result += "if(args.size() != " + params.length + ") return CompilerRuntime.Element.UNDEF;\n";
+		result += "public " + runtimePkg() + ".Element getValue(java.util.List<? extends " + runtimePkg() + ".Element> args) {\n";
+		result += "\t" + runtimePkg() + ".EvalStack evalStack = new " + runtimePkg() + ".EvalStack();\n";
+		result += "\t" + runtimePkg() + ".LocalStack localStack = new " + runtimePkg() + ".LocalStack();\n";
+		result += "java.util.Map<String, " + runtimePkg() + ".RuleParam> ruleparams = new java.util.HashMap<String, " + runtimePkg() + ".RuleParam>();\n";
+		result += "if(args.size() != " + params.length + ") return " + runtimePkg() + ".Element.UNDEF;\n";
 		
 		for(int i = 0; i < params.length; i++){
 			result += "localStack.put(\"" + params[i] + "\", args.get(" + i + "));\n";
@@ -77,9 +63,9 @@ public class DerivedFunctionEntry extends AbstractLibraryEntry{
 			throw new LibraryEntryException(e);
 		}
 		
-		result += "}catch(Exception exc){return CompilerRuntime.Element.UNDEF;\n}\n";
+		result += "}catch(Exception exc){return " + runtimePkg() + ".Element.UNDEF;\n}\n";
 		
-		result += "return (CompilerRuntime.Element)evalStack.pop();\n";
+		result += "return (" + runtimePkg() + ".Element)evalStack.pop();\n";
 		
 		result += "}\n";
 		result += "}\n";

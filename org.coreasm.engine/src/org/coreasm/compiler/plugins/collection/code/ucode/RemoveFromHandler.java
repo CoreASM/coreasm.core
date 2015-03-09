@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -22,10 +23,11 @@ public class RemoveFromHandler implements CompilerCodeHandler{
 
 		result.appendFragment(lhs);
 		result.appendFragment(rhs);
-		result.appendLine("@decl(CompilerRuntime.Location, loc)=(CompilerRuntime.Location)evalStack.pop();\n");
-		result.appendLine("@decl(CompilerRuntime.Element, el) = (CompilerRuntime.Element) evalStack.pop();\n");
-		result.appendLine("@decl(plugins.CollectionPlugin.ModifiableCollection, coll) = (plugins.CollectionPlugin.ModifiableCollection)CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@);\n");
-		result.appendLine("@decl(CompilerRuntime.UpdateList, ul) = new CompilerRuntime.UpdateList();\n");
+		String modifcoll = engine.getPath().getEntryName(LibraryEntryType.STATIC, "ModifiableCollection", "CollectionPlugin");
+		result.appendLine("@decl(@RuntimePkg@.Location, loc)=(@RuntimePkg@.Location)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.Element, el) = (@RuntimePkg@.Element) evalStack.pop();\n");
+		result.appendLine("@decl(" + modifcoll + ", coll) = (" + modifcoll + ")@RuntimeProvider@.getStorage().getValue(@loc@);\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList, ul) = new @RuntimePkg@.UpdateList();\n");
 		result.appendLine("@ul@.addAll(@coll@.computeRemoveUpdate(@loc@, @el@, this.getUpdateResponsible()));\n");
 		result.appendLine("evalStack.push(@ul@);\n");
 	}

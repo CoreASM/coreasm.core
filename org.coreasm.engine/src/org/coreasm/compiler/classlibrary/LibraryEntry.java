@@ -1,12 +1,19 @@
 package org.coreasm.compiler.classlibrary;
 
-import java.io.InputStream;
+import java.io.Closeable;
 
-public abstract class LibraryEntry extends InputStream {
+public abstract class LibraryEntry implements Closeable{
 	public abstract String getName();
 	public abstract String getSource();
 	public abstract LibraryEntryType getType();
-	public abstract void open();
+	public abstract void open(String entryName) throws Exception;
+	public abstract String readLine() throws Exception;	
+	
+	protected String getPackage(String className){
+		int pos = className.lastIndexOf(".");
+		if(pos <= 0) return "";
+		return className.substring(0, pos);
+	}
 	
 	public boolean equals(Object o){
 		if(o instanceof LibraryEntry){

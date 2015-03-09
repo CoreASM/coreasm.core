@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.set.code.rcode.ComprehensionHandler;
@@ -67,51 +68,53 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 	public String compileBinaryOperator(String token)
 			throws CompilerException {
 		String result = "";
+		String abstractsetelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "AbstractSetElement", "CollectionPlugin");
+		String setelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "SetElement", "SetPlugin");
 		
-		result = "if((@lhs@ instanceof plugins.CollectionPlugin.AbstractSetElement) && (@rhs@ instanceof plugins.CollectionPlugin.AbstractSetElement)){\n";
+		result = "if((@lhs@ instanceof " + abstractsetelement + ") && (@rhs@ instanceof " + abstractsetelement + ")){\n";
 		result = result
-				+ "@decl(plugins.CollectionPlugin.AbstractSetElement,set1)=(plugins.CollectionPlugin.AbstractSetElement)@lhs@;\n"
-				+ "@decl(plugins.CollectionPlugin.AbstractSetElement,set2)=(plugins.CollectionPlugin.AbstractSetElement)@rhs@;\n";
+				+ "@decl(" + abstractsetelement + ",set1)=(" + abstractsetelement + ")@lhs@;\n"
+				+ "@decl(" + abstractsetelement + ",set2)=(" + abstractsetelement + ")@rhs@;\n";
 		
 		if(token.equals("union")){
-			result += "@decl(java.util.List<CompilerRuntime.Element>,result)=new java.util.ArrayList<CompilerRuntime.Element>();\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el1)=new java.util.ArrayList<CompilerRuntime.Element>(@set1@.enumerate());\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el2)=new java.util.ArrayList<CompilerRuntime.Element>(@set2@.enumerate());\n";
-			result += "for(@decl(CompilerRuntime.Element,e) : @el1@){\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,result)=new java.util.ArrayList<@RuntimePkg@.Element>();\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el1)=new java.util.ArrayList<@RuntimePkg@.Element>(@set1@.enumerate());\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el2)=new java.util.ArrayList<@RuntimePkg@.Element>(@set2@.enumerate());\n";
+			result += "for(@decl(@RuntimePkg@.Element,e) : @el1@){\n";
 			result += "@result@.add(@e@);\n";
 			result += "}\n";
-			result += "for(@decl(CompilerRuntime.Element,e2) : @el2@){\n";
+			result += "for(@decl(@RuntimePkg@.Element,e2) : @el2@){\n";
 			result += "@result@.add(@e2@);\n";
 			result += "}\n";
-			result += "evalStack.push(new plugins.SetPlugin.SetElement(@result@));\n";
+			result += "evalStack.push(new " + setelement + "(@result@));\n";
 		}
 		else if(token.equals("intersect")){
-			result += "@decl(java.util.List<CompilerRuntime.Element>,result)=new java.util.ArrayList<CompilerRuntime.Element>();\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el1)=new java.util.ArrayList<CompilerRuntime.Element>(@set1@.enumerate());\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el2)=new java.util.ArrayList<CompilerRuntime.Element>(@set2@.enumerate());\n";
-			result += "for(@decl(CompilerRuntime.Element,e) : @el1@){\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,result)=new java.util.ArrayList<@RuntimePkg@.Element>();\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el1)=new java.util.ArrayList<@RuntimePkg@.Element>(@set1@.enumerate());\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el2)=new java.util.ArrayList<@RuntimePkg@.Element>(@set2@.enumerate());\n";
+			result += "for(@decl(@RuntimePkg@.Element,e) : @el1@){\n";
 			result += "if(@el2@.contains(@e@)){\n";
 			result += "@result@.add(@e@);\n";
 			result += "}\n";
 			result += "}\n";
-			result += "evalStack.push(new plugins.SetPlugin.SetElement(@result@));\n";
+			result += "evalStack.push(new " + setelement + "(@result@));\n";
 		}
 		else if(token.equals("diff")){
-			result += "@decl(java.util.List<CompilerRuntime.Element>,result)=new java.util.ArrayList<CompilerRuntime.Element>();\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el1)=new java.util.ArrayList<CompilerRuntime.Element>(@set1@.enumerate());\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el2)=new java.util.ArrayList<CompilerRuntime.Element>(@set2@.enumerate());\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,result)=new java.util.ArrayList<@RuntimePkg@.Element>();\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el1)=new java.util.ArrayList<@RuntimePkg@.Element>(@set1@.enumerate());\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el2)=new java.util.ArrayList<@RuntimePkg@.Element>(@set2@.enumerate());\n";
 			result += "for(@decl(CompilerRuntime.Element,e) : @el1@){\n";
 			result += "if(!@el2@.contains(@e@)){\n";
 			result += "@result@.add(@e@);\n";
 			result += "}\n";
 			result += "}\n";
-			result += "evalStack.push(new plugins.SetPlugin.SetElement(@result@));\n";
+			result += "evalStack.push(new " + setelement + "(@result@));\n";
 		}
 		else if(token.equals("subset")){
-			result += "@decl(java.util.List<CompilerRuntime.Element>,result)=new java.util.ArrayList<CompilerRuntime.Element>();\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el1)=new java.util.ArrayList<CompilerRuntime.Element>(@set1@.enumerate());\n";
-			result += "@decl(java.util.List<CompilerRuntime.Element>,el2)=new java.util.ArrayList<CompilerRuntime.Element>(@set2@.enumerate());\n";
-			result += "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@el2@.containsAll(@el1@)));\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,result)=new java.util.ArrayList<@RuntimePkg@.Element>();\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el1)=new java.util.ArrayList<@RuntimePkg@.Element>(@set1@.enumerate());\n";
+			result += "@decl(java.util.List<@RuntimePkg@.Element>,el2)=new java.util.ArrayList<@RuntimePkg@.Element>(@set2@.enumerate());\n";
+			result += "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(@el2@.containsAll(@el1@)));\n";
 		}
 		else{
 			throw new CompilerException("unknown operator call: SetPlugin, "
@@ -142,20 +145,16 @@ public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlu
 		}
 		else{
 			try {
-				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
-				//classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetBackgroundElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "SetBackgroundElement", "SetPlugin"));
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "SetElement", "SetPlugin"));
 				
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetBackgroundElement", "plugins.SetPlugin.SetBackgroundElement");
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", "plugins.SetPlugin.SetElement");
-				
-				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/set/SetBackgroundElement.java", this), EntryType.BACKGROUND, SetBackgroundElement.SET_BACKGROUND_NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/set/include/SetCardinalityFunctionElement.java", this), EntryType.FUNCTION, SetCardinalityFunctionElement.SET_CARINALITY_FUNCTION_NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/set/include/SetElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/set/ToSetFunctionElement.java", this), EntryType.FUNCTION, ToSetFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/set/include/SetAggregator.java", this), EntryType.AGGREGATOR, ""));
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/engine/plugins/set/SetBackgroundElement.java", EntryType.BACKGROUND, SetBackgroundElement.SET_BACKGROUND_NAME).
+						includeStatic("org/coreasm/compiler/plugins/set/include/SetCardinalityFunctionElement.java", EntryType.FUNCTION, SetCardinalityFunctionElement.SET_CARINALITY_FUNCTION_NAME).
+						includeStatic("org/coreasm/compiler/plugins/set/include/SetElement.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/engine/plugins/set/ToSetFunctionElement.java", EntryType.FUNCTION, ToSetFunctionElement.NAME).
+						includeStatic("org/coreasm/compiler/plugins/set/include/SetAggregator.java", EntryType.AGGREGATOR).
+						build();
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}

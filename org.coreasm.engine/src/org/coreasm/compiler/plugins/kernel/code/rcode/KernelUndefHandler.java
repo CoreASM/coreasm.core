@@ -12,7 +12,7 @@ public class KernelUndefHandler implements CompilerCodeHandler{
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
 
-		result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);");
+		result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);");
 	}
 
 }

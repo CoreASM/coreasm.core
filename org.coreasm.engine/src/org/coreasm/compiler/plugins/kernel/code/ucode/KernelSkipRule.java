@@ -11,7 +11,7 @@ public class KernelSkipRule implements CompilerCodeHandler {
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
-		result.appendLine("evalStack.push(new CompilerRuntime.UpdateList());");
+		result.appendLine("evalStack.push(new @RuntimePkg@.UpdateList());");
 	}
 
 }

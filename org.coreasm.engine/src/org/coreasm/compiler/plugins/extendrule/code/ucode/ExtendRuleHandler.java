@@ -18,21 +18,21 @@ public class ExtendRuleHandler implements CompilerCodeHandler {
 						
 			CodeFragment name = engine.compile(node.getAbstractChildNodes().get(1), CodeType.L);
 			result.appendFragment(name);
-			result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
+			result.appendLine("@decl(@RuntimePkg@.Location,nameloc)=(@RuntimePkg@.Location)evalStack.pop();\n");
 			result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
 			
-			result.appendLine("@decl(CompilerRuntime.Element,elem)=new CompilerRuntime.Element();\n"); // create the new element
+			result.appendLine("@decl(@RuntimePkg@.Element,elem)=new @RuntimePkg@.Element();\n"); // create the new element
 			result.appendLine("localStack.pushLayer();\n");
 			result.appendLine("localStack.put(@nameloc@.name, @elem@);\n"); // add it to the local environment
 			result.appendFragment(upd); // execute the rule
 			result.appendLine("localStack.popLayer();\n");
 			result.appendFragment(loc); //get the target location
-			result.appendLine("@decl(String, target)=((CompilerRuntime.Location)evalStack.pop()).name;\n");
-			result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
+			result.appendLine("@decl(String, target)=((@RuntimePkg@.Location)evalStack.pop()).name;\n");
+			result.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=(@RuntimePkg@.UpdateList)evalStack.pop();\n");
 			
-			result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,arglist)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
+			result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,arglist)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
 			result.appendLine("@arglist@.add(@elem@);\n");
-			result.appendLine("@ulist@.add(new CompilerRuntime.Update(new CompilerRuntime.Location(@target@,@arglist@), CompilerRuntime.BooleanElement.TRUE, CompilerRuntime.Update.UPDATE_ACTION, this.getUpdateResponsible(), null));\n");
+			result.appendLine("@ulist@.add(new @RuntimePkg@.Update(new @RuntimePkg@.Location(@target@,@arglist@), @RuntimePkg@.BooleanElement.TRUE, @RuntimePkg@.Update.UPDATE_ACTION, this.getUpdateResponsible(), null));\n");
 			result.appendLine("evalStack.push(@ulist@);\n");
 		} catch (Exception e) {
 			throw new CompilerException(e);

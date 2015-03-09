@@ -61,44 +61,44 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 
 		if (token.equals("or")) {
 			result = result
-					+ "if((@lhs@ instanceof CompilerRuntime.BooleanElement) && (@rhs@ instanceof CompilerRuntime.BooleanElement)){\n";
+					+ "if((@lhs@ instanceof @RuntimePkg@.BooleanElement) && (@rhs@ instanceof @RuntimePkg@.BooleanElement)){\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,l)=(CompilerRuntime.BooleanElement)@lhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,l)=(@RuntimePkg@.BooleanElement)@lhs@;\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,r)=(CompilerRuntime.BooleanElement)@rhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,r)=(@RuntimePkg@.BooleanElement)@rhs@;\n";
 			result = result
-					+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@l@.equals(CompilerRuntime.BooleanElement.TRUE) || @r@.equals(CompilerRuntime.BooleanElement.TRUE)));\n";
+					+ "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(@l@.equals(@RuntimePkg@.BooleanElement.TRUE) || @r@.equals(@RuntimePkg@.BooleanElement.TRUE)));\n";
 		} else if (token.equals("xor")) {
 			result = result
-					+ "if((@lhs@ instanceof CompilerRuntime.BooleanElement) && (@rhs@ instanceof CompilerRuntime.BooleanElement)){\n";
+					+ "if((@lhs@ instanceof @RuntimePkg@.BooleanElement) && (@rhs@ instanceof @RuntimePkg@.BooleanElement)){\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,l)=(CompilerRuntime.BooleanElement)@lhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,l)=(@RuntimePkg@.BooleanElement)@lhs@;\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,r)=(CompilerRuntime.BooleanElement)@rhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,r)=(@RuntimePkg@.BooleanElement)@rhs@;\n";
 
 			result = result
-					+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf((@l@.getValue() && !@r@.getValue()) || (!@l@.getValue() && @r@.getValue())));\n";
+					+ "evalStack.push(@RuntimePkg@.BooleanElement.valueOf((@l@.getValue() && !@r@.getValue()) || (!@l@.getValue() && @r@.getValue())));\n";
 		} else if (token.equals("and")) {
 			result = result
-					+ "if((@lhs@ instanceof CompilerRuntime.BooleanElement) && (@rhs@ instanceof CompilerRuntime.BooleanElement)){\n";
+					+ "if((@lhs@ instanceof @RuntimePkg@.BooleanElement) && (@rhs@ instanceof @RuntimePkg@.BooleanElement)){\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,l)=(CompilerRuntime.BooleanElement)@lhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,l)=(@RuntimePkg@.BooleanElement)@lhs@;\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,r)=(CompilerRuntime.BooleanElement)@rhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,r)=(@RuntimePkg@.BooleanElement)@rhs@;\n";
 			result = result
-					+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@l@.equals(CompilerRuntime.BooleanElement.TRUE) && @r@.equals(CompilerRuntime.BooleanElement.TRUE)));\n";
+					+ "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(@l@.equals(@RuntimePkg@.BooleanElement.TRUE) && @r@.equals(@RuntimePkg@.BooleanElement.TRUE)));\n";
 		} else if (token.equals("implies")) {
 			result = result
-					+ "if((@lhs@ instanceof CompilerRuntime.BooleanElement) && (@rhs@ instanceof CompilerRuntime.BooleanElement)){\n";
+					+ "if((@lhs@ instanceof @RuntimePkg@.BooleanElement) && (@rhs@ instanceof @RuntimePkg@.BooleanElement)){\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,l)=(CompilerRuntime.BooleanElement)@lhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,l)=(@RuntimePkg@.BooleanElement)@lhs@;\n";
 			result = result
-					+ "@decl(CompilerRuntime.BooleanElement,r)=(CompilerRuntime.BooleanElement)@rhs@;\n";
+					+ "@decl(@RuntimePkg@.BooleanElement,r)=(@RuntimePkg@.BooleanElement)@rhs@;\n";
 			result = result
-					+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(!@l@.equals(CompilerRuntime.BooleanElement.TRUE) || @r@.equals(CompilerRuntime.BooleanElement.TRUE)));\n";
+					+ "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(!@l@.equals(@RuntimePkg@.BooleanElement.TRUE) || @r@.equals(@RuntimePkg@.BooleanElement.TRUE)));\n";
 		} else if (token.equals("!=")) {
 			result += "if(true){\n";
-			result += "evalStack.push(CompilerRuntime.BooleanElement.valueOf(!@lhs@.equals(@rhs@)));\n";
+			result += "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(!@lhs@.equals(@rhs@)));\n";
 			// result = result +
 			// "if((@lhs@ instanceof CompilerRuntime.BooleanElement) && (@rhs@ instanceof CompilerRuntime.BooleanElement)){\n";
 			// result = result +
@@ -109,22 +109,22 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 			// "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@l@.equals(CompilerRuntime.BooleanElement.TRUE) != @r@.equals(CompilerRuntime.BooleanElement.TRUE)));\n";
 		} else if (token.equals("memberof")) {
 			result = result
-					+ "if((@lhs@ instanceof CompilerRuntime.Element) && (@rhs@ instanceof CompilerRuntime.Enumerable)){\n";
-			result += ("if(!(@rhs@ instanceof CompilerRuntime.Enumerable)){\n");
-			result += ("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+					+ "if((@lhs@ instanceof @RuntimePkg@.Element) && (@rhs@ instanceof @RuntimePkg@.Enumerable)){\n";
+			result += ("if(!(@rhs@ instanceof @RuntimePkg@.Enumerable)){\n");
+			result += ("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 			result += ("}\n");
-			result += ("else if(@lhs@.equals(CompilerRuntime.Element.UNDEF)){\n");
-			result += ("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+			result += ("else if(@lhs@.equals(@RuntimePkg@.Element.UNDEF)){\n");
+			result += ("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 			result += ("}\n");
 			result += ("else{\n");
-			result += ("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-			result += ("@list@.addAll(((CompilerRuntime.Enumerable)@rhs@).enumerate());\n");
+			result += ("@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
+			result += ("@list@.addAll(((@RuntimePkg@.Enumerable)@rhs@).enumerate());\n");
 			result += ("for(@decl(int,i)=0;@i@<=@list@.size();@i@++){\n");
 			result += ("if(@i@ == @list@.size()){\n");
-			result += ("evalStack.push(CompilerRuntime.BooleanElement.FALSE);\n");
+			result += ("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 			result += ("}\n");
 			result += ("else if(@lhs@.equals(@list@.get(@i@))){\n");
-			result += ("evalStack.push(CompilerRuntime.BooleanElement.TRUE);\n");
+			result += ("evalStack.push(@RuntimePkg@.BooleanElement.TRUE);\n");
 			result += ("break;\n");
 			result += ("}\n");
 			result += ("}\n");
@@ -145,8 +145,8 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 		String result = "";
 
 		if (token.equals("not")) {
-			result += "if(@lhs@ instanceof CompilerRuntime.BooleanElement){\n";
-			result += "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@lhs@.equals(CompilerRuntime.BooleanElement.FALSE)));\n";
+			result += "if(@lhs@ instanceof @RuntimePkg@.BooleanElement){\n";
+			result += "evalStack.push(@RuntimePkg@.BooleanElement.valueOf(@lhs@.equals(@RuntimePkg@.BooleanElement.FALSE)));\n";
 			result += "}\n";
 		} else
 			throw new CompilerException(

@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.map.code.rcode.MapHandler;
@@ -57,15 +58,15 @@ public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlu
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.list.ListElement", "plugins.ListPlugin.ListElement");
 				
 				//package replacements for classes accessible from other plugins
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.map.MapBackgroundElement", "plugins.MapPlugin.MapBackgroundElement");
-				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.map.include.MapElement", "plugins.MapPlugin.MapElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.map.MapBackgroundElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "MapBackgroundElement", "MapPlugin"));
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.map.include.MapElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "MapElement", "MapPlugin"));
 				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/map/MapBackgroundElement.java", this), EntryType.BACKGROUND, MapBackgroundElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/map/MapToPairsFunctionElement.java", this), EntryType.FUNCTION, MapToPairsFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/map/ToMapFunctionElement.java", this), EntryType.FUNCTION, ToMapFunctionElement.NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/map/include/MapElement.java", this), EntryType.INCLUDEONLY, ""));
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/engine/plugins/map/MapBackgroundElement.java", EntryType.BACKGROUND, MapBackgroundElement.NAME).
+						includeStatic("org/coreasm/engine/plugins/map/MapToPairsFunctionElement.java", EntryType.FUNCTION, MapToPairsFunctionElement.NAME).
+						includeStatic("org/coreasm/engine/plugins/map/ToMapFunctionElement.java", EntryType.FUNCTION, ToMapFunctionElement.NAME).
+						includeStatic("org/coreasm/compiler/plugins/map/include/MapElement.java", EntryType.INCLUDEONLY).
+						build();
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}

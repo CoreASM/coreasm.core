@@ -21,7 +21,7 @@ public class ConditionalRuleHandler implements CompilerCodeHandler {
 
 		try{
 			result.appendFragment(engine.compile(cond, CodeType.R));
-			result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
+			result.appendLine("if(evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
 			result.appendFragment(engine.compile(ifpart, CodeType.U));
 			result.appendLine("}\n");
 			if(elsepart != null){
@@ -31,7 +31,7 @@ public class ConditionalRuleHandler implements CompilerCodeHandler {
 			}
 			else{
 				result.appendLine("else{\n");
-				result.appendLine("evalStack.push(new CompilerRuntime.UpdateList());\n");
+				result.appendLine("evalStack.push(new @RuntimePkg@.UpdateList());\n");
 				result.appendLine("}\n");
 			}
 		}

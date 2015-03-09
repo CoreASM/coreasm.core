@@ -4,11 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
@@ -54,16 +55,16 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.string.StringElement", "plugins.StringPlugin.StringElement");
 				
 				//add package replacements for classes accessible for other plugins
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.io.InputProvider", "plugins.IOPlugin.InputProvider");
-				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.io.include.IOPlugin", "plugins.IOPlugin.IOPlugin");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.io.InputProvider", engine.getPath().getEntryName(LibraryEntryType.STATIC, "InputProvider", "IOPlugin"));
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.io.include.IOPlugin", engine.getPath().getEntryName(LibraryEntryType.STATIC, "IOPlugin", "IOPlugin"));
 				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/OutputFunctionElement.java", this), EntryType.FUNCTION, "output"));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/InputFunctionElement.java", this), EntryType.FUNCTION, "input"));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/io/InputProvider.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/IOPlugin.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/io/include/IOAggregator.java", this), EntryType.AGGREGATOR, ""));
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/engine/plugins/io/OutputFunctionElement.java", EntryType.FUNCTION, "output").
+						includeStatic("org/coreasm/compiler/plugins/io/include/InputFunctionElement.java", EntryType.FUNCTION, "input").
+						includeStatic("org/coreasm/engine/plugins/io/InputProvider.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/compiler/plugins/io/include/IOPlugin.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/compiler/plugins/io/include/IOAggregator.java", EntryType.AGGREGATOR).build();
+				
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}
@@ -75,10 +76,10 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 	public List<EngineTransition> getTransitions() {
 		List<EngineTransition> result = new ArrayList<EngineTransition>();
 		CodeFragment c = new CodeFragment("");
-		
-		c.appendLine("try{\n@decl(String,msgs) = CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(new CompilerRuntime.Location(\"output\", new java.util.ArrayList<CompilerRuntime.Element>())).toString();\n");
+		String stringelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "StringElement", "StringPlugin");
+		c.appendLine("try{\n@decl(String,msgs) = @RuntimeProvider@.getStorage().getValue(new @RuntimePkg@.Location(\"output\", new java.util.ArrayList<@RuntimePkg@.Element>())).toString();\n");
 		c.appendLine("outputStream.print(@msgs@);\n");
-		c.appendLine("CompilerRuntime.RuntimeProvider.getRuntime().getStorage().setValue(new CompilerRuntime.Location(\"output\", new java.util.ArrayList<CompilerRuntime.Element>()), new plugins.StringPlugin.StringElement(\"\"));\n");
+		c.appendLine("@RuntimeProvider@.getStorage().setValue(new @RuntimePkg@.Location(\"output\", new java.util.ArrayList<@RuntimePkg@.Element>()), new " + stringelement + "(\"\"));\n");
 		c.appendLine("}\ncatch(@decl(Exception,e)){\n}\n");
 		EngineTransition et = new EngineTransition(c, "emAggregation", "emStepSucceeded");
 		result.add(et);

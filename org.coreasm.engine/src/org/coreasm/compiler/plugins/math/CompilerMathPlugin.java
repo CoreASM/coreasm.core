@@ -8,10 +8,11 @@ import java.util.Map.Entry;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.math.code.rcode.RandomValueHandler;
@@ -58,19 +59,18 @@ public class CompilerMathPlugin extends CompilerCodePlugin implements CompilerPl
 		else{
 			try {
 				//classLibrary.addPackageReplacement("org.coreasm.engine.plugins.set.SetElement", "plugins.SetPlugin.SetElement");
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.math.MathFunction", "plugins.MathPlugin.MathFunction");
-				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.math.include.PowerSetElement", "plugins.MathPlugin.PowerSetElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.math.MathFunction", engine.getPath().getEntryName(LibraryEntryType.STATIC, "MathFunction", "MathPlugin"));
+				classLibrary.addPackageReplacement("org.coreasm.compiler.plugins.math.include.PowerSetElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "PowerSetElement", "MathPlugin"));
 				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/math/MathFunction.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/math/include/PowerSetElement.java", this), EntryType.INCLUDEONLY, ""));
-				
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/engine/plugins/math/MathFunction.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/compiler/plugins/math/include/PowerSetElement.java", EntryType.INCLUDEONLY).
+						build();
 				for(Entry<String, MathFunctionEntry> e : functions.entrySet()){
 					classLibrary.addEntry(e.getValue());
 					result.add(new MainFileEntry(e.getValue(), EntryType.FUNCTION, e.getKey()));
 				}
 				
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}

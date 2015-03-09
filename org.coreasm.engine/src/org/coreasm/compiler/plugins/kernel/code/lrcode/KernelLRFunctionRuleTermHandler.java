@@ -27,20 +27,20 @@ public class KernelLRFunctionRuleTermHandler implements CompilerCodeHandler {
 		result.appendLine("");
 		FunctionRuleTermNode frtn = (FunctionRuleTermNode) node;
 
-		result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,args)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
+		result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,args)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
 
 		if (frtn.hasArguments()) {
 			for (ASTNode child : frtn.getArguments()) {
 				result.appendFragment(engine.compile(child,
 						CodeType.R));
-				result.appendLine("@args@.add((CompilerRuntime.Element)evalStack.pop());\n");
+				result.appendLine("@args@.add((@RuntimePkg@.Element)evalStack.pop());\n");
 			}
 		}
 
-		result.appendLine("@decl(CompilerRuntime.Location,loc)=new CompilerRuntime.Location(\""
+		result.appendLine("@decl(@RuntimePkg@.Location,loc)=new @RuntimePkg@.Location(\""
 				+ frtn.getName() + "\", @args@);\n");
 		result.appendLine("evalStack.push(@loc@);\n");
-		result.appendLine("evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(@loc@));\n");
+		result.appendLine("evalStack.push(@RuntimeProvider@.getStorage().getValue(@loc@));\n");
 	}
 
 }

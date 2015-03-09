@@ -2,6 +2,7 @@ package org.coreasm.compiler;
 import java.util.List;
 
 import org.coreasm.compiler.exception.NotCompilableException;
+import org.coreasm.compiler.interfaces.CompilerBackendProvider;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
@@ -80,4 +81,6 @@ public interface PluginLoader {
 	public List<CompilerCodePlugin> getCompilerCodePlugins();
 	
 	public List<CompilerPathPlugin> getCompilerPathPlugins();
+	
+	public List<CompilerBackendProvider> getCompilerBackendProviders();
 }

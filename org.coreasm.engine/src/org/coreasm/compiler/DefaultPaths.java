@@ -1,6 +1,6 @@
 package org.coreasm.compiler;
 
-public class DefaultPaths implements CompilerPathConfig {
+public class DefaultPaths extends CompilerPathConfig {
 
 	@Override
 	public String basePkg() {
@@ -14,7 +14,7 @@ public class DefaultPaths implements CompilerPathConfig {
 
 	@Override
 	public String pluginStaticPkg() {
-		return "plugins.static";
+		return "plugins.sttic";
 	}
 
 	@Override
@@ -26,5 +26,9 @@ public class DefaultPaths implements CompilerPathConfig {
 	public String rulePkg() {
 		return "Rules";
 	}
-
+	
+	@Override
+	public String runtimeProvider(){
+		return runtimePkg() + ".RuntimeProvider.getRuntime()";
+	}
 }

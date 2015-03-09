@@ -18,11 +18,11 @@ public class KernelImportRule implements CompilerCodeHandler {
 		CodeFragment name = engine.compile(
 				node.getAbstractChildNodes().get(0), CodeType.L);
 		result.appendFragment(name);
-		result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.Location,nameloc)=(@RuntimePkg@.Location)evalStack.pop();\n");
 		result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
 
 		result.appendLine("localStack.pushLayer();\n");
-		result.appendLine("localStack.put(@nameloc@.name, new CompilerRuntime.Element());\n");
+		result.appendLine("localStack.put(@nameloc@.name, new @RuntimePkg@.Element());\n");
 		result.appendFragment(engine.compile(
 				node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("localStack.popLayer();\n");

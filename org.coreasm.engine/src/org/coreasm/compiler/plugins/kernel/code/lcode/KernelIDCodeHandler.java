@@ -9,9 +9,9 @@ public class KernelIDCodeHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine) {
-		result.appendLine("evalStack.push(new CompilerRuntime.Location(\""
+		result.appendLine("evalStack.push(new @RuntimePkg@.Location(\""
 				+ node.getToken()
-				+ "\", new java.util.ArrayList<CompilerRuntime.Element>()));\n");
+				+ "\", new java.util.ArrayList<@RuntimePkg@.Element>()));\n");
 	}
 
 }

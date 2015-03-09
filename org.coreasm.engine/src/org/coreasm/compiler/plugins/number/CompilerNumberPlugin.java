@@ -1,19 +1,19 @@
 package org.coreasm.compiler.plugins.number;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.classlibrary.ConstantFunctionLibraryEntry;
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
@@ -55,84 +55,38 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 		public List<MainFileEntry> loadClasses(ClassLibrary classLibrary) throws CompilerException {
 			List<MainFileEntry> result = new ArrayList<MainFileEntry>();
 			ClassLibrary library = engine.getClassLibrary();
-
-			File jarpath = engine.getOptions().enginePath;
 			
 			try{
-				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", "plugins.NumberPlugin.NumberElement");
-				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberUtil", "plugins.NumberPlugin.NumberUtil");
-				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberBackgroundElement", "plugins.NumberPlugin.NumberBackgroundElement");
-				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeBackgroundElement", "plugins.NumberPlugin.NumberRangeBackgroundElement");
-				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeElement", "plugins.NumberPlugin.NumberRangeElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberUtil", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberUtil", "NumberPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberBackgroundElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberBackgroundElement", "NumberPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeBackgroundElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberRangeBackgroundElement", "NumberPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.number.NumberRangeElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberRangeElement", "NumberPlugin"));
 				
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberUtil.java", this), EntryType.INCLUDEONLY, ""));
 				
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberBackgroundElement.java", this), EntryType.BACKGROUND,
-						"NUMBER"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRangeBackgroundElement.java",
-								this), EntryType.BACKGROUND,
-						"NUMBER_RANGE"));
-		
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberElement.java",
-								this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRangeElement.java",
-								this), EntryType.INCLUDEONLY, ""));
-		
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberEvenFunction.java",//"org/coreasm/compiler/plugins/number/include/NumberEvenFunction.java",
-								this), EntryType.FUNCTION,
-						"isEvenNumber"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberIntegerFunction.java",
-								this), EntryType.FUNCTION,
-						"isIntegerNumber"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberNaturalFunction.java",
-								this), EntryType.FUNCTION,
-						"isNaturalNumber"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberNegativeFunction.java",
-								this), EntryType.FUNCTION,
-						"isNegativeValue"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberOddFunction.java",
-								this), EntryType.FUNCTION,
-						"isOddNumber"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberPositiveFunction.java",
-								this), EntryType.FUNCTION,
-						"isPositiveValue"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberRealFunction.java",
-								this), EntryType.FUNCTION,
-						"isRealNumber"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/ToNumberFunctionElement.java",
-								this), EntryType.FUNCTION,
-						"toNumber"));
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/engine/plugins/number/NumberUtil.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/engine/plugins/number/NumberBackgroundElement.java", EntryType.BACKGROUND, "NUMBER").
+						includeStatic("org/coreasm/engine/plugins/number/NumberRangeBackgroundElement.java", EntryType.BACKGROUND, "NUMBER_RANGE").
+						includeStatic("org/coreasm/engine/plugins/number/NumberElement.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/engine/plugins/number/NumberRangeElement.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/engine/plugins/number/NumberEvenFunction.java", EntryType.FUNCTION, "isEvenNumber").
+						includeStatic("org/coreasm/engine/plugins/number/NumberIntegerFunction.java", EntryType.FUNCTION, "isIntegerNumber").
+						includeStatic("org/coreasm/engine/plugins/number/NumberNaturalFunction.java", EntryType.FUNCTION, "isNaturalNumber").
+						includeStatic("org/coreasm/engine/plugins/number/NumberNegativeFunction.java", EntryType.FUNCTION, "isNegativeValue").
+						includeStatic("org/coreasm/engine/plugins/number/NumberOddFunction.java", EntryType.FUNCTION, "isOddNumber").
+						includeStatic("org/coreasm/engine/plugins/number/NumberPositiveFunction.java", EntryType.FUNCTION, "isPositiveValue").
+						includeStatic("org/coreasm/engine/plugins/number/NumberRealFunction.java", EntryType.FUNCTION, "isRealNumber").
+						includeStatic("org/coreasm/engine/plugins/number/ToNumberFunctionElement.java", EntryType.FUNCTION, "toNumber").
+						includeStatic("org/coreasm/engine/plugins/number/SizeFunctionElement.java", EntryType.FUNCTION, "size").
+						build();
 				
-				LibraryEntry le = new ConstantFunctionLibraryEntry("infinity", "plugins.NumberPlugin", "plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY", engine);
+				LibraryEntry le = new ConstantFunctionLibraryEntry("infinity", engine.getPath().pluginStaticPkg() + ".NumberPlugin.NumberElement.POSITIVE_INFINITY", getName(), LibraryEntryType.STATIC, engine);
 				library.addEntry(le);
-				
-				result.add(new MainFileEntry(
-						le, EntryType.FUNCTION, "infinity"));
-						
-						//library.includeClass(jarpath, "org/coreasm/engine/plugins/number/NumberInfinityFunction.java",
-						//		this), EntryType.FUNCTION, "infinity"));
-				result.add(new MainFileEntry(
-						library.includeClass(jarpath, "org/coreasm/engine/plugins/number/SizeFunctionElement.java",
-								this), EntryType.FUNCTION, "size"));
+				result.add(new MainFileEntry(le, EntryType.FUNCTION, "infinity"));
 			}
 			catch(EntryAlreadyExistsException e){
 				throw new CompilerException(e);
-			} catch (IncludeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			return result;
 		}
@@ -170,71 +124,73 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				throws CompilerException {
 			String result = "";
 
+			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
+			
 			if (token.equals("+")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(((plugins.NumberPlugin.NumberElement)@lhs@).getValue() + ((plugins.NumberPlugin.NumberElement)@rhs@).getValue()));\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() + ((" + numberelement + ")@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("-")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(((plugins.NumberPlugin.NumberElement)@lhs@).getValue() - ((plugins.NumberPlugin.NumberElement)@rhs@).getValue()));\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() - ((" + numberelement + ")@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("*")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(((plugins.NumberPlugin.NumberElement)@lhs@).getValue() * ((plugins.NumberPlugin.NumberElement)@rhs@).getValue()));\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() * ((" + numberelement + ")@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("/")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(((plugins.NumberPlugin.NumberElement)@lhs@).getValue() / ((plugins.NumberPlugin.NumberElement)@rhs@).getValue()));\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() / ((" + numberelement + ")@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("div")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance((@nmbr1@-(@nmbr1@%@nmbr2@))/@nmbr2@));\n";
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
+						+ "evalStack.push(" + numberelement + ".getInstance((@nmbr1@-(@nmbr1@%@nmbr2@))/@nmbr2@));\n";
 				result = result + "}\n";
 			} else if (token.equals("%")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(((plugins.NumberPlugin.NumberElement)@lhs@).getValue() % ((plugins.NumberPlugin.NumberElement)@rhs@).getValue()));\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() % ((" + numberelement + ")@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("^")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(Math.pow(@nmbr1@,@nmbr2@)));\n";
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
+						+ "evalStack.push(" + numberelement + ".getInstance(Math.pow(@nmbr1@,@nmbr2@)));\n";
 				result = result + "}\n";
 			} else if (token.equals(">")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
 						+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@nmbr1@>@nmbr2@));\n";
 				result = result + "}\n";
 			} else if (token.equals(">=")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
 						+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@nmbr1@>=@nmbr2@));\n";
 				result = result + "}\n";
 			} else if (token.equals("<")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
 						+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@nmbr1@<@nmbr2@));\n";
 				result = result + "}\n";
 			} else if (token.equals("<=")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement) && (@rhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "@decl(double,nmbr1)=((plugins.NumberPlugin.NumberElement)@lhs@).getValue();\n"
-						+ "@decl(double,nmbr2)=((plugins.NumberPlugin.NumberElement)@rhs@).getValue();\n"
+						+ "@decl(double,nmbr1)=((" + numberelement + ")@lhs@).getValue();\n"
+						+ "@decl(double,nmbr2)=((" + numberelement + ")@rhs@).getValue();\n"
 						+ "evalStack.push(CompilerRuntime.BooleanElement.valueOf(@nmbr1@<=@nmbr2@));\n";
 				result = result + "}\n";
 			} else {
@@ -250,11 +206,12 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 		@Override
 		public String compileUnaryOperator(String token)
 				throws CompilerException {
+			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
 			String result = "";
 			if (token.equals("-")) {
-				result = "if((@lhs@ instanceof plugins.NumberPlugin.NumberElement)){\n";
+				result = "if((@lhs@ instanceof " + numberelement + ")){\n";
 				result = result
-						+ "evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(0 - ((plugins.NumberPlugin.NumberElement)@lhs@).getValue());\n";
+						+ "evalStack.push(" + numberelement + ".getInstance(0 - ((" + numberelement + ")@lhs@).getValue());\n";
 				result = result + "}\n";
 			} else
 				throw new CompilerException("unknown operator call: NumberPlugin, "
@@ -284,6 +241,8 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 		@Override
 		public CodeFragment compileFunctionCall(ASTNode n)
 				throws CompilerException {
+			
+			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
 			List<ASTNode> children = n.getAbstractChildNodes();
 			String fname = children.get(0).getToken();
 			if (fname.equals("isEvenNumber")) {
@@ -296,9 +255,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 						CodeType.R);
 				result.appendFragment(param);
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() % 2 == 0));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() % 2 == 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -308,7 +267,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 							"wrong number of arguments for function " + fname);
 
 				return new CodeFragment(
-						"evalStack.push(plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY);\n");
+						"evalStack.push(" + numberelement + ".POSITIVE_INFINITY);\n");
 			} else if (fname.equals("isIntegerNumber")) {
 				if (children.size() != 2)
 					throw new CompilerException(
@@ -318,9 +277,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).isInteger()));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).isInteger()));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -333,9 +292,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).isNatural()));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).isNatural()));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -348,9 +307,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() < 0));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() < 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -363,9 +322,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() % 2 != 0));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() % 2 != 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -378,9 +337,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue() >= 0));\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() >= 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -393,10 +352,10 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("@decl(plugins.NumberPlugin.NumberElement,tmp)=(plugins.NumberPlugin.NumberElement) evalStack.pop();\n");
-				result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.valueOf(!Double.isInfinite(@tmp@.getValue()) && ! Double.isNaN(@tmp@.getValue())));\n");
+				result.appendLine("@decl(" + numberelement + ",tmp)=(" + numberelement + ") evalStack.pop();\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(!Double.isInfinite(@tmp@.getValue()) && ! Double.isNaN(@tmp@.getValue())));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -409,15 +368,15 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("@decl(CompilerRuntime.Enumerable,tmp) = (CompilerRuntime.Enumerable) evalStack.pop();\n");
+				result.appendLine("@decl(@RuntimePkg@.Enumerable,tmp) = (@RuntimePkg@.Enumerable) evalStack.pop();\n");
 				result.appendLine("if(@tmp@.size() == Long.MAX_VALUE){\n");
-				result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.POSITIVE_INFINITY);\n");
+				result.appendLine("evalStack.push(" + numberelement + ".POSITIVE_INFINITY);\n");
 				result.appendLine("}\n");
 				result.appendLine("else{\n");
-				result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(@tmp@.size()));\n");
+				result.appendLine("evalStack.push(" + numberelement + ".getInstance(@tmp@.size()));\n");
 				result.appendLine("}\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -431,9 +390,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendFragment(engine.compile(children.get(1),
 						CodeType.R));
 				result.appendLine("try{\n");
-				result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(Double.parseDouble(evalStack.pop().toString())));\n");
+				result.appendLine("evalStack.push(" + numberelement + ".getInstance(Double.parseDouble(evalStack.pop().toString())));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 				return result;
 			}

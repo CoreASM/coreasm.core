@@ -17,15 +17,15 @@ public class SeqRuleHandler implements CompilerCodeHandler {
 		
 		//obtain the updates of the first rule
 		result.appendFragment(first);
-		result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=(@RuntimePkg@.UpdateList)evalStack.pop();\n");
 		//aggregate updates on the update set of the first rule
-		result.appendLine("@decl(CompilerRuntime.AbstractStorage,storage)=CompilerRuntime.RuntimeProvider.getRuntime().getStorage();\n");
-		result.appendLine("@decl(CompilerRuntime.UpdateList,alist)=@storage@.performAggregation(@ulist@);\n");
+		result.appendLine("@decl(@RuntimePkg@.AbstractStorage,storage)=@RuntimeProvider@.getStorage();\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,alist)=@storage@.performAggregation(@ulist@);\n");
 		result.appendLine("if(@storage@.isConsistent(@alist@)){\n");
 		result.appendLine("@storage@.pushState();\n");
 		result.appendLine("@storage@.apply(@alist@);\n");
 		result.appendFragment(second);
-		result.appendLine("@decl(CompilerRuntime.UpdateList,comp)=@storage@.compose(@ulist@,(CompilerRuntime.UpdateList)evalStack.pop());\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,comp)=@storage@.compose(@ulist@,(@RuntimePkg@.UpdateList)evalStack.pop());\n");
 		result.appendLine("@storage@.popState();\n");
 		result.appendLine("evalStack.push(@comp@);\n");
 		result.appendLine("}\n");

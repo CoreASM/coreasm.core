@@ -15,7 +15,7 @@ public class ExistsExpHandler implements CompilerCodeHandler {
 		CodeFragment name = engine.compile(
 				node.getAbstractChildNodes().get(0), CodeType.L);
 		result.appendFragment(name);
-		result.appendLine("@decl(CompilerRuntime.Location,nameloc)=(CompilerRuntime.Location)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.Location,nameloc)=(@RuntimePkg@.Location)evalStack.pop();\n");
 		result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
 
 		CodeFragment source = engine.compile(
@@ -24,17 +24,17 @@ public class ExistsExpHandler implements CompilerCodeHandler {
 				node.getAbstractChildNodes().get(2), CodeType.R);
 
 		result.appendFragment(source);
-		result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
+		result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>(((@RuntimePkg@.Enumerable)evalStack.pop()).enumerate());\n");
 		result.appendLine("for(@decl(int,i)=0;@i@<=@list@.size();@i@++){\n");
 		result.appendLine("if(@i@ == @list@.size()){\n");
-		result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.FALSE);\n");
+		result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 		result.appendLine("}\n");
 		result.appendLine("else{\n");
 		result.appendLine("localStack.pushLayer();\n");
 		result.appendLine("localStack.put(@nameloc@.name, @list@.get(@i@));\n");
 		result.appendFragment(guard);
-		result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
-		result.appendLine("evalStack.push(CompilerRuntime.BooleanElement.TRUE);\n");
+		result.appendLine("if(evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
+		result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.TRUE);\n");
 		result.appendLine("break;\n");
 		result.appendLine("}\n");
 		result.appendLine("localStack.popLayer();\n");

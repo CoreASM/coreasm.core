@@ -1,41 +1,28 @@
 package org.coreasm.compiler.classlibrary;
 
-import java.io.File;
-
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
-public class ConstantFunctionLibraryEntry extends AbstractLibraryEntry {
+public class ConstantFunctionLibraryEntry extends MemoryInclude {
 	private CompilerEngine engine;
-	private String fname;
-	private String pckg;
+	private String name;
 	private String value;
 	
-	public ConstantFunctionLibraryEntry(String name, String pckg, String value, CompilerEngine engine){
-		this.fname = name;
-		this.pckg = pckg;
+	public ConstantFunctionLibraryEntry(String name, String value, String plugin, LibraryEntryType type, CompilerEngine engine){
+		super(engine, "const_function_" + name, plugin, type);
+		this.name = name;
 		this.value = value;
 		this.engine = engine;
 	}
-	
-	@Override
-	public String getFullName() {
-		return pckg + "." + "const_function_" + fname;
-	}
 
 	@Override
-	protected File getFile() {
-		return new File(engine.getOptions().tempDirectory + File.separator + pckg.replace(".", File.separator) + File.separator + "const_function_" + fname + ".java");
-	}
-
-	@Override
-	protected String generateContent() throws LibraryEntryException {
+	protected String buildContent(String entryName) throws LibraryEntryException {
 		String s = "";
 		
-		s += "package " + pckg + ";\n";
-		s += "public class const_function_" + fname + " extends CompilerRuntime.FunctionElement{\n";
+		s += "package " + getPackage(entryName) + ";\n";
+		s += "public class const_function_" + name + " extends " + engine.getPath().runtimePkg() + ".FunctionElement{\n";
 		s += "@Override\n";
-		s += "public CompilerRuntime.Element getValue(java.util.List<? extends CompilerRuntime.Element> args){\n";
+		s += "public " + engine.getPath().runtimePkg() + ".Element getValue(java.util.List<? extends " + engine.getPath().runtimePkg() + ".Element> args){\n";
 		s += "return " + value + ";\n";
 		s += "}\n";
 		s += "}";

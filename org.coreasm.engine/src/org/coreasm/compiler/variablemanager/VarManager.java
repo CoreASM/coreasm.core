@@ -22,7 +22,6 @@ import org.coreasm.compiler.variablemanager.CompilerVariable;
  *
  */
 public class VarManager {
-	
 	private HashMap<String, Integer> variables;
 	private HashMap<String, Stack<Integer>> contexts;
 	

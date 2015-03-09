@@ -23,15 +23,15 @@ public class KernelRuleOrFuncHandler implements CompilerCodeHandler {
 			if (inf.getChildren().contains(name)) {
 				// if it is a rule, return the rule element
 				result.appendLine(
-						"@decl(CompilerRuntime.Rule, tmprule)=new Rules."
+						"@decl(@RuntimePkg@.Rule, tmprule)=new @RulePkg@."
 								+ name + "();\n");
-				result.appendLine("@tmprule@.initRule(new java.util.ArrayList<CompilerRuntime.RuleParam>(), null);\n");
+				result.appendLine("@tmprule@.initRule(new java.util.ArrayList<@RuntimePkg@.RuleParam>(), null);\n");
 				result.appendLine("evalStack.push(@tmprule@);\n");
 			} else {
 				// otherwise get the function element from the abstract
 				// storage
 				result.appendLine(
-						"evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getFunction(\""
+						"evalStack.push(@RuntimeProvider@.getStorage().getFunction(\""
 								+ name + "\"));\n");
 			}
 

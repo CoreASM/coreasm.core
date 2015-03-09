@@ -12,8 +12,8 @@ public class KernelBooleanTermHandler implements CompilerCodeHandler {
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
 		result.appendLine("evalStack.push("
-						+ ((node.getToken().equals("true")) ? "CompilerRuntime.BooleanElement.TRUE"
-								: "CompilerRuntime.BooleanElement.FALSE")
+						+ ((node.getToken().equals("true")) ? "@RuntimePkg@.BooleanElement.TRUE"
+								: "@RuntimePkg@.BooleanElement.FALSE")
 						+ ");");
 	}
 

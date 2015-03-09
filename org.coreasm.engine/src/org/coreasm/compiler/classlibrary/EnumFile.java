@@ -1,10 +1,8 @@
 package org.coreasm.compiler.classlibrary;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.AbstractLibraryEntry;
 import org.coreasm.compiler.exception.ElementAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 /**
@@ -13,27 +11,19 @@ import org.coreasm.compiler.exception.LibraryEntryException;
  * @author Markus Brenner
  *
  */
-public class EnumFile extends AbstractLibraryEntry{
+public class EnumFile extends MemoryInclude{
 	private String enumName;
-	private String packageName;
 	private ArrayList<String> elements;
-	private CompilerEngine engine;
 	
 	/**
 	 * Creates a new, empty enum with the given name and package
 	 * @param enumName the name of the enum
 	 * @param packageName the package of the enum
 	 */
-	public EnumFile(String enumName, String packageName, CompilerEngine engine){
+	public EnumFile(String enumName, LibraryEntryType type, String sourcePlugin, CompilerEngine engine){
+		super(engine, enumName, sourcePlugin, type);
 		this.enumName = enumName;
-		this.packageName = packageName;
 		this.elements = new ArrayList<String>();
-		this.engine = engine;
-	}
-	
-	public String getFullName(){
-		if(!packageName.equals("")) return packageName + "." + enumName;
-		return enumName;
 	}
 	
 	/**
@@ -48,18 +38,10 @@ public class EnumFile extends AbstractLibraryEntry{
 	}
 
 	@Override
-	protected File getFile() {
-		if(packageName.equals(""))
-			return new File(engine.getOptions().tempDirectory + File.separator + enumName + ".java");
-		else
-			return new File(engine.getOptions().tempDirectory + File.separator + packageName.replace(".", File.separator) + File.separator + enumName + ".java");
-	}
-
-	@Override
-	protected String generateContent() throws LibraryEntryException {
+	protected String buildContent(String entryName) throws LibraryEntryException {
 		String s = "";
 		
-		if(!packageName.equals("")) s = s + ("package " + packageName + ";\n\n");
+		s = s + ("package " + getPackage(entryName) + ";\n\n");
 		
 		s = s + ("\n");
 		

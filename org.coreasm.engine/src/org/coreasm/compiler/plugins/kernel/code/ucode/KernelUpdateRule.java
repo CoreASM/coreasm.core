@@ -30,10 +30,10 @@ public class KernelUpdateRule implements CompilerCodeHandler {
 		result.appendLine("\n");
 		result.appendFragment(rhs);
 		result.appendFragment(lhs);
-		result.appendLine("\n@decl(CompilerRuntime.Location,tmplocation)=(CompilerRuntime.Location)evalStack.pop();\n");
-		result.appendLine("@decl(CompilerRuntime.Element,tmpvalue)=(CompilerRuntime.Element)evalStack.pop();\n");
-		result.appendLine("\n@decl(CompilerRuntime.Update,tmpupdate)=new CompilerRuntime.Update(@tmplocation@, @tmpvalue@, \"updateAction\", this.getUpdateResponsible(), null);\n");
-		result.appendLine("@decl(CompilerRuntime.UpdateList,tmplist)=new CompilerRuntime.UpdateList();\n");
+		result.appendLine("\n@decl(@RuntimePkg@.Location,tmplocation)=(@RuntimePkg@.Location)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.Element,tmpvalue)=(@RuntimePkg@.Element)evalStack.pop();\n");
+		result.appendLine("\n@decl(@RuntimePkg@.Update,tmpupdate)=new @RuntimePkg@.Update(@tmplocation@, @tmpvalue@, \"updateAction\", this.getUpdateResponsible(), null);\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,tmplist)=new @RuntimePkg@.UpdateList();\n");
 		result.appendLine("@tmplist@.add(@tmpupdate@);\n");
 		result.appendLine("evalStack.push(@tmplist@);\n");
 	}

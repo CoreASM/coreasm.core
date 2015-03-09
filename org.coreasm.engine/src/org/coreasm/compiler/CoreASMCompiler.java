@@ -4,21 +4,26 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.backend.CompilerFileWriter;
+import org.coreasm.compiler.backend.CompilerPacker;
+import org.coreasm.compiler.backend.KernelBackend;
 import org.coreasm.compiler.classlibrary.CodeWrapperEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.DirectoryNotEmptyException;
 import org.coreasm.compiler.exception.EmptyContextStackException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.LibraryEntryException;
 import org.coreasm.compiler.exception.NotCompilableException;
+import org.coreasm.compiler.interfaces.CompilerBackendProvider;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
@@ -66,6 +71,8 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private boolean tryCompiling = false;
 	
+	private Map<String, String> globalMakros;
+	
 	/**
 	 * Constructs a new CoreASMCompiler instance with the given options
 	 * @param options The options for the compilation process
@@ -88,7 +95,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		//initialize components
 		this.options = options;
 		pluginLoader = new DummyLoader(this);
-		classLibrary = new ClassLibrary(options, this);
+		classLibrary = new ClassLibrary(this);
 		varManager = new VarManager();
 		mainFile = new MainFile(this);
 		preprocessor = new Preprocessor(this);
@@ -107,9 +114,20 @@ public class CoreASMCompiler implements CompilerEngine {
 		
 		paths = new DefaultPaths();
 		
+		globalMakros = new HashMap<String, String>();
+		
 		timings = new LinkedList<String>();
 		cTime = System.nanoTime();
 		addTiming("Initialization");
+	}
+	
+	private void setGlobalMakros(){
+		globalMakros.put("RuntimePkg", paths.runtimePkg());
+		globalMakros.put("BasePkg", paths.basePkg());
+		globalMakros.put("StaticPkg", paths.pluginStaticPkg());
+		globalMakros.put("DynamicPkg", paths.pluginDynamicPkg());
+		globalMakros.put("RulePkg", paths.rulePkg());
+		globalMakros.put("RuntimeProvider", paths.runtimeProvider());
 	}
 	
 	public void addTiming(String name, long time){
@@ -473,6 +491,8 @@ public class CoreASMCompiler implements CompilerEngine {
 			this.paths = pathplugins.get(0).getPathConfig();
 			getLogger().debug(CoreASMCompiler.class, "loaded path config from plugin " + pathplugins.get(0).getName());
 		}
+		setGlobalMakros();
+		
 		
 		//operator plugins
 		lastTime = System.nanoTime();
@@ -577,37 +597,66 @@ public class CoreASMCompiler implements CompilerEngine {
 		getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
 		
 		lastTime = System.nanoTime();
-		ArrayList<File> classes = null;
-		try {
-			classes = classLibrary.dumpClasses();
-		} catch (LibraryEntryException e) {
-			throw new CompilerException(e);
-		}
-		cTime = System.nanoTime();
-		addTiming("Class dump");
 		
+		//find backend providers
+		List<CompilerBackendProvider> backend = pluginLoader.getCompilerBackendProviders();
+		CompilerFileWriter fileWriter = null;
+		CompilerPacker filePacker = null;
+		for(CompilerBackendProvider cbp : backend){
+			CompilerFileWriter tmpWriter = cbp.getFileWriter();
+			CompilerPacker tmpPacker = cbp.getPacker();
+			
+			if(fileWriter == null) fileWriter = tmpWriter;
+			else if(fileWriter != null && fileWriter != null) {
+				addError("Only one file writer can be active at a time");
+				throw new CompilerException("Only one file writer can be active at a time");
+			}
+			
+			if(tmpPacker == null) filePacker = tmpPacker;
+			else if(tmpPacker != null && filePacker != null) {
+				addError("Only one file packer can be active at a time");
+				throw new CompilerException("Only one file packer can be active at a time");
+			}
+		}
+		
+		//construct default
+		KernelBackend back = new KernelBackend();
+		if(fileWriter == null) fileWriter = (CompilerFileWriter) back;
+		if(filePacker == null) filePacker = (CompilerPacker) back;
+		
+		//dump class library
+		List<LibraryEntry> entries = classLibrary.buildLibrary();
+		
+		//dump files
+		List<File> files = fileWriter.writeEntriesToDisk(entries, this);
+		
+		//compile TODO: perhaps include some configurability here?
 		if(!options.noCompile){
 			getLogger().debug(CoreASMCompiler.class, "class dump complete");
 			
 			getLogger().debug(CoreASMCompiler.class, "starting java compiler");
 			
 			lastTime = System.nanoTime();
-			JavaCompilerWrapper.compile(options, classes, this);
+			JavaCompilerWrapper.compile(options, files, this);
 			cTime = System.nanoTime();
 			addTiming("Javac");
 			
 			getLogger().debug(CoreASMCompiler.class, "java compilation successfull");
 			
+			//pack files
 			getLogger().debug(CoreASMCompiler.class, "packing jar archive");
 			
 			lastTime = System.nanoTime();
-			JarPacker.packJar(options, this);
+			filePacker.packFiles(files, this);
 			cTime = System.nanoTime();
 			addTiming("Jar packing");
 			
 			getLogger().debug(CoreASMCompiler.class, "packing successfull");
 			
 			getLogger().debug(CoreASMCompiler.class, "compilation operation successfull");
+		}
+		else{
+			getLogger().debug(CoreASMCompiler.class, "Compilation is disabled - stopping compiler");
 		}
 	}
 	
@@ -652,5 +701,10 @@ public class CoreASMCompiler implements CompilerEngine {
 	@Override
 	public CompilerPathConfig getPath() {
 		return paths;
+	}
+	
+	@Override
+	public Map<String, String> getGlobalMakros(){
+		return Collections.unmodifiableMap(globalMakros);
 	}
 }

@@ -21,7 +21,7 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 		String name = mcrn.getFunctionRuleElement().getFirst()
 				.getToken();
 
-		result.appendLine("@decl(java.util.ArrayList<CompilerRuntime.RuleParam>,arglist)=new java.util.ArrayList<>();");
+		result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.RuleParam>,arglist)=new java.util.ArrayList<>();");
 
 		FunctionRuleTermNode params = (FunctionRuleTermNode) mcrn
 				.getFunctionRuleElement();
@@ -35,29 +35,29 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 				CodeFragment tmp = engine.compile(
 						params.getArguments().get(i), CodeType.R);
 				// create the param object and push it onto the stack
-				result.appendLine("\n@arglist@.add(new CompilerRuntime.RuleParam(){\n");
-				result.appendLine("public CompilerRuntime.Rule getUpdateResponsible(){\nreturn null;\n}\n");
-				result.appendLine("java.util.Map<String, CompilerRuntime.RuleParam> ruleparams;\n");
-				result.appendLine("public void setParams(java.util.Map<String, CompilerRuntime.RuleParam> params){\n");
+				result.appendLine("\n@arglist@.add(new @RuntimePkg@.RuleParam(){\n");
+				result.appendLine("public @RuntimePkg@.Rule getUpdateResponsible(){\nreturn null;\n}\n");
+				result.appendLine("java.util.Map<String, @RuntimePkg@.RuleParam> ruleparams;\n");
+				result.appendLine("public void setParams(java.util.Map<String, @RuntimePkg@.RuleParam> params){\n");
 				result.appendLine("this.ruleparams = params;\n");
 				result.appendLine("}\n");
 				
 				//a ruleparam can be evaluated as l-context or r-context, but the l-context is not always possible.
 				//try compiling the param as an l-code, but be prepared for failure
-				result.appendLine("public CompilerRuntime.Location evaluateL(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+				result.appendLine("public @RuntimePkg@.Location evaluateL(@RuntimePkg@.LocalStack localStack) throws Exception{\n");
 				try{
 					CodeFragment ltmp = engine.tryCompile(params.getArguments().get(i), CodeType.L);
 					result.appendFragment(ltmp);
-					result.appendLine("return (CompilerRuntime.Location) evalStack.pop();\n");
+					result.appendLine("return (@RuntimePkg@.Location) evalStack.pop();\n");
 				}
 				catch(Exception e){
 					result.appendLine("throw new Exception(\"This ruleparam cannot be evaluated as a location\");\n");					
 				}
 				result.appendLine("}\n");
 				
-				result.appendLine("public CompilerRuntime.Element evaluateR(CompilerRuntime.LocalStack localStack) throws Exception{\n");
+				result.appendLine("public @RuntimePkg@.Element evaluateR(@RuntimePkg@.LocalStack localStack) throws Exception{\n");
 				result.appendFragment(tmp);
-				result.appendLine("\nreturn (CompilerRuntime.Element)evalStack.pop();\n}\n});\n");
+				result.appendLine("\nreturn (@RuntimePkg@.Element)evalStack.pop();\n}\n});\n");
 				result.appendLine("@arglist@.get(@arglist@.size() - 1).setParams(ruleparams);\n");
 			}
 		}
@@ -79,10 +79,10 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 
 			// if name is a valid rulename, so call it by creating a new
 			// rule instance
-			result.appendLine("@decl(CompilerRuntime.Rule, callruletmp)=new Rules."
+			result.appendLine("@decl(@RuntimePkg@.Rule, callruletmp)=new @RulePkg@."
 					+ name + "();\n");
 			result.appendLine("@callruletmp@.initRule(@arglist@, localStack);\n");
-			result.appendLine("@decl(CompilerRuntime.UpdateList, ulist)=new CompilerRuntime.UpdateList();\n");
+			result.appendLine("@decl(@RuntimePkg@.UpdateList, ulist)=new @RuntimePkg@.UpdateList();\n");
 			//cf.appendLine("@callruletmp@.setAgent(this.getAgent());\n");
 			result.appendLine("@ulist@.addAll(@callruletmp@.call().updates);\n");
 			result.appendLine("evalStack.push(@ulist@);\n");

@@ -2,6 +2,7 @@ package org.coreasm.compiler.plugins.number.code.rcode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -12,6 +13,9 @@ public class NumberRangeHandler implements CompilerCodeHandler {
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
+		String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
+		String numberrange = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberRangeElement", "NumberPlugin");
+		
 		CodeFragment start = engine.compile(
 				node.getAbstractChildNodes().get(0), CodeType.R);
 		CodeFragment end = engine.compile(
@@ -26,14 +30,14 @@ public class NumberRangeHandler implements CompilerCodeHandler {
 		result.appendFragment(end);
 		if (step != null) {
 			result.appendFragment(step);
-			result.appendLine("@decl(double,step)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
+			result.appendLine("@decl(double,step)=(((" + numberelement + ")evalStack.pop()).getValue());\n");
 		}
-		result.appendLine("@decl(double,end)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
-		result.appendLine("@decl(double,start)=(((plugins.NumberPlugin.NumberElement)evalStack.pop()).getValue());\n");
+		result.appendLine("@decl(double,end)=(((" + numberelement + ")evalStack.pop()).getValue());\n");
+		result.appendLine("@decl(double,start)=(((" + numberelement + ")evalStack.pop()).getValue());\n");
 		if (step != null) {
-			result.appendLine("evalStack.push(new plugins.NumberPlugin.NumberRangeElement(@start@,@end@,@step@));\n");
+			result.appendLine("evalStack.push(" + numberrange + "(@start@,@end@,@step@));\n");
 		} else {
-			result.appendLine("evalStack.push(new plugins.NumberPlugin.NumberRangeElement(@start@,@end@));\n");
+			result.appendLine("evalStack.push(" + numberrange + "(@start@,@end@));\n");
 		}
 	}
 

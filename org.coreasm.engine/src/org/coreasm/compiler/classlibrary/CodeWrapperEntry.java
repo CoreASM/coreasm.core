@@ -1,7 +1,5 @@
 package org.coreasm.compiler.classlibrary;
 
-import java.io.File;
-
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
@@ -15,19 +13,18 @@ import org.coreasm.compiler.exception.LibraryEntryException;
  * @author Spellmaker
  *
  */
-public class CodeWrapperEntry extends AbstractLibraryEntry {
+public class CodeWrapperEntry extends MemoryInclude {
 	private static int count = 0;
 	private CodeFragment body;
 	private String name;
 	private String responsible;
-	private CompilerEngine engine;
 	
 	private CodeWrapperEntry(CodeFragment body, String responsible, CompilerEngine engine){
+		super(engine, "codewrapper_" + count, "Kernel", LibraryEntryType.STATIC);
 		this.body = body;
 		this.name = "codewrapper_" + count;
 		count++;
 		this.responsible = responsible;
-		this.engine = engine;
 	}
 	
 	/**
@@ -41,7 +38,7 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 	 * @throws CompilerException If an error occured during the creation
 	 */
 	public static CodeFragment buildWrapper(CodeFragment body, String responsible, CompilerEngine engine) throws CompilerException{
-		LibraryEntry repl = new CodeWrapperEntry(body, responsible, engine);
+		CodeWrapperEntry repl = new CodeWrapperEntry(body, responsible, engine);
 		try{
 			engine.getClassLibrary().addEntry(repl);
 		}
@@ -49,42 +46,31 @@ public class CodeWrapperEntry extends AbstractLibraryEntry {
 			throw new CompilerException(e);
 		}
 		
-		String name = repl.getFullName();
+		String name = engine.getPath().pluginStaticPkg() + ".Kernel." + repl.name;
 		CodeFragment coderes = new CodeFragment("");
 		coderes.appendLine("@decl(" + name + ", tmp) = new " + name + "(evalStack, localStack, ruleparams, getUpdateResponsible());\n");
 		coderes.appendLine("@tmp@.eval();\n");
 		
 		return coderes;
 	}
-	
-	
-	@Override
-	public String getFullName() {
-		return "plugins.Kernel." + name;
-	}
 
 	@Override
-	protected File getFile() {
-		return new File(engine.getOptions().tempDirectory + "\\plugins\\Kernel\\" + name + ".java");
-	}
-
-	@Override
-	protected String generateContent() throws LibraryEntryException {
+	protected String buildContent(String entryName) throws LibraryEntryException {
 		String result = "";
-		result += "package plugins.Kernel;\n";
+		result += "package " + getPackage(entryName) + ";\n";
 		result += "public class " + name + "{\n";
 		result += "\t String responsible =\"" + responsible + "\";\n";
-		result += "private CompilerRuntime.EvalStack evalStack;\n";
-		result += "private CompilerRuntime.LocalStack localStack;\n";
-		result += "private java.util.Map<String, CompilerRuntime.RuleParam> ruleparams;\n";
-		result += "private CompilerRuntime.Rule updateResp;\n";
-		result += "public " + name + "(CompilerRuntime.EvalStack evalStack, CompilerRuntime.LocalStack localStack, java.util.Map<String, CompilerRuntime.RuleParam> ruleparams, CompilerRuntime.Rule updateResp){\n";
+		result += "private " + runtimePkg() + ".EvalStack evalStack;\n";
+		result += "private " + runtimePkg() + ".LocalStack localStack;\n";
+		result += "private java.util.Map<String, " + runtimePkg() + ".RuleParam> ruleparams;\n";
+		result += "private " + runtimePkg() + ".Rule updateResp;\n";
+		result += "public " + name + "(" + runtimePkg() + ".EvalStack evalStack, " + runtimePkg() + ".LocalStack localStack, java.util.Map<String, " + runtimePkg() + ".RuleParam> ruleparams, " + runtimePkg() + ".Rule updateResp){\n";
 		result += "this.evalStack = evalStack;\n";
 		result += "this.localStack = localStack;\n";
 		result += "this.ruleparams = ruleparams;\n";
 		result += "this.updateResp = updateResp;\n";
 		result += "}\n";
-		result += "public CompilerRuntime.Rule getUpdateResponsible(){\n";
+		result += "public " + runtimePkg() + ".Rule getUpdateResponsible(){\n";
 		result += "return this.updateResp;\n";
 		result += "}\n";
 		result += "public void eval() throws Exception{\n";

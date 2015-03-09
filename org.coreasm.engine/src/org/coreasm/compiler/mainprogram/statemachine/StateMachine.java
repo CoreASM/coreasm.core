@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.coreasm.compiler.classlibrary.EnumFile;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.ElementAlreadyExistsException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
@@ -133,7 +134,7 @@ public class StateMachine {
 		if(engine.getOptions().logStateTransition) 
 			result.appendLine("System.out.println(\"Transit from " + start + " to " + end + "\");\n");
 		
-		result.appendFragment(new CodeFragment("\t\t\t\t//Transit from " + start + " to " + end + "\n\t\t\t\tengineState = CompilerRuntime.EngineState." + end + ";\n\t\t\t\tcontinue;\n"));
+		result.appendFragment(new CodeFragment("\t\t\t\t//Transit from " + start + " to " + end + "\n\t\t\t\tengineState = @RuntimePkg@.EngineState." + end + ";\n\t\t\t\tcontinue;\n"));
 		return result;
 	}
 	
@@ -191,8 +192,8 @@ public class StateMachine {
 		if(states.size() == 0){
 			throw new InvalidStateMachineException();
 		}
-		EnumFile se = new EnumFile("EngineState", "CompilerRuntime", engine);
-		CodeFragment mainBody = new CodeFragment("\t\tCompilerRuntime.EngineState engineState = CompilerRuntime.EngineState." + states.get(0).getName() + ";\n\t\twhile(isRunning){\n\t\t\t");
+		EnumFile se = new EnumFile("EngineState", LibraryEntryType.RUNTIME, "Kernel", engine);
+		CodeFragment mainBody = new CodeFragment("\t\t@RuntimePkg@.EngineState engineState = @RuntimePkg@.EngineState." + states.get(0).getName() + ";\n\t\twhile(isRunning){\n\t\t\t");
 		
 		for(int i = 0; i < states.size(); i++){
 			try {
@@ -201,7 +202,7 @@ public class StateMachine {
 				throw new InvalidStateMachineException(e);
 			}
 				
-			mainBody.appendLine("if(engineState == CompilerRuntime.EngineState." + states.get(i).getName() + "){\n");
+			mainBody.appendLine("if(engineState == @RuntimePkg@.EngineState." + states.get(i).getName() + "){\n");
 			mainBody.appendFragment(states.get(i).getCode());
 			mainBody.appendLine("\n\t\t\t}\n");
 			

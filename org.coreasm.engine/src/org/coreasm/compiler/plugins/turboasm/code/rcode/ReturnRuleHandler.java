@@ -21,9 +21,9 @@ public class ReturnRuleHandler implements CompilerCodeHandler {
 		CodeFragment rule = engine.compile(node.getAbstractChildNodes().get(1), CodeType.U);
 		
 		result.appendFragment(rule);
-		result.appendLine("@decl(CompilerRuntime.UpdateList,updates)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
-		result.appendLine("@decl(CompilerRuntime.AbstractStorage,storage)=CompilerRuntime.RuntimeProvider.getRuntime().getStorage();\n");
-		result.appendLine("@decl(CompilerRuntime.UpdateList,aggreg)=@storage@.performAggregation(@updates@);\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,updates)=(@RuntimePkg@.UpdateList)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.AbstractStorage,storage)=@RuntimeProvider@.getStorage();\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,aggreg)=@storage@.performAggregation(@updates@);\n");
 		result.appendLine("if(@storage@.isConsistent(@aggreg@)){\n");
 		result.appendLine("@storage@.pushState();\n");
 		result.appendLine("@storage@.apply(@aggreg@);\n");
@@ -31,7 +31,7 @@ public class ReturnRuleHandler implements CompilerCodeHandler {
 		result.appendLine("@storage@.popState();\n");
 		result.appendLine("}\n");
 		result.appendLine("else{\n");
-		result.appendLine("evalStack.push(CompilerRuntime.Element.UNDEF);\n");
+		result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 		result.appendLine("}\n");
 	}
 

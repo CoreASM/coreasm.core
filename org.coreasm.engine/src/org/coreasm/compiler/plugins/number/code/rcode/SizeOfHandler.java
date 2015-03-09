@@ -15,9 +15,9 @@ public class SizeOfHandler implements CompilerCodeHandler {
 		CodeFragment en = engine.compile(
 				node.getAbstractChildNodes().get(0), CodeType.R);
 		result.appendFragment(en);
-		result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
-		result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
-		result.appendLine("evalStack.push(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue(new CompilerRuntime.Location(\"size\", @list@)));\n");
+		result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
+		result.appendLine("@list@.add((@RuntimePkg@.Element)evalStack.pop());\n");
+		result.appendLine("evalStack.push(@RuntimeProvider@.getStorage().getValue(new @RuntimePkg@.Location(\"size\", @list@)));\n");
 	}
 
 }

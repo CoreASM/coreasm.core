@@ -4,11 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.collection.code.ucode.AddToHandler;
@@ -63,29 +65,30 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 		else{			
 			try {
 				//add package replacements for imported classes which can be used by other plugins
-				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractBagElement", "plugins.CollectionPlugin.AbstractBagElement");
-				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractListElement", "plugins.CollectionPlugin.AbstractListElement");
-				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableIndexedCollection", "plugins.CollectionPlugin.ModifiableIndexedCollection");
-				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", "plugins.CollectionPlugin.AbstractMapElement");
-				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", "plugins.CollectionPlugin.AbstractSetElement");
-				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", "plugins.CollectionPlugin.ModifiableCollection");
-				library.addPackageReplacement("org.coreasm.engine.plugins.collection.CollectionFunctionElement", "plugins.CollectionPlugin.CollectionFunctionElement");
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractBagElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "AbstractBagElement", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractListElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "AbstractListElement", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableIndexedCollection", engine.getPath().getEntryName(LibraryEntryType.STATIC, "ModifiableIndexedCollection", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractMapElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "AbstractMapElement", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.AbstractSetElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "AbstractSetElement", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.compiler.plugins.collection.include.ModifiableCollection", engine.getPath().getEntryName(LibraryEntryType.STATIC, "ModifiableCollection", "CollectionPlugin"));
+				library.addPackageReplacement("org.coreasm.engine.plugins.collection.CollectionFunctionElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "CollectionFunctionElement", "CollectionPlugin"));
 				
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/AbstractBagElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/AbstractListElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/compiler/plugins/collection/include/ModifiableIndexedCollection.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/AbstractMapElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/AbstractSetElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/compiler/plugins/collection/include/ModifiableCollection.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/CollectionFunctionElement.java", this), EntryType.INCLUDEONLY, ""));
+				JarIncludeHelper include = new JarIncludeHelper(engine, this);
 				
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/FilterFunctionElement.java", this), EntryType.FUNCTION_CAPI, FilterFunctionElement.NAME));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/compiler/plugins/collection/include/FoldFunctionElement.java", this), EntryType.FUNCTION_CAPI, FoldLName));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/compiler/plugins/collection/include/FoldFunctionElement.java", this), EntryType.FUNCTION_CAPI, FoldName));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/compiler/plugins/collection/include/FoldrFunctionElement.java", this), EntryType.FUNCTION_CAPI, FoldRName));
-				result.add(new MainFileEntry(library.includeClass(enginePath, "org/coreasm/engine/plugins/collection/MapFunctionElement.java", this), EntryType.FUNCTION_CAPI, MapFunctionElement.NAME));
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
+				result = include.includeStatic("org/coreasm/engine/plugins/collection/AbstractBagElement.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/engine/plugins/collection/AbstractListElement.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/compiler/plugins/collection/include/ModifiableIndexedCollection.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/engine/plugins/collection/AbstractMapElement.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/engine/plugins/collection/AbstractSetElement.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/compiler/plugins/collection/include/ModifiableCollection.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/engine/plugins/collection/CollectionFunctionElement.java", EntryType.INCLUDEONLY).
+					includeStatic("org/coreasm/engine/plugins/collection/FilterFunctionElement.java", EntryType.FUNCTION_CAPI, FilterFunctionElement.NAME).
+					includeStatic("org/coreasm/compiler/plugins/collection/include/FoldFunctionElement.java", EntryType.FUNCTION_CAPI, FoldLName).
+					//includeStatic("org/coreasm/compiler/plugins/collection/include/FoldFunctionElement.java", EntryType.FUNCTION_CAPI, FoldName).
+					includeStatic("org/coreasm/compiler/plugins/collection/include/FoldrFunctionElement.java", EntryType.FUNCTION_CAPI, FoldRName).
+					includeStatic("org/coreasm/engine/plugins/collection/MapFunctionElement.java", EntryType.FUNCTION_CAPI, MapFunctionElement.NAME).build();
+				LibraryEntry foldElement = classLibrary.findEntry("FoldFunctionElement", this.getName(), LibraryEntryType.STATIC);
+				result.add(new MainFileEntry(foldElement, EntryType.FUNCTION_CAPI, FoldName));
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}

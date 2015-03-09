@@ -1,16 +1,15 @@
 package org.coreasm.compiler.mainprogram;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.CompilerPathConfig;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.classlibrary.MemoryInclude;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
 import org.coreasm.compiler.exception.CompilerException;
@@ -34,17 +33,17 @@ import org.coreasm.engine.kernel.Kernel;
  * @author Markus Brenner
  *
  */
-public class MainFile implements LibraryEntry{
+public class MainFile extends MemoryInclude{
 	private StateMachine stateMachine;
 	private ArrayList<MainFileEntry> extensions;
 	private ArrayList<CodeFragment> initCodes;	
 	private String initRule;
-	private CompilerEngine engine;
 	
 	/**
 	 * Constructs a new, empty Main File
 	 */
 	public MainFile(CompilerEngine engine){
+		super(engine, "Main", "Kernel", LibraryEntryType.BASE);
 		stateMachine = new StateMachine(engine);
 		extensions = new ArrayList<MainFileEntry>();
 		initCodes = new ArrayList<CodeFragment>();
@@ -154,10 +153,10 @@ public class MainFile implements LibraryEntry{
 	}
 	
 	@Override
-	public void writeFile() throws LibraryEntryException {
+	protected String buildContent(String entryName) throws LibraryEntryException {
 		long start = System.nanoTime();
 		//build the main class of the specification
-		
+		CompilerPathConfig paths = engine.getPath();
 		//generate the state machine
 		MainFileHelper.populateStateMachine(this.stateMachine, engine);
 		//generate the state machines code
@@ -190,37 +189,37 @@ public class MainFile implements LibraryEntry{
 		}
 		
 		finalContent = new CodeFragment();
-		finalContent.appendLine("public class Main implements CompilerRuntime.Runtime{\n");
-		finalContent.appendLine("\tprivate java.util.Map<Thread, CompilerRuntime.Element> selfEntries = new java.util.HashMap<Thread, CompilerRuntime.Element>();\n");
-		finalContent.appendLine("\tpublic void setSelf(Thread t, CompilerRuntime.Element e){\nselfEntries.put(t, e);\n}\n");
-		finalContent.appendLine("\tpublic CompilerRuntime.Element getSelf(Thread t){\nreturn selfEntries.get(t);\n}\n");
-		finalContent.appendLine("\tprivate CompilerRuntime.EvalStack evalStack = new CompilerRuntime.EvalStack();\n");
+		finalContent.appendLine("public class Main implements @RuntimePkg@.Runtime{\n");
+		finalContent.appendLine("\tprivate java.util.Map<Thread, @RuntimePkg@.Element> selfEntries = new java.util.HashMap<Thread, @RuntimePkg@.Element>();\n");
+		finalContent.appendLine("\tpublic void setSelf(Thread t, @RuntimePkg@.Element e){\nselfEntries.put(t, e);\n}\n");
+		finalContent.appendLine("\tpublic @RuntimePkg@.Element getSelf(Thread t){\nreturn selfEntries.get(t);\n}\n");
+		finalContent.appendLine("\tprivate @RuntimePkg@.EvalStack evalStack = new @RuntimePkg@.EvalStack();\n");
 		finalContent.appendLine("\tprivate boolean isRunning;\n");
-		finalContent.appendLine("\tprivate CompilerRuntime.AbstractStorage storage;\n");
-		finalContent.appendLine("\tprivate CompilerRuntime.Scheduler scheduler;\n");
+		finalContent.appendLine("\tprivate @RuntimePkg@.AbstractStorage storage;\n");
+		finalContent.appendLine("\tprivate @RuntimePkg@.Scheduler scheduler;\n");
 		finalContent.appendLine("\tprivate java.util.Random random = new java.util.Random();\n");
-		finalContent.appendLine("\tprivate CompilerRuntime.UpdateList prevupdates;\n");
-		finalContent.appendLine("\tprivate java.util.Set<CompilerRuntime.UpdateAggregator> aggregators;\n");
+		finalContent.appendLine("\tprivate @RuntimePkg@.UpdateList prevupdates;\n");
+		finalContent.appendLine("\tprivate java.util.Set<@RuntimePkg@.UpdateAggregator> aggregators;\n");
 		finalContent.appendLine("\tprivate String lastError;\n");
 		finalContent.appendLine("\tprivate boolean abortProgram;\n");
 		finalContent.appendLine("\n");
 		finalContent.appendLine("\tpublic Main(){\n");
-		finalContent.appendLine("\t\tCompilerRuntime.RuntimeProvider.setRuntime(this);\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.RuntimeProvider.setRuntime(this);\n");
 		finalContent.appendLine("\t\tlastError = null;\n");
 		finalContent.appendLine("\t\tabortProgram = false;\n");
-		finalContent.appendLine("\t\tstorage = new CompilerRuntime.HashStorage(this);\n");
-		finalContent.appendLine("\t\tCompilerRuntime.Rule initRule = new " + initRule + "();\n");
-		finalContent.appendLine("\t\tscheduler = new CompilerRuntime.Scheduler(initRule, new "  + scheduler.getFullName() + "());\n");
+		finalContent.appendLine("\t\tstorage = new @RuntimePkg@.HashStorage(this);\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.Rule initRule = new " + initRule + "();\n");
+		finalContent.appendLine("\t\tscheduler = new @RuntimePkg@.Scheduler(initRule, new "  + paths.getEntryName(scheduler) + "());\n");
 		finalContent.appendLine("\t\taggregators = new java.util.HashSet<>();\n");
 		finalContent.appendLine("\t\tisRunning = true;\n");
 		finalContent.appendLine("\t}\n");
-		finalContent.appendLine("\tpublic java.util.Set<CompilerRuntime.UpdateAggregator> getAggregators(){\n");
+		finalContent.appendLine("\tpublic java.util.Set<@RuntimePkg@.UpdateAggregator> getAggregators(){\n");
 		finalContent.appendLine("\t\treturn this.aggregators;\n");
 		finalContent.appendLine("\t}\n");
-		finalContent.appendLine("\tpublic CompilerRuntime.AbstractStorage getStorage(){\n");
+		finalContent.appendLine("\tpublic @RuntimePkg@.AbstractStorage getStorage(){\n");
 		finalContent.appendLine("\t\treturn this.storage;\n");
 		finalContent.appendLine("\t}\n");
-		finalContent.appendLine("\tpublic CompilerRuntime.Scheduler getScheduler(){\n");
+		finalContent.appendLine("\tpublic @RuntimePkg@.Scheduler getScheduler(){\n");
 		finalContent.appendLine("\t\treturn this.scheduler;\n");
 		finalContent.appendLine("\t}\n");
 		finalContent.appendLine("\tpublic void error(String msg){}\n\tpublic void error(Exception e){}\n\tpublic void warning(String s, String m){}\n");
@@ -242,55 +241,55 @@ public class MainFile implements LibraryEntry{
 		//2. add init code for all initial elements
 		//2a helper code for agents:
 		//retrieve agents universe
-		finalContent.appendLine("\t\tCompilerRuntime.Rule initRule = new " + initRule + "();\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.Rule initRule = new " + initRule + "();\n");
 		finalContent.appendLine("\t\tstorage.initAbstractStorage(initRule);\n");
-		finalContent.appendLine("\t\tCompilerRuntime.ProgramFunction programfct = new CompilerRuntime.ProgramFunction();\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.ProgramFunction programfct = new @RuntimePkg@.ProgramFunction();\n");
 		finalContent.appendLine("\t\ttry{\n");
-		finalContent.appendLine("\t\tthis.storage.addFunction(CompilerRuntime.AbstractStorage.PROGRAM_FUNCTION_NAME, programfct);\n");
+		finalContent.appendLine("\t\tthis.storage.addFunction(@RuntimePkg@.AbstractStorage.PROGRAM_FUNCTION_NAME, programfct);\n");
 		finalContent.appendLine("\t\t}catch(Exception e){\n}\n");
-		finalContent.appendLine("\t\tCompilerRuntime.AbstractUniverse agents = this.storage.getUniverse(CompilerRuntime.AbstractStorage.AGENTS_UNIVERSE_NAME);\n");
-		finalContent.appendLine("\t\tjava.util.List<CompilerRuntime.Element> fctArgTmp = null;\n");
-		finalContent.appendLine("\t\tCompilerRuntime.MapFunction fctMapTmp = null;\n");
-		finalContent.appendLine("\t\tCompilerRuntime.UniverseElement uniTmp = null;\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.AbstractUniverse agents = this.storage.getUniverse(@RuntimePkg@.AbstractStorage.AGENTS_UNIVERSE_NAME);\n");
+		finalContent.appendLine("\t\tjava.util.List<@RuntimePkg@.Element> fctArgTmp = null;\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.MapFunction fctMapTmp = null;\n");
+		finalContent.appendLine("\t\t@RuntimePkg@.UniverseElement uniTmp = null;\n");
 		finalContent.appendLine("\t\ttry{\n");
 		for(MainFileEntry entry : extensions){
 			switch(entry.entryType){
 			case AGENT:
-				finalContent.appendLine("\t\tagents.setValue(new " + entry.classFile.getFullName() + ", CompilerRuntime.BooleanElement.TRUE);\n");
+				finalContent.appendLine("\t\tagents.setValue(new " + paths.getEntryName(entry.classFile) + ", @RuntimePkg@.BooleanElement.TRUE);\n");
 				break;
 			case AGGREGATOR:
-				finalContent.appendLine("\t\tthis.aggregators.add(new " + entry.classFile.getFullName() + "());\n");
+				finalContent.appendLine("\t\tthis.aggregators.add(new " + paths.getEntryName(entry.classFile) + "());\n");
 				break;
 			case BACKGROUND:
-				finalContent.appendLine("\t\tthis.storage.addUniverse(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "());\n");
+				finalContent.appendLine("\t\tthis.storage.addUniverse(\"" + entry.entryName + "\", new " + paths.getEntryName(entry.classFile) + "());\n");
 				break;
 			case FUNCTION:
 				if(entry.entryName.equals("program")){
 					//add elements to the program function
-					finalContent.appendLine("\t\tfctMapTmp = new " + entry.classFile.getFullName() + "();\n");
-					finalContent.appendLine("\t\tfor(CompilerRuntime.Location l : fctMapTmp.getLocations(\"program\")){\n");
+					finalContent.appendLine("\t\tfctMapTmp = new " + paths.getEntryName(entry.classFile) + "();\n");
+					finalContent.appendLine("\t\tfor(@RuntimePkg@.Location l : fctMapTmp.getLocations(\"program\")){\n");
 					finalContent.appendLine("\t\t\tstorage.setValue(l, fctMapTmp.getValue(l.args));\n");
 					finalContent.appendLine("\t\t}\n");
 				}
 				else{
-					finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "());\n");
+					finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + paths.getEntryName(entry.classFile) + "());\n");
 				}
 				break;
 			case FUNCTION_CAPI:
 				//program function needs no parameter for the constructor, so it cannot appear here
-				finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "(new CompilerRuntime.ControlAPI()));\n");
+				finalContent.appendLine("\t\tthis.storage.addFunction(\"" + entry.entryName + "\", new " + paths.getEntryName(entry.classFile) + "(new @RuntimePkg@.ControlAPI()));\n");
 				break;
 			case UNIVERSE:
 				if(entry.entryName.equals(CompilerRuntime.AbstractStorage.AGENTS_UNIVERSE_NAME)){
-					finalContent.appendLine("\t\tuniTmp = new " + entry.classFile.getFullName() + "();\n");
-					finalContent.appendLine("\t\tfor (CompilerRuntime.Location l: uniTmp.getLocations(CompilerRuntime.AbstractStorage.AGENTS_UNIVERSE_NAME)){\n");
+					finalContent.appendLine("\t\tuniTmp = new " + paths.getEntryName(entry.classFile) + "();\n");
+					finalContent.appendLine("\t\tfor (@RuntimePkg@.Location l: uniTmp.getLocations(@RuntimePkg@.AbstractStorage.AGENTS_UNIVERSE_NAME)){\n");
 					finalContent.appendLine("\t\ttry {\n");
 					finalContent.appendLine("\t\tagents.setValue(l.args, uniTmp.getValue(l.args));\n");
-					finalContent.appendLine("\t\t} catch (CompilerRuntime.UnmodifiableFunctionException e) {}\n");
+					finalContent.appendLine("\t\t} catch (@RuntimePkg@.UnmodifiableFunctionException e) {}\n");
 					finalContent.appendLine("}\n");
 				}
 				else{
-					finalContent.appendLine("\t\tthis.storage.addUniverse(\"" + entry.entryName + "\", new " + entry.classFile.getFullName() + "());\n");
+					finalContent.appendLine("\t\tthis.storage.addUniverse(\"" + entry.entryName + "\", new " + paths.getEntryName(entry.classFile) + "());\n");
 				}
 				break;
 			default:
@@ -311,43 +310,15 @@ public class MainFile implements LibraryEntry{
 		//end class
 		finalContent.appendLine("}");
 		
-		
-		File directory = engine.getOptions().tempDirectory;
-		File file = new File(directory, "Main.java");
-		if(file.exists()) throw new LibraryEntryException(new Exception("file already exists"));
-		
-		BufferedWriter bw = null;
-		
-		directory.mkdirs();
-		try {
-			file.createNewFile();
-		
-			bw = new BufferedWriter(new FileWriter(file));
-			
-			bw.write(finalContent.generateCode(engine));
-		} 
-		catch (IOException e) {
-			engine.addError("writing the main file resulted in an io error: " + e.getMessage());
-			throw new LibraryEntryException(e);
-		} catch (CodeFragmentException e) {
-			engine.addError("generating the main class code resulted in a codefragment error");
-			throw new LibraryEntryException(e);
-		}
-		finally{
-			try{
-				bw.close();
-			}
-			catch(IOException e){
-			}
-		}
 		long end = System.nanoTime();
 		engine.addTiming("Main File building", end - start);
-	}
-
-	@Override
-	public String getFullName() {
-		//this method is useless, as the Main class resides in the
-		//default package and can't be called by other classes because of that
-		return "Main";
+		try{
+			return finalContent.generateCode(engine);
+		}
+		catch(CodeFragmentException e){
+			engine.addError("Building the main class has failed");
+			engine.getLogger().error(this.getClass(), "Building the main class has failed");
+			throw new LibraryEntryException(e);
+		}
 	}
 }

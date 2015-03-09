@@ -26,7 +26,7 @@ public class CaseRuleHandler implements CompilerCodeHandler {
 			}
 			
 			result.appendFragment(guardcode);
-			result.appendLine("@decl(CompilerRuntime.Element,guard)=(CompilerRuntime.Element)evalStack.pop();\n");
+			result.appendLine("@decl(@RuntimePkg@.Element,guard)=(@RuntimePkg@.Element)evalStack.pop();\n");
 			//result.appendLine("@decl(int,exec)=0;\n");
 			result.appendLine("evalStack.push(@guard@);\n");
 			result.appendLine("evalStack.push(new Integer(0));\n");
@@ -35,7 +35,7 @@ public class CaseRuleHandler implements CompilerCodeHandler {
 			for(int i = 0; i < conditions.length; i++){
 				CodeFragment current = new CodeFragment("");
 				current.appendLine("@decl(int,count) = (Integer) evalStack.pop();\n");
-				current.appendLine("@decl(CompilerRuntime.Element,guard)=(CompilerRuntime.Element)evalStack.pop();\n");
+				current.appendLine("@decl(@RuntimePkg@.Element,guard)=(@RuntimePkg@.Element)evalStack.pop();\n");
 				current.appendFragment(conditions[i]);
 				current.appendLine("if(@guard@.equals(evalStack.pop())){\n");
 				current.appendFragment(rules[i]);
@@ -63,9 +63,9 @@ public class CaseRuleHandler implements CompilerCodeHandler {
 				result.appendFragment(rules[i]);
 				result.appendLine("}\n");
 			}*/
-			result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
+			result.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=new @RuntimePkg@.UpdateList();\n");
 			result.appendLine("for(@decl(int,i)=0;@i@<@exec@;@i@++){\n");
-			result.appendLine("@ulist@.addAll((CompilerRuntime.UpdateList)evalStack.pop());\n");
+			result.appendLine("@ulist@.addAll((@RuntimePkg@.UpdateList)evalStack.pop());\n");
 			result.appendLine("}\n");
 			result.appendLine("evalStack.push(@ulist@);\n");			
 		} catch (Exception e) {

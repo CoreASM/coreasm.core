@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.classlibrary.JarIncludeHelper;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.exception.IncludeException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
@@ -77,16 +78,16 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
 		}
 		else{
 			try {
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationBackgroundElement", "plugins.SignaturePlugin.EnumerationBackgroundElement");
-				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationElement", "plugins.SignaturePlugin.EnumerationElement");
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationBackgroundElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "EnumerationBackgroundElement", "SignaturePlugin"));
+				classLibrary.addPackageReplacement("org.coreasm.engine.plugins.signature.EnumerationElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "EnumerationElement", "SignaturePlugin"));
 				
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/compiler/plugins/signature/include/EnumerationBackgroundElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/EnumerationElement.java", this), EntryType.INCLUDEONLY, ""));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/FunctionDomainFunctionElement.java", this), EntryType.FUNCTION, FunctionDomainFunctionElement.FUNCTION_NAME));
-				result.add(new MainFileEntry(classLibrary.includeClass(enginePath, "org/coreasm/engine/plugins/signature/FunctionRangeFunctionElement.java", this), EntryType.FUNCTION, FunctionRangeFunctionElement.FUNCTION_NAME));
-				
-			} catch (IncludeException e) {
-				throw new CompilerException(e);
+				result = (new JarIncludeHelper(engine, this)).
+						includeStatic("org/coreasm/compiler/plugins/signature/include/EnumerationBackgroundElement.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/compiler/plugins/signature/include/EnumerationElement.java", EntryType.INCLUDEONLY).
+						//includeStatic("org/coreasm/engine/plugins/signature/EnumerationElement.java", EntryType.INCLUDEONLY).
+						includeStatic("org/coreasm/engine/plugins/signature/FunctionDomainFunctionElement.java", EntryType.FUNCTION, FunctionDomainFunctionElement.FUNCTION_NAME).
+						includeStatic("org/coreasm/engine/plugins/signature/FunctionRangeFunctionElement.java", EntryType.FUNCTION, FunctionRangeFunctionElement.FUNCTION_NAME).
+						build();
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}

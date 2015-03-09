@@ -17,9 +17,9 @@ public class PickRuleHandler implements CompilerCodeHandler {
 		
 		result.appendLine("");
 		result.appendFragment(loc);
-		result.appendLine("@decl(String,loc)=((CompilerRuntime.Location)evalStack.pop()).name;\n");
+		result.appendLine("@decl(String,loc)=((@RuntimePkg@.Location)evalStack.pop()).name;\n");
 		result.appendFragment(source);
-		result.appendLine("@decl(java.util.ArrayList<CompilerRuntime.Element>, src) = new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
+		result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, src) = new java.util.ArrayList<@RuntimePkg@.Element>(((@RuntimePkg@.Enumerable)evalStack.pop()).enumerate());\n");
 		if(node.getAbstractChildNodes().size() == 3){
 			CodeFragment test = engine.compile(node.getAbstractChildNodes().get(2), CodeType.R);
 			result.appendLine("for(@decl(int,i)=@src@.size() - 1; @i@ >= 0; @i@--){\n");
@@ -27,12 +27,12 @@ public class PickRuleHandler implements CompilerCodeHandler {
 			result.appendLine("localStack.put(@loc@, @src@.get(@i@));\n");
 			result.appendFragment(test);
 			result.appendLine("localStack.popLayer();\n");
-			result.appendLine("if(!evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
+			result.appendLine("if(!evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
 			result.appendLine("@src@.remove(@i@);\n");
 			result.appendLine("}\n");
 			result.appendLine("}\n");
 		}
-		result.appendLine("evalStack.push(@src@.get(CompilerRuntime.RuntimeProvider.getRuntime().randInt(@src@.size())));\n");
+		result.appendLine("evalStack.push(@src@.get(@RuntimeProvider@.randInt(@src@.size())));\n");
 	}
 
 }

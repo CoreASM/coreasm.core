@@ -22,9 +22,9 @@ public class LocalRuleHandler implements CompilerCodeHandler {
 			result.appendLine("@locs@.add(\"" + s + "\");\n");
 		}
 		result.appendFragment(rule);
-		result.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=(CompilerRuntime.UpdateList)evalStack.pop();\n");
-		result.appendLine("@decl(CompilerRuntime.UpdateList,result)=new CompilerRuntime.UpdateList();\n");
-		result.appendLine("for(@decl(CompilerRuntime.Update,u): @ulist@){\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=(@RuntimePkg@.UpdateList)evalStack.pop();\n");
+		result.appendLine("@decl(@RuntimePkg@.UpdateList,result)=new @RuntimePkg@.UpdateList();\n");
+		result.appendLine("for(@decl(@RuntimePkg@.Update,u): @ulist@){\n");
 		result.appendLine("if(!@locs@.contains(@u@.loc.name)){\n");
 		result.appendLine("@result@.add(@u@);\n");
 		result.appendLine("}\n");

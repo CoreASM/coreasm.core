@@ -1,6 +1,7 @@
 package org.coreasm.compiler;
 
 import java.util.List;
+import java.util.Map;
 
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
@@ -107,4 +108,6 @@ public interface CompilerEngine {
 	 * @param l The duration of the operation
 	 */
 	public void addTiming(String s, long l);
+	
+	public Map<String, String> getGlobalMakros();
 }

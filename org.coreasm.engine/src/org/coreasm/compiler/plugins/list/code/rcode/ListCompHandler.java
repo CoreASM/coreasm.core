@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -28,14 +29,14 @@ public class ListCompHandler implements CompilerCodeHandler {
 		
 		List<String> constrnames = new ArrayList<String>();
 		
-		result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,list)=new java.util.ArrayList<CompilerRuntime.Element>();\n");
+		result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
 		try{
 			//evaluate all constrainer domains and collect the list of variable names
 			int counter = 0;
 			for(Entry<String, ASTNode> e: compnode.getVarBindings().entrySet()){
 				constrnames.add(e.getKey());
 				result.appendFragment(engine.compile(e.getValue(), CodeType.R));
-				result.appendLine("@decl(java.util.List<CompilerRuntime.Element>,domain" + counter + ")=new java.util.ArrayList<CompilerRuntime.Element>(((CompilerRuntime.Enumerable)evalStack.pop()).enumerate());\n");
+				result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,domain" + counter + ")=new java.util.ArrayList<@RuntimePkg@.Element>(((@RuntimePkg@.Enumerable)evalStack.pop()).enumerate());\n");
 				counter++;
 			}	
 			//iterate
@@ -55,13 +56,13 @@ public class ListCompHandler implements CompilerCodeHandler {
 			
 			if(guard == null){
 				result.appendFragment(engine.compile(compnode.getListFunction(), CodeType.R));
-				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
+				result.appendLine("@list@.add((@RuntimePkg@.Element)evalStack.pop());\n");
 			}
 			else{
 				result.appendFragment(guard);
-				result.appendLine("if(evalStack.pop().equals(CompilerRuntime.BooleanElement.TRUE)){\n");
+				result.appendLine("if(evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
 				result.appendFragment(engine.compile(compnode.getListFunction(), CodeType.R));
-				result.appendLine("@list@.add((CompilerRuntime.Element)evalStack.pop());\n");
+				result.appendLine("@list@.add((@RuntimePkg@.Element)evalStack.pop());\n");
 				result.appendLine("}\n");
 			}
 			
@@ -71,7 +72,8 @@ public class ListCompHandler implements CompilerCodeHandler {
 			for(int i = 0; i < constrnames.size(); i++){
 				result.appendLine("}\n");
 			}
-			result.appendLine("evalStack.push(new plugins.ListPlugin.ListElement(@list@));\n");
+			String listelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "ListElement", "ListPlugin");
+			result.appendLine("evalStack.push(new " + listelement + "(@list@));\n");
 		}
 		catch(EngineException exc){
 			throw new CompilerException(exc);

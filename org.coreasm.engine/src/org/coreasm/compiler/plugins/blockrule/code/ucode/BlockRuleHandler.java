@@ -28,11 +28,11 @@ public class BlockRuleHandler implements CompilerCodeHandler {
 			}
 		}
 	
-		tmpresult.appendLine("@decl(CompilerRuntime.UpdateList,ulist)=new CompilerRuntime.UpdateList();\n");
+		tmpresult.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=new @RuntimePkg@.UpdateList();\n");
 		
 		tmpresult.appendLine("//blockrule collection handler\n");
 		tmpresult.appendLine("for(@decl(int,i)=0; @i@ < " + node.getAbstractChildNodes().size() + "; @i@++){\n");
-		tmpresult.appendLine("@ulist@.addAll((CompilerRuntime.UpdateList)evalStack.pop());\n");
+		tmpresult.appendLine("@ulist@.addAll((@RuntimePkg@.UpdateList)evalStack.pop());\n");
 		tmpresult.appendLine("}\n");
 		tmpresult.appendLine("evalStack.push(@ulist@);\n");
 		

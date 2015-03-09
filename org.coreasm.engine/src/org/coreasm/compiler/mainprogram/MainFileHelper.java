@@ -87,7 +87,7 @@ public class MainFileHelper {
 		emStartingStep.appendCode("\t\t\t\ttry{\n");
 		emStartingStep.appendCode("\t\t\t\tscheduler.retrieveAgents();\n");
 		emStartingStep.appendCode("\t\t\t\t}\n");
-		emStartingStep.appendCode("\t\t\t\tcatch(CompilerRuntime.CoreASMCException e){\n");
+		emStartingStep.appendCode("\t\t\t\tcatch(@RuntimePkg@.CoreASMCException e){\n");
 		emStartingStep.appendCode("\t\t\t\tSystem.out.println(e.toString());\n\t\t\t\tSystem.exit(0);\n");
 		emStartingStep.appendCode("\t\t\t\t}\n");
 		emStartingStep.appendCode(sm.makeTransit("emStartingStep", "emSelectingAgents"));
@@ -118,7 +118,7 @@ public class MainFileHelper {
 		emRunningAgents.appendCode("\t\t\t\t}\n\t\t\t\telse {\n");
 		emRunningAgents.appendCode("\t\t\t\ttry{\n");
 		emRunningAgents.appendCode("\t\t\t\tscheduler.executeAgentPrograms();\n");
-		emRunningAgents.appendCode("\t\t\t\t}\n\t\t\t\tcatch(CompilerRuntime.CoreASMCException e){\n");
+		emRunningAgents.appendCode("\t\t\t\t}\n\t\t\t\tcatch(@RuntimePkg@.CoreASMCException e){\n");
 		emRunningAgents.appendCode("\t\t\t\tSystem.out.println(e.toString());\n\t\t\t\tSystem.exit(0);\n");
 		emRunningAgents.appendCode("\t\t\t\t}\n");
 		emRunningAgents.appendCode(sm.makeTransit("emRunningAgents", "emAggregation"));
@@ -130,7 +130,7 @@ public class MainFileHelper {
 		emAggregation.appendCode("\t\t\t\tif (storage.isConsistent(scheduler.getUpdateSet())) {\n");
 		emAggregation.appendCode("\t\t\t\ttry{\n");
 		emAggregation.appendCode("\t\t\t\t	storage.fireUpdateSet(scheduler.getUpdateSet());\n");
-		emAggregation.appendCode("\t\t\t\t}\n\t\t\t\tcatch(CompilerRuntime.InvalidLocationException e){\n");
+		emAggregation.appendCode("\t\t\t\t}\n\t\t\t\tcatch(@RuntimePkg@.InvalidLocationException e){\n");
 		emAggregation.appendCode("\t\t\t\tSystem.out.println(e.toString());\n\t\t\t\tSystem.exit(0);\n");
 		emAggregation.appendCode("\t\t\t\t}\n");
 		emAggregation.appendCode(sm.makeTransit("emAggregation", "emStepSucceeded"));

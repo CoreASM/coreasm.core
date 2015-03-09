@@ -3,6 +3,7 @@ package org.coreasm.compiler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -27,10 +28,10 @@ public class JavaCompilerWrapper {
 	 * 
 	 * @param options Options to be used for the compilation process. Currently unused, but
 	 * can be used to add parameters for the java compiler
-	 * @param classes A list of classes which need to be compiled
+	 * @param files A list of classes which need to be compiled
 	 * @throws CompilerException If an error occured during the compilation process
 	 */
-	public static void compile(CompilerOptions options, ArrayList<File> classes, CompilerEngine engine) throws CompilerException{
+	public static void compile(CompilerOptions options, List<File> files, CompilerEngine engine) throws CompilerException{
 		JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
 		if(jc == null){
 			engine.addError("java compiler not found");
@@ -42,7 +43,7 @@ public class JavaCompilerWrapper {
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		//set up a file manager to provide java sources
 		StandardJavaFileManager fileManager = jc.getStandardFileManager(null, null, null);
-		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(classes);
+		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
 		//set compiler options
 		ArrayList<String> copt = new ArrayList<String>();
 		

@@ -39,18 +39,18 @@ public class KernelFunctionRuleTermHandler implements CompilerCodeHandler {
 			}
 
 			result.appendLine("\n"
-					+ "@decl(java.util.ArrayList<CompilerRuntime.Element>,arglist);\n@arglist@ = new java.util.ArrayList<>();\n");
+					+ "@decl(java.util.ArrayList<@RuntimePkg@.Element>,arglist);\n@arglist@ = new java.util.ArrayList<>();\n");
 			result.appendLine("for(@decl(int,__i)=0;@__i@<"
 					+ args.size()
-					+ ";@__i@++)\n@arglist@.add((CompilerRuntime.Element)evalStack.pop());\n");
+					+ ";@__i@++)\n@arglist@.add((@RuntimePkg@.Element)evalStack.pop());\n");
 			
 			//build the location, find out, if there is a local value for this location
 			result.appendLine("@decl(Object,o)=localStack.get(\"" + name + "\");\n");
-			result.appendLine("if(@o@ instanceof CompilerRuntime.FunctionElement){\n");
-			result.appendLine("evalStack.push(new CompilerRuntime.Location(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getFunctionName((CompilerRuntime.FunctionElement)@o@), @arglist@));\n");			
+			result.appendLine("if(@o@ instanceof @RuntimePkg@.FunctionElement){\n");
+			result.appendLine("evalStack.push(new @RuntimePkg@.Location(@RuntimeProvider@.getStorage().getFunctionName((@RuntimePkg@.FunctionElement)@o@), @arglist@));\n");			
 			result.appendLine("}\n");
 			result.appendLine("else{\n");
-			result.appendLine("evalStack.push(new CompilerRuntime.Location(\"" + name + "\", @arglist@));\n");
+			result.appendLine("evalStack.push(new @RuntimePkg@.Location(\"" + name + "\", @arglist@));\n");
 			result.appendLine("}\n");
 			
 			//result.appendLine("evalStack.push(new CompilerRuntime.Location(\""
@@ -62,11 +62,11 @@ public class KernelFunctionRuleTermHandler implements CompilerCodeHandler {
 			//result.appendLine(code);
 			
 			result.appendLine("@decl(Object,o)=localStack.get(\"" + name + "\");\n");
-			result.appendLine("if(@o@ instanceof CompilerRuntime.FunctionElement){\n");
-			result.appendLine("evalStack.push(new CompilerRuntime.Location(CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getFunctionName((CompilerRuntime.FunctionElement)@o@), new java.util.ArrayList<CompilerRuntime.Element>()));\n");			
+			result.appendLine("if(@o@ instanceof @RuntimePkg@.FunctionElement){\n");
+			result.appendLine("evalStack.push(new @RuntimePkg@.Location(@RuntimeProvider@.getStorage().getFunctionName((@RuntimePkg@.FunctionElement)@o@), new java.util.ArrayList<@RuntimePkg@.Element>()));\n");			
 			result.appendLine("}\n");
 			result.appendLine("else{\n");
-			result.appendLine("evalStack.push(new CompilerRuntime.Location(\"" + name + "\", new java.util.ArrayList<CompilerRuntime.Element>()));\n");
+			result.appendLine("evalStack.push(new @RuntimePkg@.Location(\"" + name + "\", new java.util.ArrayList<@RuntimePkg@.Element>()));\n");
 			result.appendLine("}\n");
 		}
 	}

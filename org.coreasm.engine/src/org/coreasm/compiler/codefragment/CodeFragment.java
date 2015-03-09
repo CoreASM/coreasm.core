@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.variablemanager.CompilerVariable;
@@ -45,6 +46,9 @@ import org.coreasm.compiler.codefragment.CodeFragmentException;
  * CodeFragment object. Child CodeFragments (attached via appendFragment) won't see them
  * and can declare the same name again.
  * Additional lines of code added via appendLine can see the temporary name.
+ * 
+ * A CodeFragment is finalized using a specific compiler engine. This compiler engine can define
+ * global variables, which will be applied to all CodeFragments.
  * 
  * @author Markus Brenner
  *
@@ -218,6 +222,13 @@ public class CodeFragment {
 		List<String> myCodeList = new ArrayList<String>();
 		myCodeList.addAll(codeList);
 		
+		//first, replace all occurrences of global macros
+		Map<String, String> global = engine.getGlobalMakros();
+		for(Entry<String, String> m : global.entrySet()){
+			for(int i = 0; i < myCodeList.size(); i++){
+				myCodeList.set(i, myCodeList.get(i).replaceAll("@" + m.getKey() + "@", m.getValue()));
+			}
+		}
 		
 		for(int i = 0; i < myCodeList.size(); i++){
 			//replace declarations in own namespace
