@@ -69,8 +69,9 @@ public class CompilerDriver {
 		Thread g2 = new Thread(err);
 		g1.start();
 		g2.start();
+		int procResult = 0;
 		try{
-			proc.waitFor();
+			procResult = proc.waitFor();
 		}
 		catch(Exception e){
 			return new TestReport(testFile, "Waiting for process failed: " + e.getMessage(), -1, false);
@@ -82,6 +83,10 @@ public class CompilerDriver {
 		//check for errors
 		if (!err.output.toString().equals("")) {
 			String failMessage = "An error occurred in " + testFile.getName() + ":" + err.output.toString();
+			return new TestReport(testFile, failMessage, -1, false);
+		}
+		if(procResult != 0){
+			String failMessage = "Process terminated with exit code != 0";
 			return new TestReport(testFile, failMessage, -1, false);
 		}
 		

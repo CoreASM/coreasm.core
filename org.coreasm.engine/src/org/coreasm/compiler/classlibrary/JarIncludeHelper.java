@@ -67,7 +67,7 @@ public class JarIncludeHelper {
 	
 	private void build(List<MainFileEntry> result){
 		if(entry != null){
-			previous.build();
+			previous.build(result);
 			
 			result.add(entry);
 		}

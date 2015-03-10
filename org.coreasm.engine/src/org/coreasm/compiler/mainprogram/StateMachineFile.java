@@ -33,7 +33,7 @@ import org.coreasm.engine.kernel.Kernel;
  * @author Markus Brenner
  *
  */
-public class MainFile extends MemoryInclude{
+public class StateMachineFile extends MemoryInclude{
 	private StateMachine stateMachine;
 	private ArrayList<MainFileEntry> extensions;
 	private ArrayList<CodeFragment> initCodes;	
@@ -42,8 +42,8 @@ public class MainFile extends MemoryInclude{
 	/**
 	 * Constructs a new, empty Main File
 	 */
-	public MainFile(CompilerEngine engine){
-		super(engine, "Main", "Kernel", LibraryEntryType.BASE);
+	public StateMachineFile(CompilerEngine engine){
+		super(engine, "StateMachine", "Kernel", LibraryEntryType.DYNAMIC);
 		stateMachine = new StateMachine(engine);
 		extensions = new ArrayList<MainFileEntry>();
 		initCodes = new ArrayList<CodeFragment>();
@@ -189,7 +189,8 @@ public class MainFile extends MemoryInclude{
 		}
 		
 		finalContent = new CodeFragment();
-		finalContent.appendLine("public class Main implements @RuntimePkg@.Runtime{\n");
+		finalContent.appendLine("package " + getPackage(entryName) + ";\n");
+		finalContent.appendLine("public class StateMachine implements @RuntimePkg@.Runtime, Runnable{\n");
 		finalContent.appendLine("\tprivate java.util.Map<Thread, @RuntimePkg@.Element> selfEntries = new java.util.HashMap<Thread, @RuntimePkg@.Element>();\n");
 		finalContent.appendLine("\tpublic void setSelf(Thread t, @RuntimePkg@.Element e){\nselfEntries.put(t, e);\n}\n");
 		finalContent.appendLine("\tpublic @RuntimePkg@.Element getSelf(Thread t){\nreturn selfEntries.get(t);\n}\n");
@@ -203,7 +204,7 @@ public class MainFile extends MemoryInclude{
 		finalContent.appendLine("\tprivate String lastError;\n");
 		finalContent.appendLine("\tprivate boolean abortProgram;\n");
 		finalContent.appendLine("\n");
-		finalContent.appendLine("\tpublic Main(){\n");
+		finalContent.appendLine("\tpublic StateMachine(){\n");
 		finalContent.appendLine("\t\t@RuntimePkg@.RuntimeProvider.setRuntime(this);\n");
 		finalContent.appendLine("\t\tlastError = null;\n");
 		finalContent.appendLine("\t\tabortProgram = false;\n");
@@ -224,8 +225,8 @@ public class MainFile extends MemoryInclude{
 		finalContent.appendLine("\t}\n");
 		finalContent.appendLine("\tpublic void error(String msg){}\n\tpublic void error(Exception e){}\n\tpublic void warning(String s, String m){}\n");
 		finalContent.appendLine("\tpublic void stopEngine(){\n\t\tthis.isRunning = false;\n\t}\n");
-		finalContent.appendLine("\tpublic static void main(String[] args){\n");
-		finalContent.appendLine("\t\tMain m = new Main();\n\t\tm.runMachine();\n");
+		finalContent.appendLine("\tpublic void run(){\n");
+		finalContent.appendLine("\t\t\n\t\trunMachine();\n");
 		finalContent.appendLine("\t}\n");
 		finalContent.appendLine("\tpublic int randInt(int max) {\n\t\treturn random.nextInt(max);\n\t}\n");
 		

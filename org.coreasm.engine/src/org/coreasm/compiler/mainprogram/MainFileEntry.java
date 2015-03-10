@@ -29,4 +29,9 @@ public class MainFileEntry {
 		this.entryType = entryType;
 		this.entryName = entryName;
 	}
+	
+	@Override
+	public String toString(){
+		return "{MFE::" + classFile + "::" + entryType + "::" + entryName + "}";
+	}
 }

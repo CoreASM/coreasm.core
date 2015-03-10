@@ -35,9 +35,9 @@ public class NumberRangeHandler implements CompilerCodeHandler {
 		result.appendLine("@decl(double,end)=(((" + numberelement + ")evalStack.pop()).getValue());\n");
 		result.appendLine("@decl(double,start)=(((" + numberelement + ")evalStack.pop()).getValue());\n");
 		if (step != null) {
-			result.appendLine("evalStack.push(" + numberrange + "(@start@,@end@,@step@));\n");
+			result.appendLine("evalStack.push(new " + numberrange + "(@start@,@end@,@step@));\n");
 		} else {
-			result.appendLine("evalStack.push(" + numberrange + "(@start@,@end@));\n");
+			result.appendLine("evalStack.push(new " + numberrange + "(@start@,@end@));\n");
 		}
 	}
 

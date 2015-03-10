@@ -26,10 +26,12 @@ import org.coreasm.compiler.exception.NotCompilableException;
 import org.coreasm.compiler.interfaces.CompilerBackendProvider;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
+import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.mainprogram.MainFile;
+import org.coreasm.compiler.mainprogram.MainClass;
+import org.coreasm.compiler.mainprogram.StateMachineFile;
 import org.coreasm.compiler.preprocessor.Information;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.compiler.variablemanager.VarManager;
@@ -53,7 +55,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	private PluginLoader pluginLoader;
 	private ClassLibrary classLibrary;
 	private VarManager varManager;
-	private MainFile mainFile;
+	private StateMachineFile mainFile;
 	private Map<String, List<CompilerPlugin>> unaryOperators;
 	private Map<String, List<CompilerPlugin>> binaryOperators;
 	private Map<String, CompilerFunctionPlugin> functionMapping;
@@ -97,7 +99,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		pluginLoader = new DummyLoader(this);
 		classLibrary = new ClassLibrary(this);
 		varManager = new VarManager();
-		mainFile = new MainFile(this);
+		mainFile = new StateMachineFile(this);
 		preprocessor = new Preprocessor(this);
 		
 		logging = new LoggingHelper();
@@ -397,7 +399,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 
 	@Override
-	public MainFile getMainFile() {
+	public StateMachineFile getMainFile() {
 		return this.mainFile;
 	}
 	
@@ -663,6 +665,16 @@ public class CoreASMCompiler implements CompilerEngine {
 	private void buildMain(CompilerInformation info) throws CompilerException{
 		try {
 			classLibrary.addEntry(mainFile);
+			
+			//find main entry point from plugins
+			LibraryEntry mc = null;
+			List<CompilerMainClassProvider> providers = pluginLoader.getCompilerMainClassProviders();
+			if(providers.size() > 1) throw new CompilerException("cannot have more than one program entry point");
+			else if(providers.size() < 1) mc = new MainClass(this);
+			else mc = providers.get(0).getMainClass();
+			
+			classLibrary.addEntry(mc);
+			
 		} catch (EntryAlreadyExistsException e) {
 			this.addError("Could not add main file to library, the entry already exists");
 			throw new CompilerException(e);

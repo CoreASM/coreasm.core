@@ -7,6 +7,7 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
+import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -83,4 +84,6 @@ public interface PluginLoader {
 	public List<CompilerPathPlugin> getCompilerPathPlugins();
 	
 	public List<CompilerBackendProvider> getCompilerBackendProviders();
+	
+	public List<CompilerMainClassProvider> getCompilerMainClassProviders();
 }

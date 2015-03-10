@@ -6,7 +6,7 @@ import java.util.Map;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
-import org.coreasm.compiler.mainprogram.MainFile;
+import org.coreasm.compiler.mainprogram.StateMachineFile;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.compiler.variablemanager.VarManager;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -55,9 +55,9 @@ public interface CompilerEngine {
 	 * Returns the MainFile library entry.
 	 * Provides methods to manipulate the main class of the generated
 	 * code.
-	 * @return The {@link MainFile}
+	 * @return The {@link StateMachineFile}
 	 */
-	public MainFile getMainFile();
+	public StateMachineFile getMainFile();
 	
 	public CompilerPathConfig getPath();
 	

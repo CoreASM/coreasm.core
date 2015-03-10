@@ -11,6 +11,7 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
+import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
@@ -69,6 +70,7 @@ public class DummyLoader implements PluginLoader {
 	private HashMap<String, CompilerCodePlugin> compilercodeplugins;
 	private HashMap<String, CompilerPathPlugin> compilerpathplugins;
 	private HashMap<String, CompilerBackendProvider> compilerbackendproviders;
+	private HashMap<String, CompilerMainClassProvider> compilermainclassproviders;
 	private List<String> notCompilable;
 	private CompilerEngine engine;
 	
@@ -88,6 +90,7 @@ public class DummyLoader implements PluginLoader {
 		compilercodeplugins = new HashMap<String, CompilerCodePlugin>();
 		compilerpathplugins = new HashMap<String, CompilerPathPlugin>();
 		compilerbackendproviders = new HashMap<String, CompilerBackendProvider>();
+		compilermainclassproviders = new HashMap<String, CompilerMainClassProvider>();
 		notCompilable = new ArrayList<String>();
 		
 		//until coreasmc is merged with coreasm,
@@ -130,6 +133,7 @@ public class DummyLoader implements PluginLoader {
 		compilercodeplugins.clear();
 		compilerpathplugins.clear();
 		compilerbackendproviders.clear();
+		compilermainclassproviders.clear();
 		
 		//add all plugins which provide code but won't appear in the
 		//parse tree body
@@ -246,6 +250,7 @@ public class DummyLoader implements PluginLoader {
 		if(cp instanceof CompilerCodePlugin) compilercodeplugins.put(icap.getName(), (CompilerCodePlugin) cp);
 		if(cp instanceof CompilerPathPlugin) compilerpathplugins.put(icap.getName(), (CompilerPathPlugin) cp);
 		if(cp instanceof CompilerBackendProvider) compilerbackendproviders.put(icap.getName(), (CompilerBackendProvider) cp);
+		if(cp instanceof CompilerMainClassProvider) compilermainclassproviders.put(icap.getName(), (CompilerMainClassProvider) cp);
 		
 		//finally, add it to the result list and to the list of ICoreASMPlugins
 		plugins.put(icap.getName(), cp);
@@ -360,6 +365,15 @@ public class DummyLoader implements PluginLoader {
 	public List<CompilerBackendProvider> getCompilerBackendProviders() {
 		List<CompilerBackendProvider> p = new ArrayList<CompilerBackendProvider>();
 		for(Entry<String, CompilerBackendProvider> s : compilerbackendproviders.entrySet()){
+			p.add(s.getValue());
+		}
+		return p;
+	}
+
+	@Override
+	public List<CompilerMainClassProvider> getCompilerMainClassProviders() {
+		List<CompilerMainClassProvider> p = new ArrayList<CompilerMainClassProvider>();
+		for(Entry<String, CompilerMainClassProvider> s : compilermainclassproviders.entrySet()){
 			p.add(s.getValue());
 		}
 		return p;

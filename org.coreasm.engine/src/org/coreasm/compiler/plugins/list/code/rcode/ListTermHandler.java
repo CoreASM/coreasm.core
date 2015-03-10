@@ -2,6 +2,7 @@ package org.coreasm.compiler.plugins.list.code.rcode;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
@@ -17,8 +18,8 @@ public class ListTermHandler implements CompilerCodeHandler {
 			result.appendFragment(engine.compile(child, CodeType.R));
 			result.appendLine("@list@.add((@RuntimePkg@.Element)evalStack.pop());\n");
 		}
-		
-		result.appendLine("evalStack.push(new plugins.ListPlugin.ListElement(@list@));\n");
+		String listelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "ListElement", "ListPlugin");
+		result.appendLine("evalStack.push(new " + listelement + "(@list@));\n");
 	}
 
 }
