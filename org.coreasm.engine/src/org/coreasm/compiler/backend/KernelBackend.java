@@ -51,8 +51,9 @@ public class KernelBackend implements CompilerFileWriter, CompilerPacker {
 				result.add(f);
 			}
 			catch(Exception e){
-				engine.addError("error writing entry: '" + e.getMessage() + "'");
-				throw new CompilerException("error writing entry '" +  f + "'");
+				String msg = "error writing entry '" +  f + "': '" + e.getMessage() + "'" + engine.getOptions().enginePath.getAbsolutePath();
+				engine.addError(msg);
+				throw new CompilerException(msg);
 			}
 		}
 		
