@@ -64,9 +64,9 @@ public class StateMachineFile extends MemoryInclude{
 	 * state machine.
 	 * @param plugins A list of CompilerExtensionPointPlugins
 	 */
-	public void processExtensionPlugins(List<CompilerExtensionPointPlugin> plugins){
-		for(CompilerExtensionPointPlugin p : plugins){
-			List<EngineTransition> transitions = p.getTransitions();
+	public void processExtensionPlugins(List<CompilerPlugin> plugins){
+		for(CompilerPlugin p : plugins){
+			List<EngineTransition> transitions = ((CompilerExtensionPointPlugin)p).getTransitions();
 			for(EngineTransition t : transitions){
 				stateMachine.addTransition(t);
 			}
@@ -80,14 +80,15 @@ public class StateMachineFile extends MemoryInclude{
 	 * @param vocabularyExtenderPlugins A list of vocabulary extender plugins
 	 * @throws CompilerException If an error occurred in on of the plugins
 	 */
-	public void processVocabularyExtenderPlugins(List<CompilerVocabularyExtender> vocabularyExtenderPlugins) throws CompilerException {
+	public void processVocabularyExtenderPlugins(List<CompilerPlugin> vocabularyExtenderPlugins) throws CompilerException {
 		//load extenders in order, respecting dependencies of plugins
 		Map<CompilerVocabularyExtender, Boolean> isLoaded = new HashMap<CompilerVocabularyExtender, Boolean>();
 		Map<String, CompilerVocabularyExtender> pluginMapping = new HashMap<String, CompilerVocabularyExtender>();
 		CompilerVocabularyExtender kernel = null;
 		
 		//initialize data structures
-		for(CompilerVocabularyExtender cve : vocabularyExtenderPlugins){
+		for(CompilerPlugin ccve : vocabularyExtenderPlugins){
+			CompilerVocabularyExtender cve = (CompilerVocabularyExtender) ccve;
 			if(cve.getName().equals(Kernel.PLUGIN_NAME)){
 				kernel = cve;
 				continue;
@@ -103,7 +104,7 @@ public class StateMachineFile extends MemoryInclude{
 		
 		//load remaining plugins
 		for(int i = 0; i < vocabularyExtenderPlugins.size(); i++){
-			attemptLoad(isLoaded, pluginMapping, vocabularyExtenderPlugins.get(i));
+			attemptLoad(isLoaded, pluginMapping, (CompilerVocabularyExtender)vocabularyExtenderPlugins.get(i));
 		}
 	}
 	
@@ -145,9 +146,9 @@ public class StateMachineFile extends MemoryInclude{
 	 * @param initCodePlugins A list of init code plugins
 	 */
 	public void processInitCodePlugins(
-			List<CompilerInitCodePlugin> initCodePlugins) {
-		for(CompilerInitCodePlugin cicp : initCodePlugins){
-			initCodes.add(cicp.getInitCode());
+			List<CompilerPlugin> initCodePlugins) {
+		for(CompilerPlugin cicp : initCodePlugins){
+			initCodes.add(((CompilerInitCodePlugin)cicp).getInitCode());
 		}
 		
 	}

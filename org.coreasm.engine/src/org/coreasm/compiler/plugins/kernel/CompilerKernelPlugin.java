@@ -280,7 +280,6 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 
 			// TODO: fix these includes
 			try {
-				System.out.println("adding entries");
 				loadedClasses = (new JarIncludeHelper(engine, this)).
 						includeStatic("org/coreasm/compiler/plugins/kernel/include/KernelAggregator.java", EntryType.AGGREGATOR, "kernelaggregator").
 						includeStatic("org/coreasm/compiler/plugins/kernel/include/DefaultSchedulingPolicy.java", EntryType.SCHEDULER, "scheduler").

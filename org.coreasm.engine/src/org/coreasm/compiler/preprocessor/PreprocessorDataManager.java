@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.compiler.preprocessor.InheritRule;
@@ -115,12 +116,13 @@ public class PreprocessorDataManager {
 	 * Initializes a data manager with a list of preprocessor plugins.
 	 * @param plugins A list of preprocessor plugins providing transformers.
 	 */
-	public PreprocessorDataManager(List<CompilerPreprocessorPlugin> plugins){
+	public PreprocessorDataManager(List<CompilerPlugin> plugins){
 		List<SynthesizeRule> synth = new ArrayList<org.coreasm.compiler.preprocessor.SynthesizeRule>();
 		List<InheritRule> inh = new ArrayList<org.coreasm.compiler.preprocessor.InheritRule>();
-		for(CompilerPreprocessorPlugin p : plugins){
-			if(p.getSynthesizeRules() != null) synth.addAll(p.getSynthesizeRules());
-			if(p.getInheritRules() != null) inh.addAll(p.getInheritRules());
+		for(CompilerPlugin p : plugins){
+			CompilerPreprocessorPlugin cpp = (CompilerPreprocessorPlugin) p;
+			if(cpp.getSynthesizeRules() != null) synth.addAll(cpp.getSynthesizeRules());
+			if(cpp.getInheritRules() != null) inh.addAll(cpp.getInheritRules());
 		}
 		
 		root = new Storage();

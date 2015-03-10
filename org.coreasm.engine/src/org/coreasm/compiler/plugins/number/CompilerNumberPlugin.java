@@ -1,6 +1,7 @@
 package org.coreasm.compiler.plugins.number;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
+import org.coreasm.compiler.interfaces.CompilerMakroProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
@@ -33,7 +35,7 @@ import org.coreasm.engine.plugins.number.NumberValueTransformer;
 
 public class CompilerNumberPlugin extends CompilerCodePlugin implements
 	CompilerOperatorPlugin, CompilerVocabularyExtender, 
-	CompilerFunctionPlugin, CompilerPreprocessorPlugin{
+	CompilerFunctionPlugin, CompilerPreprocessorPlugin, CompilerMakroProvider{
 
 	private Plugin interpreterPlugin;
 	
@@ -443,5 +445,13 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 			register(new NumberHandler(), CodeType.R, "Expression", "NUMBER", null);
 			register(new NumberRangeHandler(), CodeType.R, "Expression", "NumberRangeTerm", null);
 			register(new SizeOfHandler(), CodeType.R, "Expression", "SizeOfEnumTerm", null);
+		}
+
+		@Override
+		public Map<String, String> getMakros() {
+			Map<String, String> makros = new HashMap<String, String>();
+			makros.put("NumberElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", this.getName()));
+			makros.put("NumberRangeElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberRangeElement", this.getName()));
+			return makros;
 		}
 }

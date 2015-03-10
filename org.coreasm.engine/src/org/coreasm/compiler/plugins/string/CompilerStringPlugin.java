@@ -2,7 +2,9 @@ package org.coreasm.compiler.plugins.string;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.coreasm.compiler.classlibrary.JarIncludeHelper;
 import org.coreasm.compiler.classlibrary.LibraryEntryType;
@@ -24,11 +26,12 @@ import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
+import org.coreasm.compiler.interfaces.CompilerMakroProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
 public class CompilerStringPlugin extends CompilerCodePlugin implements CompilerOperatorPlugin,
-		CompilerVocabularyExtender, CompilerFunctionPlugin {
+		CompilerVocabularyExtender, CompilerFunctionPlugin, CompilerMakroProvider {
 
 	private Plugin interpreterPlugin;
 	
@@ -217,5 +220,12 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	@Override
 	public void init(CompilerEngine engine) {
 		this.engine = engine;
+	}
+
+	@Override
+	public Map<String, String> getMakros() {
+		Map<String, String> makros = new HashMap<String, String>();
+		makros.put("StringElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "StringElement", this.getName()));
+		return makros;
 	}
 }

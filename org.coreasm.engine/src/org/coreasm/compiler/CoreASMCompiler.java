@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.coreasm.compiler.backend.CompilerFileWriter;
 import org.coreasm.compiler.backend.CompilerPacker;
@@ -25,11 +26,16 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.exception.NotCompilableException;
 import org.coreasm.compiler.interfaces.CompilerBackendProvider;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
+import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
+import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
+import org.coreasm.compiler.interfaces.CompilerMakroProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
+import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.compiler.mainprogram.MainClass;
 import org.coreasm.compiler.mainprogram.StateMachineFile;
 import org.coreasm.compiler.preprocessor.Information;
@@ -472,7 +478,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private void preprocessSpecification(CompilerInformation info) throws CompilerException{		
 		try{
-			preprocessor.loadPlugins(pluginLoader.getPreprocessorPlugins());
+			preprocessor.loadPlugins(pluginLoader.getPluginByType(CompilerPreprocessorPlugin.class));
 			preprocessor.preprocessSpecification(info.root);
 		}
 		catch(Exception e){
@@ -483,24 +489,41 @@ public class CoreASMCompiler implements CompilerEngine {
 	}
 	
 	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
-		//path plugin´
-		List<CompilerPathPlugin> pathplugins = pluginLoader.getCompilerPathPlugins();
+		//path plugin
+		List<CompilerPlugin> pathplugins = pluginLoader.getPluginByType(CompilerPathPlugin.class);
 		if(pathplugins.size() > 1){
 			this.addError("Only one path configurator can be active");
 			throw new CompilerException("Only one path configurator can be active");
 		}
 		else if(!pathplugins.isEmpty()){
-			this.paths = pathplugins.get(0).getPathConfig();
+			this.paths = ((CompilerPathPlugin)pathplugins.get(0)).getPathConfig();
 			getLogger().debug(CoreASMCompiler.class, "loaded path config from plugin " + pathplugins.get(0).getName());
 		}
 		setGlobalMakros();
+		
+		//makros
+		List<CompilerPlugin> makroPlugins = pluginLoader.getPluginByType(CompilerMakroProvider.class);
+		for(CompilerPlugin p : makroPlugins){
+			Map<String, String> makros =((CompilerMakroProvider) p).getMakros();
+			for(Entry<String, String> e : makros.entrySet()){
+				if(globalMakros.containsKey(e.getKey())){
+					String msg = "global makro list already contains a definition for '" + e.getKey() + "', ignoring (" + e.getKey() + ", " + e.getValue() + ")";
+					addWarning(msg);
+					getLogger().warn(this.getClass(), msg);
+				}
+				else{
+					globalMakros.put(e.getKey(), e.getValue());
+				}
+			}
+		}
 		
 		
 		//operator plugins
 		lastTime = System.nanoTime();
 		getLogger().debug(CoreASMCompiler.class, "loading operators");
-		List<CompilerOperatorPlugin> ops = pluginLoader.getOperatorPlugins();
-		for(CompilerOperatorPlugin cop : ops){
+		List<CompilerPlugin> ops = pluginLoader.getPluginByType(CompilerOperatorPlugin.class);
+		for(CompilerPlugin cp : ops){
+			CompilerOperatorPlugin cop = (CompilerOperatorPlugin) cp;
 			getLogger().debug(CoreASMCompiler.class, "loading operators of plugin " + cop.getName());
 			for(String s : cop.unaryOperations()){
 				if(unaryOperators.get(s) == null) unaryOperators.put(s, new ArrayList<CompilerPlugin>());
@@ -519,7 +542,8 @@ public class CoreASMCompiler implements CompilerEngine {
 		getLogger().debug(CoreASMCompiler.class, "loading additional functions");
 		lastTime = System.nanoTime();
 		//function plugins
-		for(CompilerFunctionPlugin cfp : pluginLoader.getFunctionPlugins()){
+		for(CompilerPlugin ccfp : pluginLoader.getPluginByType(CompilerFunctionPlugin.class)){
+			CompilerFunctionPlugin cfp = (CompilerFunctionPlugin) ccfp;
 			for(String s : cfp.getCompileFunctionNames()){
 				functionMapping.put(s, cfp);
 			}
@@ -529,8 +553,8 @@ public class CoreASMCompiler implements CompilerEngine {
 		//compiler plugins
 		
 		lastTime = System.nanoTime();
-		for(CompilerCodePlugin ccp : pluginLoader.getCompilerCodePlugins()){
-			ccp.registerCodeHandlers();
+		for(CompilerPlugin ccp : pluginLoader.getPluginByType(CompilerCodePlugin.class)){
+			((CompilerCodePlugin)ccp).registerCodeHandlers();
 		}
 		cTime = System.nanoTime();
 		addTiming("Code Handlers");
@@ -539,19 +563,19 @@ public class CoreASMCompiler implements CompilerEngine {
 	private void applyPlugins(CompilerInformation info) throws CompilerException{
 		//init Plugins
 		lastTime = System.nanoTime();
-		mainFile.processInitCodePlugins(pluginLoader.getInitCodePlugins());
+		mainFile.processInitCodePlugins(pluginLoader.getPluginByType(CompilerInitCodePlugin.class));
 		cTime = System.nanoTime();
 		addTiming("Init Code plugins");
 		
 		//extension point plugins
 		lastTime = System.nanoTime();
-		mainFile.processExtensionPlugins(pluginLoader.getExtensionPointPlugins());
+		mainFile.processExtensionPlugins(pluginLoader.getPluginByType(CompilerExtensionPointPlugin.class));
 		cTime = System.nanoTime();
 		addTiming("Extension Plugins");
 		
 		//vocabulary extenders plugins
 		lastTime = System.nanoTime();
-		mainFile.processVocabularyExtenderPlugins(pluginLoader.getVocabularyExtenderPlugins());
+		mainFile.processVocabularyExtenderPlugins(pluginLoader.getPluginByType(CompilerVocabularyExtender.class));
 		cTime = System.nanoTime();
 		addTiming("Vocabulary Extender Plugins");
 	}
@@ -601,10 +625,11 @@ public class CoreASMCompiler implements CompilerEngine {
 		lastTime = System.nanoTime();
 		
 		//find backend providers
-		List<CompilerBackendProvider> backend = pluginLoader.getCompilerBackendProviders();
+		List<CompilerPlugin> backend = pluginLoader.getPluginByType(CompilerBackendProvider.class);
 		CompilerFileWriter fileWriter = null;
 		CompilerPacker filePacker = null;
-		for(CompilerBackendProvider cbp : backend){
+		for(CompilerPlugin ccbp : backend){
+			CompilerBackendProvider cbp = (CompilerBackendProvider) ccbp;
 			CompilerFileWriter tmpWriter = cbp.getFileWriter();
 			CompilerPacker tmpPacker = cbp.getPacker();
 			
@@ -668,10 +693,10 @@ public class CoreASMCompiler implements CompilerEngine {
 			
 			//find main entry point from plugins
 			LibraryEntry mc = null;
-			List<CompilerMainClassProvider> providers = pluginLoader.getCompilerMainClassProviders();
+			List<CompilerPlugin> providers = pluginLoader.getPluginByType(CompilerMainClassProvider.class);
 			if(providers.size() > 1) throw new CompilerException("cannot have more than one program entry point");
 			else if(providers.size() < 1) mc = new MainClass(this);
-			else mc = providers.get(0).getMainClass();
+			else mc = ((CompilerMainClassProvider)providers.get(0)).getMainClass();
 			
 			classLibrary.addEntry(mc);
 			

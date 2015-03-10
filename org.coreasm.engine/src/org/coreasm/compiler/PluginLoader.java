@@ -2,17 +2,7 @@ package org.coreasm.compiler;
 import java.util.List;
 
 import org.coreasm.compiler.exception.NotCompilableException;
-import org.coreasm.compiler.interfaces.CompilerBackendProvider;
-import org.coreasm.compiler.interfaces.CompilerCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
-import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
-import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
-import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
-import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
-import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.engine.Engine;
 
 /**
@@ -39,51 +29,5 @@ public interface PluginLoader {
 	 */
 	public CompilerPlugin getPlugin(String name);
 	
-	/**
-	 * Retrieves a list of all plugins identified to be CompilerVocabularyExtender Plugins
-	 * @return A list of all CompilerVocabularyExtender Plugins
-	 */
-	public List<CompilerVocabularyExtender> getVocabularyExtenderPlugins();
-
-	/**
-	 * Retrieves a list of all plugins identified to be ExtensionPoint Plugins
-	 * @return A list of all ExtensionPoint Plugins
-	 */
-	public List<CompilerExtensionPointPlugin> getExtensionPointPlugins();
-
-	/**
-	 * Retrieves a list of all plugins identified to be InitCode Plugins
-	 * @return A list of all InitCode Plugins
-	 */
-	public List<CompilerInitCodePlugin> getInitCodePlugins();
-
-	/**
-	 * Retrieves a list of all plugins identified to be Operator Plugins
-	 * @return A list of all Operator Plugins
-	 */
-	public List<CompilerOperatorPlugin> getOperatorPlugins();
-
-	/**
-	 * Retrieves a list of all plugins identified to be Function Plugins
-	 * @return A list of all Function Plugins
-	 */
-	public List<CompilerFunctionPlugin> getFunctionPlugins();
-
-	/**
-	 * Retrieves a list of all plugins identified to be Preprocessor Plugins 
-	 * @return A list of all Preprocessor Plugins
-	 */
-	public List<CompilerPreprocessorPlugin> getPreprocessorPlugins();
-	
-	/**
-	 * Retrieves a list of all plugins identified to be Code providing plugins
-	 * @return A list of all CompilerCode Plugins
-	 */
-	public List<CompilerCodePlugin> getCompilerCodePlugins();
-	
-	public List<CompilerPathPlugin> getCompilerPathPlugins();
-	
-	public List<CompilerBackendProvider> getCompilerBackendProviders();
-	
-	public List<CompilerMainClassProvider> getCompilerMainClassProviders();
+	public List<CompilerPlugin> getPluginByType(Class<?> type);
 }

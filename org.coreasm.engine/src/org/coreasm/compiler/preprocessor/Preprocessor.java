@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.compiler.preprocessor.Information;
@@ -65,11 +66,12 @@ public class Preprocessor {
 	 * @param list A list of preprocessor plugins
 	 * @throws Exception If a plugin tries to register a default behaviour for a name which has already been registered
 	 */
-	public void loadPlugins(List<CompilerPreprocessorPlugin> list) throws Exception {
+	public void loadPlugins(List<CompilerPlugin> list) throws Exception {
 		engine.getLogger().debug(Preprocessor.class, "loading preprocessor plugins");
 		manager = new PreprocessorDataManager(list);
 		
-		for (CompilerPreprocessorPlugin p : list) {
+		for (CompilerPlugin cp : list) {
+			CompilerPreprocessorPlugin p = (CompilerPreprocessorPlugin) cp;
 			//transformers.addAll(p.getTransformers());
 			if(p.getSynthDefaultBehaviours() != null){
 				//Main.getEngine().addWarning("warning : plugin " + ((CompilerPlugin) p).getName() + " provided a null synth behaviour list");

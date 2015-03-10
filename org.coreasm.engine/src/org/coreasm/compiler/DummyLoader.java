@@ -3,20 +3,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.coreasm.compiler.exception.NotCompilableException;
-import org.coreasm.compiler.interfaces.CompilerBackendProvider;
-import org.coreasm.compiler.interfaces.CompilerCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
-import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
-import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerMainClassProvider;
-import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
-import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
-import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 import org.coreasm.engine.Engine;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Aggregator;
@@ -59,10 +50,9 @@ import de.spellmaker.coreasmc.plugins.dummy.turboasmplugin.TurboASMPlugin;*/
  *
  */
 public class DummyLoader implements PluginLoader {
-	private HashMap<String, CompilerPlugin> plugins;
+	/*private HashMap<String, CompilerPlugin> plugins;
 	private HashMap<String, CompilerExtensionPointPlugin> extensions;
 	private HashMap<String, CompilerVocabularyExtender> vocabextenders;
-	private HashMap<String, CompilerPlugin> replacements;
 	private HashMap<String, CompilerInitCodePlugin> initcode;
 	private HashMap<String, CompilerOperatorPlugin> operatorplugins;
 	private HashMap<String, CompilerFunctionPlugin> functionplugins;
@@ -70,7 +60,10 @@ public class DummyLoader implements PluginLoader {
 	private HashMap<String, CompilerCodePlugin> compilercodeplugins;
 	private HashMap<String, CompilerPathPlugin> compilerpathplugins;
 	private HashMap<String, CompilerBackendProvider> compilerbackendproviders;
-	private HashMap<String, CompilerMainClassProvider> compilermainclassproviders;
+	private HashMap<String, CompilerMainClassProvider> compilermainclassproviders;*/
+	private Map<String, CompilerPlugin> allPlugins;
+	private Map<Class<?>, Map<String, CompilerPlugin>> pluginMap;
+	private HashMap<String, CompilerPlugin> replacements;
 	private List<String> notCompilable;
 	private CompilerEngine engine;
 	
@@ -80,7 +73,7 @@ public class DummyLoader implements PluginLoader {
 	 */
 	public DummyLoader(CompilerEngine engine){
 		this.engine = engine;
-		plugins = new HashMap<String, CompilerPlugin>();
+		/*plugins = new HashMap<String, CompilerPlugin>();
 		extensions = new HashMap<String, CompilerExtensionPointPlugin>();
 		vocabextenders = new HashMap<String, CompilerVocabularyExtender>();
 		initcode = new HashMap<String, CompilerInitCodePlugin>();
@@ -90,7 +83,9 @@ public class DummyLoader implements PluginLoader {
 		compilercodeplugins = new HashMap<String, CompilerCodePlugin>();
 		compilerpathplugins = new HashMap<String, CompilerPathPlugin>();
 		compilerbackendproviders = new HashMap<String, CompilerBackendProvider>();
-		compilermainclassproviders = new HashMap<String, CompilerMainClassProvider>();
+		compilermainclassproviders = new HashMap<String, CompilerMainClassProvider>();*/
+		allPlugins = new HashMap<String, CompilerPlugin>();
+		pluginMap = new HashMap<Class<?>, Map<String,CompilerPlugin>>();
 		notCompilable = new ArrayList<String>();
 		
 		//until coreasmc is merged with coreasm,
@@ -123,7 +118,9 @@ public class DummyLoader implements PluginLoader {
 	@Override
 	public void loadPlugins(Engine cae) throws NotCompilableException {	
 		notCompilable.clear();
-		plugins.clear(); // clear leftover plugins first, even though this should never be applicable
+		allPlugins.clear();
+		pluginMap.clear();
+		/*plugins.clear(); // clear leftover plugins first, even though this should never be applicable
 		extensions.clear();
 		vocabextenders.clear();
 		initcode.clear();
@@ -133,12 +130,12 @@ public class DummyLoader implements PluginLoader {
 		compilercodeplugins.clear();
 		compilerpathplugins.clear();
 		compilerbackendproviders.clear();
-		compilermainclassproviders.clear();
+		compilermainclassproviders.clear();*/
 		
 		//add all plugins which provide code but won't appear in the
 		//parse tree body
 		for(ICoreASMPlugin icp : cae.getPlugins()){
-			if(plugins.get(icp.getName()) != null) continue; //don't load plugins more than once
+			if(allPlugins.get(icp.getName()) != null) continue; //don't load plugins more than once
 			
 			try{
 				//try to load the plugin
@@ -167,7 +164,7 @@ public class DummyLoader implements PluginLoader {
 		//this will find Interpreter Plugins and Operator Providers
 		List<Plugin> tmp = visitNode(cae, (ASTNode) cae.getSpec().getRootNode());
 		for(int i = 0; i < tmp.size(); i++){
-			if(plugins.get(tmp.get(i).getName()) == null){
+			if(allPlugins.get(tmp.get(i).getName()) == null){
 				//add the plugin
 				try{
 					putPlugin(tmp.get(i), cae);
@@ -184,7 +181,7 @@ public class DummyLoader implements PluginLoader {
 				}
 				//process dependencies and add all dependencies to the list
 				for(String dep : tmp.get(i).getDependencyNames()){
-					if(plugins.get(dep) == null){
+					if(allPlugins.get(dep) == null){
 						ICoreASMPlugin depplugin = cae.getPlugin(dep);
 						try{
 							putPlugin(depplugin, cae);
@@ -233,6 +230,15 @@ public class DummyLoader implements PluginLoader {
 		//return null;		
 	}
 	
+	private void addToMap(Class<?> type, CompilerPlugin plugin){
+		Map<String, CompilerPlugin> m = pluginMap.get(type);
+		if(m == null){
+			m = new HashMap<String, CompilerPlugin>();
+			pluginMap.put(type, m);
+		}
+		m.put(plugin.getName(), plugin);
+	}
+	
 	private void putPlugin(ICoreASMPlugin icap, Engine cae) throws NotCompilableException{
 		CompilerPlugin cp = requestPlugin(icap.getName(), cae);
 		
@@ -240,20 +246,22 @@ public class DummyLoader implements PluginLoader {
 			throw new NotCompilableException(null);
 		}
 		
-		//add the compiler plugin to all relevant special plugin lists
-		if(cp instanceof CompilerExtensionPointPlugin) extensions.put(icap.getName(), (CompilerExtensionPointPlugin) cp);
-		if(cp instanceof CompilerVocabularyExtender) vocabextenders.put(icap.getName(), (CompilerVocabularyExtender) cp);
-		if(cp instanceof CompilerInitCodePlugin) initcode.put(icap.getName(), (CompilerInitCodePlugin) cp);
-		if(cp instanceof CompilerOperatorPlugin) operatorplugins.put(icap.getName(), (CompilerOperatorPlugin) cp);
-		if(cp instanceof CompilerFunctionPlugin) functionplugins.put(icap.getName(), (CompilerFunctionPlugin) cp);
-		if(cp instanceof CompilerPreprocessorPlugin) preprocessorplugins.put(icap.getName(), (CompilerPreprocessorPlugin) cp);
-		if(cp instanceof CompilerCodePlugin) compilercodeplugins.put(icap.getName(), (CompilerCodePlugin) cp);
-		if(cp instanceof CompilerPathPlugin) compilerpathplugins.put(icap.getName(), (CompilerPathPlugin) cp);
-		if(cp instanceof CompilerBackendProvider) compilerbackendproviders.put(icap.getName(), (CompilerBackendProvider) cp);
-		if(cp instanceof CompilerMainClassProvider) compilermainclassproviders.put(icap.getName(), (CompilerMainClassProvider) cp);
+		//add the plugin to the pluginMap, allowing to choose plugins by plugin interface / class
+		Class<?> pluginClass = cp.getClass();
 		
-		//finally, add it to the result list and to the list of ICoreASMPlugins
-		plugins.put(icap.getName(), cp);
+		//handle superclasses
+		Class<?> superClass = pluginClass.getSuperclass();
+		while(!superClass.equals(Object.class)){
+			addToMap(superClass, cp);
+			superClass = superClass.getSuperclass();
+		}
+		//handle interfaces
+		for(Class<?> c : pluginClass.getInterfaces()){
+			addToMap(c, cp);
+		}
+		
+		//finally, add it to the allPlugin list and to the list of ICoreASMPlugins
+		allPlugins.put(icap.getName(), cp);
 		cp.init(engine);
 		
 		engine.getLogger().debug(DummyLoader.class, "loaded " + icap.getName());
@@ -265,10 +273,10 @@ public class DummyLoader implements PluginLoader {
 			//NOTE: This actually hides a bug in the parser. In some cases, the plugin name field is null instead of kernel
 			//engine.getLogger().warn(DummyLoader.class, "Warning: null name found, assuming kernel");
 			
-			return plugins.get("Kernel");
+			return allPlugins.get("Kernel");
 		}
 
-		return plugins.get(name);
+		return allPlugins.get(name);
 	}
 	
 	private List<Plugin> visitNode(Engine cae, ASTNode n){
@@ -290,92 +298,16 @@ public class DummyLoader implements PluginLoader {
 	}
 
 	@Override
-	public List<CompilerVocabularyExtender> getVocabularyExtenderPlugins() {
-		List<CompilerVocabularyExtender> p = new ArrayList<CompilerVocabularyExtender>();
-		for(Entry<String, CompilerVocabularyExtender> s : vocabextenders.entrySet()){
-			p.add(s.getValue());
+	public List<CompilerPlugin> getPluginByType(Class<?> type){
+		Map<String, CompilerPlugin> m = pluginMap.get(type);
+		if(m == null){
+			return new ArrayList<CompilerPlugin>();
 		}
-		return p;
-	}
-
-	@Override
-	public List<CompilerExtensionPointPlugin> getExtensionPointPlugins() {
-		List<CompilerExtensionPointPlugin> p = new ArrayList<CompilerExtensionPointPlugin>();
-		for(Entry<String, CompilerExtensionPointPlugin> s : extensions.entrySet()){
-			p.add(s.getValue());
+		List<CompilerPlugin> result = new ArrayList<CompilerPlugin>(m.size());
+		for(Entry<String, CompilerPlugin> s : m.entrySet()){
+			result.add(s.getValue());
 		}
-		return p;
+		return result;
 	}
 	
-	@Override
-	public List<CompilerInitCodePlugin> getInitCodePlugins(){
-		List<CompilerInitCodePlugin> p = new ArrayList<CompilerInitCodePlugin>();
-		for(Entry<String, CompilerInitCodePlugin> s : initcode.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-	
-	@Override
-	public List<CompilerOperatorPlugin> getOperatorPlugins(){
-		List<CompilerOperatorPlugin> p = new ArrayList<CompilerOperatorPlugin>();
-		for(Entry<String, CompilerOperatorPlugin> s : operatorplugins.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-	
-	@Override
-	public List<CompilerFunctionPlugin> getFunctionPlugins(){
-		List<CompilerFunctionPlugin> p = new ArrayList<CompilerFunctionPlugin>();
-		for(Entry<String, CompilerFunctionPlugin> s : functionplugins.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-	
-	@Override
-	public List<CompilerPreprocessorPlugin> getPreprocessorPlugins(){
-		List<CompilerPreprocessorPlugin> p = new ArrayList<CompilerPreprocessorPlugin>();
-		for(Entry<String, CompilerPreprocessorPlugin> s : preprocessorplugins.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-	
-	@Override
-	public List<CompilerCodePlugin> getCompilerCodePlugins(){
-		List<CompilerCodePlugin> p = new ArrayList<CompilerCodePlugin>();
-		for(Entry<String, CompilerCodePlugin> s : compilercodeplugins.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-	
-	@Override
-	public List<CompilerPathPlugin> getCompilerPathPlugins(){
-		List<CompilerPathPlugin> p = new ArrayList<CompilerPathPlugin>();
-		for(Entry<String, CompilerPathPlugin> s : compilerpathplugins.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-
-	@Override
-	public List<CompilerBackendProvider> getCompilerBackendProviders() {
-		List<CompilerBackendProvider> p = new ArrayList<CompilerBackendProvider>();
-		for(Entry<String, CompilerBackendProvider> s : compilerbackendproviders.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
-
-	@Override
-	public List<CompilerMainClassProvider> getCompilerMainClassProviders() {
-		List<CompilerMainClassProvider> p = new ArrayList<CompilerMainClassProvider>();
-		for(Entry<String, CompilerMainClassProvider> s : compilermainclassproviders.entrySet()){
-			p.add(s.getValue());
-		}
-		return p;
-	}
 }
