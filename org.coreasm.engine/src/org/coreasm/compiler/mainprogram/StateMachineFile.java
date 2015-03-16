@@ -10,6 +10,7 @@ import org.coreasm.compiler.CompilerPathConfig;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.MemoryInclude;
+import org.coreasm.compiler.classlibrary.RuleClassFile;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
 import org.coreasm.compiler.exception.CompilerException;
@@ -299,6 +300,11 @@ public class StateMachineFile extends MemoryInclude{
 				break;
 			}
 		}
+		//finally, add rules
+		for(RuleClassFile rule : engine.getClassLibrary().getRules()){
+			finalContent.appendLine("\t\tthis.storage.setValue(new @RuntimePkg@.Location(\"" + rule.getName() + "\", @RuntimePkg@.ElementList.NO_ARGUMENT), new @RulePkg@." + rule.getName() + "());\n");
+		}
+		
 		finalContent.appendLine("}\ncatch(Exception e){\nSystem.out.println(\"error: conflict while initializing\");\nSystem.exit(0);\n}\n");
 
 		finalContent.appendFragment(smcode);

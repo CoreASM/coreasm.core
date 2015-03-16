@@ -63,6 +63,9 @@ public class ReturnResultHandler implements CompilerCodeHandler {
 		result.appendLine("return new @RuntimePkg@.Location(\"result\", @RuntimePkg@.ElementList.NO_ARGUMENT);\n");
 		result.appendLine("}\n");
 		result.appendLine("public @RuntimePkg@.Element evaluateR(@RuntimePkg@.LocalStack localStack) throws Exception{\n");
+		//first, try to find a value for an update to a location "result"
+		result.appendLine("@decl(@RuntimePkg@.Element, possres) = @RuntimeProvider@.getStorage().getValue(new @RuntimePkg@.Location(\"result\", @RuntimePkg@.ElementList.NO_ARGUMENT));\n");
+		result.appendLine("if(@possres@ != null) return @possres@;\n");
 		result.appendFragment(engine.compile(leftpart, CodeType.R));
 		result.appendLine("\nreturn (@RuntimePkg@.Element)evalStack.pop();\n}\n});\n");
 		result.appendLine("@arglist@.get(@arglist@.size() - 1).setParams(ruleparams);\n");
@@ -91,7 +94,9 @@ public class ReturnResultHandler implements CompilerCodeHandler {
 		result.appendLine("@decl(@RuntimePkg@.Location, uloc) = (@RuntimePkg@.Location) evalStack.pop();\n");
 		result.appendLine("@decl(@RuntimePkg@.UpdateList, ulist) = new @RuntimePkg@.UpdateList();\n");
 		result.appendLine("@ulist@.addAll(@result@.updates);\n");
+		result.appendLine("if(!@result@.value.equals(@RuntimePkg@.Element.UNDEF)){\n");
 		result.appendLine("@ulist@.add(new @RuntimePkg@.Update(@uloc@, @result@.value, @RuntimePkg@.Update.UPDATE_ACTION, this.getUpdateResponsible(), null));\n");
+		result.appendLine("}\n");
 		result.appendLine("evalStack.push(@ulist@);\n");
 	}
 

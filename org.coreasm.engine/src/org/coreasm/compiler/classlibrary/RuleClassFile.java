@@ -52,37 +52,32 @@ public class RuleClassFile extends MemoryInclude {
 		//self handling
 		creation += "if(getAgent() != null) " + engine.getPath().runtimeProvider() + ".setSelf(Thread.currentThread(), getAgent());\n";
 		creation += "\n//start of generated content\n";
-		CodeFragment ruleBody = null;
-		try {
-			ruleBody = new CodeFragment(
-					part1
-							+ ruleName
-							+ part2
-							+ creation
-							+ "@@"
-							+ part3
-							+ ruleName
-							+ part4
-							+ "public boolean equals(Object o){\nreturn (o instanceof "
-							+ ruleName + ");\n}"
-									+ "public int parameterCount(){\nreturn " + arguments.size() + ";\n}\n");
-			ruleBody.fillSpace(0, this.body);
-		} catch (Exception ice) {
-			throw new LibraryEntryException("invalid rule body");
-		}
-
-		try {
+		String ruleBody;
+		try{
 			engine.getVarManager().startContext();
-			String result = ruleBody.generateCode(engine);
-			try {
-				engine.getVarManager().endContext();
-			} catch (EmptyContextStackException e) {
-				//should never happen
-			}
-			return result;
-		} catch (CodeFragmentException e) {
-			throw new LibraryEntryException("invalid rule body");
-		} 
+			CodeFragment ruleFragment = new CodeFragment(part1 + ruleName + part2 + creation);
+			ruleFragment.appendFragment(body);
+			ruleFragment.appendLine(part3 + ruleName + part4);
+			ruleBody = ruleFragment.generateCode(engine) + "public String toString(){\nreturn \"@" + ruleName + "\";\n}\n"
+					+ "public boolean equals(Object o){\nreturn (o instanceof "
+					+ ruleName + ");\n}"
+					+ "public int parameterCount(){\nreturn " + arguments.size() + ";\n}\n";
+			engine.getVarManager().endContext();
+		}
+		catch(CodeFragmentException cfe){
+			String msg = "Incorrect code in rule body for rule '" + ruleName;
+			engine.addError(msg);
+			engine.getLogger().error(this.getClass(), msg);
+			throw new LibraryEntryException(cfe);
+		}
+		catch(EmptyContextStackException ecse){
+			//should never happen!
+			String msg = "Unexpected error: Could not close final variable context in rule " + ruleName;
+			engine.addError(msg);
+			engine.getLogger().error(this.getClass(), msg);
+			throw new LibraryEntryException(ecse);
+		}
+		return ruleBody;
 	}
 
 	@Override

@@ -11,7 +11,7 @@ public class RandomValueHandler implements CompilerCodeHandler {
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
-		result.appendLine("evalStack.push(plugins.NumberPlugin.NumberElement.getInstance(Math.random()));\n");
+		result.appendLine("evalStack.push(@NumberElement@(Math.random()));\n");
 	}
 
 }

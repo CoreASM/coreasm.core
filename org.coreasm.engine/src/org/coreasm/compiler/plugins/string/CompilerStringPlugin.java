@@ -122,10 +122,10 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 	@Override
 	public List<String> getCompileFunctionNames() {
 		List<String> result = new ArrayList<String>();
-		result.add("strlen");
-		result.add("matches");
-		result.add("stringSubstring");
-		result.add("toString");
+		//result.add("strlen");
+		//result.add("matches");
+		//result.add("stringSubstring");
+		//result.add("toString");
 		return result;
 	}
 

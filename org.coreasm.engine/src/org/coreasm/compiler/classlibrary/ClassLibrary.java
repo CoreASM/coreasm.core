@@ -12,11 +12,13 @@ import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 
 public class ClassLibrary {
 	private List<LibraryEntry> entries;
+	private List<RuleClassFile> rules;
 	private CompilerEngine engine;
 	private Map<String, String> packageReplacements;
 	
 	public ClassLibrary(CompilerEngine engine){
 		this.entries = new ArrayList<LibraryEntry>();
+		this.rules = new ArrayList<RuleClassFile>();
 		this.engine = engine;
 		this.packageReplacements = new HashMap<String, String>();
 	}
@@ -28,6 +30,13 @@ public class ClassLibrary {
 		}
 		
 		entries.add(entry);
+		if(entry instanceof RuleClassFile){
+			rules.add((RuleClassFile)entry);
+		}
+	}
+	
+	public List<RuleClassFile> getRules(){
+		return Collections.unmodifiableList(rules);
 	}
 	
 	public LibraryEntry findEntry(String name, String source, LibraryEntryType type){

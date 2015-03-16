@@ -129,14 +129,14 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
 			
 			if (token.equals("+")) {
-				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
+				result = "if((@lhs@ instanceof @NumberElement@) && (@rhs@ instanceof @NumberElement@)){\n";
 				result = result
-						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() + ((" + numberelement + ")@rhs@).getValue()));\n";
+						+ "evalStack.push(@NumberElement@.getInstance(((@NumberElement@)@lhs@).getValue() + ((@NumberElement@)@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("-")) {
-				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
+				result = "if((@lhs@ instanceof @NumberElement@) && (@rhs@ instanceof @NumberElement@)){\n";
 				result = result
-						+ "evalStack.push(" + numberelement + ".getInstance(((" + numberelement + ")@lhs@).getValue() - ((" + numberelement + ")@rhs@).getValue()));\n";
+						+ "evalStack.push(@NumberElement@.getInstance(((@NumberElement@)@lhs@).getValue() - ((@NumberElement@)@rhs@).getValue()));\n";
 				result = result + "}\n";
 			} else if (token.equals("*")) {
 				result = "if((@lhs@ instanceof " + numberelement + ") && (@rhs@ instanceof " + numberelement + ")){\n";
@@ -211,9 +211,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
 			String result = "";
 			if (token.equals("-")) {
-				result = "if((@lhs@ instanceof " + numberelement + ")){\n";
+				result = "if((@lhs@ instanceof @NumberElement@)){\n";
 				result = result
-						+ "evalStack.push(" + numberelement + ".getInstance(0 - ((" + numberelement + ")@lhs@).getValue());\n";
+						+ "evalStack.push(@NumberElement@.getInstance(0 - ((@NumberElement@)@lhs@).getValue()));\n";
 				result = result + "}\n";
 			} else
 				throw new CompilerException("unknown operator call: NumberPlugin, "
@@ -281,7 +281,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).isInteger()));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -296,7 +296,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).isNatural()));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -311,7 +311,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() < 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -326,7 +326,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() % 2 != 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -341,7 +341,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(((" + numberelement + ")evalStack.pop()).getValue() >= 0));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -357,7 +357,7 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("@decl(" + numberelement + ",tmp)=(" + numberelement + ") evalStack.pop();\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.valueOf(!Double.isInfinite(@tmp@.getValue()) && ! Double.isNaN(@tmp@.getValue())));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
-				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
 				result.appendLine("}\n");
 
 				return result;
@@ -394,6 +394,9 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 				result.appendLine("try{\n");
 				result.appendLine("evalStack.push(" + numberelement + ".getInstance(Double.parseDouble(evalStack.pop().toString())));\n");
 				result.appendLine("}catch(@decl(ClassCastException, cce)){\n");
+				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+				result.appendLine("}\n");
+				result.appendLine("catch(@decl(NumberFormatException, nfe)){\n");
 				result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
 				result.appendLine("}\n");
 				return result;

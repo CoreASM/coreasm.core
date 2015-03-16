@@ -66,43 +66,43 @@ public class NumberValueTransformer implements SynthesizeRule {
 					double res = val1 + val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("-")){
 					double res = val1 - val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("*")){
 					double res = val1 * val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("/")){
 					double res = val1 / val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("div")){
 					double res = (val1 - (val1 % val2)) / val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("%")){
 					double res = val1 % val2;
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals("^")){
 					double res = Math.pow(val1, val2);
 					i.setValue("NUMBER", "type");
 					i.setValue(res, "value");
-					i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + res + ")", "code");
+					i.setValue("@NumberElement@.getInstance(" + res + ")", "code");
 				}
 				else if(n.getToken().equals(">")){
 					boolean res = val1 > val2;

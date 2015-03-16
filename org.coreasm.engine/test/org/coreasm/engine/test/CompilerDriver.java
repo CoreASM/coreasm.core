@@ -21,9 +21,11 @@ public class CompilerDriver {
 		List<String> requiredOutputList = TestAllCasm.getFilteredOutput(testFile, "@require");
 		List<String> refusedOutputList = TestAllCasm.getFilteredOutput(testFile, "@refuse");
 		int minSteps = TestAllCasm.getParameter(testFile, "minsteps");
+		System.out.println("minsteps: " + minSteps);
 		if (minSteps <= 0)
 			minSteps = 1;
 		int maxSteps = TestAllCasm.getParameter(testFile, "maxsteps");
+		System.out.println("maxsteps: " + maxSteps);
 		if (maxSteps < minSteps)
 			maxSteps = minSteps;
 		
@@ -39,12 +41,13 @@ public class CompilerDriver {
 		engine.waitWhileBusy();
 		//Create compiler options, set the maximum step count and activate necessary output
 		CompilerOptions options = new CompilerOptions();
-		System.out.println(Tools.getRootFolder(Engine.class)+"/../engine-1.6.5-SNAPSHOT.jar");
-		options.enginePath = new File(Tools.getRootFolder(Engine.class)+"/../engine-1.6.5-SNAPSHOT.jar");
+		System.out.println(Tools.getRootFolder(Engine.class)+"/../org.coreasm.engine-1.6.5-SNAPSHOT.jar");
+		options.enginePath = new File(Tools.getRootFolder(Engine.class)+"/../org.coreasm.engine-1.6.5-SNAPSHOT.jar");
 		options.outputFile = new File("compiledTest.jar");
 		options.removeExistingFiles = true;
 		options.SpecificationName = testFile;
 		options.terminateOnStepCount = maxSteps + 1;
+		System.out.println(options.terminateOnStepCount);
 		//Create a compiler using the CoreASM engine
 		CoreASMCompiler compiler = new CoreASMCompiler(options, engine);
 		try{
@@ -78,7 +81,6 @@ public class CompilerDriver {
 		}
 		in.stopThread();
 		err.stopThread();
-		
 		
 		//check for errors
 		if (!err.output.toString().equals("")) {
@@ -133,13 +135,14 @@ class StreamGobbler implements Runnable{
 			BufferedReader br = new BufferedReader(new InputStreamReader(stream));
 			String line = null;
 			
-			while((line = br.readLine()) != null){
+			while(true){
+				if(quit) break;
+				line = br.readLine();
+				if(line == null) continue;
 				if(output.length() == 0)
 					output.append(line);
 				else
 					output.append("\n").append(line);
-				//lines.add(line);
-				if(quit) break;
 			}
 			br.close();
 		}

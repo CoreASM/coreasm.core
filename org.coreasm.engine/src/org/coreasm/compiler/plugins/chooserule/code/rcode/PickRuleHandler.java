@@ -32,7 +32,12 @@ public class PickRuleHandler implements CompilerCodeHandler {
 			result.appendLine("}\n");
 			result.appendLine("}\n");
 		}
+		result.appendLine("if(@src@.size() > 0){\n");
 		result.appendLine("evalStack.push(@src@.get(@RuntimeProvider@.randInt(@src@.size())));\n");
+		result.appendLine("}\n");
+		result.appendLine("else{\n");
+		result.appendLine("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+		result.appendLine("}\n");
 	}
 
 }

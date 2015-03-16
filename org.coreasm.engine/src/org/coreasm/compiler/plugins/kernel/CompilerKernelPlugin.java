@@ -138,6 +138,7 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 			classLibrary.addPackageReplacement("org.coreasm.engine.absstorage", engine.getPath().runtimePkg());
 			classLibrary.addPackageReplacement("org.coreasm.engine.CoreASMError", engine.getPath().runtimePkg() + ".CoreASMError");
 			classLibrary.addPackageReplacement("org.coreasm.engine.ControlAPI", engine.getPath().runtimePkg() + ".ControlAPI");
+			classLibrary.addPackageReplacement("org.coreasm.engine.interpreter.InitAgent", engine.getPath().runtimePkg() + ".InitAgent");
 			classLibrary.addPackageReplacement(
 					"org.coreasm.engine.interpreter.Node",
 					engine.getPath().runtimePkg() + ".Node");
@@ -184,6 +185,9 @@ public class CompilerKernelPlugin extends CompilerCodePlugin implements
 
 			try {
 				//Manually add CompilerRuntime entries from the coreasm interpreter source
+				classLibrary.addEntry(new JarInclude(engine, enginePath, 
+						"org/coreasm/engine/interpreter/InitAgent.java", 
+						"Kernel", LibraryEntryType.RUNTIME));
 				classLibrary.addEntry(new JarInclude(engine, enginePath, 
 						"org/coreasm/engine/absstorage/AbstractUniverse.java",
 						"Kernel", LibraryEntryType.RUNTIME));

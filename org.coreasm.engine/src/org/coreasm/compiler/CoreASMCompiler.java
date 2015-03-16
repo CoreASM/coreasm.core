@@ -413,6 +413,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	private void loadSpecification(CompilerInformation info) throws CompilerException{
 		lastTime = System.nanoTime();
+		
 		//create an engine and parse the specification
 		Engine cae = null;
 		//mute the coreasm engine
@@ -432,6 +433,24 @@ public class CoreASMCompiler implements CompilerEngine {
 		else{
 			cae = (Engine)CoreASMEngineFactory.createEngine();
 			cae.initialize();
+		}
+		
+		if(!options.SpecificationName.exists()){
+			String msg = "Specification '" + options.SpecificationName + "' not found";
+			this.addError(msg);
+			getLogger().error(this.getClass(), msg);
+			
+			if(cae != null){
+				cae.terminate();
+				cae.waitWhileBusy();
+			}
+			
+			if(getOptions().hideCoreASMOutput){
+				System.setOut(origOutput);
+				devnull.close();
+			}
+			
+			throw new CompilerException(msg);
 		}
 		
 		cae.loadSpecification(options.SpecificationName.getAbsolutePath());

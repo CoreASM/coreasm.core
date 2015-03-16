@@ -39,6 +39,7 @@
 					<include>org/coreasm/engine/EngineError.java</include>
 					<include>org/coreasm/engine/EngineException.java</include>
 					<include>org/coreasm/engine/scheduler/SchedulingPolicy.java</include>
+					<include>org/coreasm/engine/interpreter/InitAgent.java</include>
 				</includes>
 			</resource>
 		

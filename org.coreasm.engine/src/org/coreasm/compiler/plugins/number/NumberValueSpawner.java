@@ -26,7 +26,7 @@ public class NumberValueSpawner implements SynthesizeRule{
 			Information i = new Information();
 			i.setValue(val, "value");
 			i.setValue("NUMBER", "type");
-			i.setValue("plugins.NumberPlugin.NumberElement.getInstance(" + val + ")", "code");
+			i.setValue("@NumberElement@.getInstance(" + val + ")", "code");
 						
 			Map<String, Information> result = new HashMap<String, Information>();
 			result.put("value", i);

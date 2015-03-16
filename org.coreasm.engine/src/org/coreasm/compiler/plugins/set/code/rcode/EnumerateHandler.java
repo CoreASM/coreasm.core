@@ -13,8 +13,8 @@ public class EnumerateHandler implements CompilerCodeHandler {
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
-		for(ASTNode c : node.getAbstractChildNodes()){
-			result.appendFragment(engine.compile(c, CodeType.R));
+		for(int i = node.getAbstractChildNodes().size() - 1; i >= 0; i--){
+			result.appendFragment(engine.compile(node.getAbstractChildNodes().get(i), CodeType.R));
 		}
 		result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,slist)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
 		for(int i = 0; i < node.getAbstractChildNodes().size(); i++){

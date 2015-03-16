@@ -69,7 +69,7 @@ public class MainFileHelper {
 					+ "\t\t\t\t}\n");
 		if(engine.getOptions().terminateOnStepCount >= 0)
 			termCode.appendLine("\t\t\t\tif(scheduler.getStepCount() >= " + engine.getOptions().terminateOnStepCount + "){\n"
-					+ "\t\t\t\tSystem.out.println(\"Execution terminated: Max step count reached\");\n"
+					+ "\t\t\t\tSystem.out.println(\"Execution terminated: Max step count of " + engine.getOptions().terminateOnStepCount + " reached\");\n"
 					+ "\t\t\t\tSystem.exit(0);\n"
 					+ "\t\t\t\t}\n");
 	

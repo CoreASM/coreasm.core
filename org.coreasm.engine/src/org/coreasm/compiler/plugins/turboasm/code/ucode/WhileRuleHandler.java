@@ -21,6 +21,7 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 		result.appendLine("if(@guard@){\n");
 		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("@decl(@RuntimePkg@.UpdateList,current)=(@RuntimePkg@.UpdateList)evalStack.pop();\n");
+		result.appendLine("System.out.println(\"current updates: \" + @current@);\n");
 		result.appendLine("while(!@current@.isEmpty() && @guard@){\n");
 		result.appendLine("@decl(@RuntimePkg@.UpdateList,aggreg)=@storage@.performAggregation(@current@);\n");
 		result.appendLine("@composed@ = @storage@.compose(@composed@,@current@);\n");
@@ -33,6 +34,7 @@ public class WhileRuleHandler implements CompilerCodeHandler {
 		result.appendLine("}\n");
 		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(1), CodeType.U));
 		result.appendLine("@current@ = (@RuntimePkg@.UpdateList) evalStack.pop();\n");
+		result.appendLine("System.out.println(\"current updates: \" + @current@);\n");
 		result.appendLine("}\n");
 		result.appendLine("else{\n");
 		result.appendLine("break;\n");

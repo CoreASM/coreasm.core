@@ -52,6 +52,7 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 		result.add("implies");
 		result.add("!=");
 		result.add("memberof");
+		result.add("notmemberof");
 		return result;
 	}
 
@@ -129,7 +130,30 @@ public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements 
 			result += ("}\n");
 			result += ("}\n");
 			result += ("}\n");
-		} else
+		}  else if (token.equals("notmemberof")) {
+			result = result
+					+ "if((@lhs@ instanceof @RuntimePkg@.Element) && (@rhs@ instanceof @RuntimePkg@.Enumerable)){\n";
+			result += ("if(!(@rhs@ instanceof @RuntimePkg@.Enumerable)){\n");
+			result += ("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+			result += ("}\n");
+			result += ("else if(@lhs@.equals(@RuntimePkg@.Element.UNDEF)){\n");
+			result += ("evalStack.push(@RuntimePkg@.Element.UNDEF);\n");
+			result += ("}\n");
+			result += ("else{\n");
+			result += ("@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
+			result += ("@list@.addAll(((@RuntimePkg@.Enumerable)@rhs@).enumerate());\n");
+			result += ("for(@decl(int,i)=0;@i@<=@list@.size();@i@++){\n");
+			result += ("if(@i@ == @list@.size()){\n");
+			result += ("evalStack.push(@RuntimePkg@.BooleanElement.TRUE);\n");
+			result += ("}\n");
+			result += ("else if(@lhs@.equals(@list@.get(@i@))){\n");
+			result += ("evalStack.push(@RuntimePkg@.BooleanElement.FALSE);\n");
+			result += ("break;\n");
+			result += ("}\n");
+			result += ("}\n");
+			result += ("}\n");
+		}
+		else
 			throw new CompilerException(
 					"unkown operator: PredicateLogicPlugin, " + token);
 

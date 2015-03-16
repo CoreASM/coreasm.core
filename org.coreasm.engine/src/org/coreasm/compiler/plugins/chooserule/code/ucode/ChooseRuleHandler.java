@@ -1,6 +1,7 @@
 package org.coreasm.compiler.plugins.chooserule.code.ucode;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
@@ -8,7 +9,7 @@ import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.interpreter.ASTNode.NameAbstractNodeTuple;
+import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 
 public class ChooseRuleHandler implements CompilerCodeHandler {
 
@@ -16,82 +17,117 @@ public class ChooseRuleHandler implements CompilerCodeHandler {
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
 		try {
-			result.appendLine("");
+			if(!(node instanceof ChooseRuleNode)) throw new CompilerException("wrong node type in compilation for chooserule");
+			ChooseRuleNode chooseRule = (ChooseRuleNode) node;
 			
-			//find out which nodes are present
-			List<ASTNode> children = node.getAbstractChildNodes();
+			Map<String, ASTNode> vars = chooseRule.getVariableMap();
+			ASTNode doRule = chooseRule.getDoRule();
+			ASTNode condition = chooseRule.getCondition();
+			ASTNode ifnone = chooseRule.getIfnoneRule();
 			
-			CodeFragment source = engine.compile(children.get(1), CodeType.R);
-			CodeFragment guard = null;
-			CodeFragment dorule = null;
-			CodeFragment ifnone = null;
-
-			CodeFragment name = engine.compile(children.get(0), CodeType.L);
-			result.appendFragment(name);
-			result.appendLine("@decl(@RuntimePkg@.Location,nameloc)=(@RuntimePkg@.Location)evalStack.pop();\n");
-			result.appendLine("if(@nameloc@.args.size() != 0) throw new Exception();\n");
-			
-			for(NameAbstractNodeTuple nant : node.getAbstractChildNodesWithNames()){
-				if(nant.name.equals("guard")){
-					if(guard != null) throw new CompilerException("invalid parse tree");
-					guard = engine.compile(nant.node, CodeType.R);
-				}
-				else if(nant.name.equals("dorule")){
-					if(dorule != null) throw new CompilerException("invalid parse tree");
-					dorule = engine.compile(nant.node, CodeType.U);
-				}
-				else if(nant.name.equals("ifnonerule")){
-					if(ifnone != null) throw new CompilerException("invalid parse tree");
-					ifnone = engine.compile(nant.node, CodeType.U);
-				}
+			result.appendLine("//--------------start choose\n");
+			//evaluate sources
+			int cnt = 0;
+			//declare list in which the element lists are stored
+			result.appendLine("@decl(java.util.ArrayList<java.util.ArrayList<@RuntimePkg@.Element>>, srclist) = new java.util.ArrayList<java.util.ArrayList<@RuntimePkg@.Element>>();\n");
+			for(Entry<String, ASTNode> mapping : vars.entrySet()){
+				//evaluate the source of the entry
+				result.appendFragment(engine.compile(mapping.getValue(), CodeType.R));
+				result.appendLine("@srclist@.add(new java.util.ArrayList<@RuntimePkg@.Element>(((@RuntimePkg@.Enumerable)evalStack.pop()).enumerate()));");
+				cnt++;
 			}
-			if(dorule == null) throw new CompilerException("invalid parse tree");
 			
-			//first find the source of the elements we want to consider
-			result.appendFragment(source);
-			//then fetch it from the abstract storage and try to convert it to Enumerable
-			result.appendLine("@decl(@RuntimePkg@.Enumerable,xenumx)=(@RuntimePkg@.Enumerable)evalStack.pop();\n");
-			//result.appendLine("@decl(CompilerRuntime.Enumerable,xenumx)=(CompilerRuntime.Enumerable)CompilerRuntime.RuntimeProvider.getRuntime().getStorage().getValue((CompilerRuntime.Location)evalStack.pop());\n");
-			//select all elements that satisfy the condition
-			//TODO: fix codefragment, so there is no error with the loop
-			if(guard != null){
-				result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,xslistx)=new java.util.ArrayList<@RuntimePkg@.Element>();\n");
-				result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>, xenumsrcx)= new java.util.ArrayList<@RuntimePkg@.Element>(@xenumx@.enumerate());\n");
-				result.appendLine("for(@decl(int,countervar) = 0; @countervar@ < @xenumsrcx@.size(); @countervar@++){\n");
+			//note: each of these two forks ends with a state, in which:
+			//1. a layer is opened on the localStack
+			//2. a selection has been choosen and was pushed to the localStack
+			//3. @selected@ contains information, whether a selection could be made
+			if(condition == null){
+				//remember if choose selected something successfully.
+				//default is true, as selecting only fails if an enumerable is empty
+				result.appendLine("@decl(boolean, selected) = true;\n");
+				result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, clist) = null;\n");
 				result.appendLine("localStack.pushLayer();\n");
-				result.appendLine("localStack.put(@nameloc@.name, @xenumsrcx@.get(@countervar@));\n");
-				result.appendFragment(guard);
-				result.appendLine("if(evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
-				result.appendLine("@xslistx@.add(@xenumsrcx@.get(@countervar@));\n");
-				result.appendLine("}\n");
-				result.appendLine("localStack.popLayer();\n");
-				result.appendLine("}\n");
+				cnt = 0;
+				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+					result.appendLine("@clist@ = @srclist@.get(" + cnt + ");\n");
+					result.appendLine("if(@clist@.size() <= 0){\n");
+					result.appendLine("@selected@ = false;\n");
+					result.appendLine("localStack.put(\"" + mapping.getKey() + "\", @RuntimePkg@.Element.UNDEF);\n");
+					result.appendLine("}\n");
+					result.appendLine("else{\n");
+					result.appendLine("localStack.put(\"" + mapping.getKey() + "\", @clist@.get(@RuntimeProvider@.randInt(@clist@.size())));\n");
+					result.appendLine("}\n");
+					cnt++;
+				}
 			}
 			else{
-				result.appendLine("@decl(java.util.List<@RuntimePkg@.Element>,xslistx)=new java.util.ArrayList<@RuntimePkg@.Element>(@xenumx@.enumerate());\n");
-			}
-			
-			result.appendLine("@decl(boolean,hasupdate)=false;\n");
-			
-			if(ifnone != null){
-				result.appendLine("if(@xslistx@.size()<=0){\n");
-				result.appendFragment(ifnone);
-				result.appendLine("@hasupdate@=true;\n");
+				//remember if choose selected something successfully
+				result.appendLine("@decl(boolean, selected) = true;\n");
+				//create a list of possible combinations
+				result.appendLine("@decl(java.util.ArrayList<java.util.ArrayList<@RuntimePkg@.Element>>, combinations) = new java.util.ArrayList<java.util.ArrayList<@RuntimePkg@.Element>>();\n");
+				//test all possible combinations NOTE: Highly inefficient
+				result.appendLine("localStack.pushLayer();\n");
+				//open for loops
+				cnt = 0;
+				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+					result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, clist_" + cnt + ") = @srclist@.get(" + cnt + ");\n");
+					result.appendLine("if(@clist_" + cnt + "@.size() <= 0){\n");
+					result.appendLine("@selected@ = false;\n");
+					result.appendLine("}\n");
+					result.appendLine("for(@decl(int, i_" + cnt + ") = 0; @i_" + cnt + "@ < @clist_" + cnt + "@.size() && @selected@; @i_" + cnt + "@++){\n");
+					result.appendLine("localStack.put(\"" + mapping.getKey() + "\", @clist_" + cnt + "@.get(@i_" + cnt + "@));\n");
+					cnt++;
+				}
+				//innermost of the for loops: all temporary values are on the local stack. now execute the guard
+				result.appendFragment(engine.compile(condition, CodeType.R));
+				result.appendLine("if(evalStack.pop().equals(@RuntimePkg@.BooleanElement.TRUE)){\n");
+				//add combination
+				cnt = 0;
+				result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, tmpcombination) = new java.util.ArrayList<@RuntimePkg@.Element>();\n");
+				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+					result.appendLine("@tmpcombination@.add(@clist_" + cnt + "@.get(@i_" + cnt + "@));\n");
+					cnt++;
+				}
+				result.appendLine("@combinations@.add(@tmpcombination@);\n");
 				result.appendLine("}\n");
+				
+				//close for loops; effectively doing nothing
+				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+					result.appendLine("}\n");
+				}
+				
+				//determine the final state; selected is false, if it is false or the combination list is empty
+				//if it is true, then put a random combination to the local state
+				result.appendLine("@selected@ = @selected@ && @combinations@.size() >= 1;\n");
+				result.appendLine("if(@selected@){\n");
+				//combinations exist, randomly choose one and put it to the localstack
+				result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, selectedcomb) = @combinations@.get(@RuntimeProvider@.randInt(@combinations@.size()));\n");
+				cnt = 0;
+				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+					result.appendLine("localStack.put(\"" + mapping.getKey() + "\", @selectedcomb@.get(" + cnt + "));\n");
+					cnt++;
+				}
+				result.appendLine("}\n");
+				//as the combination list might grow large, we explicitly clear it here to safe memory
+				result.appendLine("@combinations@ = null;\n");
 			}
-			
-			//now, choose one of the elements and execute the dorule with it (given there is at least one element
-			result.appendLine("if(@xslistx@.size() > 0){\n");
-			result.appendLine("localStack.pushLayer();\n");
-			result.appendLine("localStack.put(@nameloc@.name, @xslistx@.get(@RuntimePkg@.RuntimeProvider.getRuntime().randInt(@xslistx@.size())));\n");
-			result.appendFragment(dorule);
-			result.appendLine("@hasupdate@=true;\n");
+			result.appendLine("if(@selected@){\n");
+			//a selection was made; execute the code
+			result.appendFragment(engine.compile(doRule, CodeType.U));
+			//the result is now on the stack, clear up the localstack
 			result.appendLine("localStack.popLayer();\n");
-			
 			result.appendLine("}\n");
-			
-			result.appendLine("if(!@hasupdate@){\n");
-			result.appendLine("evalStack.push(new @RuntimePkg@.UpdateList());\n");
+			result.appendLine("else{\n");
+			//close the scope on the localstack
+			result.appendLine("localStack.popLayer();\n");
+			if(ifnone == null){
+				//nothing happens
+				result.appendLine("evalStack.push(new @RuntimePkg@.UpdateList());\n");
+			}
+			else{
+				result.appendFragment(engine.compile(ifnone, CodeType.U));
+			}
+			result.appendLine("//--------------end choose\n");
 			result.appendLine("}\n");
 		} catch (Exception e) {
 			throw new CompilerException("invalid code generated");

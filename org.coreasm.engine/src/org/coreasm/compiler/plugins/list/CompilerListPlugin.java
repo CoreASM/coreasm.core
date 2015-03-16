@@ -2,9 +2,12 @@ package org.coreasm.compiler.plugins.list;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.coreasm.compiler.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.exception.CompilerException;
@@ -33,11 +36,12 @@ import org.coreasm.engine.plugins.list.ZipWithFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
+import org.coreasm.compiler.interfaces.CompilerMakroProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin{
+public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin, CompilerMakroProvider{
 
 	private Plugin interpreterPlugin;
 	
@@ -80,6 +84,7 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 		String listelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "ListElement", "ListPlugin");
 		if(token.equals("+")){
 			result += "if((@lhs@ instanceof " + listelement + ") && (@rhs@ instanceof " + listelement + ")){\n";
+			result +="System.out.println(\"executing concat\");\n";
 			result += "@decl(java.util.List<@RuntimePkg@.Element>,list)=new java.util.ArrayList<@RuntimePkg@.Element>(((" + listelement + ")@lhs@).values());\n";
 			result += "@list@.addAll(((" + listelement + ")@rhs@).values());\n";
 			result += "evalStack.push(new " + listelement + "(@list@));\n";
@@ -147,6 +152,8 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 						includeStatic("org/coreasm/engine/plugins/list/ZipFunctionElement.java", EntryType.FUNCTION_CAPI, ZipFunctionElement.NAME).
 						includeStatic("org/coreasm/engine/plugins/list/ZipWithFunctionElement.java", EntryType.FUNCTION_CAPI, ZipWithFunctionElement.NAME).
 						build();
+				LibraryEntry indexes = classLibrary.findEntry("IndexesFunctionElement", "ListPlugin", LibraryEntryType.STATIC);
+				result.add(new MainFileEntry(indexes, EntryType.FUNCTION_CAPI, IndexesFunctionElement.NAME_ALTERNATIVE));
 			} catch (EntryAlreadyExistsException e) {
 				throw new CompilerException(e);
 			}
@@ -165,5 +172,12 @@ public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPl
 	@Override
 	public void init(CompilerEngine engine) {
 		this.engine = engine;
+	}
+
+	@Override
+	public Map<String, String> getMakros() {
+		Map<String, String> result = new HashMap<String, String>();
+		result.put("ListElement", engine.getPath().getEntryName(LibraryEntryType.STATIC, "ListElement", getName()));
+		return result;
 	}
 }
