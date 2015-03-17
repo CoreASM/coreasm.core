@@ -56,14 +56,25 @@ public class MapElement extends AbstractMapElement implements ModifiableCollecti
 	protected Set<Element> enumeration = null;
 	protected List<Element> enumListCache = null;
 	
+	/**
+	 * Initializes an empty map
+	 */
 	public MapElement() {
 		this.map = Collections.unmodifiableMap(new HashMap<Element, Element>());
 	}
 	
+	/**
+	 * Initializes a new map with the given elements
+	 * @param map A map containing elements
+	 */
 	public MapElement(Map<? extends Element, ? extends Element> map) {
 		this.map = Collections.unmodifiableMap(new HashMap<Element, Element>(map));
 	}
 	
+	/**
+	 * Initializes a new map with the given elements
+	 * @param anotherMap A map containing elements
+	 */
 	public MapElement(MapElement anotherMap) {
 		this(anotherMap.map);
 	}
@@ -111,6 +122,7 @@ public class MapElement extends AbstractMapElement implements ModifiableCollecti
 
 	/**
 	 * The size of this map in integer.
+	 * @return The size of the map
 	 */
 	public int intSize() {
 		return map.size();
@@ -220,15 +232,6 @@ public class MapElement extends AbstractMapElement implements ModifiableCollecti
 		return true;
 	}
 
-	/**
-	 * Adds the mapping of element <code>e</code> to this map to create 
-	 * a new {@link MapElement}. It then creates an update assigning the new {@link MapElement}
-	 * to the given location.
-	 * 
-	 * Expects <code>e</code> to be an instance of {@link AbstractMapElement}.
-	 * 
-	 * @see ModifiableCollection#computeAddUpdate(Location, Element, Element, Node)
-	 */
 	@Override
 	public UpdateList computeAddUpdate(Location loc, Element e, Rule agent) throws CoreASMCException {
 		if (e instanceof AbstractMapElement) {

@@ -10,6 +10,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles an add operation on collections
+ * @author Spellmaker
+ *
+ */
 public class AddToHandler implements CompilerCodeHandler {
 
 	@Override

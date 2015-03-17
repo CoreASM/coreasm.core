@@ -10,10 +10,21 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.conditionalrule.code.rcode.ConditionalTermHandler;
 import org.coreasm.compiler.plugins.conditionalrule.code.ucode.ConditionalRuleHandler;
 
+/**
+ * Provides the conditional rule.
+ * Allows for the use of if guard then r1 else r2 rules.
+ * Also provides an expression similar to the ternary ? operator
+ * @author Spellmaker
+ *
+ */
 public class CompilerConditionalRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerConditionalRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

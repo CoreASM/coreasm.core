@@ -8,10 +8,19 @@ import java.util.List;
 
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.CompilerPathConfig;
-import org.coreasm.compiler.JarPacker;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.exception.CompilerException;
 
+/**
+ * Default compiler backend.
+ * Implements the backend interfaces {@link CompilerFileWriter} and {@link CompilerPacker} to
+ * provide the standard implementation of the CoreASMC backend.
+ * Executing the backend in order will simply dump all files in the class library to the temporary
+ * directory and later on pack them into an executable jar archive, assuming Main.java in the
+ * root of the directory is the main entry point of the program.
+ * @author Spellmaker
+ *
+ */
 public class KernelBackend implements CompilerFileWriter, CompilerPacker {
 	@Override
 	public boolean packFiles(List<File> files, CompilerEngine engine) {

@@ -9,6 +9,11 @@ import org.coreasm.compiler.preprocessor.Information;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the return result rule.
+ * @author Spellmaker
+ *
+ */
 public class ReturnResultHandler implements CompilerCodeHandler {
 
 	@Override

@@ -28,7 +28,7 @@ import org.coreasm.compiler.mainprogram.MainFileHelper;
 import org.coreasm.engine.kernel.Kernel;
 
 /**
- * Advanced LibraryEntry representing the Main class of the compiled code.
+ * Advanced LibraryEntry representing the state machine class of the compiled code.
  * Processes vocabulary extender plugins and init code plugins, to get
  * additional code for extension.
  * @author Markus Brenner
@@ -41,7 +41,8 @@ public class StateMachineFile extends MemoryInclude{
 	private String initRule;
 	
 	/**
-	 * Constructs a new, empty Main File
+	 * Constructs a new, empty State Machine File
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public StateMachineFile(CompilerEngine engine){
 		super(engine, "StateMachine", "Kernel", LibraryEntryType.DYNAMIC);

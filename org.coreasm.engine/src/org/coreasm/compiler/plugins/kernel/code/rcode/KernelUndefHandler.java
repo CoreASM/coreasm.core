@@ -6,6 +6,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the undef expression
+ * @author Spellmaker
+ *
+ */
 public class KernelUndefHandler implements CompilerCodeHandler{
 
 	@Override

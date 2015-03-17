@@ -21,8 +21,17 @@ public class LoggingHelper {
 	 *
 	 */
 	public enum Level {
+		/**
+		 * No relevant user information
+		 */
 		DEBUG,
+		/**
+		 * Mildly severe information
+		 */
 		WARN,
+		/**
+		 * Critical information
+		 */
 		ERROR
 	}
 	

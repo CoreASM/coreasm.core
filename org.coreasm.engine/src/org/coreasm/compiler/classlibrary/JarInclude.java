@@ -13,7 +13,15 @@ import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
 /**
- * Represents an import from a jar archive
+ * Represents an import from a jar archive.
+ * A jar include effectively copies an element from
+ * an jar archive into the compilation unit.
+ * The include will modify the package declaration on it's own
+ * and can be used to modify import statements via package replacements.
+ * A Package replacement consists of a source and a target string.
+ * The source string can be a complete declaration (such as "java.util.ArrayList")
+ * or only the start of a declaration ("java.util.") and will replace the corresponding
+ * parts of all matching import statements.
  * @author Spellmaker
  *
  */
@@ -31,6 +39,14 @@ public class JarInclude extends LibraryEntry {
 	private String finalName;
 	private boolean packageFound;
 	
+	/**
+	 * Creates a new jar include
+	 * @param engine The compiler engine supervising the compilation process
+	 * @param sourceJar The source archive
+	 * @param sourceFile The source file in the archive ('/' is used as the separator)
+	 * @param plugin The name of the source plugin
+	 * @param type The type of the include
+	 */
 	public JarInclude(CompilerEngine engine, File sourceJar, String sourceFile, String plugin, LibraryEntryType type){
 		this.sourceJar = sourceJar;
 		this.sourceFile = sourceFile;
@@ -40,6 +56,11 @@ public class JarInclude extends LibraryEntry {
 		this.packageReplacements = new HashMap<String, String>();
 	}
 	
+	/**
+	 * Adds a package replacement to this include
+	 * @param original The original package declaration string
+	 * @param replacement The replacement for the declaration
+	 */
 	public void addPackageReplacement(String original, String replacement){
 		this.packageReplacements.put(original, replacement);
 	}

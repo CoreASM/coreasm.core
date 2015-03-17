@@ -58,9 +58,21 @@ public interface CompilerEngine {
 	 * @return The {@link StateMachineFile}
 	 */
 	public StateMachineFile getMainFile();
-	
+	/**
+	 * Provides access to the path configuration of the engine
+	 * @return The path configuration object used by the engine
+	 */
 	public CompilerPathConfig getPath();
 	
+	/**
+	 * Same as {@link #compile(ASTNode, CodeType)}, but hides errors.
+	 * The compiler will discard all errors generated during the processing
+	 * of this method. An exception will still be thrown normally
+	 * @param node The node to be compiled
+	 * @param type The code type to be generated
+	 * @return A CodeFragment for the node
+	 * @throws CompilerException If an error occured
+	 */
 	CodeFragment tryCompile(ASTNode node, CodeType type) throws CompilerException;
 	/**
 	 * Instructs the compiler engine to generate code for the given node.
@@ -109,5 +121,10 @@ public interface CompilerEngine {
 	 */
 	public void addTiming(String s, long l);
 	
+	/**
+	 * Provides access to the global makros declared for this engine.
+	 * See {@link CodeFragment} for more information about makros
+	 * @return A mapping representing the registered global makros.
+	 */
 	public Map<String, String> getGlobalMakros();
 }

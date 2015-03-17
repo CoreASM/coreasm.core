@@ -29,6 +29,7 @@ public class JavaCompilerWrapper {
 	 * @param options Options to be used for the compilation process. Currently unused, but
 	 * can be used to add parameters for the java compiler
 	 * @param files A list of classes which need to be compiled
+	 * @param engine The compiler engine supervising the compilation process
 	 * @throws CompilerException If an error occured during the compilation process
 	 */
 	public static void compile(CompilerOptions options, List<File> files, CompilerEngine engine) throws CompilerException{

@@ -8,6 +8,13 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the case rule.
+ * The implementation uses {@link CodeWrapperEntry} to avoid the generation
+ * of code which exceeds the java limitations.
+ * @author Spellmaker
+ *
+ */
 public class CaseRuleHandler implements CompilerCodeHandler {
 
 	@Override

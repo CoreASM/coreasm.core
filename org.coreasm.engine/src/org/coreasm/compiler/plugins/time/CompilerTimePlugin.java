@@ -17,10 +17,19 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.time.NowFunctionElement;
 import org.coreasm.engine.plugins.time.StepCountFunctionElement;
 
+/**
+ * Provides access to time functions
+ * @author Spellmaker
+ *
+ */
 public class CompilerTimePlugin implements CompilerPlugin, CompilerVocabularyExtender {
 	private CompilerEngine engine;
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerTimePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

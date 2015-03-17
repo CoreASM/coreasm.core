@@ -5,6 +5,11 @@ import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles ids as locations
+ * @author Spellmaker
+ *
+ */
 public class KernelIDCodeHandler implements CompilerCodeHandler {
 
 	@Override

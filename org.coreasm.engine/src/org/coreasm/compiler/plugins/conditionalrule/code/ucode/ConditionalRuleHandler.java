@@ -7,6 +7,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the conditional rule
+ * @author Spellmaker
+ *
+ */
 public class ConditionalRuleHandler implements CompilerCodeHandler {
 
 	@Override

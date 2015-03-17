@@ -8,6 +8,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the creation of number ranges
+ * @author Spellmaker
+ *
+ */
 public class NumberRangeHandler implements CompilerCodeHandler {
 
 	@Override

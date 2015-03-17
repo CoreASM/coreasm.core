@@ -6,6 +6,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the skip rule by doing nothing
+ * @author Spellmaker
+ *
+ */
 public class KernelSkipRule implements CompilerCodeHandler {
 
 	@Override

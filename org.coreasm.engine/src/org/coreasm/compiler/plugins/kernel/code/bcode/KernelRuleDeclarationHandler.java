@@ -12,6 +12,12 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles rule declaration nodes.
+ * Creates a new rule entry and generates its body
+ * @author Spellmaker
+ *
+ */
 public class KernelRuleDeclarationHandler implements CompilerCodeHandler {
 	//boolean tmp = false;
 	

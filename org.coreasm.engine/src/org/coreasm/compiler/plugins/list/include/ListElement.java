@@ -47,10 +47,17 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	private List<Element> listElements;
 	private List<Element> enumerationCache = null;
 	
+	/**
+	 * Initializes an empty list
+	 */
 	public ListElement() {
 		listElements = Collections.emptyList();
 	}
 	
+	/**
+	 * Initializes a new list with elements from the given collection
+	 * @param collection A collection
+	 */
 	public ListElement(Collection<? extends Element> collection) {
 		if (collection.size() == 0)
 			listElements = Collections.emptyList();
@@ -58,10 +65,18 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 			listElements = Collections.unmodifiableList(new ArrayList<Element>(collection));
 	}
 	
+	/**
+	 * Initializes a new list with the elements of the other list
+	 * @param list A list
+	 */
 	public ListElement(ListElement list) {
 		this(list.listElements);
 	}
 	
+	/**
+	 * Initializes a new list with the given elements
+	 * @param elements An array of elements
+	 */
 	public ListElement(Element ... elements) {
 		if (elements.length == 0)
 			listElements = Collections.emptyList();
@@ -75,6 +90,8 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	
 	/**
 	 * Creates a new list which is <i>cons(e, list)</i>.
+	 * @param e The new head
+	 * @param list The tail
 	 */
 	public ListElement(Element e, ListElement list) {
 		listElements = new ArrayList<Element>(list.listElements);
@@ -181,6 +198,7 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	 * an integer. The value of this integer 
 	 * is equal to the value of the number
 	 * element returned by {@link #size()}.
+	 * @return The size of the list
 	 */
 	public int intSize() {
 		return listElements.size();
@@ -230,6 +248,8 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 
 	/**
 	 * @see #get(Element)
+	 * @param index An index in the list
+	 * @return The element at the index
 	 */
 	public Element get(int index) {
 		return get(NumberElement.getInstance(index));

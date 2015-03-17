@@ -7,6 +7,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles number creation
+ * @author Spellmaker
+ *
+ */
 public class NumberHandler implements CompilerCodeHandler {
 
 	@Override

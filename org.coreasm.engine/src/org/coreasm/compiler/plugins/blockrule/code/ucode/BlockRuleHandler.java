@@ -8,6 +8,13 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the block rule.
+ * The implementation tries to ensure that the produced code never exceeds java limits
+ * by using {@link CodeWrapperEntry}
+ * @author Spellmaker
+ *
+ */
 public class BlockRuleHandler implements CompilerCodeHandler {
 
 	@Override

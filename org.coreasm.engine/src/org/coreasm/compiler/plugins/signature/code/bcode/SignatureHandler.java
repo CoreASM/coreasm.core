@@ -16,9 +16,18 @@ import org.coreasm.compiler.plugins.signature.UniverseEntry;
 import org.coreasm.compiler.plugins.signature.CompilerSignaturePlugin.SignatureEntryType;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles signature definitions
+ * @author Spellmaker
+ *
+ */
 public class SignatureHandler implements CompilerCodeHandler {
 	private CompilerSignaturePlugin parent;
 
+	/**
+	 * Constructs the handler
+	 * @param parent The signature plugin processing resulting entries
+	 */
 	public SignatureHandler(CompilerSignaturePlugin parent) {
 		this.parent = parent;
 	}

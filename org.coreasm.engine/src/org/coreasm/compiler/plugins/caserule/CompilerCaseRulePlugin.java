@@ -9,10 +9,21 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.caserule.code.ucode.CaseRuleHandler;
 
+/**
+ * Provides the case rule.
+ * The case rule works a bit like the switch-case construct in normal
+ * programming languages.
+ * @author Spellmaker
+ *
+ */
 public class CompilerCaseRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Initializes a new case rule plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerCaseRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

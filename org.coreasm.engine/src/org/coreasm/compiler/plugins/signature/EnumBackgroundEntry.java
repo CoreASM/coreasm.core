@@ -17,6 +17,7 @@ public class EnumBackgroundEntry extends MemoryInclude {
 	 * Builds a new enum background
 	 * @param name The name of the enum
 	 * @param elements The elements of the enum
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public EnumBackgroundEntry(String name, String[] elements, CompilerEngine engine){
 		super(engine, "EnumBackground_" + name, "SignaturePlugin", LibraryEntryType.DYNAMIC);

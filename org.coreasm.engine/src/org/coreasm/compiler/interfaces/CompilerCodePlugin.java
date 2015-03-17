@@ -25,7 +25,7 @@ public abstract class CompilerCodePlugin implements CompilerPlugin{
 	
 	/**
 	 * Registers code handlers of this plugin
-	 * @throws CompilerException
+	 * @throws CompilerException If an error occurred
 	 */
 	public abstract void registerCodeHandlers() throws CompilerException;
 	

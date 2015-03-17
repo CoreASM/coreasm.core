@@ -39,6 +39,7 @@ public class Preprocessor {
 	/**
 	 * Initializes a new preprocessor.
 	 * The preprocessor is not ready to provide information, until the loadPlugins and preprocessSpecification methods have been called.
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public Preprocessor(CompilerEngine engine) {
 		this.engine = engine;
@@ -278,6 +279,7 @@ public class Preprocessor {
 	 * Preprocesses a specification starting at the given node.
 	 * Might not terminate, if a cycle exists in the rules provided by plugins
 	 * @param specRoot The root of the specification
+	 * @throws Exception If an error occured
 	 */
 	public void preprocessSpecification(ASTNode specRoot) throws Exception{
 		if(root == null) root = specRoot;

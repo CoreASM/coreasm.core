@@ -10,6 +10,12 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the root of the specification.
+ * Starts of the actual compilation by compiling all child nodes
+ * @author Spellmaker
+ *
+ */
 public class KernelCoreHandler implements CompilerCodeHandler {
 	
 	@Override

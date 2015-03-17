@@ -28,6 +28,12 @@ import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides basic typing to the compiled specification.
+ * Currenty misses the implementation of the undef handler
+ * @author Spellmaker
+ *
+ */
 public class CompilerSignaturePlugin extends CompilerCodePlugin implements CompilerPlugin,
 		CompilerVocabularyExtender, CompilerExtensionPointPlugin {
 
@@ -44,13 +50,44 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
     //TODO: implement undefined identifier handler so that this entry
     //is put to use
     //private CheckMode idCheckingMode;    
-	
-    public enum SignatureEntryType {UNIVERSE, ENUM, DERIVED, FUNCTION};
+	/**
+	 * The type of a signature entry
+	 * @author Spellmaker
+	 *
+	 */
+    public enum SignatureEntryType {
+    	/**
+    	 * An universe
+    	 */
+    	UNIVERSE,
+    	/**
+    	 * An enum
+    	 */
+    	ENUM, 
+    	/**
+    	 * A derived function
+    	 */
+    	DERIVED, 
+    	/**
+    	 * A function
+    	 */
+    	FUNCTION
+    };
     
+    /**
+     * An entry of the signature plugin
+     * @author Spellmaker
+     *
+     */
     public class IncludeEntry{
     	SignatureEntryType type;
     	LibraryEntry entry;
     	
+    	/**
+    	 * Initializes a new entry
+    	 * @param t The type of the entry
+    	 * @param e The actual entry
+    	 */
     	public IncludeEntry(SignatureEntryType t, LibraryEntry e){
     		type = t;
     		entry = e;
@@ -60,6 +97,7 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
     private Map<String, IncludeEntry> entries;
 	/**
 	 * Creates a new signature plugin
+	 * @param p The interpreter version
 	 */
 	public CompilerSignaturePlugin(Plugin p){
 		entries = new HashMap<String, IncludeEntry>();
@@ -248,6 +286,11 @@ public class CompilerSignaturePlugin extends CompilerCodePlugin implements Compi
     	return typeCheckingMode;
     }	
 	
+	/**
+	 * Adds a new signature entry
+	 * @param name The name of the entry
+	 * @param entry The entry
+	 */
 	public void addEntry(String name, IncludeEntry entry){
 		entries.put(name, entry);
 	}

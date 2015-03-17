@@ -15,6 +15,11 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.set.TrueGuardNode;
 
+/**
+ * Handles set comprehension
+ * @author Spellmaker
+ *
+ */
 public class ComprehensionHandler implements CompilerCodeHandler {
 
 	@Override

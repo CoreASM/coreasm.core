@@ -7,6 +7,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the CoreASM node of the specification.
+ * @author Spellmaker
+ *
+ */
 public class KernelInitHandler implements CompilerCodeHandler {	
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)

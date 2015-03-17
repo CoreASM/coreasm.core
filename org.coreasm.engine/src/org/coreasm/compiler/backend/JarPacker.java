@@ -1,4 +1,4 @@
-package org.coreasm.compiler;
+package org.coreasm.compiler.backend;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -10,6 +10,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import org.coreasm.compiler.CompilerEngine;
+import org.coreasm.compiler.CompilerOptions;
 import org.coreasm.compiler.exception.CompilerException;
 
 
@@ -26,6 +28,7 @@ public class JarPacker {
 	 * sub-directories of it and that the main entry point is the file Main.java in
 	 * the root of the temporary directory
 	 * @param options Options for the compilation process
+	 * @param engine The compiler engine supervising the compilation process
 	 * @throws CompilerException If the jar archive could not be packed
 	 */
 	public static void packJar(CompilerOptions options, CompilerEngine engine) throws CompilerException{
@@ -54,6 +57,13 @@ public class JarPacker {
 		}
 	}
 	
+	/**
+	 * Adds a file to the jar archive specified via the JarOutputStream
+	 * @param source The file to be added
+	 * @param target An output stream to the jar archive
+	 * @param options Options to the compilation process
+	 * @throws IOException If an io error occurs
+	 */
 	private static void addFile(File source, JarOutputStream target, CompilerOptions options) throws IOException{
 		BufferedInputStream in = null;
 		try{

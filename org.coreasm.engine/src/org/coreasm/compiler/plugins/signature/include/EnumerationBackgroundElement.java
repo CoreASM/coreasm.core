@@ -40,10 +40,11 @@ public class EnumerationBackgroundElement extends BackgroundElement
 
     private List<EnumerationElement> members;
     private List<Element> enumCache = null;
-    
-    public EnumerationBackgroundElement() {
-    }
-    
+ 
+    /**
+     * Sets the members of this enumeration background
+     * @param members The members
+     */
     public void setMembers(List<EnumerationElement> members){
         this.members = members;
         enumCache =  Collections.unmodifiableList(new ArrayList<Element>(members));

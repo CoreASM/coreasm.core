@@ -14,6 +14,7 @@ public class MainFileHelper {
 	/**
 	 * Builds the state machine of the main file
 	 * @param sm A state machine object which will be populated
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public static void populateStateMachine(StateMachine sm, CompilerEngine engine){
 		//list of engine modes in the original core asm implementation:

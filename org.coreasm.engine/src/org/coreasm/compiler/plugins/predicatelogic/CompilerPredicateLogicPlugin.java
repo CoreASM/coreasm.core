@@ -13,10 +13,19 @@ import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.plugins.predicatelogic.code.rcode.ExistsExpHandler;
 import org.coreasm.compiler.plugins.predicatelogic.code.rcode.ForallExpHandler;
 
+/**
+ * Provides additional operations on booleans
+ * @author Spellmaker
+ *
+ */
 public class CompilerPredicateLogicPlugin extends CompilerCodePlugin implements CompilerOperatorPlugin {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerPredicateLogicPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

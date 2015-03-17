@@ -8,6 +8,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.list.ShiftRuleNode;
 
+/**
+ * Handles the shift rule
+ * @author Spellmaker
+ *
+ */
 public class ShiftRuleHandler implements CompilerCodeHandler {
 
 	@Override

@@ -11,6 +11,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
 
+/**
+ * Handles the forall rule
+ * @author Spellmaker
+ *
+ */
 public class ForallRuleHandler implements CompilerCodeHandler {
 
 	@Override

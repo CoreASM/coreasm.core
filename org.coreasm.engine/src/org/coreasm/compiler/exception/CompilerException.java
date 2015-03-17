@@ -25,11 +25,20 @@ public class CompilerException extends Exception {
 		super(s);
 	}
 	
+	/**
+	 * Constructs a new compiler exception with an evaluated flag
+	 * @param e The child exception
+	 * @param evaluated Signals, whether the exception was already handled
+	 */
 	public CompilerException(Exception e, boolean evaluated){
 		super(e);
 		this.evaluated = evaluated;
 	}
 	
+	/**
+	 * Determines, if the exception was already handled (that is, displayed).
+	 * @return True, if the exception was already displayed
+	 */
 	public boolean isEvaluated(){
 		return evaluated;
 	}

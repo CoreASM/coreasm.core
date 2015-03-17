@@ -6,8 +6,8 @@ import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.exception.ElementAlreadyExistsException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 /**
- * Advanced LibraryEntry representing an enum.
- * An enum consists of a name, a package and a list of elements.
+ * Advanced LibraryEntry representing an enumeration.
+ * An enumeration consists of a name, a package and a list of elements.
  * @author Markus Brenner
  *
  */
@@ -16,9 +16,11 @@ public class EnumFile extends MemoryInclude{
 	private ArrayList<String> elements;
 	
 	/**
-	 * Creates a new, empty enum with the given name and package
-	 * @param enumName the name of the enum
-	 * @param packageName the package of the enum
+	 * Creates a new, empty enumeration with the given name and package
+	 * @param enumName The name of the enumeration
+	 * @param type The entry type of the enumeration
+	 * @param sourcePlugin The name of the plugin generating this entry
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public EnumFile(String enumName, LibraryEntryType type, String sourcePlugin, CompilerEngine engine){
 		super(engine, enumName, sourcePlugin, type);
@@ -27,9 +29,9 @@ public class EnumFile extends MemoryInclude{
 	}
 	
 	/**
-	 * Adds an element to the enum.
-	 * If the enum already holds the element, an exception will be thrown
-	 * @param e The element
+	 * Adds an element to the enumeration.
+	 * If the enumeration already holds the element, an exception will be thrown
+	 * @param e The element string
 	 * @throws ElementAlreadyExistsException If the enum already contains e
 	 */
 	public void addElement(String e) throws ElementAlreadyExistsException{

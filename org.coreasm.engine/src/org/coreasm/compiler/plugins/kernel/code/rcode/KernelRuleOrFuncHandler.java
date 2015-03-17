@@ -8,6 +8,11 @@ import org.coreasm.compiler.preprocessor.Information;
 import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles rule or func nodes
+ * @author Spellmaker
+ *
+ */
 public class KernelRuleOrFuncHandler implements CompilerCodeHandler {
 
 	@Override

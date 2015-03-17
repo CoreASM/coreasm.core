@@ -23,10 +23,21 @@ import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides IO methods.
+ * The current version does not allow for a lot of customization in
+ * terms of which channels are used.
+ * Future versions should optimize this.
+ * @author Spellmaker
+ *
+ */
 public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerExtensionPointPlugin, CompilerInitCodePlugin{
 
 	private Plugin interpreterPlugin;
-	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerIOPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

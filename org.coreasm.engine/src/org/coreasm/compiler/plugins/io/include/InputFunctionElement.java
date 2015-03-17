@@ -29,20 +29,14 @@ import org.coreasm.engine.absstorage.FunctionElement;
  * 
  * @see org.coreasm.engine.plugins.io.IOPlugin
  */
-public class InputFunctionElement extends FunctionElement {	/**
-	 * Creates a new input function element with the given
-	 * link to an IOPlugin.
-	 *  
-	 * @param ioPlugin the IOPlugin that created this object
-	 * @see CompilerIOPlugin
+public class InputFunctionElement extends FunctionElement {	
+	/**
+	 * Creates a new input function element
 	 */
 	public InputFunctionElement() {
 		this.setFClass(FunctionClass.fcMonitored);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.coreasm.engine.absstorage.FunctionElement#getValue(java.util.List)
-	 */
 	@Override
 	public Element getValue(List<? extends Element> args) {
 		String msg;

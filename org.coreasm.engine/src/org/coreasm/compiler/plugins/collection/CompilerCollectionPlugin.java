@@ -8,28 +8,36 @@ import org.coreasm.compiler.classlibrary.JarIncludeHelper;
 import org.coreasm.compiler.classlibrary.LibraryEntry;
 import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.ClassLibrary;
-import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.mainprogram.EntryType;
 import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.collection.code.ucode.AddToHandler;
 import org.coreasm.compiler.plugins.collection.code.ucode.RemoveFromHandler;
-import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.collection.FilterFunctionElement;
 import org.coreasm.engine.plugins.collection.MapFunctionElement;
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
-import org.coreasm.compiler.interfaces.CompilerFunctionPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
-public class CompilerCollectionPlugin extends CompilerCodePlugin implements CompilerFunctionPlugin, CompilerVocabularyExtender, CompilerPlugin {
+/**
+ * Provides basic support for collections.
+ * The plugin alone does not actually include any usable collections.
+ * It provides operations on collections and abstract base classes.
+ * @author Spellmaker
+ *
+ */
+public class CompilerCollectionPlugin extends CompilerCodePlugin implements CompilerVocabularyExtender, CompilerPlugin {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerCollectionPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}
@@ -94,23 +102,6 @@ public class CompilerCollectionPlugin extends CompilerCodePlugin implements Comp
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public List<String> getCompileFunctionNames() {
-		List<String> result = new ArrayList<String>();
-		// result.add("map");
-		// result.add("filter");
-		// result.add("fold");
-		// result.add("foldr");
-		// result.add("foldl");
-		return result;
-	}
-
-	@Override
-	public CodeFragment compileFunctionCall(ASTNode n) throws CompilerException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

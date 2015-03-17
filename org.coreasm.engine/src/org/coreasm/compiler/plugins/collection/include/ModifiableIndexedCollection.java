@@ -26,13 +26,28 @@ import CompilerRuntime.UpdateList;
  * The interface for all modifiable indexed collections.
  *   
  * @author Roozbeh Farahbod
- * @see CollectionPlugin
  */
 
 public interface ModifiableIndexedCollection extends ModifiableCollection {
-	
+	/**
+	 * Computes a new add operation
+	 * @param loc The location for the operation
+	 * @param index The index in the collection
+	 * @param e The element to be added
+	 * @param agent The responsible agent
+	 * @return An update list containing the generated update
+	 * @throws CoreASMCException If an error occured
+	 */
 	public abstract UpdateList computeAddUpdate(Location loc, NumberElement index, Element e, Rule agent) throws CoreASMCException;
 
+	/**
+	 * Computes a new remove operation
+	 * @param loc The location for the operation
+	 * @param index The index in the collection
+	 * @param agent The responsible agent
+	 * @return An update list containing the generated update
+	 * @throws CoreASMCException If an error occured
+	 */
 	public abstract UpdateList computeRemoveUpdate(Location loc, NumberElement index, Rule agent) throws CoreASMCException;
 
 }

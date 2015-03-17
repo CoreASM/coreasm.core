@@ -8,6 +8,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.kernel.UpdateRuleNode;
 
+/**
+ * Handles update instructions x := y
+ * @author Spellmaker
+ *
+ */
 public class KernelUpdateRule implements CompilerCodeHandler {
 
 	@Override

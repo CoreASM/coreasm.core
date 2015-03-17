@@ -6,6 +6,12 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles empty modularity nodes.
+ * Does not provide functionality, only catches empty nodes
+ * @author Spellmaker
+ *
+ */
 public class ModularityDummyHandler implements CompilerCodeHandler {
 
 	@Override

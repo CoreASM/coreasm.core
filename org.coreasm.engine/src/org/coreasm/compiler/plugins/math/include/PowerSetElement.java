@@ -37,6 +37,9 @@ import org.coreasm.engine.absstorage.Enumerable;
 
 public class PowerSetElement extends Element implements Enumerable, Collection<Element> {
 
+	/**
+	 * The maximum size
+	 */
 	public static final int MAX_SIZE = 31;
 	
 	//protected static final Logger logger = LoggerFactory.getLogger(PowerSetElement.class);
@@ -45,6 +48,10 @@ public class PowerSetElement extends Element implements Enumerable, Collection<E
 	private Set<Element> elementsSet = null;
 	private String denotationalValue = null;
 	
+	/**
+	 * Constructs a new powerset
+	 * @param baseSet The base set
+	 */
 	public PowerSetElement(Enumerable baseSet) {
 		Collection<? extends Element> base = baseSet.enumerate();
 		if (base.size() > MAX_SIZE)

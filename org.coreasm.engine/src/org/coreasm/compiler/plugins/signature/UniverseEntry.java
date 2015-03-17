@@ -17,6 +17,7 @@ public class UniverseEntry extends MemoryInclude {
 	 * Creates a new universe entry
 	 * @param name The name of the final universe
 	 * @param elements The elements of the universe
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public UniverseEntry(String name, String[] elements, CompilerEngine engine) {
 		super(engine, "Universe_" + name, "SignaturePlugin", LibraryEntryType.DYNAMIC);

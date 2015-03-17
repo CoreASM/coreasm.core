@@ -8,6 +8,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.kernelextensions.ExtendedFunctionRuleTermNode;
 
+/**
+ * Handles ExtendedFunctionRuleTerms
+ * @author Spellmaker
+ *
+ */
 public class CompilerExtendedFunctionRuleTermHandler implements
 		CompilerCodeHandler {
 

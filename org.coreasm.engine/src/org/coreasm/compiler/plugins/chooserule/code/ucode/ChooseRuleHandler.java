@@ -11,6 +11,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 
+/**
+ * Handles the choose rule
+ * @author Spellmaker
+ *
+ */
 public class ChooseRuleHandler implements CompilerCodeHandler {
 
 	@Override
@@ -84,7 +89,7 @@ public class ChooseRuleHandler implements CompilerCodeHandler {
 				//add combination
 				cnt = 0;
 				result.appendLine("@decl(java.util.ArrayList<@RuntimePkg@.Element>, tmpcombination) = new java.util.ArrayList<@RuntimePkg@.Element>();\n");
-				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+				for(int i = 0; i < vars.size(); i++){
 					result.appendLine("@tmpcombination@.add(@clist_" + cnt + "@.get(@i_" + cnt + "@));\n");
 					cnt++;
 				}
@@ -92,7 +97,7 @@ public class ChooseRuleHandler implements CompilerCodeHandler {
 				result.appendLine("}\n");
 				
 				//close for loops; effectively doing nothing
-				for(Entry<String, ASTNode> mapping : vars.entrySet()){
+				for(int i = 0; i < vars.size(); i++){
 					result.appendLine("}\n");
 				}
 				

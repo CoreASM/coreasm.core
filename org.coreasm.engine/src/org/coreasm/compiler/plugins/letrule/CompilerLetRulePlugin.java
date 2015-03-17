@@ -9,10 +9,21 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.letrule.code.ucode.LetRuleHandler;
 
+/**
+ * Provides the let rule.
+ * The let rule allows for the introduction of local
+ * variables to the rule body
+ * @author Spellmaker
+ *
+ */
 public class CompilerLetRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerLetRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

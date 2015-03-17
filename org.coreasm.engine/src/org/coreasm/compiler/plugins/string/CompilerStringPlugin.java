@@ -30,11 +30,20 @@ import org.coreasm.compiler.interfaces.CompilerMakroProvider;
 import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides strings to the compiler
+ * @author Spellmaker
+ *
+ */
 public class CompilerStringPlugin extends CompilerCodePlugin implements CompilerOperatorPlugin,
 		CompilerVocabularyExtender, CompilerFunctionPlugin, CompilerMakroProvider {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs the plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerStringPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

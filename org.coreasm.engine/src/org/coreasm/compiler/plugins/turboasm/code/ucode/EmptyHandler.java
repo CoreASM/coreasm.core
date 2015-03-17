@@ -6,6 +6,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the empty rule
+ * @author Spellmaker
+ *
+ */
 public class EmptyHandler implements CompilerCodeHandler {
 
 	@Override

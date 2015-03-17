@@ -19,6 +19,7 @@ public class MathFunctionEntry extends MemoryInclude {
 	 * Initializes the function entry
 	 * @param name The name of the function
 	 * @param body The code body of the function
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public MathFunctionEntry(String name, CodeFragment body, CompilerEngine engine){
 		super(engine, name, "MathPlugin", LibraryEntryType.STATIC);

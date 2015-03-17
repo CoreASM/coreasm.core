@@ -188,6 +188,7 @@ public class CodeFragment {
 	/**
 	 * Prints the code of this CodeFragment.
 	 * The process will replace all macros, generating actual variable names.
+	 * @param engine The compiler engine supervising the code generation and providing global makros
 	 * @return The generated string of this CodeFragment
 	 * @throws CodeFragmentException If a CodeFragment was incomplete or incorrect.
 	 */

@@ -28,6 +28,11 @@ public interface PluginLoader {
 	 * @return A CompilerPlugin with the given name, or null, if no such plugin can be found
 	 */
 	public CompilerPlugin getPlugin(String name);
-	
+	/**
+	 * Provides filtered access to the loaded plugins.
+	 * Allows to obtain only plugins of a certain kind
+	 * @param type The type of plugins to be returned
+	 * @return A list of compiler plugins, which are of the specified type
+	 */
 	public List<CompilerPlugin> getPluginByType(Class<?> type);
 }

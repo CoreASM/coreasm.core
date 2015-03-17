@@ -7,6 +7,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the import rule
+ * @author Spellmaker
+ *
+ */
 public class KernelImportRule implements CompilerCodeHandler {
 
 	@Override

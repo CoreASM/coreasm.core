@@ -25,8 +25,19 @@ import org.coreasm.engine.plugins.set.SetElement;
 import CompilerRuntime.UpdateAggregator;
 import CompilerRuntime.UpdateList;
 
+/**
+ * Aggregates updates on sets.
+ * @author Spellmaker
+ *
+ */
 public class SetAggregator implements UpdateAggregator{
+	/**
+	 * The setadd action
+	 */
 	public static final String SETADD_ACTION = "setAddAction";
+	/**
+	 * The setremove action
+	 */
 	public static final String SETREMOVE_ACTION = "setRemoveAction";
 
 	@Override

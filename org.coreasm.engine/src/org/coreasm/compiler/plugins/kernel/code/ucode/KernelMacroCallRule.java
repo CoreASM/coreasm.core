@@ -11,6 +11,15 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
 
+/**
+ * Handles rule calls.
+ * Lots of potential for digression from interpreter behaviour.
+ * Changes in this handler might lead to lots of changes in other code.
+ * When changing stuff here, keep an eye on the TurboASM Plugin, it also
+ * sports some rule calls
+ * @author Spellmaker
+ *
+ */
 public class KernelMacroCallRule implements CompilerCodeHandler {
 
 	@Override

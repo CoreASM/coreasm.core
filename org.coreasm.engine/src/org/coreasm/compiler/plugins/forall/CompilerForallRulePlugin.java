@@ -9,10 +9,19 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.forall.code.ucode.ForallRuleHandler;
 
+/**
+ * Provides the forall rule
+ * @author Spellmaker
+ *
+ */
 public class CompilerForallRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerForallRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

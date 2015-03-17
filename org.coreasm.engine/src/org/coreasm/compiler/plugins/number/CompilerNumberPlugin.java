@@ -33,12 +33,21 @@ import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.number.NumberPlugin;
 import org.coreasm.engine.plugins.number.NumberValueTransformer;
 
+/**
+ * Provides numbers and functions on numbers.
+ * @author Spellmaker
+ *
+ */
 public class CompilerNumberPlugin extends CompilerCodePlugin implements
 	CompilerOperatorPlugin, CompilerVocabularyExtender, 
 	CompilerFunctionPlugin, CompilerPreprocessorPlugin, CompilerMakroProvider{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerNumberPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}
@@ -208,7 +217,6 @@ public class CompilerNumberPlugin extends CompilerCodePlugin implements
 		@Override
 		public String compileUnaryOperator(String token)
 				throws CompilerException {
-			String numberelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "NumberElement", "NumberPlugin");
 			String result = "";
 			if (token.equals("-")) {
 				result = "if((@lhs@ instanceof @NumberElement@)){\n";

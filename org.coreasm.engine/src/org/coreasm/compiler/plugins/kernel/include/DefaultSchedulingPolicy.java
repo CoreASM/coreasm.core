@@ -9,6 +9,11 @@ import java.util.List;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.scheduler.SchedulingPolicy;
 
+/**
+ * Default scheduling policy
+ * @author Spellmaker
+ *
+ */
 public class DefaultSchedulingPolicy implements SchedulingPolicy {
 
 	/** Maximum number of elements considered, 30 */
@@ -64,6 +69,7 @@ public class DefaultSchedulingPolicy implements SchedulingPolicy {
 		 * If the set is larger than {@link DefaultSchedulingPolicy#MAX_SET_SIZE}
 		 * then a subset of the given set (no larger than {@link DefaultSchedulingPolicy#MAX_SET_SIZE}
 		 * is considered.  
+		 * @param set The set of agents
 		 */
 		public DefaultIterator(Set<? extends Element> set) {
 			List<Element> tempList = new ArrayList<Element>(set);

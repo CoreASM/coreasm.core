@@ -13,7 +13,7 @@ import org.coreasm.engine.plugin.Plugin;
 public interface CompilerPlugin {
 	/**
 	 * Initializes the plugin, providing a reference to the compiler
-	 * @param engine
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public void init(CompilerEngine engine);
 	/**
@@ -22,5 +22,9 @@ public interface CompilerPlugin {
 	 */
 	public String getName();
 	
+	/**
+	 * Links the plugin to it's corresponding interpreter version
+	 * @return The corresponding interpreter plugin
+	 */
 	public Plugin getInterpreterPlugin();
 }

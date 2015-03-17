@@ -11,6 +11,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
 
+/**
+ * Handles the let rule
+ * @author Spellmaker
+ *
+ */
 public class LetRuleHandler implements CompilerCodeHandler {
 
 	@Override

@@ -30,13 +30,22 @@ import org.coreasm.engine.plugins.list.ListFunctionElement;
  * 
  */
 public class HeadFunctionElement extends ListFunctionElement {
-	
+	/**
+	 * Name of the head function
+	 */
 	public static final String HEAD_FUNC_NAME = "head";
+	/**
+	 * Name of the last function
+	 */
 	public static final String LAST_FUNC_NAME = "last";
 	
 	protected Signature signature = null;
 	protected final boolean isHead;
 	
+	/**
+	 * Constructs the function element
+	 * @param capi The capi for this element
+	 */
 	public HeadFunctionElement(ControlAPI capi) {
 		super(capi);
 		this.isHead = true;

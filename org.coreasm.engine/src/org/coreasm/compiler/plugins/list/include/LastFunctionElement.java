@@ -24,19 +24,28 @@ import org.coreasm.engine.plugins.list.ListBackgroundElement;
 import org.coreasm.engine.plugins.list.ListFunctionElement;
 
 /** 
- * Impelementation of head and last functions on lists.
+ * Implementation of head and last functions on lists.
  *   
  * @author  Roozbeh Farahbod
  * 
  */
 public class LastFunctionElement extends ListFunctionElement {
-	
+	/**
+	 * The head function name
+	 */
 	public static final String HEAD_FUNC_NAME = "head";
+	/**
+	 * The last function name
+	 */
 	public static final String LAST_FUNC_NAME = "last";
 	
 	protected Signature signature = null;
 	protected final boolean isHead;
 	
+	/**
+	 * Constructs the element
+	 * @param capi The capi for this element
+	 */
 	public LastFunctionElement(ControlAPI capi) {
 		super(capi);
 		this.isHead = false;

@@ -92,7 +92,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	/**
 	 * Constructs a new CoreASMCompiler instance using an external CoreASMEngine
 	 * @param options The options for the compilation process
-	 * @param engine A CoreASMEngine
+	 * @param casm A CoreASMEngine
 	 */
 	public CoreASMCompiler(CompilerOptions options, CoreASMEngine casm){
 		init(options, casm);

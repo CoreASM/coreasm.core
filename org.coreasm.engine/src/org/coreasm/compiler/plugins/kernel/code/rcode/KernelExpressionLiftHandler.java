@@ -7,6 +7,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles empty expression nodes
+ * @author Spellmaker
+ *
+ */
 public class KernelExpressionLiftHandler implements CompilerCodeHandler {
 
 	@Override

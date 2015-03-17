@@ -8,6 +8,12 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the list term.
+ * Constructs lists
+ * @author Spellmaker
+ *
+ */
 public class ListTermHandler implements CompilerCodeHandler {
 
 	@Override

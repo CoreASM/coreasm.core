@@ -44,7 +44,7 @@ public interface CompilerOperatorPlugin extends CompilerPlugin{
 	 * Compiles a binary operator node according to the specification of an operator.
 	 * @param token The operator token
 	 * @return The compiled String
-	 * @throws CompilerException 
+	 * @throws CompilerException If an error occurred
 	 */
 	public String compileBinaryOperator(String token) throws CompilerException;
 	
@@ -52,7 +52,7 @@ public interface CompilerOperatorPlugin extends CompilerPlugin{
 	 * Compiles an unary operator node according to the specification of an operator.
 	 * @param token The operator token
 	 * @return The compiled String
-	 * @throws CompilerException 
+	 * @throws CompilerException If an error occurred
 	 */
 	public String compileUnaryOperator(String token) throws CompilerException;
 }

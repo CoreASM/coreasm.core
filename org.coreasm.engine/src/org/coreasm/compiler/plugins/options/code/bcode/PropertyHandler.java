@@ -7,6 +7,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.options.OptionNode;
 
+/**
+ * Handles property creation
+ * @author Spellmaker
+ *
+ */
 public class PropertyHandler implements CompilerCodeHandler {	
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)

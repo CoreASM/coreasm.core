@@ -16,6 +16,7 @@ import org.coreasm.compiler.codefragment.CodeFragment;
 public class MathPluginHelper {
 	/**
 	 * Create the function entries
+	 * @param engine The compiler engine supervising the compilation process
 	 * @return A map containing the generated functions with the corresponding names
 	 */
 	public static Map<String, MathFunctionEntry> createFunctions(CompilerEngine engine){

@@ -15,6 +15,11 @@ import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.list.ListCompNode;
 import org.coreasm.engine.plugins.list.TrueGuardNode;
 
+/**
+ * Handles list comprehension
+ * @author Spellmaker
+ *
+ */
 public class ListCompHandler implements CompilerCodeHandler {
 
 	@Override

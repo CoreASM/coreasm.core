@@ -11,10 +11,19 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.options.code.bcode.PropertyHandler;
 
+/**
+ * Provides functionality to declare options in the specification header
+ * @author Spellmaker
+ *
+ */
 public class CompilerOptionsPlugin extends CompilerCodePlugin implements CompilerPlugin {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerOptionsPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

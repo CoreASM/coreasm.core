@@ -35,13 +35,28 @@ import org.coreasm.engine.plugins.collection.CollectionFunctionElement;
 public class FoldrFunctionElement extends CollectionFunctionElement {
 
 	/** suggested names for this function */
+	/**
+	 * Name for the fold function
+	 * Same as foldl
+	 */
 	public static final String FOLD_NAME = "fold";
+	/**
+	 * Name for the foldr function
+	 */
 	public static final String FOLDR_NAME = "foldr";
+	/**
+	 * Name for the foldl function
+	 */
 	public static final String FOLDL_NAME = "foldl";
 	
 	protected final boolean isFoldR;
 	private Signature signature = new Signature("ELEMENT", "FUNCTION", "ELEMENT", "ELEMENT");
+
 	
+	/**
+	 * Constructs the function element
+	 * @param capi The control api used for this function element
+	 */
 	public FoldrFunctionElement(ControlAPI capi) {
 		super(capi);
 		this.isFoldR = true;

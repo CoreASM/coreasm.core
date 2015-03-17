@@ -41,10 +41,21 @@ import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides lists.
+ * Building upon the collection plugin includes ListElements and
+ * operations on them
+ * @author Spellmaker
+ *
+ */
 public class CompilerListPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin, CompilerMakroProvider{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerListPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

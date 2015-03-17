@@ -16,10 +16,19 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 
+/**
+ * Provides the TurboASM functionality.
+ * @author Spellmaker
+ *
+ */
 public class CompilerTurboASMPlugin extends CompilerCodePlugin implements CompilerPlugin {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerTurboASMPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

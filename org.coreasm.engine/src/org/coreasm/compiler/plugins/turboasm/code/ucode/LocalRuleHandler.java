@@ -8,6 +8,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
 
+/**
+ * Handles the local rule
+ * @author Spellmaker
+ *
+ */
 public class LocalRuleHandler implements CompilerCodeHandler {
 
 	@Override

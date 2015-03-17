@@ -6,6 +6,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles boolean creation
+ * @author Spellmaker
+ *
+ */
 public class KernelBooleanTermHandler implements CompilerCodeHandler {
 
 	@Override

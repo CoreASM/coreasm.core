@@ -23,6 +23,7 @@ public class DerivedFunctionEntry extends MemoryInclude{
 	 * @param name The name of the derived function
 	 * @param params The parameters of the function
 	 * @param body The body of the function
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public DerivedFunctionEntry(String name, String[] params, CodeFragment body, CompilerEngine engine){
 		super(engine, "DerFunc_" + name, "SignaturePlugin", LibraryEntryType.DYNAMIC);

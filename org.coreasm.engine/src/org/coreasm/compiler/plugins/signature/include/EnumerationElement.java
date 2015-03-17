@@ -27,6 +27,10 @@ public class EnumerationElement extends Element {
     
     private String backgroundName = null;
     
+    /**
+     * Initializes the enumeration element
+     * @param name The name of the element
+     */
     public EnumerationElement(String name) {
         super();
         this.name = name;
@@ -50,9 +54,11 @@ public class EnumerationElement extends Element {
     		return backgroundName;
     }
     
-    /*
-     * The signature plugin can set the name of 
-     * the background of this element.
+    /**
+     * Sets the background of this element.
+     * Unfortunately needs to be public, but no plugin
+     * other than the signature plugin should ever generate code modifying the background
+     * @param name The name of the background
      */
     public void setBackground(String name) {
     	this.backgroundName = name;

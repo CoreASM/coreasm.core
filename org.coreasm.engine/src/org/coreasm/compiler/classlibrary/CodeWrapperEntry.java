@@ -10,6 +10,7 @@ import org.coreasm.compiler.exception.LibraryEntryException;
 /**
  * Represents a code encapsulating class.
  * CodeWrappers can be generated to avoid large code blocks, which can exceed the java byte limit for methods.
+ * Provides a static method to easily generate code wrappers
  * @author Spellmaker
  *
  */
@@ -34,6 +35,7 @@ public class CodeWrapperEntry extends MemoryInclude {
 	 * the same evalStack
 	 * @param body The body of the code wrapper
 	 * @param responsible A string denoting the class responsible for the creation of this wrapper for debugging
+	 * @param engine The compiler engine supervising the compilation process
 	 * @return A code fragment which executes the code wrapper
 	 * @throws CompilerException If an error occured during the creation
 	 */

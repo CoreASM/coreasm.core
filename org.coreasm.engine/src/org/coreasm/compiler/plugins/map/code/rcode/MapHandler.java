@@ -8,6 +8,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles map creation
+ * @author Spellmaker
+ *
+ */
 public class MapHandler implements CompilerCodeHandler {
 
 	@Override

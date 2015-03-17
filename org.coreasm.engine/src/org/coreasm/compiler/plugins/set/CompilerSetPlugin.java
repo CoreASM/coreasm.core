@@ -24,10 +24,19 @@ import org.coreasm.compiler.interfaces.CompilerOperatorPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides sets for the compiler
+ * @author Spellmaker
+ *
+ */
 public class CompilerSetPlugin extends CompilerCodePlugin implements CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerSetPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

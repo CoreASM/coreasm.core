@@ -50,17 +50,6 @@ import de.spellmaker.coreasmc.plugins.dummy.turboasmplugin.TurboASMPlugin;*/
  *
  */
 public class DummyLoader implements PluginLoader {
-	/*private HashMap<String, CompilerPlugin> plugins;
-	private HashMap<String, CompilerExtensionPointPlugin> extensions;
-	private HashMap<String, CompilerVocabularyExtender> vocabextenders;
-	private HashMap<String, CompilerInitCodePlugin> initcode;
-	private HashMap<String, CompilerOperatorPlugin> operatorplugins;
-	private HashMap<String, CompilerFunctionPlugin> functionplugins;
-	private HashMap<String, CompilerPreprocessorPlugin> preprocessorplugins;
-	private HashMap<String, CompilerCodePlugin> compilercodeplugins;
-	private HashMap<String, CompilerPathPlugin> compilerpathplugins;
-	private HashMap<String, CompilerBackendProvider> compilerbackendproviders;
-	private HashMap<String, CompilerMainClassProvider> compilermainclassproviders;*/
 	private Map<String, CompilerPlugin> allPlugins;
 	private Map<Class<?>, Map<String, CompilerPlugin>> pluginMap;
 	private HashMap<String, CompilerPlugin> replacements;
@@ -70,20 +59,10 @@ public class DummyLoader implements PluginLoader {
 	/**
 	 * Creates a new dummy loader
 	 * and initializes the internal data structures
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public DummyLoader(CompilerEngine engine){
 		this.engine = engine;
-		/*plugins = new HashMap<String, CompilerPlugin>();
-		extensions = new HashMap<String, CompilerExtensionPointPlugin>();
-		vocabextenders = new HashMap<String, CompilerVocabularyExtender>();
-		initcode = new HashMap<String, CompilerInitCodePlugin>();
-		operatorplugins = new HashMap<String, CompilerOperatorPlugin>();
-		functionplugins = new HashMap<String, CompilerFunctionPlugin>();
-		preprocessorplugins = new HashMap<String, CompilerPreprocessorPlugin>();
-		compilercodeplugins = new HashMap<String, CompilerCodePlugin>();
-		compilerpathplugins = new HashMap<String, CompilerPathPlugin>();
-		compilerbackendproviders = new HashMap<String, CompilerBackendProvider>();
-		compilermainclassproviders = new HashMap<String, CompilerMainClassProvider>();*/
 		allPlugins = new HashMap<String, CompilerPlugin>();
 		pluginMap = new HashMap<Class<?>, Map<String,CompilerPlugin>>();
 		notCompilable = new ArrayList<String>();
@@ -91,28 +70,6 @@ public class DummyLoader implements PluginLoader {
 		//until coreasmc is merged with coreasm,
 		//add new compilable plugins to this list
 		replacements = new HashMap<String, CompilerPlugin>();
-		/*replacements.put("Kernel", new KernelPlugin());
-		replacements.put("BlockRulePlugin", new BlockRulePlugin());
-		replacements.put("ConditionalRulePlugin", new ConditionalRulePlugin());
-		replacements.put("LetRulePlugin", new LetRulePlugin());
-		replacements.put("ExtendRulePlugin", new ExtendRulePlugin());
-		replacements.put("ChooseRulePlugin", new ChooseRulePlugin());
-		replacements.put("ForallRulePlugin", new ForAllRulePlugin());
-		replacements.put("CaseRulePlugin", new CaseRulePlugin());
-		replacements.put("PredicateLogicPlugin", new PredicateLogicPlugin());
-		replacements.put("NumberPlugin", new NumberPlugin());
-		replacements.put("StringPlugin", new StringPlugin());
-		replacements.put("CollectionPlugin", new CollectionPlugin());
-		replacements.put("SetPlugin", new SetPlugin());
-		replacements.put("ListPlugin", new ListPlugin());
-		replacements.put("MapPlugin", new MapPlugin());
-		replacements.put("IOPlugin", new IOPlugin());
-		replacements.put("AbstractionPlugin", new AbstractionPlugin());
-		replacements.put("OptionsPlugin", new OptionsPlugin());
-		replacements.put("TurboASMPlugin", new TurboASMPlugin());
-		replacements.put("SignaturePlugin", new SignaturePlugin());
-		replacements.put("MathPlugin", new MathPlugin());
-		replacements.put("TimePlugin", new TimePlugin());*/
 	}
 	
 	@Override
@@ -120,17 +77,6 @@ public class DummyLoader implements PluginLoader {
 		notCompilable.clear();
 		allPlugins.clear();
 		pluginMap.clear();
-		/*plugins.clear(); // clear leftover plugins first, even though this should never be applicable
-		extensions.clear();
-		vocabextenders.clear();
-		initcode.clear();
-		operatorplugins.clear();
-		functionplugins.clear();
-		preprocessorplugins.clear();
-		compilercodeplugins.clear();
-		compilerpathplugins.clear();
-		compilerbackendproviders.clear();
-		compilermainclassproviders.clear();*/
 		
 		//add all plugins which provide code but won't appear in the
 		//parse tree body

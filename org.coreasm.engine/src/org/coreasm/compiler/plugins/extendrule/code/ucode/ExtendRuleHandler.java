@@ -7,6 +7,11 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the extend rule
+ * @author Spellmaker
+ *
+ */
 public class ExtendRuleHandler implements CompilerCodeHandler {
 
 	@Override

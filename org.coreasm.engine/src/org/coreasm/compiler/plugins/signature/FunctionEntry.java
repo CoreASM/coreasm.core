@@ -27,6 +27,7 @@ public class FunctionEntry extends MemoryInclude {
 	 * @param domain The domain of the function type
 	 * @param range The range of the function type
 	 * @param init A code fragment generating the initial values for the function
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public FunctionEntry(String name, String fclass, List<String> domain, String range, CodeFragment init, CompilerEngine engine){
 		super(engine, "Func_" + name, "SignaturePlugin", LibraryEntryType.DYNAMIC);

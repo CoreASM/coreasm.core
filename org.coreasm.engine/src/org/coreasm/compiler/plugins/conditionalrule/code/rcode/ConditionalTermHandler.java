@@ -8,6 +8,11 @@ import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.plugins.conditionalrule.ConditionalTermNode;
 
+/**
+ * Handles the conditional term
+ * @author Spellmaker
+ *
+ */
 public class ConditionalTermHandler implements CompilerCodeHandler {
 
 	@Override

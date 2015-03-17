@@ -17,6 +17,7 @@ public class EngineState {
 	/**
 	 * Builds a new engine state with the given name.
 	 * @param name The name of the engine state
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public EngineState(String name, CompilerEngine engine){
 		this.name = name;

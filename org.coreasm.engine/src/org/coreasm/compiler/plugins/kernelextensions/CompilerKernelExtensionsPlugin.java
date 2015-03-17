@@ -9,9 +9,20 @@ import org.coreasm.compiler.plugins.kernelextensions.code.ucode.CompilerExtended
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.kernelextensions.KernelExtensionsPlugin;
 
+/**
+ * Provides extended rule call possibilities.
+ * The current version does not completely implement all
+ * operations of the interpreter plugin
+ * @author Spellmaker
+ *
+ */
 public class CompilerKernelExtensionsPlugin extends CompilerCodePlugin implements CompilerPlugin {
 	private Plugin parent;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerKernelExtensionsPlugin(Plugin parent) {
 		this.parent = parent;
 	}

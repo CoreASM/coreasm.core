@@ -63,14 +63,25 @@ public class SetElement extends AbstractSetElement implements ModifiableCollecti
 		booleanValues = Collections.unmodifiableSet(set);
 	}
 	
+	/**
+	 * Constructs a new empty set
+	 */
 	public SetElement() {
 		members = Collections.emptySet();
 	}
 	
+	/**
+	 * Constructs a new set from the given element source
+	 * @param members The element source
+	 */
 	public SetElement(Collection<? extends Element> members) {
 		this.members = Collections.unmodifiableSet(new HashSet<Element>(members));
 	}
 	
+	/**
+	 * Constructs a new set from the given element source
+	 * @param anotherSet The element source
+	 */
 	public SetElement(SetElement anotherSet) {
 		this(anotherSet.members);
 	}
@@ -277,6 +288,7 @@ public class SetElement extends AbstractSetElement implements ModifiableCollecti
 
 	/**
 	 * Returns the size of this set in integer.
+	 * @return the size of the set
 	 */
 	public int intSize() {
 		return members.size();
@@ -314,12 +326,6 @@ public class SetElement extends AbstractSetElement implements ModifiableCollecti
 		return true;
 	}
 
-	/**
-	 * Returns a {@link Map} view of this set. The key elements
-	 * are members of the set and the values are {@link BooleanElement#TRUE}.
-	 * 
-	 * @see AbstractMapElement#getMap()
-	 */
 	@Override
 	public Map<Element, Element> getMap() {
 		if (map == null) {

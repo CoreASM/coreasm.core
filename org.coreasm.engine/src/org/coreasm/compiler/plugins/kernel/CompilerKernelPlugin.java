@@ -53,11 +53,23 @@ import org.coreasm.engine.absstorage.RuleBackgroundElement;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.plugin.Plugin;
 
+/**
+ * Provides core functionality to the compiler.
+ * The kernel plugin aims to behave as a normal plugin.
+ * One has to keep in mind though, that it still has a special
+ * role in the architecture.
+ * @author Spellmaker
+ *
+ */
 public class CompilerKernelPlugin extends CompilerCodePlugin implements
 		CompilerPlugin, CompilerVocabularyExtender, CompilerOperatorPlugin, CompilerPreprocessorPlugin {
 
 	private Plugin interpreterPlugin;
 
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerKernelPlugin(Plugin parent) {
 		this.interpreterPlugin = parent;
 	}

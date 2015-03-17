@@ -9,10 +9,21 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.extendrule.code.ucode.ExtendRuleHandler;
 
+/**
+ * Provides the extend rule.
+ * Introduces a new element into an universe
+ * and binds it to a local variable in its body
+ * @author Spellmaker
+ *
+ */
 public class CompilerExtendRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerExtendRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

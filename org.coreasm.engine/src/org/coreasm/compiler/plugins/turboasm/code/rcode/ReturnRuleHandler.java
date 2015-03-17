@@ -7,15 +7,21 @@ import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;
 
+/**
+ * Handles the return expression.
+ * This rule has a lot of potential to digress from the interpreter
+ * version, as the rule call mechanism is one of the key differences
+ * between the interpreter and the compiler.
+ * Potential errors need to be examined carefully and might lead to
+ * complete overhauls of core mechanisms.
+ * @author Spellmaker
+ *
+ */
 public class ReturnRuleHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
 			throws CompilerException {
-		//Note: The current definition of return result
-		//is a bit strange. Even though it returns an expression,
-		//it can't be used as one and can only be used as the top
-		//level node of a rule, making that rule return a value.
 		
 		CodeFragment exp = engine.compile(node.getAbstractChildNodes().get(0), CodeType.R);
 		CodeFragment rule = engine.compile(node.getAbstractChildNodes().get(1), CodeType.U);

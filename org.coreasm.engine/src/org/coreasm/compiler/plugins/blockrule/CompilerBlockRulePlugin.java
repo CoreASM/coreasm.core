@@ -9,6 +9,13 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.blockrule.code.ucode.BlockRuleHandler;
 
+/**
+ * Provides the block rule.
+ * Block rules allow for parallel execution (in terms of abstract state machines)
+ * of rules
+ * @author Spellmaker
+ *
+ */
 public class CompilerBlockRulePlugin extends CompilerCodePlugin implements CompilerPlugin{
 
 	private Plugin interpreterPlugin;
@@ -17,7 +24,11 @@ public class CompilerBlockRulePlugin extends CompilerCodePlugin implements Compi
 	public void init(CompilerEngine engine) {
 		this.engine = engine;
 	}
-	
+
+	/**
+	 * Constructs a new instance
+	 * @param parent The interpreter version
+	 */
 	public CompilerBlockRulePlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

@@ -22,11 +22,20 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
 
+/**
+ * Provides maps to the compiler.
+ * @author Spellmaker
+ *
+ */
 public class CompilerMapPlugin extends CompilerCodePlugin implements CompilerPlugin,
 		CompilerVocabularyExtender {
 
 	private Plugin interpreterPlugin;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerMapPlugin(Plugin parent){
 		this.interpreterPlugin = parent;
 	}

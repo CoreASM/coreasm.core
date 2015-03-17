@@ -4,7 +4,21 @@ import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.classlibrary.MemoryInclude;
 
+/**
+ * The default main class of the compilation unit.
+ * This entry will generate the Main.java file in the root
+ * of the compilation directory, providing the main entry
+ * point.
+ * The class will simply provide the main method and start
+ * a thread with the state machine.
+ * @author Spellmaker
+ *
+ */
 public class MainClass extends MemoryInclude {
+	/**
+	 * Constructs the entry
+	 * @param engine The compiler engine supervising the compilation process
+	 */
 	public MainClass(CompilerEngine engine){
 		super(engine, "Main", "Kernel", LibraryEntryType.BASE);
 	}

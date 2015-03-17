@@ -23,7 +23,6 @@ import CompilerRuntime.UpdateList;
  * The interface for all modifiable collections.
  *   
  * @author Roozbeh Farahbod
- * @see CollectionPlugin
  */
 
 public interface ModifiableCollection {
@@ -34,6 +33,7 @@ public interface ModifiableCollection {
 	 * @param loc the location of the update
 	 * @param e the new element
 	 * @param agent the contributing agent
+	 * @return The computed update list
 	 * 
 	 * @throws CoreASMCException if there is a problem with evaluating the update set
 	 */
@@ -45,6 +45,7 @@ public interface ModifiableCollection {
 	 * @param loc the location of the update
 	 * @param e the element to be removed
 	 * @param agent the contributing agent  
+	 * @return The computed update list
 	 * 
 	 * @throws CoreASMCException if there is a problem with evaluating the update set
 	 */

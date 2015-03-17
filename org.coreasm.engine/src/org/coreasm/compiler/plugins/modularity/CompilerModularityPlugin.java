@@ -6,11 +6,22 @@ import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.engine.plugin.Plugin;
 
+/**
+ * Provides modularity support.
+ * Does not actually provide functionality, as the interpreter
+ * version handles everything
+ * @author Spellmaker
+ *
+ */
 public class CompilerModularityPlugin extends CompilerCodePlugin implements
 		CompilerPlugin {
 
 	private Plugin parent;
 	
+	/**
+	 * Constructs a new plugin
+	 * @param parent The interpreter version
+	 */
 	public CompilerModularityPlugin(Plugin parent) {
 		this.parent = parent;
 	}

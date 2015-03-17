@@ -10,10 +10,10 @@ import org.coreasm.compiler.exception.EmptyContextStackException;
 import org.coreasm.compiler.exception.LibraryEntryException;
 
 /**
- * Advanced LibraryEntry describing a rule.
+ * LibraryEntry describing a rule.
  * A rule consists of a name, a (possibly empty) list of arguments
  * and a piece of code representing its body.
- * All Rules will be written to the Rules package. 
+ * Rules always have the {@link LibraryEntryType} Rule
  * @author Markus Brenner
  * 
  */
@@ -28,6 +28,7 @@ public class RuleClassFile extends MemoryInclude {
 	 * @param ruleName The name of the rule
 	 * @param arguments The arguments of the rule, may not be null
 	 * @param body The code of the rule
+	 * @param engine The compiler engine supervising the compilation process
 	 */
 	public RuleClassFile(String ruleName, List<String> arguments, CodeFragment body, CompilerEngine engine){
 		super(engine, ruleName, "Kernel", LibraryEntryType.RULE);

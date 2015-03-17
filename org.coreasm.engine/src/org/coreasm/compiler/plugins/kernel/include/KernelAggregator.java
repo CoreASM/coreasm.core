@@ -10,6 +10,11 @@ import CompilerRuntime.AggregationHelper;
 import CompilerRuntime.PluginCompositionAPI;
 import CompilerRuntime.UpdateList;
 
+/**
+ * Default kernel aggregation
+ * @author Spellmaker
+ *
+ */
 public class KernelAggregator implements CompilerRuntime.UpdateAggregator {
 
 	@Override
