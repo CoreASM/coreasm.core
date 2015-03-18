@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages logging for the compiler
+ * Manages logging for the compiler.
  * Stores message receivers and distributes incoming messages
  * @author Spellmaker
  *

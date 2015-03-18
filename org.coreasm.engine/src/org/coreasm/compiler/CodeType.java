@@ -1,7 +1,7 @@
 package org.coreasm.compiler;
 
 /**
- * This enum describes, what a compiled piece of code will do.
+ * Describes what a compiled piece of code will do.
  * <p>
  * BASIC is the only special code here, as it will not create
  * a piece of code, but one or more library entries.

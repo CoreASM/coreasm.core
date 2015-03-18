@@ -169,6 +169,7 @@ public interface ControlAPI extends CoreASMEngine, ServiceRegistry {
 	/**
 	 * Return <code>true</code> if the engine is in error mode
 	 * or an error is occurred and it is going to be in error mode.
+	 * 
 	 */
 	public boolean hasErrorOccurred();
 }

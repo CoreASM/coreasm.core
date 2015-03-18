@@ -96,7 +96,17 @@ public class KernelMacroCallRule implements CompilerCodeHandler {
 			result.appendLine("@ulist@.addAll(@callruletmp@.call().updates);\n");
 			result.appendLine("evalStack.push(@ulist@);\n");
 		} else {
-			throw new UnsupportedOperationException("currently not supported");
+			result.appendFragment(engine.compile(mcrn.getFunctionRuleElement(), CodeType.R));
+			result.appendLine("@decl(Object,o)=evalStack.pop();");
+			result.appendLine("if(@o@ instanceof @RuntimePkg@.Rule){\n");
+			result.appendLine("}\n");
+			result.appendLine("else throw new Exception(\"not a rule\");\n");
+			result.appendLine("@decl(@RuntimePkg@.Rule,ruleinstance) = ((@RuntimePkg@.Rule)@o@).getCopy();\n");
+			result.appendLine("@ruleinstance@.initRule(@arglist@, localStack);\n");
+			result.appendLine("@decl(@RuntimePkg@.UpdateList, nulist)=new @RuntimePkg@.UpdateList();\n");
+			result.appendLine("@nulist@.addAll(@ruleinstance@.call().updates);\n");
+			result.appendLine("evalStack.push(@nulist@);\n");
+			//throw new UnsupportedOperationException("currently not supported");
 			/*// otherwise, name is a parameter on the local stack
 			cf.appendLine("@decl(CompilerRuntime.Rule,callruletmp);\n");
 			cf.appendLine("@callruletmp@ = ((CompilerRuntime.Rule)((CompilerRuntime.RuleParam) localStack.get(\""
