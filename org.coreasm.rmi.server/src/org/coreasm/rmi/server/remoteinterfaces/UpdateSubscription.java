@@ -9,6 +9,6 @@ import java.util.List;
  *
  */
 public interface UpdateSubscription extends Remote {	
-	public void newUpdates(String updates) throws RemoteException;
-	public void newUpdates(List<String> updates) throws RemoteException;
+	void newUpdates(String updates) throws RemoteException;
+	void newUpdates(List<String> updates) throws RemoteException;
 }

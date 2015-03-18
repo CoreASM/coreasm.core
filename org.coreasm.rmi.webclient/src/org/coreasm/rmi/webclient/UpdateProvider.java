@@ -60,7 +60,7 @@ public class UpdateProvider extends HttpServlet {
 					while (itr.hasNext()) {
 						String updt = itr.next();
 						out.print(updt);
-						if(itr.hasNext()) {
+						if (itr.hasNext()) {
 							out.println(',');
 						} else {
 							out.println();
@@ -75,13 +75,13 @@ public class UpdateProvider extends HttpServlet {
 		}
 	}
 
-	private EngineControl getEngine(String Id, HttpSession session) {
+	private EngineControl getEngine(String id, HttpSession session) {
 		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
 				.getAttribute("EngineMap");
 		if (engineMap == null) {
 			return null;
 		}
-		EngineControl ctrl = (EngineControl) engineMap.get(Id);
+		EngineControl ctrl = (EngineControl) engineMap.get(id);
 		if (ctrl == null) {
 			return null;
 		}

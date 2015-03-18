@@ -6,6 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Insert title here</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="CoreASMInterface.js"></script>
 <script type="text/javascript">
 	var states = [];
 	var agents = [];
@@ -23,6 +24,73 @@
 		}
 	};
 	
+	function getErrorsHandler(data) {						
+		for (i = 0; i < data.length; i++) {
+			var newErrorsHTML = "<li>" + data [i] + "</li>";
+			$("#errorList").prepend(
+					newErrorsHTML);							
+		}
+	};
+	
+	function getAgentsHandler(data) {
+		if(data.length > 0) {
+			$("#agentList").empty();
+			for (i = 0; i < data.length; i++) {
+				$("#agentList").append("<li> Agent" + (i+1) + ": " + data[i].name + "</li>");			
+			}
+		}
+	}
+	
+	function getUpdatesHandler(data) {						
+		for (i = 0; i < data.length; i++) {
+			var newState = JSON.parse(JSON.stringify(states[states.length-1]));
+			var update = data[i];
+			var newUpdatesHTML = "<li>";
+			var newOutputHTML = "";
+			var loc;
+			newUpdatesHTML += "<table border=\"1\" style=\"width:100%\">";
+			for (j = 0; j < update.length; j++) {
+				loc = update[j].location.replace("(", "_");
+				loc = loc.replace(")", "_");
+				newState[loc] = update[j].value;
+				newUpdatesHTML += "<tr>";
+				newUpdatesHTML += "<td>"
+						+ update[j].location
+						+ "</td>";
+				newUpdatesHTML += "<td>"
+						+ update[j].value
+						+ "</td>";
+				newUpdatesHTML += "<td>"
+						+ update[j].action
+						+ "</td>";
+				newUpdatesHTML += "</tr>";
+				if (update[j].location == "output()") {
+					newOutputHTML += "<li>";
+					newOutputHTML += update[j].value;
+					newOutputHTML += "</li>";
+				}
+			}
+			
+			var newOption = new Option(states.length, states.length);
+			$("#stateSelect").append(newOption);
+			states[states.length] = newState;
+			
+			
+			newUpdatesHTML += "</table>";
+			newUpdatesHTML += "</li>";
+			$("#updateList").prepend(
+					newUpdatesHTML);
+			if (newOutputHTML.length > 0) {
+				$("#outputList").prepend(
+						newOutputHTML);
+			}
+			
+		}
+		if(data.length > 0) {
+			refreshStateTable(states.length-1);
+		}
+	}
+	
 	$(document).ready(
 		function() {
 			states[0] = {}
@@ -31,94 +99,11 @@
 			});
 			
 			function update() {
-				$.ajax({
-					cache : false,
-					dataType : "json",
-					url : "Updates",
-					data : {
-						engineId : "${requestScope.EngineId}"
-					},
-					success : function(data) {						
-						for (i = 0; i < data.length; i++) {
-							var newState = JSON.parse(JSON.stringify(states[states.length-1]));
-							var update = data[i];
-							var newUpdatesHTML = "<li>";
-							var newOutputHTML = "";
-							var loc;
-							newUpdatesHTML += "<table border=\"1\" style=\"width:100%\">";
-							for (j = 0; j < update.length; j++) {
-								loc = update[j].location.replace("(", "_");
-								loc = loc.replace(")", "_");
-								newState[loc] = update[j].value;
-								newUpdatesHTML += "<tr>";
-								newUpdatesHTML += "<td>"
-										+ update[j].location
-										+ "</td>";
-								newUpdatesHTML += "<td>"
-										+ update[j].value
-										+ "</td>";
-								newUpdatesHTML += "<td>"
-										+ update[j].action
-										+ "</td>";
-								newUpdatesHTML += "</tr>";
-								if (update[j].location == "output()") {
-									newOutputHTML += "<li>";
-									newOutputHTML += update[j].value;
-									newOutputHTML += "</li>";
-								}
-							}
-							
-							var newOption = new Option(states.length, states.length);
-							$("#stateSelect").append(newOption);
-							states[states.length] = newState;
-							
-							
-							newUpdatesHTML += "</table>";
-							newUpdatesHTML += "</li>";
-							$("#updateList").prepend(
-									newUpdatesHTML);
-							if (newOutputHTML.length > 0) {
-								$("#outputList").prepend(
-										newOutputHTML);
-							}
-							
-						}
-						if(data.length > 0) {
-							refreshStateTable(states.length-1);
-						}
-					}
-				});
+				getUpdates(getUpdatesHandler);
 				
-				$.ajax({
-					cache : false,
-					dataType : "json",
-					url : "Errors",
-					data : {
-						engineId : "${requestScope.EngineId}"
-					},
-					success : function(data) {						
-						for (i = 0; i < data.length; i++) {
-							var newErrorsHTML = "<li>" + data [i] + "</li>";
-							$("#errorList").prepend(
-									newErrorsHTML);							
-						}
-					}
-				});
+				getErrors(getErrorsHandler);
 				
-				$.post("Control",					
-					{
-						command : "getAgents",
-						engineId : "${requestScope.EngineId}"
-					},
-					function(data) {
-						if(data.length > 0) {
-							$("#agentList").empty();
-							for (i = 0; i < data.length; i++) {
-								$("#agentList").append("<li> Agent" + (i+1) + ": " + data[i].name + "</li>");			
-							}
-						}
-					},
-					"json"); 
+				getAgents(getAgentsHandler); 
 			}
 			
  			 

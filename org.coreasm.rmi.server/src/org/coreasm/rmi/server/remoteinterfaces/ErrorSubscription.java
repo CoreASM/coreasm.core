@@ -8,5 +8,5 @@ import java.rmi.RemoteException;
  *
  */
 public interface ErrorSubscription extends Remote {
-	public void newError(String error) throws RemoteException;
+	void newError(String error) throws RemoteException;
 }

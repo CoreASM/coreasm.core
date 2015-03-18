@@ -38,7 +38,7 @@ import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
-import org.coreasm.engine.plugins.schedulingpolicies.SchedulingPoliciesPlugin;
+//import org.coreasm.engine.plugins.schedulingpolicies.SchedulingPoliciesPlugin;
 
 public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		EngineControl, EngineStepObserver, EngineErrorObserver,
@@ -451,12 +451,12 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		synchronized (updateSubscriptions) {
 			Iterator<UpdateSubscription> itrSub = updateSubscriptions
 					.iterator();
-			String Update = getUpdateString(updates);
+			String update = getUpdateString(updates);
 			UpdateSubscription sub;
 			while (itrSub.hasNext()) {
 				sub = itrSub.next();
 				try {
-					sub.newUpdates(Update);
+					sub.newUpdates(update);
 				} catch (RemoteException e) {
 					itrSub.remove();
 				}

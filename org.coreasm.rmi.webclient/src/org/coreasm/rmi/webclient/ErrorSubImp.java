@@ -7,11 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
-import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
-import org.coreasm.engine.absstorage.Update;
 
 /**
  * @author Stephan
@@ -29,7 +26,7 @@ public class ErrorSubImp extends UnicastRemoteObject implements
 	public List<String> getErrors(boolean deleteOld) {
 		List<String> newList = new ArrayList<String>();
 		
-		synchronized(errors) {
+		synchronized (errors) {
 			newList.addAll(errors);
 			if (deleteOld) {
 				errors.clear();

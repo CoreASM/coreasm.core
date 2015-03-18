@@ -14,16 +14,16 @@ public interface EngineControl extends Remote {
 	public enum EngineDriverStatus {
 		stopped, running, paused, empty
 	};
-	public String getIdNr() throws RemoteException;
-	public void start() throws RemoteException;
-	public void pause() throws RemoteException;
-	public void stop() throws RemoteException;
-	public void singleStep() throws RemoteException;
-	public void load(byte[] specification) throws RemoteException;
-	public void subscribeUpdates(UpdateSubscription sub) throws RemoteException;
-	public void subscribeErrors(ErrorSubscription sub) throws RemoteException;
-	public void addUpdate(String value, String agent) throws RemoteException;
-	public EngineDriverStatus getDriverStatus() throws RemoteException;
-	public EngineDriverInfo getDriverInfo() throws RemoteException;
-	public String getAgentlist() throws RemoteException;
+	String getIdNr() throws RemoteException;
+	void start() throws RemoteException;
+	void pause() throws RemoteException;
+	void stop() throws RemoteException;
+	void singleStep() throws RemoteException;
+	void load(byte[] specification) throws RemoteException;
+	void subscribeUpdates(UpdateSubscription sub) throws RemoteException;
+	void subscribeErrors(ErrorSubscription sub) throws RemoteException;
+	void addUpdate(String value, String agent) throws RemoteException;
+	EngineDriverStatus getDriverStatus() throws RemoteException;
+	EngineDriverInfo getDriverInfo() throws RemoteException;
+	String getAgentlist() throws RemoteException;
 }

@@ -18,14 +18,15 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.coreasm.rmi.server.remoteinterfaces.*;
+import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
+import org.coreasm.rmi.server.remoteinterfaces.ServerControl;
 
 /**
  * Servlet implementation class CoreASMControl
  */
 @WebServlet(urlPatterns = "/Control", loadOnStartup = 2)
 @MultipartConfig
-public class CoreASMControl extends HttpServlet {
+public class CoreASMControlProvider extends HttpServlet {
 	public enum Command {
 		start, stop, pause, join, update, step, getAgents
 	}
@@ -35,7 +36,7 @@ public class CoreASMControl extends HttpServlet {
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public CoreASMControl() {
+	public CoreASMControlProvider() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -96,6 +97,8 @@ public class CoreASMControl extends HttpServlet {
 						response.setContentType("application/json");
 						out.println(agents);
 						break;
+					default:
+						break;
 					}
 				}
 			} else {
@@ -118,7 +121,7 @@ public class CoreASMControl extends HttpServlet {
 		}
 	}
 
-	private EngineControl getEngine(String Id, HttpSession session) {
+	private EngineControl getEngine(String id, HttpSession session) {
 
 		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
 				.getAttribute("EngineMap");
@@ -127,8 +130,8 @@ public class CoreASMControl extends HttpServlet {
 			session.setAttribute("EngineMap", engineMap);
 		}
 		EngineControl ctrl = null;
-		if (Id != null) {
-			ctrl = (EngineControl) engineMap.get(Id);
+		if (id != null) {
+			ctrl = (EngineControl) engineMap.get(id);
 		}
 
 		if (ctrl == null) {
@@ -136,14 +139,14 @@ public class CoreASMControl extends HttpServlet {
 			ServerControl server = (ServerControl) ctx
 					.getAttribute("RMIServer");
 			try {
-				if (Id == null) {
+				if (id == null) {
 					ctrl = server.getNewEngine();
-					Id = ctrl.getIdNr();
+					id = ctrl.getIdNr();
 				} else {
-					ctrl = server.connectExistingEngine(Id);
+					ctrl = server.connectExistingEngine(id);
 				}
-				if(ctrl != null) {
-					engineMap.put(Id, ctrl);
+				if (ctrl != null) {
+					engineMap.put(id, ctrl);
 					UpdateSubImp sub = new UpdateSubImp();
 					ErrorSubImp errSub = new ErrorSubImp();
 					ctrl.subscribeUpdates(sub);
@@ -153,7 +156,7 @@ public class CoreASMControl extends HttpServlet {
 						subMap = new ConcurrentHashMap<String, UpdateSubImp>();
 						session.setAttribute("Subscriptions", subMap);
 					}
-					subMap.putIfAbsent(Id, sub);
+					subMap.putIfAbsent(id, sub);
 					
 					ctrl.subscribeErrors(errSub);
 					ConcurrentHashMap<String, ErrorSubImp> errMap = (ConcurrentHashMap<String, ErrorSubImp>) session
@@ -162,7 +165,7 @@ public class CoreASMControl extends HttpServlet {
 						errMap = new ConcurrentHashMap<String, ErrorSubImp>();
 						session.setAttribute("Errors", errMap);
 					}
-					errMap.putIfAbsent(Id, errSub);					
+					errMap.putIfAbsent(id, errSub);					
 				}
 			} catch (RemoteException e) {
 			}

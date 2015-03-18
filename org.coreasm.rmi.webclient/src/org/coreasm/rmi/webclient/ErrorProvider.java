@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
-import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 
 /**
  * Servlet implementation class ErrorProvider
@@ -76,13 +75,13 @@ public class ErrorProvider extends HttpServlet {
 		}
 	}
 
-	private EngineControl getEngine(String Id, HttpSession session) {
+	private EngineControl getEngine(String id, HttpSession session) {
 		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
 				.getAttribute("EngineMap");
 		if (engineMap == null) {
 			return null;
 		}
-		EngineControl ctrl = (EngineControl) engineMap.get(Id);
+		EngineControl ctrl = (EngineControl) engineMap.get(id);
 		if (ctrl == null) {
 			return null;
 		}

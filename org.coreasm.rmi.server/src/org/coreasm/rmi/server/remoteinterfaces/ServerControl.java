@@ -11,6 +11,6 @@ import java.rmi.RemoteException;
  *
  */
 public interface ServerControl extends Remote {
-	public EngineControl getNewEngine() throws RemoteException;
-	public EngineControl connectExistingEngine(String idNr) throws RemoteException;
+	EngineControl getNewEngine() throws RemoteException;
+	EngineControl connectExistingEngine(String idNr) throws RemoteException;
 }

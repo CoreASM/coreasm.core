@@ -23,7 +23,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import java.util.concurrent.TimeUnit;
 
-import org.coreasm.rmi.server.remoteinterfaces.*;
+import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
+import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
+import org.coreasm.rmi.server.remoteinterfaces.ServerAdminControl;
+import org.coreasm.rmi.server.remoteinterfaces.ServerControl;
 
 /**
  * @author Stephan
@@ -35,30 +38,30 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 	HashMap<String, EngineControl> engines = new HashMap<String, EngineControl>();
 	private int maxPoolsize = 9;
 	private ThreadPoolExecutor pool;
-	private BlockingQueue<Runnable> TaskQueue;
+	private BlockingQueue<Runnable> taskQueue;
 
 	protected CoreASMRMIServer() throws RemoteException {
 		super();
 //		pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxPoolsize);
-		TaskQueue = new LinkedBlockingQueue<Runnable>();
-		pool = new ThreadPoolExecutor(maxPoolsize, maxPoolsize, 0, TimeUnit.MILLISECONDS, TaskQueue);
+		taskQueue = new LinkedBlockingQueue<Runnable>();
+		pool = new ThreadPoolExecutor(maxPoolsize, maxPoolsize, 0, TimeUnit.MILLISECONDS, taskQueue);
 	}
 	
 
 	private static final long serialVersionUID = 1L;
 
-	public void Start() {
+	public void start() {
 
 	}
 
-	public void Stop() {
+	public void stop() {
 
 	}
 
 	/**
-	 * @param args
+	 * 
 	 */
-	public static void main(String[] args) {
+	public static void main() {
 		String name = "RMIServer";
 		CoreASMRMIServer server;
 		Registry registry;
@@ -71,7 +74,7 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 		try {
 
 			server = new CoreASMRMIServer();
-			server.Start();
+			server.start();
 			try {
 				registry = LocateRegistry.getRegistry();
 				registry.list();
@@ -96,9 +99,11 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 								break;
 							}
 						} catch (IOException e) {
+							System.out.print(e.getMessage());
 						}
 					}
 				} catch (InterruptedException e) {
+					Thread.interrupted();
 				}
 			}
 			try {
@@ -107,7 +112,7 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 				e.printStackTrace();
 			}
 			registry = null;
-			server.Stop();
+			server.stop();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -132,7 +137,7 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 	public ArrayList<EngineDriverInfo> getEngineList() throws RemoteException {
 		ArrayList<EngineDriverInfo> lst = new ArrayList<EngineDriverInfo>();
 		Iterator<Map.Entry<String, EngineControl>> itr = engines.entrySet().iterator();
-		while(itr.hasNext()) {
+		while (itr.hasNext()) {
 			lst.add(itr.next().getValue().getDriverInfo());
 		}
 		return lst;

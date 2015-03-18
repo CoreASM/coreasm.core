@@ -171,7 +171,10 @@ public class ConcurrentProgramEvaluator extends FJTask {
 		// allow the interpreter to perform internal initialization 
 		// prior to program execution
 		inter.initProgramExecution();
-
+		
+		//in case it got changed during inter.initProgramExecution()  
+		rootNode = inter.getPosition();
+		
 		do 
 			inter.executeTree();	
 		while (!(inter.isExecutionComplete() || capi.hasErrorOccurred()));

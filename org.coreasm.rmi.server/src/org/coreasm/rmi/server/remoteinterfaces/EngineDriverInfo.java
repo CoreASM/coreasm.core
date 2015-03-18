@@ -16,9 +16,9 @@ public class EngineDriverInfo implements Serializable {
 	private String id;
 	private EngineDriverStatus status;
 	
-	public EngineDriverInfo(String EngineId, EngineDriverStatus EngineStatus) {
-		setId(EngineId);
-		setStatus(EngineStatus);
+	public EngineDriverInfo(String engineId, EngineDriverStatus engineStatus) {
+		setId(engineId);
+		setStatus(engineStatus);
 	}
 
 	public String getId() {

@@ -7,10 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
-import org.coreasm.engine.absstorage.Update;
 
 /**
  * @author Stephan
