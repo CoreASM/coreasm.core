@@ -5,7 +5,7 @@ use Standard
 init TestChoose
 
 /*
- * @require "[1] + [2] = 3\n[1] + [] = none a:1 b:undef\n[1] + [2] = 3\n[1,2] + [1,2] = 3 with 1 < 2\n[1] > [2] = none\n[1] > [] = none a:1 b:undef\n[1,2] < [1,2] < [1,2] = none a:undef b:undef c:undef\n[1,2] + [1,2] = 3 with 1 < 2\nundef undef\n"
+ * @require "[1] + [2] = 3\n[1] + [] = none a:undef b:undef\n[1] + [2] = 3\n[1,2] + [1,2] = 3 with 1 < 2\n[1] > [2] = none\n[1] > [] = none a:undef b:undef\n[1,2] < [1,2] < [1,2] = none a:undef b:undef c:undef\n[1,2] + [1,2] = 3 with 1 < 2\nundef undef\n"
 */
 rule TestChoose =
 seqblock
