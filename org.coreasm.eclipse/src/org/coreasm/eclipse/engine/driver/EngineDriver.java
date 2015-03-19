@@ -555,14 +555,16 @@ public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorOb
 		// Looking for StepFailed
 		if (event instanceof StepFailedEvent) {
 			StepFailedEvent sEvent = (StepFailedEvent)event;
+			ControlAPI capi;
 			synchronized (this) {
 				updateFailed = true;
 				stepFailedMsg = sEvent.reason;
-				ControlAPI capi = (ControlAPI)engine;
-				for (Update update : capi.getStorage().getLastInconsistentUpdate()) {
-					for (ScannerInfo scannerInfo : update.sources)
-						showErrorInEclipse(new CoreASMError("Inconsistent Update: " + update, scannerInfo.getPos(capi.getParser().getPositionMap())));
-				}
+				capi = (ControlAPI) engine;
+			}
+			for (Update update : capi.getStorage().getLastInconsistentUpdate()) {
+				for (ScannerInfo scannerInfo : update.sources)
+					showErrorInEclipse(new CoreASMError("Inconsistent Update: " + update, scannerInfo.getPos(capi
+							.getParser().getPositionMap())));
 			}
 		}
 		
