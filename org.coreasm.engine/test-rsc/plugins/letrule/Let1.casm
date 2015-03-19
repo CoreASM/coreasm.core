@@ -11,7 +11,7 @@ init Let1
  *
  * @require "RuleOne 6\n"
  * @require "RuleTwo 1 h sentence\n"
- * @require "RuleThree 6\n"
+ * @require "RuleThree undef\n"
  * @require "RuleFive 1.0..3.0:2.0\n"
  * @require "RuleSix executed @RuleOne\n"
  */
@@ -21,8 +21,8 @@ rule Let1 =
 		let x = 1, y = 2, z = 3 in RuleOne(x, y, z)
 		// three different types
 		let x = 1, y = "h", z = "sentence" in RuleTwo(x, y, z)
-		// y referring to x
-		let x = 2, y = x + 2 in RuleThree(x, y)
+		// x referring to y
+		let x = y, y = 2 in RuleThree(x, y)
 		// variable is a NumberRange
 		let x = [1..3 step 2] in RuleFive(x)
 		// variable is a Rule
