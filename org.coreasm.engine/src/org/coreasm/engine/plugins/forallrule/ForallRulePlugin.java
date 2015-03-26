@@ -303,15 +303,16 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
                 return pos;
             }
             else if (forallNode.getIfnoneRule() != null && forallNode.getIfnoneRule().isEvaluated()) {
+                // [pos] := (undef,u,undef)
+                pos.setNode(null,forallNode.getIfnoneRule().getUpdates(),null);
+                return pos;
+            }
+            if (pos == forallNode.getIfnoneRule()) {
             	// RemoveEnv(x)
         		for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
         			if (remained.remove(variable.getValue()) != null)
         				interpreter.removeEnv(variable.getKey());
         		}
-                
-                // [pos] := (undef,u,undef)
-                pos.setNode(null,forallNode.getIfnoneRule().getUpdates(),null);
-                return pos;
             }
         }
         

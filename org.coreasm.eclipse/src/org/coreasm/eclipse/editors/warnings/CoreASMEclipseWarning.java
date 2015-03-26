@@ -12,6 +12,6 @@ import org.eclipse.jface.text.IDocument;
 public class CoreASMEclipseWarning extends AbstractWarning {
 
 	public CoreASMEclipseWarning(CoreASMWarning warning, IDocument document) {
-		super("CoreASM Warning: " + warning.showWarning(null, null), "CoreASMWarning", ((ASMDocument)document).getCharPosition(warning.getPos(), warning.getSpec()), ASMDocument.calculateLength(warning.node));
+		super("CoreASM Warning: " + warning.showWarning(null, null), "CoreASMWarning", ((ASMDocument)document).getCharPosition(warning.getPos(), warning.getSpec()), ((ASMDocument)document).calculateLength(warning.node));
 	}
 }

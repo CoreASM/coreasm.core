@@ -561,14 +561,6 @@ public class Engine implements ControlAPI {
 		for (String pName: pNames) {
 			Plugin p = pluginLoader.getPlugin(pName);//allPlugins.get(pName);
 
-			/*// If cannot find the plugin, try adding "Plugins" or "Plugin"
-			// to its name
-			if (p == null) {
-				p = allPlugins.get(pName + "Plugins");
-				if (p == null)
-					p = allPlugins.get(pName + "Plugin");
-			}*/
-
 			if (p != null) {
 				plugins.add(p.getName());
 
@@ -1241,13 +1233,9 @@ public class Engine implements ControlAPI {
 	public Map<String,VersionInfo> getPluginsVersionInfo() {
 		Map<String,VersionInfo> list = new HashMap<String,VersionInfo>();
 
-		for(Plugin p : pluginLoader.getPlugins()){
+		for(Plugin p : pluginLoader.getAllPlugins().values()){
 			list.put(p.getName(), p.getVersionInfo());
 		}
-		//if (allPlugins != null) {
-		//	for (Plugin p: allPlugins.values())
-		//		list.put(p.getName(), p.getVersionInfo());
-		//}
 
 		return list;
 	}

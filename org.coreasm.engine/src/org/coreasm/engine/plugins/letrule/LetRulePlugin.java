@@ -14,8 +14,10 @@
  
 package org.coreasm.engine.plugins.letrule;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +51,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 	private Map<String, GrammarRule> parsers = null;
 
 	private final String[] keywords = {"let", "in"};
-	private final String[] operators = {"=", ","};
+	private final String[] operators = {"=", ",", "{", "[", "]", "}"};
 	
 	private final CompilerPlugin compilerPlugin = new CompilerLetRulePlugin(this);
 	
@@ -137,15 +139,19 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 
 			ParserTools pTools = ParserTools.getInstance(capi);
 			Parser<Node> idParser = pTools.getIdParser();
+			
+			Parser<Object[]> letTermParser = pTools.csplus(pTools.seq(
+					idParser,
+					pTools.getOprParser("="),
+					termParser
+					));
 
 			Parser<Node> letRuleParser = Parsers.array(
 					new Parser[] {
 					pTools.getKeywParser("let", PLUGIN_NAME),
-					pTools.csplus(pTools.seq(
-							idParser,
-							pTools.getOprParser("="),
-							termParser
-							)),
+					Parsers.or(	pTools.seq(pTools.getOprParser("{"), letTermParser, pTools.getOprParser("}")),
+								pTools.seq(pTools.getOprParser("["), letTermParser, pTools.getOprParser("]")),
+								letTermParser),
 					pTools.getKeywParser("in", PLUGIN_NAME),
 					ruleParser
 					}).map(
@@ -184,9 +190,47 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 		
 		public Node map(Object[] vals) {
 			nextChildName = "alpha";
-			Node node = new LetRuleNode(((Node)vals[0]).getScannerInfo());
-			addChildren(node, vals);
+			LetRuleNode node = new LetRuleNode(((Node)vals[0]).getScannerInfo());
+			if (vals[1] instanceof Object[] && ((Object[])vals[1])[0] instanceof Node) {
+				Node n = ((Node)((Object[])vals[1])[0]);
+				if ("[".equals(n.getToken()))
+					addLetChildren(node, unpackChildren(new ArrayList<Node>(), vals));
+				else
+					addChildren(node, vals);
+			}
+			else
+				addChildren(node, vals);
 			return node;
+		}
+		
+		private List<Node> unpackChildren(List<Node> nodes, Object[] vals) {
+			for (Object child: vals) {
+				if (child != null) {
+					if (child instanceof Object[])
+						unpackChildren(nodes, (Object[])child);
+					else
+						if (child instanceof Node)
+							nodes.add((Node)child);
+				}
+			}
+			return nodes;
+		}
+		
+		private void addLetChildren(LetRuleNode root, List<Node> children) {
+			for (Node child: children) {
+				if (child instanceof ASTNode) {
+					if (!"alpha".equals(nextChildName) || root.getFirst() == null)
+						addChild(root, child);
+					else {
+						LetRuleNode newRoot = new LetRuleNode(child.getScannerInfo());
+						addChild(newRoot, child);
+						nextChildName = "gamma";
+						addChild(root, newRoot);
+						root = newRoot;
+					}
+				} else
+					addChild(root, child);
+			}
 		}
 
 		@Override
