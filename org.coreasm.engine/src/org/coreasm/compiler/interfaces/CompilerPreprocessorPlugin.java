@@ -3,8 +3,8 @@ package org.coreasm.compiler.interfaces;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.compiler.preprocessor.InheritRule;
-import org.coreasm.compiler.preprocessor.SynthesizeRule;
+import org.coreasm.compiler.components.preprocessor.InheritRule;
+import org.coreasm.compiler.components.preprocessor.SynthesizeRule;
 
 /**
  * A compiler preprocessor plugin provides components for the preprocessor analysis.

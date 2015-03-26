@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.LoggingHelper;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.logging.LoggingHelper;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.plugins.conditionalrule.CompilerConditionalRulePlugin;
 import org.coreasm.engine.interpreter.ASTNode;

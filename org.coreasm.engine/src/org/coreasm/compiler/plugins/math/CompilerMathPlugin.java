@@ -8,13 +8,13 @@ import java.util.Map.Entry;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.JarIncludeHelper;
-import org.coreasm.compiler.classlibrary.LibraryEntryType;
-import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.components.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.components.mainprogram.EntryType;
+import org.coreasm.compiler.components.mainprogram.MainFileEntry;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.mainprogram.EntryType;
-import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.compiler.plugins.math.code.rcode.RandomValueHandler;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.math.MathPlugin;

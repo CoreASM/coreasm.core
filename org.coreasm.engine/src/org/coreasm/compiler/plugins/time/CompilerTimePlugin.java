@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.JarIncludeHelper;
-import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.JarIncludeHelper;
+import org.coreasm.compiler.components.mainprogram.EntryType;
+import org.coreasm.compiler.components.mainprogram.MainFileEntry;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
-import org.coreasm.compiler.mainprogram.EntryType;
-import org.coreasm.compiler.mainprogram.MainFileEntry;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.time.NowFunctionElement;
 import org.coreasm.engine.plugins.time.StepCountFunctionElement;

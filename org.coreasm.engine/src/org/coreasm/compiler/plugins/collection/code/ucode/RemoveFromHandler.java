@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.classlibrary.LibraryEntryType;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
 import org.coreasm.engine.interpreter.ASTNode;

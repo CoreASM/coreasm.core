@@ -14,9 +14,9 @@ package org.coreasm.compiler.interfaces;
 
 import java.util.List;
 
-import org.coreasm.compiler.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.mainprogram.MainFileEntry;
 import org.coreasm.compiler.exception.CompilerException;
-import org.coreasm.compiler.mainprogram.MainFileEntry;
 
 
 /**

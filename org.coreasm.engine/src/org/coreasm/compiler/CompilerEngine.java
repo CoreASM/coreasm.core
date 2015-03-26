@@ -3,12 +3,15 @@ package org.coreasm.compiler;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.logging.LoggingHelper;
+import org.coreasm.compiler.components.mainprogram.StateMachineFile;
+import org.coreasm.compiler.components.pluginloader.PluginLoader;
+import org.coreasm.compiler.components.preprocessor.Preprocessor;
+import org.coreasm.compiler.components.variablemanager.VarManager;
 import org.coreasm.compiler.exception.CompilerException;
-import org.coreasm.compiler.mainprogram.StateMachineFile;
-import org.coreasm.compiler.preprocessor.Preprocessor;
-import org.coreasm.compiler.variablemanager.VarManager;
+import org.coreasm.compiler.paths.CompilerPathConfig;
 import org.coreasm.engine.interpreter.ASTNode;
 
 /**

@@ -12,13 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.coreasm.compiler.backend.CompilerFileWriter;
-import org.coreasm.compiler.backend.CompilerPacker;
-import org.coreasm.compiler.backend.KernelBackend;
-import org.coreasm.compiler.classlibrary.CodeWrapperEntry;
-import org.coreasm.compiler.classlibrary.LibraryEntry;
-import org.coreasm.compiler.classlibrary.ClassLibrary;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.backend.CompilerFileWriter;
+import org.coreasm.compiler.components.backend.CompilerPacker;
+import org.coreasm.compiler.components.backend.JavaCompilerWrapper;
+import org.coreasm.compiler.components.backend.KernelBackend;
+import org.coreasm.compiler.components.classlibrary.ClassLibrary;
+import org.coreasm.compiler.components.classlibrary.CodeWrapperEntry;
+import org.coreasm.compiler.components.classlibrary.LibraryEntry;
+import org.coreasm.compiler.components.logging.CompilationErrorHelper;
+import org.coreasm.compiler.components.logging.LoggingHelper;
+import org.coreasm.compiler.components.mainprogram.MainClass;
+import org.coreasm.compiler.components.mainprogram.StateMachineFile;
+import org.coreasm.compiler.components.pluginloader.DummyLoader;
+import org.coreasm.compiler.components.pluginloader.PluginLoader;
+import org.coreasm.compiler.components.preprocessor.Information;
+import org.coreasm.compiler.components.preprocessor.Preprocessor;
+import org.coreasm.compiler.components.variablemanager.VarManager;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.DirectoryNotEmptyException;
 import org.coreasm.compiler.exception.EmptyContextStackException;
@@ -36,11 +46,8 @@ import org.coreasm.compiler.interfaces.CompilerPathPlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerPreprocessorPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
-import org.coreasm.compiler.mainprogram.MainClass;
-import org.coreasm.compiler.mainprogram.StateMachineFile;
-import org.coreasm.compiler.preprocessor.Information;
-import org.coreasm.compiler.preprocessor.Preprocessor;
-import org.coreasm.compiler.variablemanager.VarManager;
+import org.coreasm.compiler.paths.CompilerPathConfig;
+import org.coreasm.compiler.paths.DefaultPaths;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngineFactory;
@@ -154,35 +161,34 @@ public class CoreASMCompiler implements CompilerEngine {
 	public void compile() throws CompilerException{
 		try{	
 			getLogger().debug(CoreASMCompiler.class, "starting compiler");
-			CompilerInformation info = new CompilerInformation();
 			
 			getLogger().debug(CoreASMCompiler.class, "loading specification");
-			loadSpecification(info);
+			ASTNode root = loadSpecification();
 			
 			lastTime = System.nanoTime();
 			getLogger().debug(CoreASMCompiler.class, "preprocessing specification");
-			preprocessSpecification(info);
+			preprocessSpecification(root);
 			cTime = System.nanoTime();
 			addTiming("Preprocessing");
 			
 			//load plugins, which have to be loaded first
 			getLogger().debug(CoreASMCompiler.class, "loading first set of plugins");
-			applyFirstPlugins(info);
+			applyFirstPlugins();
 			
 			//compile specification first, so that plugins may
 			//provide objects based on the parse tree
 			getLogger().debug(CoreASMCompiler.class, "compiling specification");
-			compileSpecification(info);
+			compileSpecification(root);
 			
 			getLogger().debug(CoreASMCompiler.class, "applying second set of plugins");
-			applyPlugins(info);
+			applyPlugins();
 			
 			getLogger().debug(CoreASMCompiler.class, "building main file");
 			//note: most operations will actually happen in the next step
-			buildMain(info);
+			buildMain();
 			
 			getLogger().debug(CoreASMCompiler.class, "compiling java sources");
-			compileSources(info);
+			compileSources();
 		}
 		catch(CompilerException ce){
 			throw ce;
@@ -411,7 +417,7 @@ public class CoreASMCompiler implements CompilerEngine {
 	
 	//----------------------start of helper functions for the actual compilation process------------------------
 	
-	private void loadSpecification(CompilerInformation info) throws CompilerException{
+	private ASTNode loadSpecification() throws CompilerException{
 		lastTime = System.nanoTime();
 		
 		//create an engine and parse the specification
@@ -492,13 +498,13 @@ public class CoreASMCompiler implements CompilerEngine {
 		cTime = System.nanoTime();
 		addTiming("Plugin loading");
 		//store the root node
-		info.root = (ASTNode) cae.getSpec().getRootNode();
+		return (ASTNode) cae.getSpec().getRootNode();
 	}
 	
-	private void preprocessSpecification(CompilerInformation info) throws CompilerException{		
+	private void preprocessSpecification(ASTNode root) throws CompilerException{		
 		try{
 			preprocessor.loadPlugins(pluginLoader.getPluginByType(CompilerPreprocessorPlugin.class));
-			preprocessor.preprocessSpecification(info.root);
+			preprocessor.preprocessSpecification(root);
 		}
 		catch(Exception e){
 			//e.printStackTrace();
@@ -507,7 +513,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		}
 	}
 	
-	private void applyFirstPlugins(CompilerInformation info) throws CompilerException {
+	private void applyFirstPlugins() throws CompilerException {
 		//path plugin
 		List<CompilerPlugin> pathplugins = pluginLoader.getPluginByType(CompilerPathPlugin.class);
 		if(pathplugins.size() > 1){
@@ -579,7 +585,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		addTiming("Code Handlers");
 	}
 	
-	private void applyPlugins(CompilerInformation info) throws CompilerException{
+	private void applyPlugins() throws CompilerException{
 		//init Plugins
 		lastTime = System.nanoTime();
 		mainFile.processInitCodePlugins(pluginLoader.getPluginByType(CompilerInitCodePlugin.class));
@@ -599,7 +605,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		addTiming("Vocabulary Extender Plugins");
 	}
 	
-	private void compileSpecification(CompilerInformation info) throws CompilerException{
+	private void compileSpecification(ASTNode root) throws CompilerException{
 		lastTime = System.nanoTime();
 		getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
 		File tempDir = options.tempDirectory;
@@ -626,7 +632,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		varManager.startContext();
 		
 		//errors in here have to be made public separately
-		compile(info.root, CodeType.BASIC);
+		compile(root, CodeType.BASIC);
 		
 		try {
 			varManager.endContext();
@@ -638,7 +644,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		addTiming("Compilation");
 	}
 	
-	private void compileSources(CompilerInformation info) throws CompilerException{
+	private void compileSources() throws CompilerException{
 		getLogger().debug(CoreASMCompiler.class, "code generation complete, dumping source files to " + options.tempDirectory);
 		
 		lastTime = System.nanoTime();
@@ -706,7 +712,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		}
 	}
 	
-	private void buildMain(CompilerInformation info) throws CompilerException{
+	private void buildMain() throws CompilerException{
 		try {
 			classLibrary.addEntry(mainFile);
 			

@@ -1,7 +1,7 @@
 package org.coreasm.compiler.interfaces;
 
-import org.coreasm.compiler.backend.CompilerFileWriter;
-import org.coreasm.compiler.backend.CompilerPacker;
+import org.coreasm.compiler.components.backend.CompilerFileWriter;
+import org.coreasm.compiler.components.backend.CompilerPacker;
 
 /**
  * A plugin which provides backend handlers for the compiler.

@@ -2,10 +2,10 @@ package org.coreasm.compiler.plugins.kernel.code.rcode;
 
 import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.preprocessor.Information;
+import org.coreasm.compiler.components.preprocessor.Preprocessor;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodeHandler;
-import org.coreasm.compiler.preprocessor.Information;
-import org.coreasm.compiler.preprocessor.Preprocessor;
 import org.coreasm.engine.interpreter.ASTNode;
 
 /**

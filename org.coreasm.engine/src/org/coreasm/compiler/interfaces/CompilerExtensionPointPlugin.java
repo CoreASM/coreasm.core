@@ -2,7 +2,7 @@ package org.coreasm.compiler.interfaces;
 
 import java.util.List;
 
-import org.coreasm.compiler.mainprogram.statemachine.EngineTransition;
+import org.coreasm.compiler.components.mainprogram.statemachine.EngineTransition;
 
 /**
  * Interface for extension point plugins.

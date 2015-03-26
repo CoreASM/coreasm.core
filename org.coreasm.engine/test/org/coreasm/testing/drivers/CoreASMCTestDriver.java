@@ -7,12 +7,12 @@ import java.lang.reflect.Method;
 
 import org.coreasm.compiler.CodeType;
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.LoggingHelper;
 import org.coreasm.compiler.codefragment.CodeFragment;
+import org.coreasm.compiler.components.logging.LoggingHelper;
+import org.coreasm.compiler.components.variablemanager.VarManager;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.variablemanager.VarManager;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.testing.CodeBuilder;
 import org.coreasm.testing.TestCase;

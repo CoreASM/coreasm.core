@@ -1,6 +1,6 @@
 package org.coreasm.compiler.interfaces;
 
-import org.coreasm.compiler.classlibrary.LibraryEntry;
+import org.coreasm.compiler.components.classlibrary.LibraryEntry;
 
 /**
  * Backend plugin which provides a main class.

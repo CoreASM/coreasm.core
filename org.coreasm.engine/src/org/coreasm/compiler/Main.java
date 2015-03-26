@@ -1,4 +1,6 @@
 package org.coreasm.compiler;
+import org.coreasm.compiler.components.commandline.CommandLineException;
+import org.coreasm.compiler.components.commandline.CommandLineParser;
 import org.coreasm.compiler.exception.CompilerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

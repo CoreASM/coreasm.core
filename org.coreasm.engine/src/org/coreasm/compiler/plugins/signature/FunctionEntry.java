@@ -3,10 +3,10 @@ package org.coreasm.compiler.plugins.signature;
 import java.util.List;
 
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.LibraryEntryType;
-import org.coreasm.compiler.classlibrary.MemoryInclude;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.codefragment.CodeFragmentException;
+import org.coreasm.compiler.components.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.components.classlibrary.MemoryInclude;
 
 /**
  * Represents a general function entry with a type, name and possible starting values

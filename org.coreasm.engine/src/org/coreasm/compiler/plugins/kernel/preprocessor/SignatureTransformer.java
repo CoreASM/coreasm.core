@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.coreasm.compiler.preprocessor.Information;
-import org.coreasm.compiler.preprocessor.SynthesizeRule;
-import org.coreasm.compiler.preprocessor.Trigger;
+import org.coreasm.compiler.components.preprocessor.Information;
+import org.coreasm.compiler.components.preprocessor.SynthesizeRule;
+import org.coreasm.compiler.components.preprocessor.Trigger;
 import org.coreasm.engine.interpreter.ASTNode;
 
 //stores rule declarations.

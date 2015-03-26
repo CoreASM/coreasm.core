@@ -1,7 +1,7 @@
 package org.coreasm.compiler.interfaces;
 
-import org.coreasm.compiler.CompilerPathConfig;
-import org.coreasm.compiler.DefaultPaths;
+import org.coreasm.compiler.paths.CompilerPathConfig;
+import org.coreasm.compiler.paths.DefaultPaths;
 
 /**
  * Plugin providing an alternative path definition.

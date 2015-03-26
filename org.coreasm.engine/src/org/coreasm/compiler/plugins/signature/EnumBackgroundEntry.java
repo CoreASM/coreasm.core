@@ -1,8 +1,8 @@
 package org.coreasm.compiler.plugins.signature;
 
 import org.coreasm.compiler.CompilerEngine;
-import org.coreasm.compiler.classlibrary.LibraryEntryType;
-import org.coreasm.compiler.classlibrary.MemoryInclude;
+import org.coreasm.compiler.components.classlibrary.LibraryEntryType;
+import org.coreasm.compiler.components.classlibrary.MemoryInclude;
 
 /**
  * Represents an enumerated background as a library entry
