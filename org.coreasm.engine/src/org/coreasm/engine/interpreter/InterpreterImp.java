@@ -1068,99 +1068,14 @@ public class InterpreterImp implements Interpreter {
 		return a.cloneTree();
 	}
 	
-	/* The following methods are removed/changed by Roozbeh Farahbod */ 
-//
-//	/**
-//	 * Returns a copy of the given parse tree, where every instance 
-//	 * of an identifier node in a given sequence (formal parameters) 
-//	 * is substituted by a copy of the corresponding parse tree in another 
-//	 * sequence (actual parameters, or arguments). We assume that the elements in the 
-//	 * formal parameters list are all distinct (i.e., it is not possible 
-//	 * to specify the same name for two different parameters).
-//	 * 
-//	 * @param root root of the parse tree
-//	 * @param params formal parameters
-//	 * @param args given arguments (replace parameters in the tree)
-//	 * @param parent parent of the created node
-//	 */
-//	private Node copyTreeSub(Node a, List<String> params, List<ASTNode> args, ASTNode parent) {
-//		Node result = null;
-//		ASTNode ast = null;
-//		int i = 0;
-//		
-//		if (a instanceof ASTNode) 
-//			ast = (ASTNode)a;
-//		
-//		if (a != null) {
-//			// if this node belongs to the abstract syntax tree
-//			// and it is a FunctionRuleTerm and its child is a parameter of the rule
-//			if (a instanceof ASTNode 
-//					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
-//					&& (ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS) 
-//							&& (i = params.indexOf(ast.getFirst().getToken())) >= 0)) {
-//				result = copyTree(args.get(i), parent, false);	
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			} else { 
-//				result = a.duplicate();
-//				result.setParent(parent);
-//				result.setFirst(copyTreeSub(a.getFirst(), params, args, result));
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			}
-//			
-//			/* Old buggy code
-//			if (a.getGrammarClass().equals(ASTNode.ID_CLASS) && (i = params.indexOf(a.getToken())) >= 0) {
-//				result = copyTree(args.get(i), parent);	
-//			} else { 
-//				result = a.duplicate();
-//				result.setParent(parent);
-//				result.setFirst(copyTreeSub(a.getFirst(), params, args, result));
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			}
-//			*/
-//		}
-//		return result;
-//	}
-//
-//	/**
-//	 * @see Interpreter#copyTree(ASTNode)
-//	 */
-//	public ASTNode copyTree(ASTNode a) {
-//		return copyTree(a, null, true);
-//	}
-//	
-//	/**
-//	 * Makes a deep copy of a sub tree with its root at <code>a</code>.
-//	 * All the connected nodes (except the parent node) are duplicated.
-//	 * It then sets the parent of the node to the given parent.
-//	 * 
-//	 * @param a root of a tree
-//	 * @param parent parent of the new node
-//	 * @param setNext if <code>true</code>, this method also copies the
-//	 * 					next sibling of the node
-//	 * @return a copy of the tree 
-//	 */
-//	private ASTNode copyTree(ASTNode a, ASTNode parent, boolean setNext) {
-//		ASTNode result = null;
-//		
-//		if (a != null) {
-//			result = a.duplicate();
-//			result.setParent(parent);
-//			result.setFirst(copyTree(a.getFirst(), result, true));
-//			if (setNext)
-//				result.setNext(copyTree(a.getNext(), result.getParent(), true));
-//		}
-//		return result;
-//	}
-	/* end of removed block */
-	
 	/**
 	 * @see org.coreasm.engine.interpreter.Interpreter#clearTree(org.coreasm.engine.interpreter.ASTNode)
 	 */
 	public void clearTree(ASTNode root) {
 		if (root != null) {
 			root.setNode(null, null, null);
-			clearTree(root.getFirst());
-			clearTree(root.getNext());
+			for (ASTNode child = root.getFirst(); child != null; child = child.getNext())
+				clearTree(child);
 		}
 	}
 	
