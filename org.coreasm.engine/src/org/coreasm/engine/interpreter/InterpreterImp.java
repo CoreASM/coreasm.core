@@ -42,6 +42,7 @@ import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.Node.NameNodeTuple;
+import org.coreasm.engine.kernel.ConstantValueNode;
 import org.coreasm.engine.kernel.EnclosedTermNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
@@ -539,16 +540,28 @@ public class InterpreterImp implements Interpreter {
 		// If the current node is a macro call term...
 		if (gRule.equals(Kernel.GR_FUNCTION_RULE_TERM) || pos instanceof MacroCallRuleNode) {
 			FunctionRuleTermNode frNode = null;
-			if (pos instanceof MacroCallRuleNode) 
-				frNode = (FunctionRuleTermNode)pos.getFirst();
+			RuleElement theRule = null;
+			if (pos instanceof MacroCallRuleNode) {
+				if (pos.getFirst() instanceof FunctionRuleTermNode)
+					frNode = (FunctionRuleTermNode)pos.getFirst();
+				else if (pos.getFirst() instanceof ConstantValueNode) {
+					ConstantValueNode constantValueNode = (ConstantValueNode)pos.getFirst();
+					if (constantValueNode.getValue() instanceof RuleElement)
+						theRule = (RuleElement)constantValueNode.getValue();
+				}
+			}
 			else
 				frNode = (FunctionRuleTermNode)pos;
 			
-			// If the current node is of the form 'x' or 'x(...)'
-			if (frNode.hasName()) {
-
+			List<ASTNode> args = pos.getFirst().getAbstractChildNodes();
+			
+			if (theRule == null) {
+				if (!frNode.hasName())
+					throw new CoreASMError("A FunctionRuleTerm must have a name.", frNode);
+			
+				// If the current node is of the form 'x' or 'x(...)'
 				x = frNode.getName();
-				RuleElement theRule = null;
+				args = frNode.getArguments();
 				
 				if (storage.isRuleName(x))
 					theRule = ruleValue(x);
@@ -556,37 +569,42 @@ public class InterpreterImp implements Interpreter {
 					try {
 						Element e = getEnv(x);
 						if (e == null)
-							storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+							e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
 						if (e instanceof RuleElement)
 							theRule = (RuleElement)e;
-						else if (pos instanceof MacroCallRuleNode)
-							capi.error("\"" + x + "\" is not a rule name.", pos, this);
+						else if (pos instanceof MacroCallRuleNode) {
+							if (pos.getFirst().getValue() instanceof RuleElement)
+								theRule = (RuleElement)pos.getFirst().getValue();
+							else
+								capi.error("\"" + x + "\" is not a rule name.", pos, this);
+						}
 					} catch (InvalidLocationException e) {
 						throw new EngineError("Location is invalid in 'interpretRules()'." + 
 								"This cannot happen!");
 					}
 				}
-				
-				if (theRule != null) {
-					if (!frNode.hasArguments()) { // If the current node is of the form 'x' with no arguments
-						if (pos instanceof MacroCallRuleNode) {
-							if (theRule.getParam().size() == 0) 
-								pos = ruleCall(theRule, theRule.getParam(), null, pos);
-							else
-								capi.error("The number of arguments passed to '" + x  + 
-										"' does not match its signature.", pos, this);
-						}
-						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
-							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
-					} else { // if current node is 'x(...)' (with arguments)
-						if (theRule.getParam().size() != frNode.getArguments().size())
-							capi.error(	"The number of arguments passed to '" + x  + 
-										"' does not match its signature.", pos, this);
-						else if (pos instanceof MacroCallRuleNode)
-							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
+			}
+
+			if (theRule != null) {
+				pos.getFirst().setNode(null, null, theRule);	// Make sure we can always return from the rule
+				if (args.isEmpty()) { // If the current node is of the form 'x' with no arguments
+					if (pos instanceof MacroCallRuleNode) {
+						if (theRule.getParam().size() == 0)
+							pos = ruleCall(theRule, theRule.getParam(), null, pos);
 						else
-							capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
+							capi.error("The number of arguments passed to '" + theRule.getName() + 
+									"' does not match its signature.", pos, this);
 					}
+					else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
+						pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
+				} else { // if current node is 'x(...)' (with arguments)
+					if (theRule.getParam().size() != args.size())
+						capi.error(	"The number of arguments passed to '" + theRule.getName() + 
+									"' does not match its signature.", pos, this);
+					else if (pos instanceof MacroCallRuleNode)
+						pos = ruleCall(theRule, theRule.getParam(), args, pos);
+					else
+						capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
 				}
 			}
 		}
@@ -908,20 +926,10 @@ public class InterpreterImp implements Interpreter {
 			}
 			if (wCopy == null)
 				wCopy = copyTreeSub(rule.getBody(), params, args);
+			else
+				updateConstants(wCopy, extractConstants(args));
 			
-			// Hide current environment variables but keep the ones visible that are used in the rule call itself
-			Map<String, Element> envVars = getRequiredEnvVars(args);
-			ASTNode nodeOfRuleCall = pos;
-			while (nodeOfRuleCall != null && !(nodeOfRuleCall instanceof FunctionRuleTermNode))
-				nodeOfRuleCall = nodeOfRuleCall.getFirst();
-			if (nodeOfRuleCall instanceof FunctionRuleTermNode) {
-				String functionNameOfRuleCall = ((FunctionRuleTermNode)nodeOfRuleCall).getName();
-				if (getEnv(functionNameOfRuleCall) != null)
-					envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
-			}
 			hideEnvVars();
-			for (Entry<String, Element> envVar : envVars.entrySet())
-				addEnv(envVar.getKey(), envVar.getValue());
 			
 			workCopies.put(rule.getName(), wCopy);
 			wCopy.setParent(pos);
@@ -943,24 +951,47 @@ public class InterpreterImp implements Interpreter {
 		}
 	}
 	
-	private Map<String, Element> getRequiredEnvVars(List<ASTNode> args) {
-		Map<String, Element> requiredEnvVars = new HashMap<String, Element>();
+	/**
+	 * Update constant value in the given work copy
+	 * @param wCopy work copy to update constant values in
+	 * @constantValues the mapping between constant nodes with constant values to use
+	 */
+	private void updateConstants(ASTNode wCopy, Map<ASTNode, Element> constantValues) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		fringe.push(wCopy);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			if (node instanceof ConstantValueNode) {
+				ConstantValueNode constantValueNode = (ConstantValueNode)node;
+				if (getEnv(constantValueNode.getToken()) != null)
+					constantValueNode.setValue(getEnv(constantValueNode.getToken()));
+				else if (constantValues.containsKey(constantValueNode))
+					constantValueNode.setValue(constantValues.get(constantValueNode));
+			}
+			fringe.addAll(node.getAbstractChildNodes());
+		}
+	}
+	
+	/**
+	 * Extract constant values from a list of arguments
+	 * @param args list of arguments to extract constant values from
+	 * @return a mapping between constant nodes with constant values
+	 */
+	private Map<ASTNode, Element> extractConstants(List<ASTNode> args) {
+		Map<ASTNode, Element> constants = new HashMap<ASTNode, Element>();
 		if (args != null) {
 			Stack<ASTNode> fringe = new Stack<ASTNode>();
 			for (ASTNode arg : args) {
 				fringe.push(arg);
 				while (!fringe.isEmpty()) {
 					ASTNode node = fringe.pop();
-					if (node instanceof FunctionRuleTermNode) {
-						FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-						if (frNode.hasName() && getEnv(frNode.getName()) != null)
-							requiredEnvVars.put(frNode.getName(), getEnv(frNode.getName()));
-					}
+					if (node instanceof ConstantValueNode)
+						constants.put(node, node.getValue());
 					fringe.addAll(node.getAbstractChildNodes());
 				}
 			}
 		}
-		return requiredEnvVars;
+		return constants;
 	}
 	
 	/**
@@ -1028,9 +1059,7 @@ public class InterpreterImp implements Interpreter {
 					frNode.addChild("alpha", arg.getFirst());
 					arg = frNode;
 				}
-				if (!params.get(i).equals(ast.getFirst().getToken()) && getEnv(ast.getFirst().getToken()) != null)
-					capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
-				result = copyTree(arg);
+				result = injectEnvVars((ASTNode)copyTree(arg));
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
 					if (!"alpha".equals(child.name))	// don't copy the id of this node
 						result.addChild(child.name, copyTreeSub(child.node, params, args, result));
@@ -1062,6 +1091,34 @@ public class InterpreterImp implements Interpreter {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Replaces all FunctionRuleTermNodes that refer to an environment variable by a ConstantValueNode with the corresponding value
+	 * @param arg argument to do the replacement in
+	 * @return the processed AST of the given argument
+	 */
+	private ASTNode injectEnvVars(ASTNode arg) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		fringe.push(arg);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			if (node instanceof FunctionRuleTermNode) {
+				FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+				if (frNode.hasName()) {
+					if (getEnv(frNode.getName()) != null) {
+						ConstantValueNode constantValueNode = new ConstantValueNode(frNode.getScannerInfo(), getEnv(frNode.getName()));
+						constantValueNode.setToken(frNode.getName());
+						if (frNode == arg)
+							arg = constantValueNode;
+						else
+							frNode.replaceWith(constantValueNode);
+					}
+				}
+			}
+			fringe.addAll(node.getAbstractChildNodes());
+		}
+		return arg;
 	}
 
 	public Node copyTree(Node a) {
