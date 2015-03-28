@@ -1060,6 +1060,7 @@ public class InterpreterImp implements Interpreter {
 					arg = frNode;
 				}
 				result = injectEnvVars((ASTNode)copyTree(arg));
+				updateScannerInfos(result, ast);
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
 					if (!"alpha".equals(child.name))	// don't copy the id of this node
 						result.addChild(child.name, copyTreeSub(child.node, params, args, result));
@@ -1091,6 +1092,19 @@ public class InterpreterImp implements Interpreter {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Update scanner information of the given tree to be equal to the scanner information of the given node
+	 * @param root root of the tree to set scanner information of
+	 * @param scannerInfoNode node to use scanner information of
+	 */
+	public void updateScannerInfos(Node root, Node scannerInfoNode) {
+		if (root != null) {
+			root.setScannerInfo(scannerInfoNode);
+			for (Node child = root.getFirstCSTNode(); child != null; child = child.getNextCSTNode())
+				updateScannerInfos(child, scannerInfoNode);
+		}
 	}
 	
 	/**
