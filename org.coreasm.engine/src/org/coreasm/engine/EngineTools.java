@@ -45,7 +45,7 @@ public class EngineTools {
 		StringBuffer result = new StringBuffer();
 		if (updates != null && updates.size() > 0) {
 			for (Update u: updates) {
-				result.append(getContextInfo(result, indent, u, parser, spec));
+				result.append(getContextInfo(indent, u, parser, spec));
 			}
 		}
 		
@@ -61,33 +61,18 @@ public class EngineTools {
 	 * @param spec a link to the specification
 	 */
 	public static String getContextInfo(String indent, Update update, Parser parser, Specification spec) {
-		StringBuffer result = new StringBuffer();
+		String result = "";
 		if (update != null) {
-			getContextInfo(result, indent, update, parser, spec);
-		}
-		return result.toString();
-	}
-
-	/**
-	 * Creates a context info for the given update, appending it to the given StringBuffer.
-	 *  
-	 * @param buffer StringBuffer instance
-	 * @param indent indentation
-	 * @param update the update
-	 * @param parser a link to the parser 
-	 * @param spec a link to the specification
-	 */
-	private static String getContextInfo(StringBuffer buffer, String indent, Update update, Parser parser, Specification spec) {
-		buffer.append(indent + "  - " + update);
-		if (update.sources != null) {
-			buffer.append(" produced by the following " + ((update.sources.size()>1)?"lines":"line") + ":" + Tools.getEOL());
-			for (ScannerInfo info: update.sources) {
-				buffer.append(indent + "      - " + info.getContext(parser, spec));
+			result += indent + "  - " + update;
+			if (update.sources != null) {
+				result += " produced by the following " + ((update.sources.size()>1)?"lines":"line") + ":" + Tools.getEOL();
+				for (ScannerInfo info: update.sources) {
+					result += indent + "      - " + info.getContext(parser, spec);
+				}
 			}
+			result += Tools.getEOL();
 		}
-		buffer.append(Tools.getEOL());
-		
-		return buffer.toString();
+		return result;
 	}
 
 	/**
