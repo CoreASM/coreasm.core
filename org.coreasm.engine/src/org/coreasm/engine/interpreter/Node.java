@@ -562,24 +562,14 @@ public class Node implements Serializable {
 
 		if (o instanceof Node) {
 			Node other = (Node)o;
-			boolean result = this.id == other.id;
-			// Technically it's enough to check the id
-			if (pluginName != null)
-				result &= this.pluginName.equals(other.pluginName);
-			if (concreteType != null)
-				result &= this.concreteType.equals(other.concreteType);
-			if (scannerInfo != null)
-				result &= this.scannerInfo.equals(other.scannerInfo);
-			if (token != null)
-				result &= this.token.equals(other.token);
-			return result;
-		} else
-			return false;
+			return this.id == other.id;
+		}
+		return false;
 	}
 	
 	@Override
 	public int hashCode() {
-		return ((Long)this.id).hashCode();
+		return Long.valueOf(id).hashCode();
 	}
 
 	
