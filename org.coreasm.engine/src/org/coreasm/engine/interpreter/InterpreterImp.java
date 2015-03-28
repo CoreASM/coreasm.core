@@ -15,7 +15,9 @@
  
 package org.coreasm.engine.interpreter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -909,6 +911,9 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
+		if (args != null)
+			args = Collections.unmodifiableList(args);
+		
 		Map<String, ASTNode> workCopies = this.workCopies.get(pos);
 		if (workCopies == null) {
 			workCopies = new HashMap<String, ASTNode>();
@@ -929,11 +934,11 @@ public class InterpreterImp implements Interpreter {
 			else
 				updateConstants(wCopy, extractConstants(args));
 			
-			hideEnvVars();
-			
 			workCopies.put(rule.getName(), wCopy);
 			wCopy.setParent(pos);
-			notifyOnRuleCall(rule, args, pos, self);
+			notifyOnRuleCall(rule, injectEnvVars(args), pos, self);
+			
+			hideEnvVars();
 			return wCopy; // as new value of 'pos'
 		} else { // if there already is a work copy
 			Element value = wCopy.getValue();
@@ -943,10 +948,10 @@ public class InterpreterImp implements Interpreter {
 		
 			clearTree(wCopy);
 			
-			unhideEnvVars();
-			
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
+			
+			unhideEnvVars();
 			return pos;
 		}
 	}
@@ -1105,6 +1110,15 @@ public class InterpreterImp implements Interpreter {
 			for (Node child = root.getFirstCSTNode(); child != null; child = child.getNextCSTNode())
 				updateScannerInfos(child, scannerInfoNode);
 		}
+	}
+	
+	private List<ASTNode> injectEnvVars(List<ASTNode> args) {
+		if (args == null)
+			return null;
+		List<ASTNode> result = new ArrayList<ASTNode>();
+		for (ASTNode arg : args)
+			result.add(injectEnvVars(arg));
+		return result;
 	}
 	
 	/**
