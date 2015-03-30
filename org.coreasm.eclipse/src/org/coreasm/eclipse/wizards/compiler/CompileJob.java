@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.coreasm.compiler.CompilerOptions;
 import org.coreasm.compiler.CoreASMCompiler;
-import org.coreasm.compiler.LoggingHelper.Level;
+import org.coreasm.compiler.components.logging.LoggingHelper.Level;
 import org.coreasm.eclipse.engine.CoreASMEngineFactory;
 import org.coreasm.util.Tools;
 import org.eclipse.core.runtime.IProgressMonitor;
