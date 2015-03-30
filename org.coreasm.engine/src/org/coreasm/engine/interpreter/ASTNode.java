@@ -384,25 +384,4 @@ public class ASTNode extends Node implements Serializable {
 		}
 		
 	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		
-		if (o instanceof ASTNode) {
-			if (super.equals(o)) {
-				ASTNode other = (ASTNode)o;
-				return this.grammarClass.equals(other.grammarClass) && this.grammarRule.equals(other.grammarRule);
-			} else
-				return false;
-		} else
-			return false;
-	}
-	
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
-
 }

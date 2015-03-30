@@ -15,7 +15,9 @@
  
 package org.coreasm.engine.interpreter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -42,6 +44,7 @@ import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.Node.NameNodeTuple;
+import org.coreasm.engine.kernel.ConstantValueNode;
 import org.coreasm.engine.kernel.EnclosedTermNode;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
@@ -539,16 +542,28 @@ public class InterpreterImp implements Interpreter {
 		// If the current node is a macro call term...
 		if (gRule.equals(Kernel.GR_FUNCTION_RULE_TERM) || pos instanceof MacroCallRuleNode) {
 			FunctionRuleTermNode frNode = null;
-			if (pos instanceof MacroCallRuleNode) 
-				frNode = (FunctionRuleTermNode)pos.getFirst();
+			RuleElement theRule = null;
+			if (pos instanceof MacroCallRuleNode) {
+				if (pos.getFirst() instanceof FunctionRuleTermNode)
+					frNode = (FunctionRuleTermNode)pos.getFirst();
+				else if (pos.getFirst() instanceof ConstantValueNode) {
+					ConstantValueNode constantValueNode = (ConstantValueNode)pos.getFirst();
+					if (constantValueNode.getValue() instanceof RuleElement)
+						theRule = (RuleElement)constantValueNode.getValue();
+				}
+			}
 			else
 				frNode = (FunctionRuleTermNode)pos;
 			
-			// If the current node is of the form 'x' or 'x(...)'
-			if (frNode.hasName()) {
-
+			List<ASTNode> args = pos.getFirst().getAbstractChildNodes();
+			
+			if (theRule == null) {
+				if (!frNode.hasName())
+					throw new CoreASMError("A FunctionRuleTerm must have a name.", frNode);
+			
+				// If the current node is of the form 'x' or 'x(...)'
 				x = frNode.getName();
-				RuleElement theRule = null;
+				args = frNode.getArguments();
 				
 				if (storage.isRuleName(x))
 					theRule = ruleValue(x);
@@ -556,37 +571,42 @@ public class InterpreterImp implements Interpreter {
 					try {
 						Element e = getEnv(x);
 						if (e == null)
-							storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
+							e = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
 						if (e instanceof RuleElement)
 							theRule = (RuleElement)e;
-						else if (pos instanceof MacroCallRuleNode)
-							capi.error("\"" + x + "\" is not a rule name.", pos, this);
+						else if (pos instanceof MacroCallRuleNode) {
+							if (pos.getFirst().getValue() instanceof RuleElement)
+								theRule = (RuleElement)pos.getFirst().getValue();
+							else
+								capi.error("\"" + x + "\" is not a rule name.", pos, this);
+						}
 					} catch (InvalidLocationException e) {
 						throw new EngineError("Location is invalid in 'interpretRules()'." + 
 								"This cannot happen!");
 					}
 				}
-				
-				if (theRule != null) {
-					if (!frNode.hasArguments()) { // If the current node is of the form 'x' with no arguments
-						if (pos instanceof MacroCallRuleNode) {
-							if (theRule.getParam().size() == 0) 
-								pos = ruleCall(theRule, theRule.getParam(), null, pos);
-							else
-								capi.error("The number of arguments passed to '" + x  + 
-										"' does not match its signature.", pos, this);
-						}
-						else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
-							pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
-					} else { // if current node is 'x(...)' (with arguments)
-						if (theRule.getParam().size() != frNode.getArguments().size())
-							capi.error(	"The number of arguments passed to '" + x  + 
-										"' does not match its signature.", pos, this);
-						else if (pos instanceof MacroCallRuleNode)
-							pos = ruleCall(theRule, theRule.getParam(), frNode.getArguments(), pos);
+			}
+
+			if (theRule != null) {
+				pos.getFirst().setNode(null, null, theRule);	// Make sure we can always return from the rule
+				if (args.isEmpty()) { // If the current node is of the form 'x' with no arguments
+					if (pos instanceof MacroCallRuleNode) {
+						if (theRule.getParam().size() == 0)
+							pos = ruleCall(theRule, theRule.getParam(), null, pos);
 						else
-							capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
+							capi.error("The number of arguments passed to '" + theRule.getName() + 
+									"' does not match its signature.", pos, this);
 					}
+					else // treat rules like RuleOrFuncElementNode, so they can be passed to rules as parameter
+						pos.setNode(new Location(AbstractStorage.RULE_ELEMENT_FUNCTION_NAME, ElementList.create(new NameElement(x))),null,theRule);
+				} else { // if current node is 'x(...)' (with arguments)
+					if (theRule.getParam().size() != args.size())
+						capi.error(	"The number of arguments passed to '" + theRule.getName() + 
+									"' does not match its signature.", pos, this);
+					else if (pos instanceof MacroCallRuleNode)
+						pos = ruleCall(theRule, theRule.getParam(), args, pos);
+					else
+						capi.error("'" + theRule.getName() + "'" + " is not a derived function!", pos, this);
 				}
 			}
 		}
@@ -891,6 +911,9 @@ public class InterpreterImp implements Interpreter {
 			logger.debug("Interpreting rule call '" + rule.name + "' (agent: " + this.getSelf() + ", stack size: " + ruleCallStack.size() + ")");
 		}
 		
+		if (args != null)
+			args = Collections.unmodifiableList(args);
+		
 		Map<String, ASTNode> workCopies = this.workCopies.get(pos);
 		if (workCopies == null) {
 			workCopies = new HashMap<String, ASTNode>();
@@ -908,24 +931,14 @@ public class InterpreterImp implements Interpreter {
 			}
 			if (wCopy == null)
 				wCopy = copyTreeSub(rule.getBody(), params, args);
-			
-			// Hide current environment variables but keep the ones visible that are used in the rule call itself
-			Map<String, Element> envVars = getRequiredEnvVars(args);
-			ASTNode nodeOfRuleCall = pos;
-			while (nodeOfRuleCall != null && !(nodeOfRuleCall instanceof FunctionRuleTermNode))
-				nodeOfRuleCall = nodeOfRuleCall.getFirst();
-			if (nodeOfRuleCall instanceof FunctionRuleTermNode) {
-				String functionNameOfRuleCall = ((FunctionRuleTermNode)nodeOfRuleCall).getName();
-				if (getEnv(functionNameOfRuleCall) != null)
-					envVars.put(functionNameOfRuleCall, getEnv(functionNameOfRuleCall));
-			}
-			hideEnvVars();
-			for (Entry<String, Element> envVar : envVars.entrySet())
-				addEnv(envVar.getKey(), envVar.getValue());
+			else
+				updateConstants(wCopy, extractConstants(args));
 			
 			workCopies.put(rule.getName(), wCopy);
 			wCopy.setParent(pos);
-			notifyOnRuleCall(rule, args, pos, self);
+			notifyOnRuleCall(rule, injectEnvVars(args), pos, self);
+			
+			hideEnvVars();
 			return wCopy; // as new value of 'pos'
 		} else { // if there already is a work copy
 			Element value = wCopy.getValue();
@@ -935,32 +948,55 @@ public class InterpreterImp implements Interpreter {
 		
 			clearTree(wCopy);
 			
-			unhideEnvVars();
-			
 			ruleCallStack.pop();
 			notifyOnRuleExit(rule, args, pos, self);
+			
+			unhideEnvVars();
 			return pos;
 		}
 	}
 	
-	private Map<String, Element> getRequiredEnvVars(List<ASTNode> args) {
-		Map<String, Element> requiredEnvVars = new HashMap<String, Element>();
+	/**
+	 * Update constant value in the given work copy
+	 * @param wCopy work copy to update constant values in
+	 * @constantValues the mapping between constant nodes with constant values to use
+	 */
+	private void updateConstants(ASTNode wCopy, Map<ASTNode, Element> constantValues) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		fringe.push(wCopy);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			if (node instanceof ConstantValueNode) {
+				ConstantValueNode constantValueNode = (ConstantValueNode)node;
+				if (getEnv(constantValueNode.getToken()) != null)
+					constantValueNode.setValue(getEnv(constantValueNode.getToken()));
+				else if (constantValues.containsKey(constantValueNode))
+					constantValueNode.setValue(constantValues.get(constantValueNode));
+			}
+			fringe.addAll(node.getAbstractChildNodes());
+		}
+	}
+	
+	/**
+	 * Extract constant values from a list of arguments
+	 * @param args list of arguments to extract constant values from
+	 * @return a mapping between constant nodes with constant values
+	 */
+	private Map<ASTNode, Element> extractConstants(List<ASTNode> args) {
+		Map<ASTNode, Element> constants = new HashMap<ASTNode, Element>();
 		if (args != null) {
 			Stack<ASTNode> fringe = new Stack<ASTNode>();
 			for (ASTNode arg : args) {
 				fringe.push(arg);
 				while (!fringe.isEmpty()) {
 					ASTNode node = fringe.pop();
-					if (node instanceof FunctionRuleTermNode) {
-						FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-						if (frNode.hasName() && getEnv(frNode.getName()) != null)
-							requiredEnvVars.put(frNode.getName(), getEnv(frNode.getName()));
-					}
+					if (node instanceof ConstantValueNode)
+						constants.put(node, node.getValue());
 					fringe.addAll(node.getAbstractChildNodes());
 				}
 			}
 		}
-		return requiredEnvVars;
+		return constants;
 	}
 	
 	/**
@@ -1028,9 +1064,8 @@ public class InterpreterImp implements Interpreter {
 					frNode.addChild("alpha", arg.getFirst());
 					arg = frNode;
 				}
-				if (!params.get(i).equals(ast.getFirst().getToken()) && getEnv(ast.getFirst().getToken()) != null)
-					capi.warning(Kernel.PLUGIN_NAME, "\""+ast.getFirst().getToken() + "\" collides with an environment variable.", ast, this);
-				result = copyTree(arg);
+				result = injectEnvVars((ASTNode)copyTree(arg));
+				updateScannerInfos(result, ast);
 				for (NameNodeTuple child : ast.getChildNodesWithNames()) {
 					if (!"alpha".equals(child.name))	// don't copy the id of this node
 						result.addChild(child.name, copyTreeSub(child.node, params, args, result));
@@ -1063,95 +1098,60 @@ public class InterpreterImp implements Interpreter {
 		}
 		return result;
 	}
+	
+	/**
+	 * Update scanner information of the given tree to be equal to the scanner information of the given node
+	 * @param root root of the tree to set scanner information of
+	 * @param scannerInfoNode node to use scanner information of
+	 */
+	public void updateScannerInfos(Node root, Node scannerInfoNode) {
+		if (root != null) {
+			root.setScannerInfo(scannerInfoNode);
+			for (Node child = root.getFirstCSTNode(); child != null; child = child.getNextCSTNode())
+				updateScannerInfos(child, scannerInfoNode);
+		}
+	}
+	
+	private List<ASTNode> injectEnvVars(List<ASTNode> args) {
+		if (args == null)
+			return null;
+		List<ASTNode> result = new ArrayList<ASTNode>();
+		for (ASTNode arg : args)
+			result.add(injectEnvVars(arg));
+		return result;
+	}
+	
+	/**
+	 * Replaces all FunctionRuleTermNodes that refer to an environment variable by a ConstantValueNode with the corresponding value
+	 * @param arg argument to do the replacement in
+	 * @return the processed AST of the given argument
+	 */
+	private ASTNode injectEnvVars(ASTNode arg) {
+		Stack<ASTNode> fringe = new Stack<ASTNode>();
+		fringe.push(arg);
+		while (!fringe.isEmpty()) {
+			ASTNode node = fringe.pop();
+			if (node instanceof FunctionRuleTermNode) {
+				FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+				if (frNode.hasName()) {
+					if (getEnv(frNode.getName()) != null) {
+						ConstantValueNode constantValueNode = new ConstantValueNode(frNode.getScannerInfo(), getEnv(frNode.getName()));
+						constantValueNode.setToken(frNode.getName());
+						if (frNode == arg)
+							arg = constantValueNode;
+						else
+							frNode.replaceWith(constantValueNode);
+					}
+				}
+			}
+			fringe.addAll(node.getAbstractChildNodes());
+		}
+		return arg;
+	}
 
 	public Node copyTree(Node a) {
 		return a.cloneTree();
 	}
-	
-	/* The following methods are removed/changed by Roozbeh Farahbod */ 
-//
-//	/**
-//	 * Returns a copy of the given parse tree, where every instance 
-//	 * of an identifier node in a given sequence (formal parameters) 
-//	 * is substituted by a copy of the corresponding parse tree in another 
-//	 * sequence (actual parameters, or arguments). We assume that the elements in the 
-//	 * formal parameters list are all distinct (i.e., it is not possible 
-//	 * to specify the same name for two different parameters).
-//	 * 
-//	 * @param root root of the parse tree
-//	 * @param params formal parameters
-//	 * @param args given arguments (replace parameters in the tree)
-//	 * @param parent parent of the created node
-//	 */
-//	private Node copyTreeSub(Node a, List<String> params, List<ASTNode> args, ASTNode parent) {
-//		Node result = null;
-//		ASTNode ast = null;
-//		int i = 0;
-//		
-//		if (a instanceof ASTNode) 
-//			ast = (ASTNode)a;
-//		
-//		if (a != null) {
-//			// if this node belongs to the abstract syntax tree
-//			// and it is a FunctionRuleTerm and its child is a parameter of the rule
-//			if (a instanceof ASTNode 
-//					&& ast.getGrammarClass().equals(ASTNode.FUNCTION_RULE_CLASS) 
-//					&& (ast.getFirst().getGrammarClass().equals(ASTNode.ID_CLASS) 
-//							&& (i = params.indexOf(ast.getFirst().getToken())) >= 0)) {
-//				result = copyTree(args.get(i), parent, false);	
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			} else { 
-//				result = a.duplicate();
-//				result.setParent(parent);
-//				result.setFirst(copyTreeSub(a.getFirst(), params, args, result));
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			}
-//			
-//			/* Old buggy code
-//			if (a.getGrammarClass().equals(ASTNode.ID_CLASS) && (i = params.indexOf(a.getToken())) >= 0) {
-//				result = copyTree(args.get(i), parent);	
-//			} else { 
-//				result = a.duplicate();
-//				result.setParent(parent);
-//				result.setFirst(copyTreeSub(a.getFirst(), params, args, result));
-//				result.setNext(copyTreeSub(a.getNext(), params, args, result.getParent()));
-//			}
-//			*/
-//		}
-//		return result;
-//	}
-//
-//	/**
-//	 * @see Interpreter#copyTree(ASTNode)
-//	 */
-//	public ASTNode copyTree(ASTNode a) {
-//		return copyTree(a, null, true);
-//	}
-//	
-//	/**
-//	 * Makes a deep copy of a sub tree with its root at <code>a</code>.
-//	 * All the connected nodes (except the parent node) are duplicated.
-//	 * It then sets the parent of the node to the given parent.
-//	 * 
-//	 * @param a root of a tree
-//	 * @param parent parent of the new node
-//	 * @param setNext if <code>true</code>, this method also copies the
-//	 * 					next sibling of the node
-//	 * @return a copy of the tree 
-//	 */
-//	private ASTNode copyTree(ASTNode a, ASTNode parent, boolean setNext) {
-//		ASTNode result = null;
-//		
-//		if (a != null) {
-//			result = a.duplicate();
-//			result.setParent(parent);
-//			result.setFirst(copyTree(a.getFirst(), result, true));
-//			if (setNext)
-//				result.setNext(copyTree(a.getNext(), result.getParent(), true));
-//		}
-//		return result;
-//	}
-	/* end of removed block */
 	
 	/**
 	 * @see org.coreasm.engine.interpreter.Interpreter#clearTree(org.coreasm.engine.interpreter.ASTNode)
@@ -1159,8 +1159,8 @@ public class InterpreterImp implements Interpreter {
 	public void clearTree(ASTNode root) {
 		if (root != null) {
 			root.setNode(null, null, null);
-			clearTree(root.getFirst());
-			clearTree(root.getNext());
+			for (ASTNode child = root.getFirst(); child != null; child = child.getNext())
+				clearTree(child);
 		}
 	}
 	
