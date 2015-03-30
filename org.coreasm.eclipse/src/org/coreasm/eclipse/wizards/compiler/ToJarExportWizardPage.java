@@ -138,12 +138,14 @@ public class ToJarExportWizardPage extends WizardPage {
 		Field[] fields = resultOptions.getClass().getFields();
 		for(Field f : fields){
 			if(hideList.contains(f.getName())) continue;
-			if(f.getType() == Integer.class){
+			if(f.getType() == int.class){
 				try{
 					f.set(resultOptions, Integer.parseInt(textInputs.get(f).getText()));
 				}
 				catch(Exception e){
 					//TODO: somehow print that the value was invalid
+					System.out.println("invalid value: " + textInputs.get(f).getText());
+					System.exit(0);
 				}
 			}
 			else if(f.getType() == Boolean.class){
