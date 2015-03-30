@@ -14,6 +14,7 @@ import org.coreasm.eclipse.editors.ASMEditor;
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
 import org.coreasm.eclipse.editors.warnings.AbstractWarning;
 import org.coreasm.eclipse.editors.warnings.CoreASMWarningRecognizer;
+import org.coreasm.eclipse.editors.warnings.DanglingElseWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.IWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.NumberOfArgumentsWarningRecognizer;
 import org.coreasm.eclipse.editors.warnings.UndefinedIdentifierWarningRecognizer;
@@ -60,6 +61,7 @@ public class ErrorManager implements Observer
 		addWarningRecognizer(new UndefinedIdentifierWarningRecognizer(asmEditor));
 		addWarningRecognizer(new NumberOfArgumentsWarningRecognizer(asmEditor));
 		addWarningRecognizer(new CoreASMWarningRecognizer(asmEditor));
+		addWarningRecognizer(new DanglingElseWarningRecognizer());
 	}
 	
 	/**
