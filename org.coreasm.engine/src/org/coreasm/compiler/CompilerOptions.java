@@ -73,7 +73,7 @@ public class CompilerOptions {
 	 * If set to a value other than -1, the compiled application will
 	 * terminate after terminateOnStepCount steps
 	 */
-	public int terminateOnStepCount = -1;				
+	public int terminateOnStepCount = 10;				
 	//logging / verbosity
 	/**
 	 * If set to true, the compiled application will log the updates

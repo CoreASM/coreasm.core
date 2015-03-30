@@ -27,6 +27,8 @@ public class ToJarExportWizardPage extends WizardPage {
 	private Map<Field, Text> fileInputs;
 	private List<String> hideList;
 	
+	private Button btnCompileAndRun;
+	
 	public ToJarExportWizardPage(IFile selected) {
 		super("Export information");
 		setTitle("Export information");
@@ -128,10 +130,15 @@ public class ToJarExportWizardPage extends WizardPage {
 				makePlaceHolder(container);
 			}
 		}
-			
+		btnCompileAndRun = new Button(container, SWT.CHECK);
+		btnCompileAndRun.setText("Run jar after compilation");
 		
 		setControl(container);
 		setPageComplete(true);
+	}
+	
+	public boolean runJar(){
+		return btnCompileAndRun.getSelection();
 	}
 	
 	public CompilerOptions getResult(){

@@ -2,6 +2,7 @@ package org.coreasm.eclipse.wizards.compiler;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.coreasm.compiler.CompilerOptions;
@@ -23,10 +24,12 @@ import org.eclipse.ui.console.MessageConsoleStream;
 public class CompileJob extends Job {
 	private CompilerOptions options;
 	private MessageConsole console;
+	private boolean run;
 
-	public CompileJob(String name, CompilerOptions options) {
+	public CompileJob(String name, CompilerOptions options, boolean run) {
 		super(name);
 		this.options = options;
+		this.run = run;
 	}
 
 	@Override
@@ -80,7 +83,6 @@ public class CompileJob extends Job {
 			for(String s : warnings){
 				r.add(new Status(IStatus.WARNING, "CoreASM", s));
 			}
-			result = r;
 			
 			if(options.keepTempFiles){
 				MessageConsoleStream out = console.newMessageStream();
@@ -93,6 +95,37 @@ public class CompileJob extends Job {
 					//mask exception
 				}
 			}
+			
+			if(run){
+				String cmd = "java -jar " + options.outputFile;
+				try{
+					Process p = Runtime.getRuntime().exec(cmd);
+					
+					InputStream is = p.getInputStream();
+					//OutputStream os = p.getOutputStream();
+					//InputStream es = p.getErrorStream();
+					
+					MessageConsoleStream out = console.newMessageStream();
+					if(options.terminateOnStepCount < 0) out.println("Warning: No max step count set, program might not terminate on its own");
+					out.println("Running created jar");
+					
+					while(p.isAlive()){
+						int c = -1;
+						if((c = is.read()) != -1){
+							out.write(c);
+						}
+						if(monitor.isCanceled()){
+							out.println("");
+							out.println("Stopping jar...");
+							p.destroyForcibly();
+						}
+					}
+				}
+				catch(Exception e){
+					r.add(new Status(IStatus.ERROR, "CoreASM", "Execution failed: " + e.getMessage()));
+				}
+			}
+			result = r;
 		}
 		else{	
 			MultiStatus r = new MultiStatus("CoreASM", IStatus.ERROR, "Compilation failed", null);

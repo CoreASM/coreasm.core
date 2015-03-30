@@ -54,7 +54,7 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 		co.tempDirectory = new File(tmppath.toAbsolutePath().toString());	
 		
 		
-		CompileJob cj = new CompileJob("Compiling CoreASM specification", co);
+		CompileJob cj = new CompileJob("Compiling CoreASM specification", co, page.runJar());
 		cj.setPriority(Job.BUILD);
 		cj.schedule();
 		return true;
