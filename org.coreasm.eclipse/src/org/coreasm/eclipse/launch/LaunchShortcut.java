@@ -1,5 +1,6 @@
 package org.coreasm.eclipse.launch;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.coreasm.eclipse.editors.ASMEditor;
@@ -35,34 +36,64 @@ public class LaunchShortcut implements ILaunchShortcut {
 	public void launch(IEditorPart editor, String mode) {
 		launch((IFile)editor.getEditorInput().getAdapter(IFile.class), mode);
 	}
+	
+	private ILaunchConfiguration findLaunchConfiguration(IFile file, HashMap<String, ILaunchConfiguration> launchConfigurations, HashSet<IFile> consideredFiles) {
+		if (consideredFiles.contains(file))
+			return null;
+		String project = IPath.SEPARATOR + file.getProject().getName();
+		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
+		ILaunchConfiguration launchConfiguration = launchConfigurations.get(spec);
+		if (launchConfiguration != null)
+			return launchConfiguration;
+		consideredFiles.add(file);
+		for (IFile parentFile : ASMIncludeWatcher.getIncludingFiles(file)) {
+			launchConfiguration = findLaunchConfiguration(parentFile, launchConfigurations, consideredFiles);
+			if (launchConfiguration != null)
+				return launchConfiguration;
+		}
+		return null;
+	}
+	
+	private IFile findMainSpecification(IFile file, HashSet<IFile> consideredFiles) {
+		if (consideredFiles.contains(file))
+			return null;
+		if (isMainSpecification(file))
+			return file;
+		consideredFiles.add(file);
+		for (IFile parentFile : ASMIncludeWatcher.getIncludingFiles(file)) {
+			IFile mainSpecification = findMainSpecification(parentFile, consideredFiles);
+			if (mainSpecification != null)
+				return mainSpecification;
+		}
+		return null;
+	}
 
 	private void launch(IFile file, String mode) {
 		String project = IPath.SEPARATOR + file.getProject().getName();
+		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = launchManager.getLaunchConfigurationType("org.coreasm.eclipse.launchConfigurationType");
-		HashSet<IFile> consideredFiles = new HashSet<IFile>();
-		while (isCoreModule(file)) {
-			if (!consideredFiles.contains(file)) {
-				IFile[] files = ASMIncludeWatcher.getIncludingFiles(file);
-				for (int i = 0; i < files.length && isCoreModule(file); i++) {
-					file = files[i];
-					consideredFiles.add(file);
-				}
-			}
-		}
-		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
+		
+		HashMap<String, ILaunchConfiguration> launchConfigurations = new HashMap<String, ILaunchConfiguration>();
+		
 		try {
 			for (ILaunchConfiguration configuration : launchManager.getLaunchConfigurations(type)) {
-				if (project.equals(configuration.getAttribute(ICoreASMConfigConstants.PROJECT, (String)null))) {
-					if (spec.equals(configuration.getAttribute(ICoreASMConfigConstants.SPEC, (String)null))) {
-						DebugUITools.launch(configuration, mode);
-						return;
-					}
-				}
+				if (project.equals(configuration.getAttribute(ICoreASMConfigConstants.PROJECT, (String)null)))
+					launchConfigurations.put(configuration.getAttribute(ICoreASMConfigConstants.SPEC, (String)null), configuration);
 			}
 		} catch (CoreException e) {
 			return;
 		}
+		
+		ILaunchConfiguration launchConfiguration = findLaunchConfiguration(file, launchConfigurations, new HashSet<IFile>());
+		if (launchConfiguration != null) {
+			DebugUITools.launch(launchConfiguration, mode);
+			return;
+		}
+		
+		IFile mainSpec = findMainSpecification(file, new HashSet<IFile>());
+		if (mainSpec != null)
+			file = mainSpec;
 		
 		try {
 			ILaunchConfigurationWorkingCopy wCopy = type.newInstance(null, file.getName());
@@ -77,13 +108,13 @@ public class LaunchShortcut implements ILaunchShortcut {
 		}
 	}
 	
-	private static boolean isCoreModule(IFile file) {
+	private static boolean isMainSpecification(IFile file) {
 		IEditorPart editor = Utilities.getEditor(file);
 		if (editor instanceof ASMEditor) {
 			ASMParser parser = ((ASMEditor)editor).getParser();
-			if (parser.getRootNode() != null && "CoreModule".equals(parser.getRootNode().getGrammarRule()))
+			if (parser.getRootNode() != null && "CoreASM".equals(parser.getRootNode().getGrammarRule()))
 				return true;
 		}
-		return ASMIncludeWatcher.getIncludingFiles(file).length > 0;
+		return false;
 	}
 }

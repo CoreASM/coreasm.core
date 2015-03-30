@@ -456,6 +456,9 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 	            }
     		}
     		if (none) {
+    			// RemoveEnv(x)
+        		for (String x : variableMap.keySet())
+        			interpreter.removeEnv(x);
     			// pos := delta
                 return chooseNode.getIfnoneRule();
     		}
@@ -475,9 +478,6 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
     	
     	// if rule 'R2' is evaluated
     	else {
-    		// RemoveEnv(x)
-    		for (String x : variableMap.keySet())
-    			interpreter.removeEnv(x);
             // [pos] := (undef,u,undef)
             pos.setNode(null,chooseNode.getIfnoneRule().getUpdates(),null);
             return pos;
@@ -700,6 +700,13 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 			}
 			// pos := delta
             pos = chooseNode.getIfnoneRule();
+		}
+		if (pos == chooseNode.getIfnoneRule()) {
+			// RemoveEnv(x)
+			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
+    			if (remained.remove(var.getValue()) != null)
+    				interpreter.removeEnv(var.getKey());
+    		}
 		}
         return pos;
     }

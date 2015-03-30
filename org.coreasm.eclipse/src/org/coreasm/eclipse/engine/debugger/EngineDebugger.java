@@ -78,7 +78,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
-	private Map<ASTNode, String> ruleArgs;
+	private Stack<Map<ASTNode, String>> ruleArgs = new Stack<Map<ASTNode, String>>();
 	private Set<ASMUpdate> updates = new HashSet<ASMUpdate>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
@@ -449,22 +449,25 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				state = new ASMStorage(wapi, capi.getStorage(), -capi.getStepCount() - 1, agent, envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 			state.updateState(pos, agent, envVars, updates, callStack, sourceName, lineNumber);
 		}
-		if (ruleArgs != null) {
-			final ASMStorage[] statePointer = new ASMStorage[] { state };
-			for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
-				final ASTNode node = (ASTNode)arg.getKey().cloneTree();
-				Display.getDefault().syncExec(new Runnable() {
-					
-					@Override
-					public void run() {
-						try {
-							wapi.evaluateExpression(node, currentAgent, statePointer[0]);
-						} catch (InterpreterException e) {
+		if (!ruleArgs.isEmpty()) {
+			Map<ASTNode, String> ruleArgs = this.ruleArgs.peek();
+			if (ruleArgs != null) {
+				final ASMStorage[] statePointer = new ASMStorage[] { state };
+				for (Entry<ASTNode, String> arg : ruleArgs.entrySet()) {
+					final ASTNode node = (ASTNode)arg.getKey().cloneTree();
+					Display.getDefault().syncExec(new Runnable() {
+						
+						@Override
+						public void run() {
+							try {
+								wapi.evaluateExpression(node, currentAgent, statePointer[0]);
+							} catch (InterpreterException e) {
+							}
 						}
-					}
-				});
-				if (node.isEvaluated())
-					envVars.put(arg.getValue(), node.getValue());
+					});
+					if (node.isEvaluated())
+						envVars.put(arg.getValue(), node.getValue());
+				}
 			}
 		}
 		states.add(state);
@@ -662,7 +665,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 		}
-		ruleArgs = new IdentityHashMap<ASTNode, String>();
+		Map<ASTNode, String> ruleArgs = new IdentityHashMap<ASTNode, String>();
+		this.ruleArgs.push(ruleArgs);
 		if (rule.getParam() != null) {
 			int i = 0;
 			for (String param : rule.getParam())
@@ -673,7 +677,8 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	@Override
 	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos, Element agent) {
 		currentAgent = agent;
-		ruleArgs = null;
+		if (!ruleArgs.isEmpty())
+			ruleArgs.pop();
 	}
 	
 	@Override
