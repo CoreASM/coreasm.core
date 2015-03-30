@@ -61,7 +61,7 @@ public class CoreASMRMIServer extends UnicastRemoteObject implements
 	/**
 	 * 
 	 */
-	public static void main() {
+	public static void main(String[] args) {
 		String name = "RMIServer";
 		CoreASMRMIServer server;
 		Registry registry;

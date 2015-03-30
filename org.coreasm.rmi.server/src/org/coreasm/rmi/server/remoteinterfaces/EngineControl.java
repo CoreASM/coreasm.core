@@ -23,7 +23,9 @@ public interface EngineControl extends Remote {
 	void subscribeUpdates(UpdateSubscription sub) throws RemoteException;
 	void subscribeErrors(ErrorSubscription sub) throws RemoteException;
 	void addUpdate(String value, String agent) throws RemoteException;
+	void changeValue(String location, String value) throws RemoteException;
 	EngineDriverStatus getDriverStatus() throws RemoteException;
 	EngineDriverInfo getDriverInfo() throws RemoteException;
 	String getAgentlist() throws RemoteException;
+	void reset(boolean keepSpec) throws RemoteException;
 }

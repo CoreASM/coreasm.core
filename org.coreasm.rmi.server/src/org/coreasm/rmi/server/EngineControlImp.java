@@ -15,29 +15,37 @@ import java.util.Set;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.error.ParserException;
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMEngineFactory;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineErrorObserver;
 import org.coreasm.engine.EngineEvent;
+import org.coreasm.engine.EngineModeEvent;
 import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.StepFailedEvent;
-import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterListener;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ParserPlugin;
+import org.coreasm.engine.plugins.number.NumberElement;
 import org.coreasm.engine.plugins.signature.EnumerationElement;
+import org.coreasm.engine.plugins.string.StringElement;
 import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 import org.coreasm.rmi.server.remoteinterfaces.EngineDriverInfo;
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
+
 //import org.coreasm.engine.plugins.schedulingpolicies.SchedulingPoliciesPlugin;
 
 public class EngineControlImp extends UnicastRemoteObject implements Runnable,
@@ -45,7 +53,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		EngineModeObserver, InterpreterListener {
 	private static final long serialVersionUID = 1L;
 	private ControlAPI engine;
-	private BufferedReader spec = null;
+	private byte[] spec = null;
 	private boolean updateFailed;
 	protected CoreASMError lastError;
 
@@ -60,24 +68,22 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	private volatile boolean shouldStop = false;
 	private volatile boolean shouldPause = true;
 	private volatile boolean takeSingleStep = false;
+	private volatile boolean shouldReset = true;
 	private volatile EngineDriverInfo driverInfo;
 
 	private List<Set<Update>> previousUpdates;
 	private Map<String, ArrayList<String>> pendingUpdates;
 	private Map<String, ArrayList<String>> updateMap;
 	private Map<ASTNode, ASTNode> parentCache;
+	private UpdateMultiset pendingChanges;
+	private UpdateMultiset queuedChanges;
 	private List<UpdateSubscription> newUpdateSubscriptions;
 	private List<UpdateSubscription> updateSubscriptions;
 	private List<ErrorSubscription> errorSubscriptions;
 
 	private EngineControlImp() throws RemoteException {
 		super();
-		engine = (ControlAPI) CoreASMEngineFactory.createEngine();
-		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
-		engine.initialize();
-		engine.waitWhileBusy();
-		// engine.setProperty(SchedulingPoliciesPlugin.POLICY_PROPERTY,
-		// SchedulingPoliciesPlugin.ALL_FIRST_NAME);
+		initEngine();
 
 		stopOnEmptyUpdates = false;
 		stopOnStableUpdates = false;
@@ -96,6 +102,18 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		pendingUpdates = new HashMap<String, ArrayList<String>>();
 		updateMap = new HashMap<String, ArrayList<String>>();
 		parentCache = new HashMap<ASTNode, ASTNode>();
+
+		pendingChanges = new UpdateMultiset();
+		queuedChanges = new UpdateMultiset();
+	}
+
+	private void initEngine() {
+		engine = (ControlAPI) CoreASMEngineFactory.createEngine();
+		engine.setClassLoader(CoreASMEngineFactory.class.getClassLoader());
+		engine.initialize();
+		engine.waitWhileBusy();
+		engine.addObserver(this);
+		engine.addInterpreterListener(this);
 	}
 
 	public EngineControlImp(String id) throws RemoteException {
@@ -132,6 +150,15 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				synchronized (errorSubscriptions) {
 					propagateError(lastError);
 				}
+			}
+		}
+
+		// Pushing changes
+		else if (event instanceof EngineModeEvent) {
+			if (((EngineModeEvent) event).getNewMode() == EngineMode.emAggregation) {
+				UpdateMultiset updates = engine.getUpdateInstructions();
+				updates.addAll(pendingChanges);
+				pendingChanges.clear();
 			}
 		}
 	}
@@ -185,8 +212,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	 */
 	@Override
 	public void load(byte[] specification) throws RemoteException {
-		ByteArrayInputStream in = new ByteArrayInputStream(specification);
-		spec = new BufferedReader(new InputStreamReader(in));
+		spec = specification;
 		driverInfo.setStatus(EngineDriverStatus.paused);
 	}
 
@@ -232,143 +258,157 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	}
 
 	public void run() {
+		while (shouldReset) {
+			if (shouldStop) { //set if reset(...) got called
+			   shouldStop = false;
+			   shouldPause = true;
+			   takeSingleStep = false;
+			   initEngine();
+			}
+			int step = 0;
+			Exception exception = null;
 
-		int step = 0;
-		Exception exception = null;
+			Set<Update> updates, prevupdates = null;
 
-		engine.addObserver(this);
-		engine.addInterpreterListener(this);
+			try {
 
-		Set<Update> updates, prevupdates = null;
+				if (engine.getEngineMode() == EngineMode.emError) {
+					engine.recover();
+					engine.waitWhileBusy();
+				}
+				while (spec == null) {
+					Thread.sleep(500);
+				}
 
-		try {
-
-			if (engine.getEngineMode() == EngineMode.emError) {
-				engine.recover();
+				shouldReset = false;
+				ByteArrayInputStream in = new ByteArrayInputStream(spec);
+				engine.loadSpecification(new BufferedReader(
+						new InputStreamReader(in)));
 				engine.waitWhileBusy();
-			}
-			while (spec == null) {
-				Thread.sleep(500);
-			}
-			engine.loadSpecification(spec);
-			engine.waitWhileBusy();
-			if (engine.getEngineMode() != EngineMode.emIdle) {
-				handleError();
-				return;
-			}
+				if (engine.getEngineMode() != EngineMode.emIdle) {
+					handleError();
+					return;
+				}
 
-			if (shouldStop)
-				throw new EngineDriverException();
+				if (shouldStop)
+					throw new EngineDriverException();
 
-			while (engine.getEngineMode() == EngineMode.emIdle) {
-				if (!previousUpdates.isEmpty()
-						&& !newUpdateSubscriptions.isEmpty()) {
-					UpdateSubscription sub;
-					ArrayList<String> updtLst = new ArrayList<String>();
-					synchronized (previousUpdates) {
-						for (Set<Update> updt : previousUpdates) {
-							updtLst.add(getUpdateString(updt));
-						}
-					}
-					synchronized (newUpdateSubscriptions) {
-						Iterator<UpdateSubscription> subItr = newUpdateSubscriptions
-								.iterator();
-						while (subItr.hasNext()) {
-							sub = subItr.next();
-							try {
-								sub.newUpdates(updtLst);
-							} catch (RemoteException e) {
-								subItr.remove();
-								continue;
+				while (engine.getEngineMode() == EngineMode.emIdle) {
+					if (!previousUpdates.isEmpty()
+							&& !newUpdateSubscriptions.isEmpty()) {
+						UpdateSubscription sub;
+						ArrayList<String> updtLst = new ArrayList<String>();
+						synchronized (previousUpdates) {
+							for (Set<Update> updt : previousUpdates) {
+								updtLst.add(getUpdateString(updt));
 							}
-							subItr.remove();
-							updateSubscriptions.add(sub);
+						}
+						synchronized (newUpdateSubscriptions) {
+							Iterator<UpdateSubscription> subItr = newUpdateSubscriptions
+									.iterator();
+							while (subItr.hasNext()) {
+								sub = subItr.next();
+								try {
+									sub.newUpdates(updtLst);
+								} catch (RemoteException e) {
+									subItr.remove();
+									continue;
+								}
+								subItr.remove();
+								updateSubscriptions.add(sub);
+							}
 						}
 					}
-				}
-				if (shouldPause) {
-					driverInfo.setStatus(EngineDriverStatus.paused);
-					System.err
-							.println("[!] Run is paused by user. Click on resume to continue...");
-					int pausecount = 0;
-					while (shouldPause && !takeSingleStep && !shouldStop) {
-						Thread.sleep(100);
-						pausecount++;
-						if (pausecount == 18000)
-							shouldStop = true;
+					if (shouldPause) {
+						driverInfo.setStatus(EngineDriverStatus.paused);
+						System.err
+								.println("[!] Run is paused by user. Click on resume to continue...");
+						int pausecount = 0;
+						while (shouldPause && !takeSingleStep && !shouldStop) {
+							Thread.sleep(100);
+							pausecount++;
+							if (pausecount == 18000)
+								shouldStop = true;
+						}
+						if (!shouldStop)
+							System.err.println("[!] Resuming.");
+
 					}
 
-					if (!shouldStop)
-						System.err.println("[!] Resuming.");
-
-				}
-
-				if (shouldStop) {
-					throw new EngineDriverException();
-				}
-
-				takeSingleStep = false;
-
-				synchronized (updateMap) {
-					if (!pendingUpdates.isEmpty()) {
-						updateMap.putAll(pendingUpdates);
-						pendingUpdates.clear();
+					if (shouldStop) {
+						throw new EngineDriverException();
 					}
+
+					takeSingleStep = false;
+
+					synchronized (queuedChanges) {
+						pendingChanges.addAll(queuedChanges);
+						queuedChanges.clear();
+					}
+
+					synchronized (updateMap) {
+						if (!pendingUpdates.isEmpty()) {
+							updateMap.putAll(pendingUpdates);
+							pendingUpdates.clear();
+						}
+					}
+
+					driverInfo.setStatus(EngineDriverStatus.running);
+
+					engine.step();
+					step++;
+
+					while (!shouldStop && engine.isBusy())
+						Thread.sleep(50);
+
+					if (shouldStop) {
+						// give some time to the engine to finish
+						if (engine.isBusy())
+							Thread.sleep(200);
+
+						throw new EngineDriverException();
+					}
+
+					updates = engine.getUpdateSet(0);
+
+					if (terminated(step, updates, prevupdates))
+						break;
+					prevupdates = updates;
+					synchronized (previousUpdates) {
+						previousUpdates.add(updates);
+					}
+
+					resetParents();
+
+					propagateUpdate(updates);
 				}
+				if (engine.getEngineMode() != EngineMode.emIdle)
+					handleError();
+			} catch (Exception e) {
+				exception = e;
+			} finally {
+				engine.removeObserver(this);
+				if (exception != null)
+					if (exception instanceof EngineDriverException)
+						System.err.println("[!] Run is terminated by user.");
+					else {
+						System.err
+								.println("[!] Run is terminated with exception "
+										+ exception);
+					}
 
-				driverInfo.setStatus(EngineDriverStatus.running);
-
-				engine.step();
-				step++;
-
-				while (!shouldStop && engine.isBusy())
-					Thread.sleep(50);
-
-				if (shouldStop) {
-					// give some time to the engine to finish
-					if (engine.isBusy())
-						Thread.sleep(200);
-
-					throw new EngineDriverException();
-				}
-
-				updates = engine.getUpdateSet(0);
-
-				if (terminated(step, updates, prevupdates))
-					break;
-				prevupdates = updates;
-				synchronized (previousUpdates) {
-					previousUpdates.add(updates);
-				}
-
-				resetParents();
-
-				propagateUpdate(updates);
+				// Repeating
+				if (exception != null)
+					if (exception instanceof EngineDriverException)
+						System.err.println("[!] Run is terminated by user.");
+					else
+						System.err
+								.println("[!] Run is terminated with exception "
+										+ exception);
 			}
-			if (engine.getEngineMode() != EngineMode.emIdle)
-				handleError();
-		} catch (Exception e) {
-			exception = e;
-		} finally {
-			engine.removeObserver(this);
-			if (exception != null)
-				if (exception instanceof EngineDriverException)
-					System.err.println("[!] Run is terminated by user.");
-				else {
-					System.err.println("[!] Run is terminated with exception "
-							+ exception);
-				}
-
-			// Repeating
-			if (exception != null)
-				if (exception instanceof EngineDriverException)
-					System.err.println("[!] Run is terminated by user.");
-				else
-					System.err.println("[!] Run is terminated with exception "
-							+ exception);
+			engine.terminate();
+			driverInfo.setStatus(EngineDriverStatus.stopped);
 		}
-		engine.terminate();
-		driverInfo.setStatus(EngineDriverStatus.stopped);
 	}
 
 	private void resetParents() {
@@ -403,7 +443,6 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			message = "Enginemode should be " + EngineMode.emIdle + " but is "
 					+ engine.getEngineMode();
 
-		// JOptionPane.showMessageDialog(null, message, "CoreASM Engine Error",
 		// JOptionPane.ERROR_MESSAGE);
 		System.out.println("CoreASM Engine Error");
 		System.out.println(message);
@@ -519,18 +558,20 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 		StringBuilder agentList = new StringBuilder();
 		Element el;
 		agentList.append('[');
-		Iterator<? extends Element> itr = engine.getAgentSet().iterator();
-		if (itr.hasNext()) {
-			el = itr.next();
-			if (el instanceof EnumerationElement)
+		if (engine.getStepCount() > 0) {
+			Iterator<? extends Element> itr = engine.getAgentSet().iterator();
+			if (itr.hasNext()) {
+				el = itr.next();
+				if (el instanceof EnumerationElement)
+					agentList.append("{\"name\":\""
+							+ ((EnumerationElement) el).getName() + "\"}");
+			}
+			while (itr.hasNext()) {
+				agentList.append(", ");
+				el = itr.next();
 				agentList.append("{\"name\":\""
 						+ ((EnumerationElement) el).getName() + "\"}");
-		}
-		while (itr.hasNext()) {
-			agentList.append(", ");
-			el = itr.next();
-			agentList.append("{\"name\":\""
-					+ ((EnumerationElement) el).getName() + "\"}");
+			}
 		}
 		agentList.append(']');
 		return agentList.toString();
@@ -606,6 +647,45 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 	public void onRuleExit(RuleElement rule, List<ASTNode> args, ASTNode pos,
 			Element agent) {
 		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void changeValue(String location, String value)
+			throws RemoteException {
+		String name = location.substring(0, location.indexOf('('));
+		FunctionElement function = engine.getState().getFunction(name);
+
+		Element val = null;
+		try {
+			val = NumberElement.getInstance(Double.parseDouble(value));
+		} catch (NumberFormatException e) {
+			if (BooleanElement.TRUE_NAME.equals(value))
+				val = BooleanElement.TRUE;
+			else if (BooleanElement.FALSE_NAME.equals(value))
+				val = BooleanElement.FALSE;
+			else if (value.startsWith("\"") && value.endsWith("\""))
+				val = new StringElement(value);
+			else if (Character.isLetterOrDigit(value.charAt(0)))
+				val = new EnumerationElement(value);
+		}
+		synchronized (queuedChanges) {
+			for (Location loc : function.getLocations(name)) {
+				if (loc.toString().equals(location)) {
+					queuedChanges.add(new Update(loc, val,
+							Update.UPDATE_ACTION, (Element) null, null));
+				}
+			}
+		}
+	}
+
+	@Override
+	public void reset(boolean keepSpec) throws RemoteException {
+		if (!keepSpec) {
+			spec = null;
+		}
+		shouldReset = true;
+		shouldStop = true;
 
 	}
 

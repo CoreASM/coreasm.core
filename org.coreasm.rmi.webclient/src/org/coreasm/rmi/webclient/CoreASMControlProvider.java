@@ -28,7 +28,7 @@ import org.coreasm.rmi.server.remoteinterfaces.ServerControl;
 @MultipartConfig
 public class CoreASMControlProvider extends HttpServlet {
 	public enum Command {
-		start, stop, pause, join, update, step, getAgents
+		start, stop, pause, join, update, step, getAgents, changeValue, reset
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -60,8 +60,11 @@ public class CoreASMControlProvider extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		String engId = request.getParameter("engineId");
 		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+		boolean keepSpec = false;
 		HttpSession session = request.getSession();
 		EngineControl ctrl = getEngine(engId, session);
+		PrintWriter out;
+		String agent, val, loc;
 		if (ctrl != null) {
 			engId = ctrl.getIdNr();
 			if (!isMultipart) {
@@ -78,14 +81,13 @@ public class CoreASMControlProvider extends HttpServlet {
 						ctrl.pause();
 						break;
 					case join:
-						request.setAttribute("EngineId", engId);
-						RequestDispatcher disp = getServletContext()
-								.getRequestDispatcher("/engine.jsp");
-						disp.forward(request, response);
+						out = response.getWriter();
+						out.print(ctrl.getIdNr());
+						out.flush();
 						break;
 					case update:
-						String agent = (String) request.getParameter("agent");
-						String val = (String) request.getParameter("value");
+						agent = request.getParameter("agent");
+						val = request.getParameter("value");
 						ctrl.addUpdate(val, agent);
 						break;
 					case step:
@@ -93,16 +95,26 @@ public class CoreASMControlProvider extends HttpServlet {
 						break;
 					case getAgents:
 						String agents = ctrl.getAgentlist();
-						PrintWriter out = response.getWriter();
+						out = response.getWriter();
 						response.setContentType("application/json");
 						out.println(agents);
+						break;
+					case changeValue:
+						loc = request.getParameter("location");
+						val = request.getParameter("value");
+						ctrl.changeValue(loc, val);
+						break;
+					case reset:
+						//defaults keepSpec to false
+						keepSpec = Boolean.valueOf(request.getParameter("keepSpec"));
+						ctrl.reset(keepSpec);
 						break;
 					default:
 						break;
 					}
 				}
 			} else {
-				Part file = request.getPart("file");
+				Part file = request.getPart("spec");
 				InputStream in = file.getInputStream();
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				byte[] data = new byte[4096];
@@ -114,15 +126,15 @@ public class CoreASMControlProvider extends HttpServlet {
 				byte[] spec = baos.toByteArray();
 				ctrl.load(spec);
 				request.setAttribute("EngineId", engId);
-				RequestDispatcher disp = getServletContext()
-						.getRequestDispatcher("/engine.jsp");
-				disp.forward(request, response);
+				out = response.getWriter();
+				out.print(ctrl.getIdNr());
+				out.flush();
+
 			}
 		}
 	}
 
 	private EngineControl getEngine(String id, HttpSession session) {
-
 		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
 				.getAttribute("EngineMap");
 		if (engineMap == null) {

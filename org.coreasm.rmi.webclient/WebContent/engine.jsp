@@ -10,7 +10,7 @@
 <script type="text/javascript">
 	var states = [];
 	var agents = [];
-	
+	EngineId = "${requestScope.EngineId}";
 	function refreshStateTable(stateNr) {
 		if (stateNr < states.length && stateNr > -1) {
 			state2Print = states[stateNr];
