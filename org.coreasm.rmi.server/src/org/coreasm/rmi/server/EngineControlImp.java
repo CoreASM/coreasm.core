@@ -276,10 +276,13 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 					engine.recover();
 					engine.waitWhileBusy();
 				}
-				while (spec == null) {
+				while (spec == null && !shouldStop) {
 					Thread.sleep(500);
 				}
-
+				
+				if (shouldStop)
+					throw new EngineDriverException();
+				
 				shouldReset = false;
 				ByteArrayInputStream in = new ByteArrayInputStream(spec);
 				engine.loadSpecification(new BufferedReader(
@@ -387,6 +390,7 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 			} catch (Exception e) {
 				exception = e;
 			} finally {
+
 				engine.removeObserver(this);
 				if (exception != null)
 					if (exception instanceof EngineDriverException)

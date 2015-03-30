@@ -1,7 +1,7 @@
 /**
  * uses: jQuery 2.x
  */
-var EngineId = null;
+var EngineId = "";
 
 /**
  * Sends the given command back to the server. Use only on parameterless
@@ -179,9 +179,11 @@ function getEngine(spec, handler) {
 function join(engineId, handler) {
 	$.ajax({
 		url : "Control",
-		type: 'POST',
-		command : "join",
-		engineId : EngineId,
+		type: 'POST',		
+		data : {
+			command : "join",
+			engineId : engineId
+		},
 		success : function(data) {
 			EngineId = data;
 			if (handler != null) {
