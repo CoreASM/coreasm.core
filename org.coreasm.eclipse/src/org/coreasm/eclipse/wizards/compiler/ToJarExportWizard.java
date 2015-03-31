@@ -43,6 +43,7 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 		//create temporary directory
 		try{
 			File temp = File.createTempFile("coreasmc", Long.toString(System.nanoTime()));
+			temp.delete();
 			temp.mkdir();
 			
 			co.tempDirectory = temp;	

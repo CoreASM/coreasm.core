@@ -610,6 +610,7 @@ public class CoreASMCompiler implements CompilerEngine {
 		getLogger().debug(CoreASMCompiler.class, "creating temporary directory");
 		File tempDir = options.tempDirectory;
 		if(tempDir.exists()){
+			if(tempDir.list() == null) System.out.println("this shouldn't happen");
 			getLogger().warn(CoreASMCompiler.class, "temp directory already exists");
 			if(tempDir.list().length > 0 && !options.removeExistingFiles){
 				getLogger().error(CoreASMCompiler.class, "temp directory is not empty");
