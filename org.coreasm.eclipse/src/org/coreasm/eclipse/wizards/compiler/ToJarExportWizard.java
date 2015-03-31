@@ -2,8 +2,6 @@ package org.coreasm.eclipse.wizards.compiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -43,16 +41,15 @@ public class ToJarExportWizard extends Wizard implements IExportWizard {
 		CompilerOptions co = page.getResult();
 		
 		//create temporary directory
-		Path tmppath = null;
-		try {
-			tmppath = Files.createTempDirectory("coreasmc");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+		try{
+			File temp = File.createTempFile("coreasmc", Long.toString(System.nanoTime()));
+			temp.mkdir();
+			
+			co.tempDirectory = temp;	
 		}
-		co.tempDirectory = new File(tmppath.toAbsolutePath().toString());	
-		
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		
 		CompileJob cj = new CompileJob("Compiling CoreASM specification", co, page.runJar());
 		cj.setPriority(Job.BUILD);
