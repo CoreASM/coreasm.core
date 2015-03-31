@@ -48,8 +48,15 @@ public class ASMModelPresentation extends LabelProvider implements IDebugModelPr
 		try {
 			if (element instanceof ASMDebugTarget)
 				return (((ASMDebugTarget) element).isTerminated() ? "<terminated>" : "") + ((ASMDebugTarget)element).getName();
-			else if (element instanceof ASMThread)
+			else if (element instanceof ASMThread) {
+				ASMDebugTarget debugTarget = (ASMDebugTarget)((ASMThread)element).getDebugTarget();
+				if (debugTarget.isSuspended() && debugTarget.isStepFailed()) {
+					if (debugTarget.getLastError() != null)
+						return ((ASMThread)element).getName() + " (Error)";
+					return ((ASMThread)element).getName() + " (Inconsistent Update)";
+				}
 				return ((ASMThread)element).getName() + (((ASMThread)element).isSuspended() ? " (Suspended)" : " (Running)");
+			}
 			else if (element instanceof ASMStackFrame) {
 				int step = ((ASMStackFrame)element).getStep();
 				return ((ASMStackFrame)element).getName() + ":" + ((ASMStackFrame)element).getRuleName() + " line: " + ((ASMStackFrame)element).getLineNumber() + " STEP " + (step < 0 ? -step - 1 + "*" : step) + " " +  ((ASMStackFrame)element).getLastSelectedAgents();

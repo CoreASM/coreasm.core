@@ -1,5 +1,12 @@
 package org.coreasm.eclipse.debug.core.model;
 
+import java.util.Set;
+
+import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
+import org.coreasm.eclipse.engine.debugger.EngineDebugger;
+import org.coreasm.eclipse.engine.driver.EngineDriver.EngineDriverStatus;
+import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
+import org.coreasm.engine.CoreASMError;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
@@ -14,11 +21,6 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
-
-import org.coreasm.eclipse.engine.debugger.EngineDebugger;
-import org.coreasm.eclipse.engine.driver.EngineDriver.EngineDriverStatus;
-import org.coreasm.eclipse.launch.ICoreASMConfigConstants;
-import org.coreasm.engine.CoreASMError;
 
 /**
  * Implementation of the ASM debug target
@@ -42,8 +44,20 @@ public class ASMDebugTarget extends ASMDebugElement implements IDebugTarget {
 		debugger.setDebugTarget(this);
 	}
 	
+	public boolean isStepFailed() {
+		return debugger.isStepFailed();
+	}
+	
 	public boolean isUpdateFailed() {
 		return debugger.isUpdateFailed();
+	}
+	
+	public boolean isUpdateConsistent(ASMUpdate update) {
+		return debugger.isUpdateConsistent(update);
+	}
+	
+	public Set<ASMUpdate> getLastInconsistentUpdate() {
+		return debugger.getLastInconsistentUpdate();
 	}
 	
 	public String getStepFailedMsg() {

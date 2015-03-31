@@ -19,12 +19,14 @@ import org.eclipse.debug.core.model.ILineBreakpoint;
  *
  */
 public class ASMUpdate extends ASMUpdateViewElement {
-	private Update update;
+	private final Update update;
+	private final boolean consistent;
 	private boolean onBreakpoint;
-
-	private ASMUpdate(Update update, ControlAPI capi) {
+	
+	private ASMUpdate(Update update, boolean consistent, ControlAPI capi) {
 		super(update, capi);
 		
+		this.consistent = consistent;
 		this.update = update;
 
 		for (IBreakpoint breakpoint : DebugPlugin.getDefault().getBreakpointManager().getBreakpoints("org.coreasm.eclipse.debug")) {
@@ -50,18 +52,19 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	/**
 	 * Wraps a given set of the class Update into a set of the class ASMUpdate.
 	 * @param updates the set of updates to be wrapped
+	 * @param consistent whether the set of updates is consistent
 	 * @param capi the ControlAPI
 	 * @return the wrapped update set
 	 */
-	public static Set<ASMUpdate> wrapUpdateSet(Set<Update> updates, ControlAPI capi) {
+	public static Set<ASMUpdate> wrapUpdateSet(Set<Update> updates, boolean consistent, ControlAPI capi) {
 		HashSet<ASMUpdate> asmUpdateSet = new HashSet<ASMUpdate>();
 		for (Update update : updates)
-			asmUpdateSet.add(new ASMUpdate(update, capi));
+			asmUpdateSet.add(new ASMUpdate(update, consistent, capi));
 		return asmUpdateSet;
 	}
 	
 	public static Set<ASMUpdate> wrapUpdateSet(ControlAPI capi) {
-		return wrapUpdateSet(capi.getUpdateSet(0), capi);
+		return wrapUpdateSet(capi.getUpdateSet(0), true, capi);
 	}
 	
 	public static Set<Update> unwrap(Set<ASMUpdate> asmUpdateSet) {
@@ -69,6 +72,10 @@ public class ASMUpdate extends ASMUpdateViewElement {
 		for (ASMUpdate asmUpdate : asmUpdateSet)
 			updates.add(asmUpdate.update);
 		return updates;
+	}
+	
+	public Update getUpdate() {
+		return update;
 	}
 	
 	/**
@@ -93,6 +100,11 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	 */
 	public boolean isOnBreakpoint() {
 		return onBreakpoint;
+	}
+	
+	@Override
+	public boolean isError() {
+		return !consistent;
 	}
 	
 	@Override
@@ -122,13 +134,8 @@ public class ASMUpdate extends ASMUpdateViewElement {
 
 	@Override
 	public String toString() {
-//		String string = super.toString() + " (";
-//		for (Element agent : update.agents) {
-//			if (!string.endsWith("("))
-//				string += ", ";
-//			string += agent.denotation();
-//		}
-//		return string + ")";
+		if (!consistent)
+			return "Inconsistent Update: " + update.toString();
 		return update.toString();
 	}
 }

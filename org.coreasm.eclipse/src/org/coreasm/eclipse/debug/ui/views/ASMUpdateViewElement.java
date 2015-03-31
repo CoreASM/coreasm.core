@@ -26,6 +26,14 @@ public class ASMUpdateViewElement {
 	}
 	
 	/**
+	 * Returns whether this element is an error.
+	 * @return whether this element is an error.
+	 */
+	public boolean isError() {
+		return true;
+	}
+	
+	/**
 	 * Returns the number of the line in the assigned source file.
 	 * @return the number of the line in the assigned source file
 	 */
