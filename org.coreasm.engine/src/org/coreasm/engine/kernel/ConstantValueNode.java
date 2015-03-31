@@ -17,7 +17,7 @@ public class ConstantValueNode extends ASTNode {
 
 	public ConstantValueNode(ConstantValueNode node) {
 		super(node);
-		super.setNode(null, null, node.getValue());
+		setValue(node.getValue());
 	}
 	
 	public ConstantValueNode(ScannerInfo info, Element value) {
@@ -28,7 +28,7 @@ public class ConstantValueNode extends ASTNode {
 	public void setValue(Element value) {
 		if (value == null)
 			throw new CoreASMError("Constant value must not be null", this);
-		super.setNode(null, null, value);
+		super.setNode(null, new UpdateMultiset(), value);
 	}
 	
 	@Override
