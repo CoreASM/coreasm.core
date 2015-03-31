@@ -109,7 +109,9 @@ public class CompileJob extends Job {
 					if(options.terminateOnStepCount < 0) out.println("Warning: No max step count set, program might not terminate on its own");
 					out.println("Running created jar");
 					
-					while(p.isAlive()){
+					Exception term = null;
+					
+					while(term == null){
 						int c = -1;
 						if((c = is.read()) != -1){
 							out.write(c);
@@ -117,7 +119,13 @@ public class CompileJob extends Job {
 						if(monitor.isCanceled()){
 							out.println("");
 							out.println("Stopping jar...");
-							p.destroyForcibly();
+							p.destroy();
+						}
+						try{
+							p.exitValue();
+						}
+						catch(IllegalThreadStateException e){
+							term = e;
 						}
 					}
 				}
