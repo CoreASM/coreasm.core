@@ -1,19 +1,29 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>org.coreasm.rmi.parent</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <parent>
-  	<groupId>org.coreasm</groupId>
-  	<artifactId>org.coreasm.parent</artifactId>
-  	<version>1.7.1-SNAPSHOT</version>
-  	<relativePath>../org.coreasm.parent</relativePath>
-  </parent>
-  <dependencies>
-  	<dependency>
-  		<groupId>com.google.code.gson</groupId>
-  		<artifactId>gson</artifactId>
-  		<version>2.3</version>
-  	</dependency>
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>org.coreasm.rmi.parent</artifactId>
+	<version>0.1.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<groupId>org.coreasm</groupId>
+		<artifactId>org.coreasm.parent</artifactId>
+		<version>1.7.1-SNAPSHOT</version>
+		<relativePath>../org.coreasm.parent</relativePath>
+	</parent>
+	<modules>
+		<module>../org.coreasm.rmi.server</module>
+		<module>../org.coreasm.rmi.webclient</module>
+	</modules>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
