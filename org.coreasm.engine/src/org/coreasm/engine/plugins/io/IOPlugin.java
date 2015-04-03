@@ -32,13 +32,13 @@ import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
-import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.PluginAggregationAPI;
 import org.coreasm.engine.absstorage.PluginAggregationAPI.Flag;
 import org.coreasm.engine.absstorage.PluginCompositionAPI;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
+import org.coreasm.engine.absstorage.UnmodifiableFunctionException;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -340,14 +340,15 @@ public class IOPlugin extends Plugin implements
 			outputBuffer.clear();
 			*/
 			try {
-				String msgs = capi.getStorage().getValue(OUTPUT_FUNC_LOC).toString();
+				FunctionElement outputFunction = capi.getStorage().getFunction(IOPlugin.OUTPUT_FUNC_NAME);
+				String msgs = outputFunction.getValue(OUTPUT_FUNC_LOC.args).toString();
 				if (outputStream == null)
 					outputMessages.add(msgs);
 				outputStream.print(msgs);
-				capi.getStorage().setValue(OUTPUT_FUNC_LOC, new StringElement(""));
-			} catch (InvalidLocationException e) {
+				outputFunction.setValue(OUTPUT_FUNC_LOC.args, new StringElement(""));
+			} catch (UnmodifiableFunctionException e) {
 				// Should not happen
-				logger.error("Output function is not available.");
+				logger.error("Output function is unmodifiable.");
 			}
 		} 
 		
