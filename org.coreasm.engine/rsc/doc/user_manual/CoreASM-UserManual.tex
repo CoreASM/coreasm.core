@@ -115,7 +115,7 @@ Plugin.
 
 \subsection{\CoreASM with \Carma}
 
-\CoreASM engine with \Carma can be downloaded from the web at \url{www.coreasm.org/download}.
+All sources of the \CoreASM engine with \Carma can be downloaded at \url{https://github.com/CoreASM/coreasm.core}.
 
 
 \subsubsection{System Requirements}
@@ -209,6 +209,11 @@ If you like, you can build CoreASM by your own using the sources on github. The 
 Shortcut method for running a specification with default configuration:
 
 \begin{enumerate}
+    \item Press the "play"-button that is usually used to compile and run programs, e.\,g. in Java
+    \item[] or
+    \vspace{-1em}
+\end{enumerate}
+\begin{enumerate}
     \item In the Eclipse window, right click on a \CoreASM specification file.
     \item In the context menu choose: \menu[,]{Run as\ldots, CoreASM Specification} 
 \end{enumerate}
@@ -239,6 +244,7 @@ While the engine is running, you can click on the
 click on the ``Pause CoreASM Engine'' button. If you pause the engine, the 
 run can be resumed by clicking on the ``Resume CoreASM Engine'' button. 
 
+For more control, you are welcome to use the CoreASM debugger. Further details about debugging CoreASM specifications are described in the \href{https://github.com/CoreASM/coreasm.core/blob/master/org.coreasm.eclipse/rsc/doc/CoreASM_Eclipse_Debugger_Manual.pdf?raw=true}{manual of the CoreASM debugger}.
 
 \subsection{Using \CoreASM Compiler}
 
@@ -267,8 +273,9 @@ Table \ref{tab:compiler} lists all options found in the configuration dialog.
 
 \begin{table}%
 \begin{tabular}{l l}
-option & description \\
+\textbf{option} & \textbf{description} \\
 \hline
+\vspace{-.75em}&\\
 Specification Name 				& The path to the specification. Should not \\ 
 													& be changed and will be filled in automatically \\
 outputFile 								& The file name for the generated jar\\
@@ -336,7 +343,7 @@ in the \emph{Rule Declaration}\index{Rule Declaration} block.
 A sample \CoreASM specification is presented in \hyperref[spec:thisiscoreasm]{CoreASM-Says-Hello example}.
 
 \AsmKeyword{CoreASM}
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \begin{minipage}{0.65\textwidth}
 \begin{tcolorbox}
@@ -887,6 +894,7 @@ Returns \asm{true} if the argument is an Integer number divisible by two.
 
 Returns \asm{true} if the argument is an Integer number which is not divisible by two.
 
+\AsmDerivedFunction{size}
 \funcform{
 	\asm{size: Element -> Number}
 }{Number Plugin}
@@ -1430,19 +1438,18 @@ The result of evaluating \asm{SetAdd(\{1, 2, 3\}, \{10, 20\})} would be:
 	\asm{value$_1$ bin-op value$_22$}
 }{Set Plugin}
 
-Performs a set binary operation where both \asm{value$_1$} and \asm{value$_2$} are sets. 
+Performs a set binary operation where both \asm{value$_1$} and \asm{value$_2$} are sets.
 Currently, \asm{subset}\indexexp{subset}, \asm{union}\indexexp{union}, \asm{intersect}\indexexp{intersect}, and \asm{diff}\indexexp{diff} are supported.
 
 \smallskip
-Set background also provides two important rule forms which allow for parallel incremental updates of set data structures. 
+Set background also provides two important rule forms which allow for parallel incremental updates of set data structures.
 
 \ruleform{
 	\asm{add value to loc}
 }{Set Plugin}
 \indexrule{add-to-set}
 
-If \asm{loc} is a location in the state (e.g., a function) and its value is a set, this rule 
-produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
+If \asm{loc} is a location in the state (e.g., a function) and its value is a set, this rule produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
 
 \ruleform{
 	\asm{remove value from loc}
