@@ -1460,6 +1460,86 @@ If \asm{loc} is a location in the state (e.g., a function) and its value is a se
 this rule produces an update instruction (partial update)
 that removes \asm{value} to \asm{loc}.
 
+% -------------------------------- BAG
+\subsection{Bag Background}
+\label{bag}
+
+The Bag plugin\index{Bag plugin} can be loaded by the following \asm{use} phrase:
+
+\begin{lstlisting}
+use Bag
+\end{lstlisting}
+
+\noindent This plugin provides the bag background (\asm{Bag})\index{Bag background} equivalent to multi sets and a number of functions and expression forms.
+
+\opform{
+	\asm{<<}
+	\optional{\asm{value$_1$, ..., value$_n$}}
+	\asm{>>}
+}{Bag Plugin}
+\index{bag element}
+\index{\{\}@\texttt{"\{\ldots"\}}|see{bag element}}
+\index{bag enumeration}
+
+Creates a bag element that includes the listed values. The values should be basic terms (i.e., no operators) or
+they should be surrounded in parentheses.
+
+\opform{
+	\asm{<< id } \textbar \asm{id in value}
+	\optional{\asm{with guard}}
+	\asm{>>}
+}{Bag Plugin}\index{bag element}\index{bag comprehension}
+
+This is the basic form bag comprehension. It creates a bag of all the elements in \asm{value} which satisfy \asm{guard}. Of course, \asm{value} must be enumerable.
+
+\AsmConstantOrEnum{exp}
+\opform{
+	\asm{<< id is exp } \textbar \asm{id$_1$ in value$_1$}\hspace{-.4em}
+	\optional{\asm{, ..., id$_n$ in value$_n$}}
+	\optional{\asm{with guard}}
+	\asm{>>}
+}{Bag Plugin}
+\index{bag element}
+\index{bag comprehension}
+
+\opform{
+	\asm{value$_1$ bin-op value$_22$}
+}{Bag Plugin}
+
+Performs a bag binary operation where both \asm{value$_1$} and \asm{value$_2$} are bags.
+Currently, \asm{subset}\indexexp{subset}, \asm{union}\indexexp{union}, \asm{intersect}\indexexp{intersect}, and \asm{diff}\indexexp{diff} are supported.
+
+Creates a bag element that contains all the elements of the form \asm{exp} which satisfy the \asm{guard}. In this form, \asm{exp} is a function of \asm{id$_1$, ...,id$_n$} and every \asm{id$_i$} is bound to an enumerable \asm{value$_i$}. 
+\AsmDerivedFunction{BagMerge}
+\AsmVariable{bag1, bag2, x1, x2}
+In the following example, \asm{BagAdd} takes two bags \asm{bag1} and \asm{bag2} as input and produces a bag that contains all elements of \asm{bag1} and all elements of \asm{bag2}:
+
+\begin{lstlisting}
+derived BagMerge(bag1, bag2) = bag1 + bag2
+\end{lstlisting}
+
+The result of evaluating \asm{BagAdd(<<1, 2, 3>>, <<2, 3, 3>> >>} would be:
+
+\begin{quote} \asm{ << 1, 2, 2, 3, 3, 3 >>} \end{quote}
+
+
+\smallskip
+Bag background also provides two important rule forms which allow for parallel incremental updates of bag data structures.
+
+\ruleform{
+	\asm{add value to loc}
+}{Bag Plugin}
+\indexrule{add-to-bag}
+
+If \asm{loc} is a location in the state (e.g., a function) and its value is a bag, this rule produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
+
+\ruleform{
+	\asm{remove value from loc}
+}{Bag Plugin}
+\indexrule{remove-from-bag}
+
+If \asm{loc} is a location in the state (e.g., a function) and its value is a bag, this rule produces an update instruction (partial update) that removes \asm{value} to \asm{loc}.
+
 
 % -------------------------------- LIST
 \subsection{List Background}
