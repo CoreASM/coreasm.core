@@ -123,10 +123,7 @@ All sources of the \CoreASM engine with \Carma can be downloaded at \url{https:/
 You need to have Sun Microsystems Java 1.6 (JVM) installed on your machine.
 
 \subsubsection{Installing \Carma}
-
-To install \CoreASM with \Carma just unzip the contents of the binary package into a 
-directory of your choice. Alternatively, You can build \CoreASM with \Carma using the 
-ant build file provided in the source package.
+You can build \CoreASM with \Carma using the maven build system provided in the source package.
 
 \subsubsection{Running \Carma}
 
@@ -143,23 +140,28 @@ To start, try Carma with `{\ttfamily --help}' to see the list of command-line ar
 This section explains how to install the \CoreASM Eclipse plugin.
 
 \subsubsection{System Requirements}
+The following infrastructure is required for the CoreASM Eclipse plugin:
+\begin{itemize}
+	\item Java SE Runtime Environment 7\\\url{http://www.oracle.com/technetwork/java/javase/downloads/index.html}
+	\item Eclipse IDE for Java Developers (version \emph{Kepler} suggested)\\\url{http://www.eclipse.org/downloads/}
+\end{itemize}
 
-You need to have Eclipse 3.5 or newer installed on your machine.
+\noindent This version of the CoreASM Eclipse Plugin has been developed and tested under
+\begin{table}[h]
+\begin{tabular}{l}
+	\begin{tabular}[c]{@{}l@{}}Ubuntu Linux 64bit v14.10 \&\\ Windows 7 and 8.1\end{tabular}\\
+	\textit{with}\\
+	\begin{tabular}[c]{@{}l@{}}Kepler Service Release 2 64 bit \&\\ Luna Eclipse Standard 4.4 64 bit\end{tabular}\\
+	Oracle Java SE JDK 7
+\end{tabular}
+\end{table}
 
 \subsubsection{Installing \CoreASM Eclipse Plugin}
 
-This version of the CoreASM Eclipse Plugin has been developed and tested under
-
-	Ubuntu Linux 64bit v14.10 \&
-	Windows 7 and 8.1
-    with
-    Kepler Service Release 2 64 bit \&
-    Luna Eclipse Standard 4.4 64 bit
-    Oracle Java SE JDK 6u45
-
-The Plugin can be installed either from the Eclipse Marketplace or by perfoming the following steps:
+The Plugin can be installed either from the Eclipse Marketplace or by performing the following steps:
 
 \begin{itemize}
+\item Check if the required software (see above) is already installed on the target machine and if not, install the software.
 \item Open the \menu{Help}-menu inside Eclipse
 \item Select the menu item \menu[,]{Help, Install New Software...}
 \item Paste the url of this site \url{http://webcoreasm.informatik.uni-ulm.de/coreasm-repository} into the field "work with" and press \keys{ENTER}

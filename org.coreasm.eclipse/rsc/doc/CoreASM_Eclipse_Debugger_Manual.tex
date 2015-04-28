@@ -76,7 +76,7 @@ morecomment=[s]{/*}{*/}
 \maketitle
 \vfill
 \section{Introducing Notes}
-The CoreASM Eclipse plugin extends the Eclipse IDE for editing, debugging, and executing CoreASM specifications. This version is a major upgrade from the latest version (0.6.8.beta). It offers a reimplemented and enhanced editor which integrates the latest jparsec parser\footnote{jparsec 2.0.1, \url{http://jparsec.codehaus.org/}}. This new editor performs noticeably better than the old one and introduces some valuable features to revise specifications like quick fixes and syntax checks. Furthermore, CoreASM specifications can be investigated in an intuitive as well as comprehensive manner with the new debugger which makes use of the regular Eclipse debugging components.
+The CoreASM Eclipse plugin extends the Eclipse IDE for editing, debugging, and executing CoreASM specifications. This version is a major upgrade from the latest version (0.6.8.beta). It offers a reimplemented and enhanced editor which integrates the latest jparsec parser\footnote{\url{http://jparsec.codehaus.org/}}. This new editor performs noticeably better than the old one and introduces some valuable features to revise specifications like quick fixes and syntax checks. Furthermore, CoreASM specifications can be investigated in an intuitive as well as comprehensive manner with the new debugger which makes use of the regular Eclipse debugging components.
 
 The reimplementation and enhancement of the editor component has been implemented by Markus Müller during his diploma thesis \cite{Mueller2012}. The debugger has been implemented as part of a bachelor thesis by Michael Stegmaier \cite{Stegmaier2012} and has been introduced on the ABZ-conference 2012 in Pisa \cite{Dausend.Stegmaier.ea2012}. Both theses have been supervised by Prof. Dr. Helmuth A. Partsch, head of the institute of Software Engineering and Compiler Construction at the University of Ulm. The work has been initiated and mentored by Marcel Dausend. Meanwhile, the project has been merged with the official CoreASM development project (\url{www.coreasm.org}) and is provided as open source via github \cite{Dausend.Farahbod.ea2012}.
 
@@ -86,29 +86,43 @@ The reimplementation and enhancement of the editor component has been implemente
 \newpage
 
 
-\section{Installing the CoreASM Eclipse Plugin}
-The daily version of the CoreASM Eclipse plugin can be received via github \cite{Dausend.Farahbod.ea2012}. A guide for building and executing the development version can be found on the referred website, too.
-
-This installation guide refers to a \mydirectory{org.coreasm.eclipse\_<version>.zip} distributable which enables non-developers to easily try out the latest version of the CoreASM Eclipse plugin by themselves. Such a distributable can be directly received from the authors\footnote{please send a request by e-mail to \url{marcel.dausend@uni-ulm.de}}.
+\section{The CoreASM Eclipse Plugin}
+The daily version of the CoreASM Eclipse plugin can be received via github \cite{Dausend.Farahbod.ea2012}. A guide for building and executing the development version can be found on the referred website, too. Non-developers can easily try out the latest release version of the CoreASM Eclipse plugin by themselves.  It is distributed via the \href{https://marketplace.eclipse.org/content/coreasm-eclipse-plugin}{Eclipse Marketplace} and our \href{http://webcoreasm.informatik.uni-ulm.de/coreasm-repository/}{Eclipse Update Site}. Further information can be found in our \href{https://github.com/CoreASM/coreasm.core/wiki}{wiki at github}. You are welcome to contact the authors in case of questions or for providing your feedback\footnote{please send a request by e-mail to \url{marcel.dausend@uni-ulm.de}}.
 
 \subsection{System Requirements}
-The current version of the CoreASM Eclipse plugin is developed with \emph{Eclipse Juno} on Windows and Linux \emph{64bit}-Systems with \emph{Oracle Java SE 1.7} installed. The following infrastructure is required for the CoreASM Eclipse plugin:
+The following infrastructure is required for the CoreASM Eclipse plugin:
 \begin{itemize}
 	\item Java SE Runtime Environment 7\\\url{http://www.oracle.com/technetwork/java/javase/downloads/index.html}
-	\item Eclipse IDE for Java Developers (version \emph{Juno} suggested)\\\url{http://www.eclipse.org/downloads/}
-	\item A program to unzip the CoreASM distributable (e.\,g. 7-Zip)\\\url{http://www.7-zip.org/}
+	\item Eclipse IDE for Java Developers (version \emph{Kepler} suggested)\\\url{http://www.eclipse.org/downloads/}
 \end{itemize}
-The installation requires the following steps:
-\begin{enumerate}
-	\item Check if the required software (see above) is already installed on the target machine and if not, install the software.
-	\item Extract the CoreASM Eclipse plugin \mydirectory{org.coreasm.eclipse\_<version>.zip} to the plugin folder of your eclipse installation.
 
-	For example, on a \emph{32bit Windows system} the standard destination would be \mydirectory{C:/Program Files/eclipse/plugins}.
+\noindent This version of the CoreASM Eclipse Plugin has been developed and tested under
+\begin{table}[h]
+\begin{tabular}{l}
+	\begin{tabular}[c]{@{}l@{}}Ubuntu Linux 64bit v14.10 \&\\ Windows 7 and 8.1\end{tabular}\\
+	\textit{with}\\
+	\begin{tabular}[c]{@{}l@{}}Kepler Service Release 2 64 bit \&\\ Luna Eclipse Standard 4.4 64 bit\end{tabular}\\
+	Oracle Java SE JDK 7
+\end{tabular}
+\end{table}
 
-	On a linux system, the destination depends on the distribution and installation method, e.\,g. on an \emph{Ubuntu} system, the eclipse folder would be \mydirectory{usr/lib/eclipse/plugins} if it has been installed from the ubuntu's standard software repository. In this case, super user privileges are needed to access the folder! For people without super user privileges: Download a version of the Eclipse IDE from the above mentioned website and extract it to a user accessible destination.
-	\item Check if the CoreASM plugin has been extracted to the plugin destination. There should be a directory like \mydirectory{\ldots/eclipse/plugins/org.coreasm.eclipse\_<version>}.
-	\item Start eclipse by executing the file \directory{eclipse} in the directory \mydirectory{\ldots/eclipse}
-\end{enumerate}
+\subsection{Installing CoreASM Eclipse Plugin}
+
+The Plugin can be installed either from the Eclipse Marketplace or by performing the following steps:
+
+\begin{itemize}
+\item Check if the required software (see above) is already installed on the target machine and if not, install the software.
+\item Open the \menu{Help}-menu inside Eclipse
+\item Select the menu item \menu[,]{Help, Install New Software...}
+\item Paste the url of this site \url{http://webcoreasm.informatik.uni-ulm.de/coreasm-repository} into the field "work with" and press \keys{ENTER}
+\item Next press \keys{Select All}- and afterwards \keys{Next}-button
+\item Confirm the selection of the "CoreASM Eclipse Plugin" for installation by pressing the \keys{Next}-button
+\item Accept the license and start the installation by pressing the \keys{Finish}-button
+\item When the warning appears that you are installing unsigned content, you have to press the \keys{Okay}-button to continue
+\item Last, you have to restart Eclipse so that the "CoreASM Eclipse Plugin" becomes available to you
+\end{itemize}
+
+If you like, you can build CoreASM by your own using the sources on github. The sources and our wiki are available at \url{https://github.com/CoreASM/coreasm.core}.
 
 
 \section{General Introduction to CoreASM and its Editor}
@@ -131,6 +145,7 @@ The editor offers a lot of features to support the user to create, examine, and 
 	\item quick fixes for several issues
 	\item tooltips showing parser information
 	\item bracket highlighting
+	\item code completion
 	\item \ldots
 \end{itemize}
 
