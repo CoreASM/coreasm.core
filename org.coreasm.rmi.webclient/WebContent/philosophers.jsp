@@ -127,20 +127,18 @@
 		changeValue("eating(" + phil + ")", !(states[activeState]['eating' + phil]==='true'));
 	}
 	
+	function update() {
+		if(EngineId != "") {
+			getUpdates(getUpdatesHandler);
+		}
+	}
+	
 	$(document).ready(
 		function() {
-			states[0] = {}
+			states[0] = {};
 			$.ajaxSetup({
 				cache : false
-			});
-			
-			function update() {
-				if(EngineId != "") {
-					getUpdates(getUpdatesHandler);
-				}
-			}
-			
- 			 
+			});			 			 
 
 			var auto_refresh = setInterval(function() {
 				update()
@@ -159,13 +157,12 @@
 			
 			$("#specSubmit").submit(function(e) {
 				e.preventDefault();
-				var formData = new FormData(this);
-				getEngine(formData);		
+				getEngine(new FormData(this));		
 			});
 			
 			$("#joinEngine").submit(function(e) {
 				e.preventDefault();				
-				join(this[0].value, null);		
+				join(this[0].value);		
 			});
 		});
 </script>

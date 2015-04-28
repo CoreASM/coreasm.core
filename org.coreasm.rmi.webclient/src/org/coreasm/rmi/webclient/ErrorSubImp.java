@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.coreasm.rmi.webclient;
 
 import java.rmi.RemoteException;
@@ -10,10 +7,6 @@ import java.util.List;
 
 import org.coreasm.rmi.server.remoteinterfaces.ErrorSubscription;
 
-/**
- * @author Stephan
- *
- */
 public class ErrorSubImp extends UnicastRemoteObject implements
 		ErrorSubscription {
 	private static final long serialVersionUID = 1L;

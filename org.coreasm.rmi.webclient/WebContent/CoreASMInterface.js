@@ -50,6 +50,7 @@ function stepASM() {
 
 /**
  * Resets the engine and keeps its specification if keep is 'true';
+ * 
  * @param keepSpec
  */
 function reset(keep) {
@@ -57,7 +58,7 @@ function reset(keep) {
 		command : "reset",
 		engineId : EngineId,
 		keepSpec : keep
-	})	
+	})
 }
 /**
  * @param code
@@ -65,11 +66,11 @@ function reset(keep) {
  * @param agent
  *            Name of the agent the code should be run by.
  */
-function updateASM(update, agent) {
+function updateASM(code, agent) {
 	$.post("Control", {
 		command : "update",
 		engineId : EngineId,
-		value : update,
+		value : code,
 		agent : agent
 	})
 }
@@ -145,49 +146,46 @@ function getErrors(handler) {
 }
 
 /**
- * Request a new engine loaded with the given specification. After it returns
+ * Request a new engine loaded with the given specification.After it returns
  * successfully EngineId will be set.
  * 
  * @param spec
  *            Specification to load as FormData containing an 'spec' named
  *            specification.
  */
-function getEngine(spec, handler) {
+function getEngine(spec) {
 	$.ajax({
 		url : "Control",
-		type : 'POST',
 		data : spec,
-		mimeType : "multipart/form-data",
+		type : "POST",
 		contentType : false,
 		cache : false,
 		processData : false,
 		success : function(data) {
-			EngineId = data;
-			if (handler != null) {
-				handler(data);
+			if (typeof data === 'string') {
+				EngineId = data;
 			}
 		}
 	});
 }
 
 /**
- * Request a to join an existing engine. After it returns
- * successfully EngineId will be set.
+ * Request to join an existing engine. After it returns successfully EngineId
+ * will be set.
  * 
- * @param engineId Id of the engine you want to join
+ * @param engineId
+ *            Id of the engine you want to join
  */
-function join(engineId, handler) {
+function join(engineId) {
 	$.ajax({
 		url : "Control",
-		type: 'POST',		
-		data : {
-			command : "join",
-			engineId : engineId
-		},
+		type : 'POST',
+		command : "join",
+		engineId : engineId,
 		success : function(data) {
-			EngineId = data;
-			if (handler != null) {
-				handler(data);
+			alert(data);
+			if (typeof data !== 'undefined') {
+				EngineId = data;
 			}
 		}
 	});

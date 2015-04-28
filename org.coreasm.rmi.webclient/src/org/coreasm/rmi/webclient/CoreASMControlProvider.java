@@ -28,7 +28,7 @@ import org.coreasm.rmi.server.remoteinterfaces.ServerControl;
 @MultipartConfig
 public class CoreASMControlProvider extends HttpServlet {
 	public enum Command {
-		start, stop, pause, join, update, step, getAgents, changeValue, reset
+		start, stop, pause, join, update, step, getAgents, changeValue, reset, getEngine, loadSpec
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -65,71 +65,100 @@ public class CoreASMControlProvider extends HttpServlet {
 		EngineControl ctrl = getEngine(engId, session);
 		PrintWriter out;
 		String agent, val, loc;
-		if (ctrl != null) {
-			engId = ctrl.getIdNr();
-			if (!isMultipart) {
-				String com = request.getParameter("command");
-				if (com != null) {
-					switch (Command.valueOf(com)) {
-					case start:
-						ctrl.start();
-						break;
-					case stop:
-						ctrl.stop();
-						break;
-					case pause:
-						ctrl.pause();
-						break;
-					case join:
-						out = response.getWriter();
-						out.print(ctrl.getIdNr());
-						out.flush();
-						break;
-					case update:
-						agent = request.getParameter("agent");
-						val = request.getParameter("value");
-						ctrl.addUpdate(val, agent);
-						break;
-					case step:
-						ctrl.singleStep();
-						break;
-					case getAgents:
-						String agents = ctrl.getAgentlist();
-						out = response.getWriter();
-						response.setContentType("application/json");
-						out.println(agents);
-						break;
-					case changeValue:
-						loc = request.getParameter("location");
-						val = request.getParameter("value");
-						ctrl.changeValue(loc, val);
-						break;
-					case reset:
-						//defaults keepSpec to false
-						keepSpec = Boolean.valueOf(request.getParameter("keepSpec"));
-						ctrl.reset(keepSpec);
-						break;
-					default:
-						break;
-					}
-				}
-			} else {
-				Part file = request.getPart("spec");
-				InputStream in = file.getInputStream();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				byte[] data = new byte[4096];
-				int count = in.read(data);
-				while (count != -1) {
-					baos.write(data, 0, count);
-					count = in.read(data);
-				}
-				byte[] spec = baos.toByteArray();
-				ctrl.load(spec);
-				request.setAttribute("EngineId", engId);
-				out = response.getWriter();
-				out.print(ctrl.getIdNr());
-				out.flush();
 
+		String com = request.getParameter("command");
+		if (com == null && isMultipart) {
+			com = "loadSpec";
+		}
+		if (ctrl != null) {
+			if (com != null) {
+				switch (Command.valueOf(com)) {
+				case start:
+					ctrl.start();
+					break;
+				case stop:
+					ctrl.stop();
+					break;
+				case pause:
+					ctrl.pause();
+					break;
+				case join:
+					out = response.getWriter();
+					out.print(ctrl.getIdNr());
+					out.flush();
+					break;
+				case update:
+					agent = request.getParameter("agent");
+					val = request.getParameter("value");
+					ctrl.addUpdate(val, agent);
+					break;
+				case step:
+					ctrl.singleStep();
+					break;
+				case getAgents:
+					String agents = ctrl.getAgentlist();
+					out = response.getWriter();
+					response.setContentType("application/json");
+					out.println(agents);
+					break;
+				case changeValue:
+					loc = request.getParameter("location");
+					val = request.getParameter("value");
+					ctrl.changeValue(loc, val);
+					break;
+				case reset:
+					// defaults keepSpec to false
+					keepSpec = Boolean
+							.valueOf(request.getParameter("keepSpec"));
+					ctrl.reset(keepSpec);
+					break;
+				case getEngine:
+					out = response.getWriter();
+					engId = ctrl.getIdNr();
+					out.print(engId);
+					out.flush();
+					break;
+				default:
+					break;
+				}
+			}
+		} else {
+			if (com != null) {
+				switch (Command.valueOf(com)) {
+				case loadSpec:
+				case getEngine:
+					out = response.getWriter();
+					if (isMultipart) {
+						ctrl = getNewEngine(session);
+						Part file = request.getPart("spec");
+						if (ctrl != null) {
+							if (file != null) {
+								InputStream in = file.getInputStream();
+								ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								byte[] data = new byte[4096];
+								int count = in.read(data);
+								while (count != -1) {
+									baos.write(data, 0, count);
+									count = in.read(data);
+								}
+								byte[] spec = baos.toByteArray();
+								ctrl.load(spec);
+							}
+							engId = ctrl.getIdNr();
+						}
+						out.print(engId);
+					}
+					out.flush();
+					break;
+				case join:
+					ctrl = joinEngine(engId, session);
+					out = response.getWriter();
+					out.print(ctrl.getIdNr());
+					out.flush();
+					break;
+				default:
+					break;
+				}
 			}
 		}
 	}
@@ -141,8 +170,26 @@ public class CoreASMControlProvider extends HttpServlet {
 			engineMap = new ConcurrentHashMap<String, EngineControl>();
 			session.setAttribute("EngineMap", engineMap);
 		}
+
 		EngineControl ctrl = null;
 		if (id != null) {
+			ctrl = (EngineControl) engineMap.get(id);
+		}
+
+		return ctrl;
+	}
+
+	private EngineControl joinEngine(String id, HttpSession session) {
+		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
+				.getAttribute("EngineMap");
+		if (engineMap == null) {
+			engineMap = new ConcurrentHashMap<String, EngineControl>();
+			session.setAttribute("EngineMap", engineMap);
+		}
+
+		EngineControl ctrl = null;
+
+		if (id != "") {
 			ctrl = (EngineControl) engineMap.get(id);
 		}
 
@@ -151,38 +198,75 @@ public class CoreASMControlProvider extends HttpServlet {
 			ServerControl server = (ServerControl) ctx
 					.getAttribute("RMIServer");
 			try {
-				if (id == null) {
-					ctrl = server.getNewEngine();
-					id = ctrl.getIdNr();
+				if (id == "") {
+					ctrl = null;
 				} else {
 					ctrl = server.connectExistingEngine(id);
 				}
 				if (ctrl != null) {
-					engineMap.put(id, ctrl);
-					UpdateSubImp sub = new UpdateSubImp();
-					ErrorSubImp errSub = new ErrorSubImp();
-					ctrl.subscribeUpdates(sub);
-					ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
-							.getAttribute("Subscriptions");
-					if (subMap == null) {
-						subMap = new ConcurrentHashMap<String, UpdateSubImp>();
-						session.setAttribute("Subscriptions", subMap);
-					}
-					subMap.putIfAbsent(id, sub);
-					
-					ctrl.subscribeErrors(errSub);
-					ConcurrentHashMap<String, ErrorSubImp> errMap = (ConcurrentHashMap<String, ErrorSubImp>) session
-							.getAttribute("Errors");
-					if (errMap == null) {
-						errMap = new ConcurrentHashMap<String, ErrorSubImp>();
-						session.setAttribute("Errors", errMap);
-					}
-					errMap.putIfAbsent(id, errSub);					
+					addEngine(id, ctrl, session);
 				}
 			} catch (RemoteException e) {
+				ctrl = null;
 			}
 		}
 		return ctrl;
+
+	}
+
+	private EngineControl getNewEngine(HttpSession session) {
+		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
+				.getAttribute("EngineMap");
+		if (engineMap == null) {
+			engineMap = new ConcurrentHashMap<String, EngineControl>();
+			session.setAttribute("EngineMap", engineMap);
+		}
+
+		EngineControl ctrl = null;
+		String id;
+
+		ServletContext ctx = getServletContext();
+		ServerControl server = (ServerControl) ctx.getAttribute("RMIServer");
+		try {
+			ctrl = server.getNewEngine();
+			id = ctrl.getIdNr();
+			if (ctrl != null) {
+				addEngine(id, ctrl, session);
+			}
+		} catch (RemoteException e) {			
+			ctrl = null;
+		}
+		return ctrl;
+	}
+
+	private void addEngine(String id, EngineControl ctrl, HttpSession session)
+			throws RemoteException {
+		ConcurrentHashMap<String, EngineControl> engineMap = (ConcurrentHashMap<String, EngineControl>) session
+				.getAttribute("EngineMap");
+		if (engineMap == null) {
+			engineMap = new ConcurrentHashMap<String, EngineControl>();
+			session.setAttribute("EngineMap", engineMap);
+		}
+		engineMap.put(id, ctrl);
+		UpdateSubImp sub = new UpdateSubImp();
+		ErrorSubImp errSub = new ErrorSubImp();
+		ctrl.subscribeUpdates(sub);
+		ConcurrentHashMap<String, UpdateSubImp> subMap = (ConcurrentHashMap<String, UpdateSubImp>) session
+				.getAttribute("Subscriptions");
+		if (subMap == null) {
+			subMap = new ConcurrentHashMap<String, UpdateSubImp>();
+			session.setAttribute("Subscriptions", subMap);
+		}
+		subMap.putIfAbsent(id, sub);
+
+		ctrl.subscribeErrors(errSub);
+		ConcurrentHashMap<String, ErrorSubImp> errMap = (ConcurrentHashMap<String, ErrorSubImp>) session
+				.getAttribute("Errors");
+		if (errMap == null) {
+			errMap = new ConcurrentHashMap<String, ErrorSubImp>();
+			session.setAttribute("Errors", errMap);
+		}
+		errMap.putIfAbsent(id, errSub);
 	}
 
 }

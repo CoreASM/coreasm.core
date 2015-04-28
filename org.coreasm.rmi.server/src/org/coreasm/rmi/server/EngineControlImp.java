@@ -28,8 +28,10 @@ import org.coreasm.engine.StepFailedEvent;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.RuleElement;
+import org.coreasm.engine.absstorage.State;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -259,11 +261,11 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 	public void run() {
 		while (shouldReset) {
-			if (shouldStop) { //set if reset(...) got called
-			   shouldStop = false;
-			   shouldPause = true;
-			   takeSingleStep = false;
-			   initEngine();
+			if (shouldStop) { // set if reset(...) got called
+				shouldStop = false;
+				shouldPause = true;
+				takeSingleStep = false;
+				initEngine();
 			}
 			int step = 0;
 			Exception exception = null;
@@ -279,10 +281,10 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 				while (spec == null && !shouldStop) {
 					Thread.sleep(500);
 				}
-				
+
 				if (shouldStop)
 					throw new EngineDriverException();
-				
+
 				shouldReset = false;
 				ByteArrayInputStream in = new ByteArrayInputStream(spec);
 				engine.loadSpecification(new BufferedReader(
@@ -693,4 +695,32 @@ public class EngineControlImp extends UnicastRemoteObject implements Runnable,
 
 	}
 
+	public String getState() throws RemoteException {
+		State state = engine.getState();
+		Iterator<Location> itrLocs;
+		Location loc;
+		StringBuilder stateBuilder = new StringBuilder();
+		stateBuilder.append('[');
+		if (state != null) {
+			Set<Location> locs = state.getLocations();
+
+			itrLocs = locs.iterator();
+			while (itrLocs.hasNext()) {
+				loc = itrLocs.next();
+				try {
+					stateBuilder.append("{\"location\":\"" + loc.toString()
+							+ '"');
+					stateBuilder.append(", \"value\":\""
+							+ state.getValue(loc).toString() + "\"\"}");
+				} catch (InvalidLocationException e) {
+					continue;
+				}
+				if (itrLocs.hasNext()) {
+					stateBuilder.append(", ");
+				}
+			}
+		}
+		stateBuilder.append(']');
+		return stateBuilder.toString();
+	}
 }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.coreasm.rmi.webclient;
 
 import java.rmi.RemoteException;
@@ -10,10 +7,7 @@ import java.util.List;
 
 import org.coreasm.rmi.server.remoteinterfaces.UpdateSubscription;
 
-/**
- * @author Stephan
- *
- */
+
 public class UpdateSubImp extends UnicastRemoteObject implements
 		UpdateSubscription {
 	private static final long serialVersionUID = 1L;

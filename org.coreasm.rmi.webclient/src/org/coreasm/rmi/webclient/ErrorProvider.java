@@ -18,7 +18,7 @@ import org.coreasm.rmi.server.remoteinterfaces.EngineControl;
 /**
  * Servlet implementation class ErrorProvider
  */
-@WebServlet("/Errors")
+@WebServlet(urlPatterns = "/Errors")
 public class ErrorProvider extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
