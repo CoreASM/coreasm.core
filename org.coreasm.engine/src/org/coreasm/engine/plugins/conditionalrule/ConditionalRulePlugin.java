@@ -19,6 +19,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.conditionalrule.CompilerConditionalRulePlugin;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BooleanElement;
@@ -52,6 +54,13 @@ public class ConditionalRulePlugin extends Plugin
 
 	private Map<String, GrammarRule> parsers = null;
 
+	private final CompilerPlugin compilerPlugin = new CompilerConditionalRulePlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
+	
 	@Override
 	public String[] getKeywords() {
 		return keywords;
@@ -73,7 +82,7 @@ public class ConditionalRulePlugin extends Plugin
 
 		if (pos instanceof ConditionalRuleNode) {
 			ConditionalRuleNode conditionalNode = (ConditionalRuleNode) pos;
-
+			
 			if (!conditionalNode.getGuard().isEvaluated()) {
 				return conditionalNode.getGuard();
 			}

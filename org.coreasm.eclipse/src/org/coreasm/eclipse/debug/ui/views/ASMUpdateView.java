@@ -73,10 +73,13 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 			return getImage(obj);
 		}
 		public Image getImage(Object obj) {
+			if (obj instanceof ASMUpdateViewElement) {
+				if (((ASMUpdateViewElement) obj).isError())
+					return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_DEC_FIELD_ERROR);
+			}
 			if (obj instanceof ASMUpdate) {
-				if (((ASMUpdate) obj).isOnBreakpoint()) {
+				if (((ASMUpdate) obj).isOnBreakpoint())
 					return IMAGE_BREAKPOINT;
-				}
 				return IMAGE_UPDATE;
 			}
 			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_DEC_FIELD_ERROR);
@@ -186,7 +189,7 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-
+	
 	@Override
 	public void debugContextChanged(DebugContextEvent event) {
 		ISelection context = event.getContext();
@@ -194,6 +197,14 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 			Object element = ((IStructuredSelection)context).getFirstElement();
 			if (element instanceof ASMStackFrame) {
 				ASMStackFrame frame = (ASMStackFrame)element;
+				ASMDebugTarget debugTarget = (ASMDebugTarget)frame.getDebugTarget();
+				ArrayList<ASMUpdateViewElement> elements = new ArrayList<ASMUpdateViewElement>();
+				if (debugTarget.getLastError() != null)
+					elements.add(new ASMUpdateViewElement(debugTarget.getLastError().showError().replaceAll("\r|\n", " ")));
+				else if (debugTarget.isStepFailed()) {
+					for (ASMUpdate update : debugTarget.getLastInconsistentUpdate())
+						elements.add(update);
+				}
 				updates = frame.getUpdates();
 				if (!updates.isEmpty()) {
 					agents = frame.getAgents();
@@ -205,13 +216,19 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 							if (update.getAgents().contains(filterAgent))
 								filteredUpdates.add(update);
 						}
-						elements = filteredUpdates.toArray();
+						for (ASMUpdate update : filteredUpdates) {
+							if (debugTarget.isUpdateConsistent(update))
+								elements.add(update);
+						}
 					}
-					else
-						elements = updates.toArray();
+					else {
+						for (ASMUpdate update : updates) {
+							if (debugTarget.isUpdateConsistent(update))
+								elements.add(update);
+						}
+					}
 				}
-				else
-					elements = updates.toArray();
+				this.elements = elements.toArray();
 				refresh();
 			}
 			else if (element instanceof ASMDebugTarget) {
@@ -228,7 +245,7 @@ public class ASMUpdateView extends ViewPart implements IDebugContextListener {
 								i++;
 							}
 						}
-						
+//						
 						elements = errors.toArray();
 						
 						refresh();

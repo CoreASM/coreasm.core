@@ -25,6 +25,49 @@
 	</distributionManagement>
 	
 	<build>
+		<resources>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/engine/absstorage/*.*</include>
+				</includes>
+			</resource>
+		
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/engine/EngineError.java</include>
+					<include>org/coreasm/engine/EngineException.java</include>
+					<include>org/coreasm/engine/scheduler/SchedulingPolicy.java</include>
+					<include>org/coreasm/engine/interpreter/InitAgent.java</include>
+				</includes>
+			</resource>
+		
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>CompilerRuntime/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/compiler/plugins/**/include/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>org/coreasm/engine/plugins/**/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>rsc</directory>
+			</resource>
+		</resources>
+		
+		
+		
 		<plugins>
 			<plugin>
 		      <groupId>org.sonatype.plugins</groupId>
@@ -119,5 +162,18 @@
 			<artifactId>org.coreasm.util</artifactId>
 			<version>1.7.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+		</dependency>
 	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>1.9.5</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

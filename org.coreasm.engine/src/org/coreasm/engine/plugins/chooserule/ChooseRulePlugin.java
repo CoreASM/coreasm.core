@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.chooserule.CompilerChooseRulePlugin;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
@@ -67,6 +69,13 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
     private ThreadLocal<Map<Node,List<Element>>> remained;
 
     private Map<String, GrammarRule> parsers;
+    
+    private final CompilerPlugin compilerPlugin = new CompilerChooseRulePlugin(this);
+    
+    @Override
+    public CompilerPlugin getCompilerPlugin(){
+    	return compilerPlugin;
+    }
     
     @Override
     public void initialize() {

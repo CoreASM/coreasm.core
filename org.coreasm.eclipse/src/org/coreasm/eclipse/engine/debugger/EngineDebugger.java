@@ -221,6 +221,19 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 		return wapi.evaluateExpression((ASTNode)parser.parse(expression), currentAgent, storage);
 	}
 	
+	public boolean isStepFailed() {
+		return !stepSucceeded;
+	}
+	
+	public boolean isUpdateConsistent(ASMUpdate update) {
+		Set<Update> lastInconsistentUpdate = capi.getStorage().getLastInconsistentUpdate();
+		return lastInconsistentUpdate == null || !lastInconsistentUpdate.contains(update.getUpdate());
+	}
+	
+	public Set<ASMUpdate> getLastInconsistentUpdate() {
+		return ASMUpdate.wrapUpdateSet(capi.getStorage().getLastInconsistentUpdate(), false, capi);
+	}
+	
 	/**
 	 * Returns the current updates as a set of ASMUpdate.
 	 * @return the current updates as a set of ASMUpdate
@@ -630,7 +643,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 				}
 			}
 			prevWatchpoint = null;
-			updates.addAll(ASMUpdate.wrapUpdateSet(pos.getUpdates().toSet(), capi));
+			updates.addAll(ASMUpdate.wrapUpdateSet(pos.getUpdates().toSet(), true, capi));
 		}
 	}
 

@@ -21,6 +21,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.blockrule.CompilerBlockRulePlugin;
 import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.UpdateMultiset;
@@ -62,6 +64,8 @@ public class BlockRulePlugin extends Plugin
 	
 	private final String[] keywords = {"par", "endpar"};
 	private final String[] operators = {"{", "}"};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerBlockRulePlugin(this);
 	
     public ASTNode interpret(Interpreter interpreter, ASTNode pos) {
         String gRule = pos.getGrammarRule();
@@ -180,4 +184,8 @@ public class BlockRulePlugin extends Plugin
 		return operators;
 	}
 
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 }

@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.turboasm.CompilerTurboASMPlugin;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
@@ -95,6 +97,13 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	private final String[] keywords = {"seq", "next", "endseq", "seqblock", "endseqblock", "iterate", "while", 
 			"local", "in", "return", "result"};
 	private final String[] operators = {",", "<-", "[", "]"};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerTurboASMPlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	@Override
 	public void initialize() {

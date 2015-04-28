@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.signature.CompilerSignaturePlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
@@ -111,6 +113,13 @@ public class SignaturePlugin extends Plugin
 
 	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "initialized", "by", "derived"};
 	private final String[] operators = {"=", "{", "}", ",", ":", "->"};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerSignaturePlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
     /* (non-Javadoc)
      * @see org.coreasm.engine.plugin.Plugin#initialize()

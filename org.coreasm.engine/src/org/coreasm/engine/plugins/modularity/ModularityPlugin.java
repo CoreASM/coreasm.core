@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Token;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.modularity.CompilerModularityPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.Specification;
@@ -69,6 +71,14 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	private Map<EngineMode, Integer> targetModes;
 	
 	private Set<String> loadedModules = null;
+	
+	private final CompilerPlugin compilerPlugin = new CompilerModularityPlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.Plugin#initialize()

@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.time.CompilerTimePlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -42,6 +44,13 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 	private NowFunctionElement nowFunction;
 	
 	private Map<String, FunctionElement> functions = null;
+	
+	private CompilerPlugin compilerPlugin = new CompilerTimePlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	/**
 	 * 

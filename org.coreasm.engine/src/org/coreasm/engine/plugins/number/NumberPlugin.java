@@ -55,6 +55,8 @@ import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.number.CompilerNumberPlugin;
 
 /**
  * Plugin for number related literals, operations, and functions.
@@ -63,7 +65,7 @@ import org.coreasm.engine.plugin.VocabularyExtender;
  * 
  */
 public class NumberPlugin extends Plugin implements ParserPlugin,
-		InterpreterPlugin, VocabularyExtender, OperatorProvider {
+		InterpreterPlugin, VocabularyExtender, OperatorProvider{
 
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 5, 4, "");
 
@@ -126,6 +128,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 
 	private SizeFunctionElement sizeFunction = null;
 
+	private final CompilerPlugin compilerPlugin = new CompilerNumberPlugin(this);
+	
 	public NumberPlugin() {
 		exposedParsers = new HashMap<String, Parser<Node>>();
 	}
@@ -656,4 +660,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 		Number
 	}
 
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 }

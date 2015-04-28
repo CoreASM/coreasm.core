@@ -21,6 +21,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.collection.CompilerCollectionPlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -65,6 +67,13 @@ public class CollectionPlugin extends Plugin
 	
 	private final String[] keywords = {"add", "to", "remove", "from"};
 	private final String[] operators = {};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerCollectionPlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.Plugin#initialize()

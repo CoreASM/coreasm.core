@@ -25,6 +25,8 @@ import java.util.Set;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Terminals;
 import org.codehaus.jparsec.Token;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.string.CompilerStringPlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
@@ -81,6 +83,13 @@ public class StringPlugin extends Plugin
 	
 	private final String[] keywords = {};
 	private final String[] operators = {"+"};
+	
+	private CompilerPlugin compilerPlugin = new CompilerStringPlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 	
 	public String[] getKeywords() {
 		return keywords;

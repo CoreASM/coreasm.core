@@ -115,7 +115,7 @@ Plugin.
 
 \subsection{\CoreASM with \Carma}
 
-\CoreASM engine with \Carma can be downloaded from the web at \url{www.coreasm.org/download}.
+All sources of the \CoreASM engine with \Carma can be downloaded at \url{https://github.com/CoreASM/coreasm.core}.
 
 
 \subsubsection{System Requirements}
@@ -123,10 +123,7 @@ Plugin.
 You need to have Sun Microsystems Java 1.6 (JVM) installed on your machine.
 
 \subsubsection{Installing \Carma}
-
-To install \CoreASM with \Carma just unzip the contents of the binary package into a 
-directory of your choice. Alternatively, You can build \CoreASM with \Carma using the 
-ant build file provided in the source package.
+You can build \CoreASM with \Carma using the maven build system provided in the source package.
 
 \subsubsection{Running \Carma}
 
@@ -143,23 +140,28 @@ To start, try Carma with `{\ttfamily --help}' to see the list of command-line ar
 This section explains how to install the \CoreASM Eclipse plugin.
 
 \subsubsection{System Requirements}
+The following infrastructure is required for the CoreASM Eclipse plugin:
+\begin{itemize}
+	\item Java SE Runtime Environment 7\\\url{http://www.oracle.com/technetwork/java/javase/downloads/index.html}
+	\item Eclipse IDE for Java Developers (version \emph{Kepler} suggested)\\\url{http://www.eclipse.org/downloads/}
+\end{itemize}
 
-You need to have Eclipse 3.5 or newer installed on your machine.
+\noindent This version of the CoreASM Eclipse Plugin has been developed and tested under
+\begin{table}[h]
+\begin{tabular}{l}
+	\begin{tabular}[c]{@{}l@{}}Ubuntu Linux 64bit v14.10 \&\\ Windows 7 and 8.1\end{tabular}\\
+	\textit{with}\\
+	\begin{tabular}[c]{@{}l@{}}Kepler Service Release 2 64 bit \&\\ Luna Eclipse Standard 4.4 64 bit\end{tabular}\\
+	Oracle Java SE JDK 7
+\end{tabular}
+\end{table}
 
 \subsubsection{Installing \CoreASM Eclipse Plugin}
 
-This version of the CoreASM Eclipse Plugin has been developed and tested under
-
-	Ubuntu Linux 64bit v14.10 \&
-	Windows 7 and 8.1
-    with
-    Kepler Service Release 2 64 bit \&
-    Luna Eclipse Standard 4.4 64 bit
-    Oracle Java SE JDK 6u45
-
-The Plugin can be installed either from the Eclipse Marketplace or by perfoming the following steps:
+The Plugin can be installed either from the Eclipse Marketplace or by performing the following steps:
 
 \begin{itemize}
+\item Check if the required software (see above) is already installed on the target machine and if not, install the software.
 \item Open the \menu{Help}-menu inside Eclipse
 \item Select the menu item \menu[,]{Help, Install New Software...}
 \item Paste the url of this site \url{http://webcoreasm.informatik.uni-ulm.de/coreasm-repository} into the field "work with" and press \keys{ENTER}
@@ -209,6 +211,11 @@ If you like, you can build CoreASM by your own using the sources on github. The 
 Shortcut method for running a specification with default configuration:
 
 \begin{enumerate}
+    \item Press the "play"-button that is usually used to compile and run programs, e.\,g. in Java
+    \item[] or
+    \vspace{-1em}
+\end{enumerate}
+\begin{enumerate}
     \item In the Eclipse window, right click on a \CoreASM specification file.
     \item In the context menu choose: \menu[,]{Run as\ldots, CoreASM Specification} 
 \end{enumerate}
@@ -239,6 +246,79 @@ While the engine is running, you can click on the
 click on the ``Pause CoreASM Engine'' button. If you pause the engine, the 
 run can be resumed by clicking on the ``Resume CoreASM Engine'' button. 
 
+For more control, you are welcome to use the CoreASM debugger. Further details about debugging CoreASM specifications are described in the \href{https://github.com/CoreASM/coreasm.core/blob/master/org.coreasm.eclipse/rsc/doc/CoreASM_Eclipse_Debugger_Manual.pdf?raw=true}{manual of the CoreASM debugger}.
+
+\subsection{Using \CoreASM Compiler}
+
+\label{sec:compilerusage}
+
+The CoreASM Eclipse plugin contains a compiler, which compiles a specification into an executable jar archive.
+Only a subset of the CoreASM plugins described in this manual is currently compilable, but all standard plugins
+can be used (some with restrictions, see section \ref{sec:compiler} for more information).
+It is recommended to verify specifications using the \CoreASM Engine, as the compiler does not provide further
+debugging features.
+
+\paragraph{Launching the compiler}
+
+The compiler can be launched by right-clicking on a specification, selecting \keys{Export} and then clicking on
+\keys{CoreASM to Jar Export} in the \keys{CoreASM} section.
+This will open the configuration dialog for customization of the compilation process.
+Pressing the \keys{Finish} Button will start the compiler. Any generated warnings and errors will be displayed
+after the process has finished. If the operation was successful, the compiler will have generated an executable
+jar at the configured location.
+
+\paragraph{Configuring the compiler}
+
+The compiler can be configured to include different logging messages and termination conditions.
+Further options change the paths used for the output and preprocessor manipulation.
+Table \ref{tab:compiler} lists all options found in the configuration dialog.
+
+\begin{table}%
+\begin{tabular}{l l}
+\textbf{option} & \textbf{description} \\
+\hline
+\vspace{-.75em}&\\
+Specification Name 				& The path to the specification. Should not \\ 
+													& be changed and will be filled in automatically \\
+outputFile 								& The file name for the generated jar\\
+keepTempFiles 						& Whether the compiler should keep generated java\\ 
+													& sources (location will be displayed at the end\\ 
+													& of the compilation)\\
+removeExistingFiles 			& Whether files already existing in the\\ 
+													& temporary directory should be removed \\
+terminateOnError 					& Whether the program should terminate\\ 
+													& on errors. Currently always true\\
+terminateOnFailedUpdates 	& Whether the program should terminate\\ 
+													& on failed updates\\
+terminateOnEmptyUpdate 		& Whether the program should terminate\\ 
+													& upon generating an empty update in a step\\
+terminateOnSameUpdate 		& Whether the program should terminate\\ 
+													& upon generating the same updates in two steps\\
+terminateOnUndefAgent 		& Whether the program should terminate\\ 
+													& when there is no agent with a runnable program\\
+terminateOnStepCount 			& Whether the program should terminate\\ 
+													& after a certain number of steps\\
+logUpdatesAfterStep 			& Whether the generated updates should\\ 
+													& be logged after each step\\
+logStateAfterStep 				& Whether the complete state should be\\ 
+													& logged after each step\\
+logEndOfStep 							& Whether the end of a step should be\\ 
+													& logged\\
+logAgentSetAfterStep 			& Whether the selected agent set should\\ 
+													& be logged after a step\\
+noCompile 								& Whether the compiler should generate\\ 
+													& a jar archive or nor\\
+logTimings 								& Whether the compiler should display\\ 
+													& timing information\\
+preprocessorRuns 					& How many times the preprocessor is\\ 
+													& allowed to run before generating an error\\
+hideCoreASMOutput 				& If the compiler should hide messages\\ 
+													& generated by the CoreASM Parser\\
+\end{tabular}
+\caption{Compiler options}
+\label{tab:compiler}
+\end{table}
+
 % ----------------- Section: CoreASM Specification
 \section{\CoreASM Specification}
 
@@ -265,7 +345,7 @@ in the \emph{Rule Declaration}\index{Rule Declaration} block.
 A sample \CoreASM specification is presented in \hyperref[spec:thisiscoreasm]{CoreASM-Says-Hello example}.
 
 \AsmKeyword{CoreASM}
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \begin{minipage}{0.65\textwidth}
 \begin{tcolorbox}
@@ -816,6 +896,7 @@ Returns \asm{true} if the argument is an Integer number divisible by two.
 
 Returns \asm{true} if the argument is an Integer number which is not divisible by two.
 
+\AsmDerivedFunction{size}
 \funcform{
 	\asm{size: Element -> Number}
 }{Number Plugin}
@@ -1359,19 +1440,18 @@ The result of evaluating \asm{SetAdd(\{1, 2, 3\}, \{10, 20\})} would be:
 	\asm{value$_1$ bin-op value$_22$}
 }{Set Plugin}
 
-Performs a set binary operation where both \asm{value$_1$} and \asm{value$_2$} are sets. 
+Performs a set binary operation where both \asm{value$_1$} and \asm{value$_2$} are sets.
 Currently, \asm{subset}\indexexp{subset}, \asm{union}\indexexp{union}, \asm{intersect}\indexexp{intersect}, and \asm{diff}\indexexp{diff} are supported.
 
 \smallskip
-Set background also provides two important rule forms which allow for parallel incremental updates of set data structures. 
+Set background also provides two important rule forms which allow for parallel incremental updates of set data structures.
 
 \ruleform{
 	\asm{add value to loc}
 }{Set Plugin}
 \indexrule{add-to-set}
 
-If \asm{loc} is a location in the state (e.g., a function) and its value is a set, this rule 
-produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
+If \asm{loc} is a location in the state (e.g., a function) and its value is a set, this rule produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
 
 \ruleform{
 	\asm{remove value from loc}
@@ -1381,6 +1461,86 @@ produces an update instruction (partial update) that adds \asm{value} to \asm{lo
 If \asm{loc} is a location in the state (e.g., a function) and its value is a set, 
 this rule produces an update instruction (partial update)
 that removes \asm{value} to \asm{loc}.
+
+% -------------------------------- BAG
+\subsection{Bag Background}
+\label{bag}
+
+The Bag plugin\index{Bag plugin} can be loaded by the following \asm{use} phrase:
+
+\begin{lstlisting}
+use Bag
+\end{lstlisting}
+
+\noindent This plugin provides the bag background (\asm{Bag})\index{Bag background} equivalent to multi sets and a number of functions and expression forms.
+
+\opform{
+	\asm{<<}
+	\optional{\asm{value$_1$, ..., value$_n$}}
+	\asm{>>}
+}{Bag Plugin}
+\index{bag element}
+\index{\{\}@\texttt{"\{\ldots"\}}|see{bag element}}
+\index{bag enumeration}
+
+Creates a bag element that includes the listed values. The values should be basic terms (i.e., no operators) or
+they should be surrounded in parentheses.
+
+\opform{
+	\asm{<< id } \textbar \asm{id in value}
+	\optional{\asm{with guard}}
+	\asm{>>}
+}{Bag Plugin}\index{bag element}\index{bag comprehension}
+
+This is the basic form bag comprehension. It creates a bag of all the elements in \asm{value} which satisfy \asm{guard}. Of course, \asm{value} must be enumerable.
+
+\AsmConstantOrEnum{exp}
+\opform{
+	\asm{<< id is exp } \textbar \asm{id$_1$ in value$_1$}\hspace{-.4em}
+	\optional{\asm{, ..., id$_n$ in value$_n$}}
+	\optional{\asm{with guard}}
+	\asm{>>}
+}{Bag Plugin}
+\index{bag element}
+\index{bag comprehension}
+
+\opform{
+	\asm{value$_1$ bin-op value$_22$}
+}{Bag Plugin}
+
+Performs a bag binary operation where both \asm{value$_1$} and \asm{value$_2$} are bags.
+Currently, \asm{subset}\indexexp{subset}, \asm{union}\indexexp{union}, \asm{intersect}\indexexp{intersect}, and \asm{diff}\indexexp{diff} are supported.
+
+Creates a bag element that contains all the elements of the form \asm{exp} which satisfy the \asm{guard}. In this form, \asm{exp} is a function of \asm{id$_1$, ...,id$_n$} and every \asm{id$_i$} is bound to an enumerable \asm{value$_i$}. 
+\AsmDerivedFunction{BagMerge}
+\AsmVariable{bag1, bag2, x1, x2}
+In the following example, \asm{BagAdd} takes two bags \asm{bag1} and \asm{bag2} as input and produces a bag that contains all elements of \asm{bag1} and all elements of \asm{bag2}:
+
+\begin{lstlisting}
+derived BagMerge(bag1, bag2) = bag1 + bag2
+\end{lstlisting}
+
+The result of evaluating \asm{BagAdd(<<1, 2, 3>>, <<2, 3, 3>>} would be:
+
+\begin{quote} \asm{ << 1, 2, 2, 3, 3, 3 >>} \end{quote}
+
+
+\smallskip
+Bag background also provides two important rule forms which allow for parallel incremental updates of bag data structures.
+
+\ruleform{
+	\asm{add value to loc}
+}{Bag Plugin}
+\indexrule{add-to-bag}
+
+If \asm{loc} is a location in the state (e.g., a function) and its value is a bag, this rule produces an update instruction (partial update) that adds \asm{value} to \asm{loc}.
+
+\ruleform{
+	\asm{remove value from loc}
+}{Bag Plugin}
+\indexrule{remove-from-bag}
+
+If \asm{loc} is a location in the state (e.g., a function) and its value is a bag, this rule produces an update instruction (partial update) that removes \asm{value} to \asm{loc}.
 
 
 % -------------------------------- LIST
@@ -2167,6 +2327,63 @@ sum( {1, 2, 100}, @a ) = 515
 sin(30) = 0.5
 \end{verbatim}
 \end{shell}
+
+\section{Notes about the \CoreASM Compiler}
+\label{sec:compiler}
+
+As mentioned in section \ref{sec:compilerusage}, the \CoreASM Compiler currently does not provide support
+for all \CoreASM Plugins. 
+Supported are:
+\begin{itemize}
+	\item All Standard plugins
+	\begin{itemize}
+		\item BlockRulePlugin
+		\item ChooseRulePlugin
+		\item ConditionalRulePlugin
+		\item ExtendRulePlugin
+		\item ForallRulePlugin
+		\item IOPlugin
+		\item LetRulePlugin
+		\item NumberPlugin
+		\item PredicateLogicPlugin
+		\item SetPlugin
+		\item SignaturePlugin
+		\item StringPlugin
+		\item TurboASMPlugin
+		\item CollectionPlugin
+		\item ListPlugin
+		\item MapPlugin
+		\item AbstractionPlugin
+		\item CaseRulePlugin
+		\item OptionsPlugin
+		\item KernelExtensionsPlugin
+	\end{itemize}
+	\item MathPlugin
+	\item ModularityPlugin
+	\item TimePlugin
+\end{itemize}
+
+Still, some restrictions apply to several of the mentioned plugins.
+
+\paragraph{Kernel}
+
+The MacroCall operation has some slight differences between the interpreter and the compiler versions.
+They shouldn't influence a well written specification, but can still provide errors.
+
+\paragraph{SignaturePlugin}
+
+The SignaturePlugin provides an undef-handler to the \CoreASM engine, which allows to generate warnings and
+errors upon using undefined locations.
+This currently doesn't work in the compiler.
+
+\paragraph{TurboASMPlugin}
+
+The TurboASMPlugin Return Result rule might not work as intended in all instances, but should provide the same
+result as the \CoreASM Engine in most cases.
+
+\paragraph{KernelExtensionsPlugin}
+
+The KernelExtensionsPlugin is only implemented partially, missing some functionality.
 
 \printindex
 

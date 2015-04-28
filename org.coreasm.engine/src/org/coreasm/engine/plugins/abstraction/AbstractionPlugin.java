@@ -21,7 +21,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
-
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.abstraction.CompilerAbstractionPlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.Location;
@@ -69,6 +70,8 @@ public class AbstractionPlugin extends Plugin
 	
 	private final String[] keywords = {"abstract"};
 	private final String[] operators = {};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerAbstractionPlugin(this);
 	
 	public AbstractionPlugin() {
 		dependencyList = new HashSet<String>();
@@ -210,4 +213,8 @@ public class AbstractionPlugin extends Plugin
 	}
 
 	*/
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 }

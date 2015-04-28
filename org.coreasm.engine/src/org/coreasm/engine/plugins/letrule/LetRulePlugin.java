@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.letrule.CompilerLetRulePlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
@@ -50,6 +52,13 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 
 	private final String[] keywords = {"let", "in"};
 	private final String[] operators = {"=", ",", "{", "[", "]", "}"};
+	
+	private final CompilerPlugin compilerPlugin = new CompilerLetRulePlugin(this);
+	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 
 	public String[] getKeywords() {
 		return keywords;

@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.extendrule.CompilerExtendRulePlugin;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
@@ -58,7 +60,13 @@ public class ExtendRulePlugin extends Plugin implements ParserPlugin, Interprete
 
 	private final String[] keywords = {"extend", "with", "do"};
 	private final String[] operators = {};
+
+	private final CompilerPlugin compilerPlugin = new CompilerExtendRulePlugin(this);
 	
+	@Override
+	public CompilerPlugin getCompilerPlugin(){
+		return compilerPlugin;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.coreasm.engine.plugin.Plugin#initialize()
