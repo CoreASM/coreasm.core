@@ -39,12 +39,6 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>org.coreasm</groupId>
-			<artifactId>org.coreasm.rmi.server</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<classifier>client</classifier>
-		</dependency>
-		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>jstl</artifactId>
 			<version>1.2</version>
