@@ -180,10 +180,11 @@ function join(engineId) {
 	$.ajax({
 		url : "Control",
 		type : 'POST',
-		command : "join",
-		engineId : engineId,
+		data : {
+			command : "join",
+			engineId : engineId
+		},
 		success : function(data) {
-			alert(data);
 			if (typeof data !== 'undefined') {
 				EngineId = data;
 			}
