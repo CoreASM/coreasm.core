@@ -154,7 +154,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 				String functionName = function.getKey();
 				FunctionElement functionElement = function.getValue();
 				
-				if (functionElement.isModifiable() && !AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) && !AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
+				if (functionElement.isReadable() &&
+						!AbstractStorage.FUNCTION_ELEMENT_FUNCTION_NAME.equals(functionName) &&
+						!AbstractStorage.RULE_ELEMENT_FUNCTION_NAME.equals(functionName)) {
 					for (Location location : functionElement.getLocations(functionName)) {
 						if (AbstractStorage.UNIVERSE_ELEMENT_FUNCTION_NAME.equals(functionName))
 							backgrounds.add(new ASMVariable(this, location.toString(), functionElement, new ASMValue(this, BooleanElement.TRUE), updateLocations.contains(location)));
