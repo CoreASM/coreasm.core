@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta charset="UTF-8" />
-<title>Insert title here</title>
+<title>WebCoreASM - Philosophers-Table</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="CoreASMInterface.js"></script>
 <script type="text/javascript">
@@ -129,6 +129,7 @@
 	
 	function update() {
 		if(EngineId != "") {
+			$("#engineIdLbl").text("Engine ID:" + EngineId)
 			getUpdates(getUpdatesHandler);
 		}
 	}
@@ -147,7 +148,7 @@
 			update();
 
 			$(".command").click(function() {
-				if(EngineId != null) {
+				if(EngineId != "") {
 					$.post("Control", {
 						command : $(this).val(),
 						engineId : EngineId
@@ -176,6 +177,7 @@
 		<input type="text" name="engineId" /> <input type="hidden"
 			name="command" value="join" /> <input type="submit" />
 	</form>
+	<p id="engineIdLbl">Engine ID:</p>
 	<div>
 		<button class="command" value="start" type="button">Start</button>
 		<button class="command" value="pause" type="button">Pause</button>

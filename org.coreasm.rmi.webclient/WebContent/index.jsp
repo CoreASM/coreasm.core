@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert title here</title>
+<title>WebCoreASM</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="CoreASMInterface.js"></script>
 <script type="text/javascript">
@@ -92,6 +92,7 @@
 
 	function update() {
 		if(EngineId != "") {
+			$("#engineIdLbl").text("Engine ID:" + EngineId);
 			getUpdates(getUpdatesHandler);		
 			getErrors(getErrorsHandler);		
 			getAgents(getAgentsHandler);
