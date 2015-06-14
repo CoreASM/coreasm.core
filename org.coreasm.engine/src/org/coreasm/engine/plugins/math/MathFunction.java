@@ -599,12 +599,10 @@ public abstract class MathFunction extends FunctionElement {
 					// if there is also a function provided
 					if (f != null) {
 						for (Element e: enumerable.enumerate()) {
-							if (e instanceof NumberElement) { 
-								tempE = f.getValue(new ElementList(e));
-								if (tempE != null && tempE instanceof NumberElement) {
-									sum += ((NumberElement)tempE).getNumber();
-									continue;
-								}
+							tempE = f.getValue(new ElementList(e));
+							if (tempE != null && tempE instanceof NumberElement) {
+								sum += ((NumberElement)tempE).getNumber();
+								continue;
 							}
 							return Element.UNDEF;
 						}
