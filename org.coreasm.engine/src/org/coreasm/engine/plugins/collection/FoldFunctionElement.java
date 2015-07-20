@@ -69,7 +69,7 @@ public class FoldFunctionElement extends CollectionFunctionElement {
 			for (Element e: values) 
 				stack.push(e);
 			while (!stack.isEmpty())
-				lastValue = f.getValue(ElementList.create(lastValue, stack.pop()));
+				lastValue = f.getValue(ElementList.create(stack.pop(), lastValue));
 			return lastValue;
 		} else {
 			for (Element e: values) 
