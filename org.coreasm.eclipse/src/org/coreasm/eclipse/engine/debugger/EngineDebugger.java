@@ -222,7 +222,7 @@ public class EngineDebugger extends EngineDriver implements EngineModeObserver, 
 	}
 	
 	public boolean isStepFailed() {
-		return !stepSucceeded;
+		return capi.getStorage().getLastInconsistentUpdate() != null;
 	}
 	
 	public boolean isUpdateConsistent(ASMUpdate update) {

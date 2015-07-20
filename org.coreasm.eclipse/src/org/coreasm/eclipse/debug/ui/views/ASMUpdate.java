@@ -57,6 +57,8 @@ public class ASMUpdate extends ASMUpdateViewElement {
 	 * @return the wrapped update set
 	 */
 	public static Set<ASMUpdate> wrapUpdateSet(Set<Update> updates, boolean consistent, ControlAPI capi) {
+		if (updates == null)
+			return null;
 		HashSet<ASMUpdate> asmUpdateSet = new HashSet<ASMUpdate>();
 		for (Update update : updates)
 			asmUpdateSet.add(new ASMUpdate(update, consistent, capi));
