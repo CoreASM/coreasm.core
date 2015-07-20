@@ -589,7 +589,7 @@ public class ASMDeclarationWatcher implements Observer {
 	
 	private static boolean isForallExpVariable(FunctionRuleTermNode frNode) {
 		for (ForallExpNode forallExpNode = getParentForallExpNode(frNode); forallExpNode != null; forallExpNode = getParentForallExpNode(forallExpNode)) {
-			if (forallExpNode.getVariable().getToken().equals(frNode.getName()))
+			if (forallExpNode.getVariableMap().containsKey(frNode.getName()))
 				return true;
 		}
 		return false;

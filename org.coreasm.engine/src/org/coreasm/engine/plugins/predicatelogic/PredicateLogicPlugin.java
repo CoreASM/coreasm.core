@@ -20,12 +20,14 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.predicatelogic.CompilerPredicateLogicPlugin;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
@@ -301,9 +303,9 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 			Parser<Node> forallExpParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser(FORALL_EXP_TOKEN, PLUGIN_NAME),
-						idParser,
-						pTools.getKeywParser("in", PLUGIN_NAME),
-						termParser,
+						pTools.csplus(Parsers.array(idParser,
+								pTools.getKeywParser("in", PLUGIN_NAME),
+								termParser)),
 						pTools.getKeywParser("holds", PLUGIN_NAME),
 						termParser
 					}).map(
@@ -479,76 +481,101 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
         ForallExpNode forallExpNode = (ForallExpNode) pos;
         
         Map<ASTNode, List<Element>> remained = getRemainedMap();
-
-        if (!forallExpNode.getDomain().isEvaluated()) {
-            
-            // a new domain will be evaluated so clear the value of considered
-            //   considered(beta) := {}
-            remained.remove(forallExpNode.getDomain());
-        	//considered.put(forallExpNode.getDomain(),new ArrayList<Element>());
-            
-            // evaluate the domain
-            //   pos := beta
-            return forallExpNode.getDomain();
+        Map<String, ASTNode> variableMap = null;
+        
+        try {
+        	variableMap = forallExpNode.getVariableMap();
         }
-        else if (!forallExpNode.getCondition().isEvaluated()) {
-            if (forallExpNode.getDomain().getValue() instanceof Enumerable) {
-                Enumerable enumerableElement = (Enumerable) forallExpNode.getDomain().getValue();
+        catch (CoreASMError e) {
+        	capi.error(e);
+        	return pos;
+        }
+
+        // evaluate all domains
+        for (ASTNode domain : variableMap.values()) {
+        	if (!domain.isEvaluated()) {
+        		// SPEC: considered := {}
+            	remained.remove(domain);
                 
-                if (enumerableElement.enumerate().size() > 0) {
-                    
-                    // let s = enumerate(v)\considered(beta)
-                	List<Element> remainingElements = remained.get(forallExpNode.getDomain());
-                	if (remainingElements == null) {
-            			Enumerable domain = (Enumerable)forallExpNode.getDomain().getValue();
+                // SPEC: pos := beta
+        		return domain;
+        	}
+        }
+        
+        if (!forallExpNode.getCondition().isEvaluated()) {
+        	pos = forallExpNode.getCondition();
+        	boolean shouldChoose = true;
+        	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
+	            if (variable.getValue().getValue() instanceof Enumerable) {
+	            	   
+                    // SPEC: s := enumerate(v)/considered                    
+                    // ArrayList<Element> s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
+                    // s.removeAll(considered.get(variable.getValue()));
+                	// 
+                	// changed to the following to improve performance:
+        			List<Element> s = remained.get(variable.getValue());
+                	if (s == null) {
+            			Enumerable domain = (Enumerable)variable.getValue().getValue();
             			if (domain.supportsIndexedView())
-            				remainingElements = new ArrayList<Element>(domain.getIndexedView());
+            				s = new ArrayList<Element>(domain.getIndexedView());
             			else
-            				remainingElements = new ArrayList<Element>(enumerableElement.enumerate());
-                		remained.put(forallExpNode.getDomain(), remainingElements);
+            				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
+            			if (s.isEmpty()) {
+                			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
+            	    			if (remained.remove(var.getValue()) != null)
+            	    				interpreter.removeEnv(var.getKey());
+            	    		}
+            				// [pos] := (undef,{},undef)
+                			forallExpNode.setNode(null, null, BooleanElement.TRUE);
+            	            return forallExpNode;
+                    	}
+            			remained.put(variable.getValue(), s);
+                		shouldChoose = true;
                 	}
-                    
-                    //ArrayList<Element> remainingElements = new ArrayList<Element>(enumerableElement.enumerate());
-                    //remainingElements.removeAll(considered.get(forallExpNode.getDomain()));
-                    
-                    if (remainingElements.size() > 0) {
-                        
-                        // choose t in s (for simplicity just pick the first one)                        
-                        Element chosenElement = remainingElements.get(0);
-                        
-                        // AddEnv(x,t)
-                        interpreter.addEnv(forallExpNode.getVariable().getToken(),chosenElement);
-                        
-                        // considered(beta) := considered(beta) union {t}
-                        remainingElements.remove(0);
-                        //considered.get(forallExpNode.getDomain()).add(chosenElement);
-                        
-                        // pos := gamma
-                        return forallExpNode.getCondition();
-                    }
-                    else {    
-                        remained.remove(forallExpNode.getDomain());
-                    	//considered.remove(forallExpNode.getDomain());
-                        
-                        // [pos] := (undef,undef,tt)
-                        pos.setNode(null,null,BooleanElement.TRUE);
-                        return pos;
-                    }
-                }
-                else {
-                    remained.remove(forallExpNode.getDomain());
-                    //considered.remove(forallExpNode.getDomain());
-                    
-                    // [pos] := (undef,undef,tt)
-                    pos.setNode(null,null,BooleanElement.TRUE);
-                    return pos;
-                }
-            }
-            else {
-                capi.error("The 'forall' predicate does not apply to " + 
-                		Tools.sizeLimit(forallExpNode.getDomain().getValue().denotation()) + 
-                		". The domain must be an enumerable element.", forallExpNode.getDomain(), interpreter);
-            }
+                	else if (shouldChoose)
+                		interpreter.removeEnv(variable.getKey());
+                	
+                	if (shouldChoose) {
+	                    if (!s.isEmpty()) {
+	                    	// SPEC: considered := considered union {t}
+	                        // choose t in s, for simplicty choose the first 
+	                        // since we have to go through all of them
+	                        Element chosen = s.remove(0);
+	                        
+	                        // SPEC: AddEnv(x,t)
+	                        interpreter.addEnv(variable.getKey(),chosen);
+	                    }   
+	                    else {
+	                        remained.remove(variable.getValue());
+	                        pos = forallExpNode;
+		            		shouldChoose = true;
+		            		continue;
+	                    }
+                	}
+	            }
+	            else {
+	                capi.error("The 'forall' predicate does not apply to " + 
+	                		Tools.sizeLimit(variable.getValue().getValue().denotation()) + 
+	                		". The domain must be an enumerable element.", variable.getValue(), interpreter);
+	            }
+	            shouldChoose = false;
+        	}
+        	if (shouldChoose) {
+        		if (remained.isEmpty()) {
+        			// [pos] := (undef,undef,tt)             
+            		pos.setNode(null,null,BooleanElement.TRUE);
+            		return pos;
+        		}
+        		for (Entry<String, ASTNode> var : variableMap.entrySet()) {
+        			if (remained.remove(var.getValue()) != null)
+        				interpreter.removeEnv(var.getKey());
+        		}
+        		//considered.remove(forallExpNode.getDomain());
+        		
+        		// [pos] := (undef,undef,ff)             
+        		pos.setNode(null,null,BooleanElement.FALSE);
+        		return pos;
+        	}
         }
         else {
             
@@ -564,15 +591,15 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             // ClearTree(gamma)
             interpreter.clearTree(forallExpNode.getCondition());
             
-            // RemoveEnv(x)
-            interpreter.removeEnv(forallExpNode.getVariable().getToken());
-            
             if (value) {
                 // pos := beta
-                return forallExpNode.getDomain();                
+                return forallExpNode;                
             }
             else {
-                remained.remove(forallExpNode.getDomain());
+            	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
+        			if (remained.remove(variable.getValue()) != null)
+        				interpreter.removeEnv(variable.getKey());
+        		}
                 //considered.remove(forallExpNode.getDomain());
                 
                 // [pos] := (undef,undef,ff)             

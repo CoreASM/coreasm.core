@@ -14,6 +14,7 @@ use PredicateLogic
  *
  * @require "no there is a letter in between\n"
  * @require "all values are true\n"
+ * @require "All elements in {1,2,3} are smaller than the elements in {4,5,6}\nNot all elements in {5} ar smaller than the elements in {1,2,3}"
  */
 rule Start =
 	seqblock
@@ -21,4 +22,10 @@ rule Start =
 		if (forall x in list holds true = matches(x,"[a-z]+")) then print "just numbers" else print "no there is a letter in between"
 		// this a definition thing. an empty set does'nt evaluate "false", so it leads to true.
 		if (forall x in {} holds x = true) then print "all values are true" else print "something's false"
+		if forall x in {1,2,3}, y in {4,5,6} holds x < y then
+			print "All elements in {1,2,3} are smaller than the elements in {4,5,6}"
+		if forall x in {5}, y in {1,2,3} holds x < y then
+			print "All elements in {5} ar smaller than the elements in {1,2,3}"
+		else
+			print "Not all elements in {5} ar smaller than the elements in {1,2,3}"
 	endseqblock
