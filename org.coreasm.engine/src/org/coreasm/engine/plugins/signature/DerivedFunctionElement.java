@@ -14,7 +14,9 @@
 package org.coreasm.engine.plugins.signature;
 
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.absstorage.Element;
@@ -36,6 +38,7 @@ public class DerivedFunctionElement extends FunctionElement {
 	protected final ControlAPI capi;
 	protected final List<String> params;
 	protected final ASTNode expr;
+	protected final Map<ASTNode, ASTNode> exprCopies = new IdentityHashMap<ASTNode, ASTNode>();
 	
 	/**
 	 * Creates a new derived function with the given list 
@@ -59,7 +62,11 @@ public class DerivedFunctionElement extends FunctionElement {
 			bindArguments(interpreter, args);
 			
 			synchronized(this) {
-				ASTNode exprCopy = (ASTNode)interpreter.copyTree(expr);
+				ASTNode exprCopy = exprCopies.get(interpreter.getPosition());
+				if (exprCopy == null) {
+					exprCopy = (ASTNode)interpreter.copyTree(expr);
+					exprCopies.put(interpreter.getPosition(), exprCopy);
+				}
 				try {
 					interpreter.interpret(exprCopy, interpreter.getSelf());
 					if (exprCopy.getValue() != null)
@@ -69,6 +76,7 @@ public class DerivedFunctionElement extends FunctionElement {
 				} finally {
 					unbindArguments(interpreter);
 				}
+				interpreter.clearTree(exprCopy);
 			}
 		}
 		
