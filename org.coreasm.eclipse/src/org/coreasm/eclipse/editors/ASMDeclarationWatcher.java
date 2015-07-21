@@ -606,7 +606,7 @@ public class ASMDeclarationWatcher implements Observer {
 	
 	private static boolean isExistsExpVariable(FunctionRuleTermNode frNode) {
 		for (ExistsExpNode existsExpNode = getParentExistsExpNode(frNode); existsExpNode != null; existsExpNode = getParentExistsExpNode(existsExpNode)) {
-			if (existsExpNode.getVariable().getToken().equals(frNode.getName()))
+			if (existsExpNode.getVariableMap().containsKey(frNode.getName()))
 				return true;
 		}
 		return false;

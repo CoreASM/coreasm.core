@@ -11,13 +11,16 @@ use PredicateLogic
  *
  * @refuse "no letter inside\n"
  * @refuse "there is the truth\n"
+ * @refuse "No element is in all 3 sets."
+ * @refuse "There's an element in {1} that is greater than any element in {1,2,3}"
  *
- * @require "found a letter\n"
- * @require "false everywhere\n"
+ * @require "found a letter\nfalse everywhere\nThere's at least one element in all 3 sets.\nThere's no element in {1} that is greater than any element in {1,2,3}\n"
  */
 rule Start =
 	seqblock
 		list:= [1,2,3,4,"a",6,7,8,9]
 		if (exists x in list with true = matches(x,"[a-z]+")) then print "found a letter" else print "no letter inside"
 		if (exists x in {} with x = true) then print "there is the truth" else print "false everywhere"
+		if exists x in {1,2,3}, y in {2,3,4}, z in {3,4,5} with x = y and y = z then print "There's at least one element in all 3 sets." else print "No element is in all 3 sets."
+		if exists x in {1}, y in {1,2,3} with x > y then print "There's an element in {1} that is greater than any element in {1,2,3}" else print "There's no element in {1} that is greater than any element in {1,2,3}"
 	endseqblock

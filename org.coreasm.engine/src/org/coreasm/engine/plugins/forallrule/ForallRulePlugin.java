@@ -220,6 +220,7 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
 		                        // choose t in s, for simplicty choose the first 
 		                        // since we have to go through all of them
 		                        Element chosen = s.remove(0);
+		                        shouldChoose = false;
 		                        
 		                        // SPEC: AddEnv(x,t)
 		                        interpreter.addEnv(variable.getKey(),chosen);
@@ -228,8 +229,6 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
 		                        remained.remove(variable.getValue());
 		                        if (pos != forallNode.getIfnoneRule())
 			            			pos = forallNode;
-			            		shouldChoose = true;
-			            		continue;
 		                    }
 	                	}
 	                }
@@ -238,7 +237,6 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
 	                    		+ ". Forall domain must be an enumerable element.", variable.getValue(), interpreter);
 	                    return pos;
 	                }
-	                shouldChoose = false;
             	}
             	if (shouldChoose) {
         			if (forallNode.getIfnoneRule() == null || updates.containsKey(forallNode)) {

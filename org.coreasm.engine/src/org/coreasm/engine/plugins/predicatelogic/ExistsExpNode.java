@@ -15,6 +15,10 @@
  
 package org.coreasm.engine.plugins.predicatelogic;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -49,23 +53,28 @@ public class ExistsExpNode extends ASTNode {
     }
     
     /**
-     * Returns the node representing the bound variable of the Exists expression
+     * Returns a map of the variable names to the nodes which
+     * represent the domains that variable should be taken from
+     * @throws CoreASMError 
      */
-    public ASTNode getVariable() {
-        return getFirst();
-    }
-    
-    /**
-     * Returns the node representing the domain of the Exists expression
-     */
-    public ASTNode getDomain() {
-        return getVariable().getNext();
+    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
+    	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
+        
+        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+            if (variableMap.put(current.getToken(),current.getNext()) != null)
+            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in forall expression.", this);
+        }
+        
+        return variableMap;
     }
     
     /**
      * Returns the node representing the condition of the Exists expression.
      */
     public ASTNode getCondition() {
-        return getDomain().getNext();
+    	ASTNode current = getFirst();
+    	while (current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()))
+    		current = current.getNext().getNext();
+    	return current;
     }
 }

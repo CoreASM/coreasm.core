@@ -324,9 +324,9 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 			Parser<Node> existsExpParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser(EXISTS_EXP_TOKEN, PLUGIN_NAME),
-						idParser,
-						pTools.getKeywParser("in", PLUGIN_NAME),
-						termParser,
+						pTools.csplus(Parsers.array(idParser,
+								pTools.getKeywParser("in", PLUGIN_NAME),
+								termParser)),
 						pTools.getKeywParser("with", PLUGIN_NAME),
 						termParser
 					}).map(
@@ -377,65 +377,89 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
         ExistsExpNode existsExpNode = (ExistsExpNode) pos;
         
         Map<ASTNode, List<Element>> remained = getRemainedMap();
+        Map<String, ASTNode> variableMap = null;
         
-        if (!existsExpNode.getDomain().isEvaluated()) {
-           
-            // a new domain will be evaluated so clear the value of considered
-            //   considered(beta) := {}
-        	remained.remove(existsExpNode.getDomain());
-        	//considered.put(existsExpNode.getDomain(),new ArrayList<Element>());
-            
-            // evaluate the domain
-            //   pos := beta  
-            return existsExpNode.getDomain();
+        try {
+        	variableMap = existsExpNode.getVariableMap();
         }
-        else if (!existsExpNode.getCondition().isEvaluated()) {
-            if (existsExpNode.getDomain().getValue() instanceof Enumerable) {
+        catch (CoreASMError e) {
+        	capi.error(e);
+        	return pos;
+        }
+
+        // evaluate all domains
+        for (ASTNode domain : variableMap.values()) {
+        	if (!domain.isEvaluated()) {
+        		// SPEC: considered := {}
+            	remained.remove(domain);
                 
-                // let s = enumerate(v)\considered(beta)
-                Enumerable enumerableElement = (Enumerable) existsExpNode.getDomain().getValue();             
-                
-                List<Element> remainingElements = remained.get(existsExpNode.getDomain());
-                if (remainingElements == null) {
-        			Enumerable domain = (Enumerable)existsExpNode.getDomain().getValue();
-        			if (domain.supportsIndexedView())
-        				remainingElements = new ArrayList<Element>(domain.getIndexedView());
-        			else
-        				remainingElements = new ArrayList<Element>(enumerableElement.enumerate());
-                	remained.put(existsExpNode.getDomain(), remainingElements);
-                }
-                //ArrayList<Element> remainingElements = new ArrayList<Element>(enumerableElement.enumerate());
-                //remainingElements.removeAll(considered.get(existsExpNode.getDomain()));
-                
-                if (remainingElements.size() > 0) {
-                    
-                    // choose t in s (for simplicity just pick the first one)
-                    Element chosenElement = remainingElements.get(0);
-                    
-                    // AddEnv(x,t)
-                    interpreter.addEnv(existsExpNode.getVariable().getToken(),chosenElement);
-                    
-                    // considered(beta) := considered(beta) union {t}
-                    remainingElements.remove(0);
-                    //considered.get(existsExpNode.getDomain()).add(chosenElement);
-                    
-                    // pos := gamma
-                    return existsExpNode.getCondition();
-                }
-                else {
-                	remained.remove(existsExpNode.getDomain());
-                    //considered.remove(existsExpNode.getDomain());
-                    
-                    // [pos] := (undef,undef,ff)
-                    pos.setNode(null,null,BooleanElement.FALSE);
-                    return pos;
-                }
-            }
-            else {
-                capi.error("The 'exists' predicate does not apply to " + 
-                		Tools.sizeLimit(existsExpNode.getDomain().getValue().denotation()) + 
-                		". The domain must be an enumerable element.", existsExpNode.getDomain(), interpreter);
-            }
+                // SPEC: pos := beta
+        		return domain;
+        	}
+        }
+        
+        if (!existsExpNode.getCondition().isEvaluated()) {
+        	pos = existsExpNode.getCondition();
+        	boolean shouldChoose = true;
+        	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
+	            if (variable.getValue().getValue() instanceof Enumerable) {
+	            	   
+                    // SPEC: s := enumerate(v)/considered                    
+                    // ArrayList<Element> s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
+                    // s.removeAll(considered.get(variable.getValue()));
+                	// 
+                	// changed to the following to improve performance:
+        			List<Element> s = remained.get(variable.getValue());
+                	if (s == null) {
+            			Enumerable domain = (Enumerable)variable.getValue().getValue();
+            			if (domain.supportsIndexedView())
+            				s = new ArrayList<Element>(domain.getIndexedView());
+            			else
+            				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
+            			if (s.isEmpty()) {
+                			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
+            	    			if (remained.remove(var.getValue()) != null)
+            	    				interpreter.removeEnv(var.getKey());
+            	    		}
+            				// [pos] := (undef,undef,ff)
+                			existsExpNode.setNode(null, null, BooleanElement.FALSE);
+            	            return existsExpNode;
+                    	}
+            			remained.put(variable.getValue(), s);
+                		shouldChoose = true;
+                	}
+                	else if (shouldChoose)
+                		interpreter.removeEnv(variable.getKey());
+                	
+                	if (shouldChoose) {
+	                    if (!s.isEmpty()) {
+	                    	// SPEC: considered := considered union {t}
+	                        // choose t in s, for simplicty choose the first 
+	                        // since we have to go through all of them
+	                        Element chosen = s.remove(0);
+	                        shouldChoose = false;
+	                        
+	                        // SPEC: AddEnv(x,t)
+	                        interpreter.addEnv(variable.getKey(),chosen);
+	                    }   
+	                    else {
+	                        remained.remove(variable.getValue());
+	                        pos = existsExpNode;
+	                    }
+                	}
+	            }
+	            else {
+	                capi.error("The 'exists' predicate does not apply to " + 
+	                		Tools.sizeLimit(variable.getValue().getValue().denotation()) + 
+	                		". The domain must be an enumerable element.", variable.getValue(), interpreter);
+	            }
+        	}
+        	if (shouldChoose) {
+        		// all combinations have been evaluated
+    			// [pos] := (undef,undef,ff)             
+        		pos.setNode(null,null,BooleanElement.FALSE);
+        		return pos;
+        	}
         }
         else {
             
@@ -451,12 +475,11 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             // ClearTree(gamma)
             interpreter.clearTree(existsExpNode.getCondition());
             
-            // RemoveEnv(x)
-            interpreter.removeEnv(existsExpNode.getVariable().getToken());
-            
             if (value) {
-                
-            	remained.remove(existsExpNode.getDomain());
+            	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
+        			if (remained.remove(variable.getValue()) != null)
+        				interpreter.removeEnv(variable.getKey());
+        		}
                 //considered.remove(existsExpNode.getDomain());
                 
                 // [pos] := (undef,undef,tt)                
@@ -465,7 +488,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             }
             else {
                 // pos := beta
-                return existsExpNode.getDomain();
+                return existsExpNode;
             }
         }                                                
         
@@ -525,7 +548,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             	    			if (remained.remove(var.getValue()) != null)
             	    				interpreter.removeEnv(var.getKey());
             	    		}
-            				// [pos] := (undef,{},undef)
+            				// [pos] := (undef,undef,tt)
                 			forallExpNode.setNode(null, null, BooleanElement.TRUE);
             	            return forallExpNode;
                     	}
@@ -541,6 +564,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	                        // choose t in s, for simplicty choose the first 
 	                        // since we have to go through all of them
 	                        Element chosen = s.remove(0);
+	                        shouldChoose = false;
 	                        
 	                        // SPEC: AddEnv(x,t)
 	                        interpreter.addEnv(variable.getKey(),chosen);
@@ -548,8 +572,6 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	                    else {
 	                        remained.remove(variable.getValue());
 	                        pos = forallExpNode;
-		            		shouldChoose = true;
-		            		continue;
 	                    }
                 	}
 	            }
@@ -558,22 +580,11 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	                		Tools.sizeLimit(variable.getValue().getValue().denotation()) + 
 	                		". The domain must be an enumerable element.", variable.getValue(), interpreter);
 	            }
-	            shouldChoose = false;
         	}
         	if (shouldChoose) {
-        		if (remained.isEmpty()) {
-        			// [pos] := (undef,undef,tt)             
-            		pos.setNode(null,null,BooleanElement.TRUE);
-            		return pos;
-        		}
-        		for (Entry<String, ASTNode> var : variableMap.entrySet()) {
-        			if (remained.remove(var.getValue()) != null)
-        				interpreter.removeEnv(var.getKey());
-        		}
-        		//considered.remove(forallExpNode.getDomain());
-        		
-        		// [pos] := (undef,undef,ff)             
-        		pos.setNode(null,null,BooleanElement.FALSE);
+        		// all combinations have been evaluated
+    			// [pos] := (undef,undef,tt)             
+        		pos.setNode(null,null,BooleanElement.TRUE);
         		return pos;
         	}
         }
