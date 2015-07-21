@@ -57,6 +57,9 @@ public class KernelRuleDeclarationHandler implements CompilerCodeHandler {
 			if(ruleName.equals("CloneIteratively") && tmp) throw new Exception();
 			else if(ruleName.equals("CloneIteratively")) tmp = true;*/
 		}
+		catch(CompilerException e) {
+			throw e;
+		}
 		catch(Exception e){
 			//e.printStackTrace();
 			throw new CompilerException("error creating rule for node");
