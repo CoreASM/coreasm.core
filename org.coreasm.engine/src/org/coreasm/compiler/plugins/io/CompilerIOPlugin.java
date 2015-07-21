@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.coreasm.compiler.CodeType;
+import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.codefragment.CodeFragment;
 import org.coreasm.compiler.components.classlibrary.ClassLibrary;
 import org.coreasm.compiler.components.classlibrary.JarIncludeHelper;
@@ -13,15 +15,13 @@ import org.coreasm.compiler.components.mainprogram.MainFileEntry;
 import org.coreasm.compiler.components.mainprogram.statemachine.EngineTransition;
 import org.coreasm.compiler.exception.CompilerException;
 import org.coreasm.compiler.exception.EntryAlreadyExistsException;
-import org.coreasm.compiler.plugins.io.code.ucode.PrintRuleHandler;
-import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.compiler.CodeType;
-import org.coreasm.compiler.CompilerEngine;
 import org.coreasm.compiler.interfaces.CompilerCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerExtensionPointPlugin;
 import org.coreasm.compiler.interfaces.CompilerInitCodePlugin;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.interfaces.CompilerVocabularyExtender;
+import org.coreasm.compiler.plugins.io.code.ucode.PrintRuleHandler;
+import org.coreasm.engine.plugin.Plugin;
 
 /**
  * Provides IO methods.
@@ -88,7 +88,7 @@ public class CompilerIOPlugin extends CompilerCodePlugin implements CompilerPlug
 		List<EngineTransition> result = new ArrayList<EngineTransition>();
 		CodeFragment c = new CodeFragment("");
 		String stringelement = engine.getPath().getEntryName(LibraryEntryType.STATIC, "StringElement", "StringPlugin");
-		c.appendLine("try{\n@decl(String,msgs) = @RuntimeProvider@.getStorage().getValue(new @RuntimePkg@.Location(\"output\", new java.util.ArrayList<@RuntimePkg@.Element>())).toString();\n");
+		c.appendLine("try{\n@decl(CompilerRuntime.FunctionElement,outputFunction) = @RuntimeProvider@.getStorage().getFunction(\"output\");\n@decl(String,msgs) = @outputFunction@.getValue(new java.util.ArrayList<@RuntimePkg@.Element>()).toString();\n");
 		c.appendLine("outputStream.print(@msgs@);\n");
 		c.appendLine("@RuntimeProvider@.getStorage().setValue(new @RuntimePkg@.Location(\"output\", new java.util.ArrayList<@RuntimePkg@.Element>()), new " + stringelement + "(\"\"));\n");
 		c.appendLine("}\ncatch(@decl(Exception,e)){\n}\n");
