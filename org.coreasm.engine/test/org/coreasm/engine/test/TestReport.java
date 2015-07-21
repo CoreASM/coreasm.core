@@ -1,6 +1,7 @@
 package org.coreasm.engine.test;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class TestReport {
@@ -34,20 +35,20 @@ public class TestReport {
 		return this.file;
 	}
 
-	public void print() {
+	public void print(PrintStream out, PrintStream err) {
 		if (this.successful) {
 			String success = "Test of " + this.file.getName() + " successful after " + steps
 					+ (steps == 1 ? " step" : " steps");
-			TestAllCasm.origOutput.println(this.message.isEmpty() ? success : success + "; " + this.message);
+			out.println(this.message.isEmpty() ? success : success + "; " + this.message);
 		}
 		else
-			TestAllCasm.origError.println("An error occurred after " + steps + " steps in " + this.file.getName() + ": "
+			err.println("An error occurred after " + steps + " steps in " + this.file.getName() + ": "
 					+ this.message);
 	}
 
-	public void printTestReports() {
+	public void printTestReports(PrintStream out, PrintStream err) {
 		for (TestReport report : reports) {
-			report.print();
+			report.print(out, err);
 		}
 	}
 

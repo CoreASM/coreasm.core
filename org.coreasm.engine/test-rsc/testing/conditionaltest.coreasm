@@ -1,8 +1,0 @@
-CoreASM testing
-
-use Standard
-use Testing
-
-init A
-
-test = if PARAM guard then PARAM truerule else PARAM falserule

@@ -74,7 +74,7 @@ public class TestAllCCasm {
 			t = CompilerDriver.runSpecification(testFile);
 			if (!t.successful())
 				successful = false;
-			t.print();
+			t.print(origOutput, origError);
 			t = null;
 		}
 		//report overall test result
