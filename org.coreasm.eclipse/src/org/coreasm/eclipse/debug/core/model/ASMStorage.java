@@ -49,13 +49,11 @@ public class ASMStorage extends HashStorage {
 	private String sourceName;
 	private int lineNumber;
 	private ASTNode pos;
+	private int updated;
 	
 	public ASMStorage(ASMStorage storage) {
 		this(storage.wapi, storage.storage, storage.step, storage.lastSelectedAgents, storage.envVars, storage.updates, storage.agents, storage.callStack, storage.sourceName, storage.lineNumber);
-	}
-	
-	public ASMStorage(WatchExpressionAPI wapi, ControlAPI capi) {
-		this(wapi, capi.getStorage(), capi.getStepCount(), capi.getLastSelectedAgents(), capi.getInterpreter().getInterpreterInstance().getEnvVars(), ASMUpdate.wrapUpdateSet(capi), capi.getAgentSet(), capi.getInterpreter().getInterpreterInstance().getCurrentCallStack(), null, -1);
+		this.updated = storage.updated;
 	}
 	
 	public ASMStorage(WatchExpressionAPI wapi, AbstractStorage storage, int step, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Set<? extends Element> agents, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
@@ -112,6 +110,7 @@ public class ASMStorage extends HashStorage {
 		this.callStack = callStack;
 		this.sourceName = sourceName;
 		this.lineNumber = lineNumber;
+		updated++;
 	}
 	
 	public Element evaluateExpression(ControlAPI capi, String expression) throws InterpreterException {
@@ -195,9 +194,8 @@ public class ASMStorage extends HashStorage {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((pos == null) ? 0 : pos.hashCode());
-		result = prime * result + ((stackedUpdates == null) ? 0 : stackedUpdates.size());
 		result = prime * result + step;
-		result = prime * result + ((updates == null) ? 0 : updates.size());
+		result = prime * result + updated;
 		return result;
 	}
 
@@ -210,24 +208,12 @@ public class ASMStorage extends HashStorage {
 		if (getClass() != obj.getClass())
 			return false;
 		ASMStorage other = (ASMStorage) obj;
-		if (pos == null) {
-			if (other.pos != null)
-				return false;
-		} else if (!pos.equals(other.pos))
-			return false;
-		if (stackedUpdates == null) {
-			if (other.stackedUpdates != null)
-				return false;
-		} else if (stackedUpdates.size() != other.stackedUpdates.size())
+		if (pos != other.pos)
 			return false;
 		if (step != other.step)
 			return false;
-		if (updates == null) {
-			if (other.updates != null)
-				return false;
-		} else if (updates.size() != other.updates.size())
+		if (updated != other.updated)
 			return false;
 		return true;
 	}
-
 }
