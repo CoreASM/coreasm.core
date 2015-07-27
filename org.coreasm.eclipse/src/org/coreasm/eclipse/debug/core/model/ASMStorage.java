@@ -195,7 +195,9 @@ public class ASMStorage extends HashStorage {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((pos == null) ? 0 : pos.hashCode());
+		result = prime * result + ((stackedUpdates == null) ? 0 : stackedUpdates.size());
 		result = prime * result + step;
+		result = prime * result + ((updates == null) ? 0 : updates.size());
 		return result;
 	}
 
@@ -211,10 +213,21 @@ public class ASMStorage extends HashStorage {
 		if (pos == null) {
 			if (other.pos != null)
 				return false;
-		} else if (pos != other.pos)
+		} else if (!pos.equals(other.pos))
+			return false;
+		if (stackedUpdates == null) {
+			if (other.stackedUpdates != null)
+				return false;
+		} else if (stackedUpdates.size() != other.stackedUpdates.size())
 			return false;
 		if (step != other.step)
 			return false;
+		if (updates == null) {
+			if (other.updates != null)
+				return false;
+		} else if (updates.size() != other.updates.size())
+			return false;
 		return true;
 	}
+
 }

@@ -22,6 +22,7 @@ import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.InvalidLocationException;
+import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.State;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
@@ -63,12 +64,14 @@ public class WatchExpressionAPI implements ControlAPI {
 		bindPlugins();
 		storage.applyStackedUpdates();
 		
-		interpreter.setSelf(agent);
-		interpreter.setPosition(expression);
-		
-		lastError = null;
-		
 		try {
+			if (!(storage.getChosenProgram(agent) instanceof RuleElement))
+				throw new InterpreterException("The program of agent '" + agent + "' is not a rule but " + storage.getChosenProgram(agent) + " instead.");
+			interpreter.setSelf(agent);
+			interpreter.setPosition(expression);
+			
+			lastError = null;
+		
 			do {
 				interpreter.executeTree();
 			} while (!(interpreter.isExecutionComplete() || hasErrorOccurred()));
