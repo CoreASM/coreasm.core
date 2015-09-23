@@ -154,8 +154,8 @@ public class Node implements Serializable {
 	 * @param node node
 	 */
 	public void addChild(String name, Node node) {
-		node.parent = this;
 		children.add(new NameNodeTuple(name, node));
+		node.setParent(this);
 	}
 	
 	/**
@@ -172,14 +172,14 @@ public class Node implements Serializable {
 			throws IllegalArgumentException {
 		if (indexNode == null) {
 			children.add(0, new NameNodeTuple(name, node));
-			node.parent = this;
+			node.setParent(this);
 			return;
 		}
 		int index = 0;
 		for (NameNodeTuple nameNodeTuple : children) {
 			if (nameNodeTuple.node == indexNode) {
 				children.add(index + 1, new NameNodeTuple(name, node));
-				node.parent = this;
+				node.setParent(this);
 				return;
 			}
 			index++;
