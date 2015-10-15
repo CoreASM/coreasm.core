@@ -2,16 +2,19 @@ package org.coreasm.eclipse.editors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.coreasm.eclipse.editors.ASMParser.ParsingResult;
+import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.chooserule.PickExpNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
@@ -27,6 +30,7 @@ import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
+import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -345,6 +349,33 @@ public class ASMDeclarationWatcher implements Observer {
 			return declaration;
 		}
 	}
+	public static class RuleCall {
+		private final ASTNode ruleNode;
+		private final ASTNode callerNode;
+		private final IFile file;
+		
+		public RuleCall(ASTNode ruleNode, ASTNode callerNode, IFile file) {
+			this.ruleNode = ruleNode;
+			this.callerNode = callerNode;
+			this.file = file;
+		}
+		
+		public RuleCall(IFile file) {
+			this(null, null, file);
+		}
+
+		public ASTNode getRuleNode() {
+			return ruleNode;
+		}
+
+		public ASTNode getCallerNode() {
+			return callerNode;
+		}
+
+		public IFile getFile() {
+			return file;
+		}
+	}
 	
 	private final ASMEditor editor;
 	
@@ -368,6 +399,48 @@ public class ASMDeclarationWatcher implements Observer {
 			}
 			editor.createDeclarationsMark(declarations);
 		}
+	}
+	
+	public static List<RuleCall> getRuleCallers(ASTNode ruleNode, IFile ruleFile) {
+		List<RuleCall> callers = new ArrayList<RuleCall>();
+		ASTNode node = ruleNode;
+		if (node != null) {
+			while (node.getFirst() != null)
+				node = node.getFirst();
+		}
+		String ruleName = node.getToken();
+		if (ruleName != null) {
+			if (ruleFile != null) {
+				IFile[] files = ASMIncludeWatcher.getInvolvedFiles(ruleFile);
+				LinkedList<ASTNode> fringe = new LinkedList<ASTNode>();
+				for (IFile file : files) {
+					ASMEditor editor = (ASMEditor)Utilities.getEditor(file);
+					if (editor == null) {
+						callers.add(new RuleCall(file));
+						continue;
+					}
+					ASMDocument document = (ASMDocument)editor.getDocumentProvider().getDocument(editor.getInput());
+					ASTNode rootNode = (ASTNode)document.getRootnode();
+					if (rootNode != null) {
+						fringe.add(rootNode);
+						while (!fringe.isEmpty()) {
+							node = fringe.removeFirst();
+							if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode) {
+								if (node.getParent() instanceof MacroCallRuleNode || node.getParent() instanceof ReturnResultNode) {
+									FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+									if (frNode.hasName()) {
+										if (ruleName.equals(frNode.getName()))
+											callers.add(new RuleCall(ASMDocument.getSurroundingDeclaration(frNode), frNode.getParent(), document.getNodeFile(frNode)));
+									}
+								}
+							}
+							fringe.addAll(node.getAbstractChildNodes());
+						}
+					}
+				}
+			}
+		}
+		return callers;
 	}
 	
 	public static List<Declaration> getDeclarations(IFile file, boolean includedDeclarations) {

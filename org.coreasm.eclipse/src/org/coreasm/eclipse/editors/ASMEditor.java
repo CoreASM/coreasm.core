@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.coreasm.eclipse.CoreASMPlugin;
+import org.coreasm.eclipse.callhierarchy.ASMCallHierarchyView;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.CoreASMEclipseError;
 import org.coreasm.eclipse.editors.errors.ErrorManager;
@@ -21,9 +22,12 @@ import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.Specification;
+import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
+import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.coreasm.util.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -32,6 +36,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -50,7 +56,9 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -89,6 +97,7 @@ implements IDocumentListener
 		public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 			if (part == ASMEditor.this && selection instanceof ITextSelection)
 				firePostSelectionChanged((ITextSelection)selection);
+			currentSelection = selection;
 		}
 	};
 	private final ListenerList postSelectionListeners = new ListenerList(ListenerList.IDENTITY);
@@ -98,6 +107,8 @@ implements IDocumentListener
 	private ASMIncludeWatcher includeWatcher;
 	private ASMOutlinePage outlinePage;
 	private IEditorInput input;
+	
+	private ISelection currentSelection;
 
 	static {
 		LOGGER_UI_DEBUG.setVisible(false);
@@ -127,6 +138,44 @@ implements IDocumentListener
 		parser.getJob().schedule();
 		
 		new ASMOccurenceHighlighter(this);
+		
+		Action action = new Action("Open Call Hierarchy") {
+			@Override
+			public void run() {
+				ASTNode node = getSelectedIDnode();
+				if (node != null && node.getParent() != null && !(node.getParent().getParent() instanceof MacroCallRuleNode) && !(node.getParent().getParent() instanceof ReturnResultNode))
+					node = null;
+				ITextSelection selection = (ITextSelection)currentSelection;
+				IDocumentProvider documentProvider = getDocumentProvider();
+				ASMDocument document = (ASMDocument)documentProvider.getDocument(getEditorInput());
+				if (node == null) {
+					node = document.getSurroundingDeclarationAt(selection.getOffset());
+					if (node != null) {
+						while (node.getFirst() != null)
+							node = node.getFirst();
+					}
+				}
+				ASMCallHierarchyView.openView(node, document.getNodeFile(node));
+			}
+		};
+		action.setActionDefinitionId("org.coreasm.eclipse.actions.OpenCallHierarchy");
+		setAction("org.coreasm.eclipse.actions.OpenCallHierarchy", action);
+	}
+	
+	public ASTNode getSelectedIDnode() {
+		if (currentSelection instanceof ITextSelection) {
+			ITextSelection selection = (ITextSelection)currentSelection;
+			IDocumentProvider documentProvider = getDocumentProvider();
+			ASMDocument document = (ASMDocument)documentProvider.getDocument(getEditorInput());
+			return document.getIDnodeAt(selection.getOffset());
+		}
+		return null;
+	}
+	
+	@Override
+	protected void editorContextMenuAboutToShow(IMenuManager menu) {
+		super.editorContextMenuAboutToShow(menu);
+		menu.insertBefore(ICommonMenuConstants.GROUP_OPEN, getAction("org.coreasm.eclipse.actions.OpenCallHierarchy"));
 	}
 	
 	/*

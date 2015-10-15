@@ -84,12 +84,23 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 		}
 	}
 	
+	/**
+	 * Returns the specifications that are including the given file.
+	 * @param file file to return the including specifications of
+	 * @return the set of including files
+	 */
 	public static IFile[] getIncludingFiles(IFile includedFile) {
 		Set<IFile> includingFiles = new HashSet<IFile>();
 		collectIncludingFiles(includedFile, includedFile.getProject(), includingFiles);
 		return includingFiles.toArray(new IFile[includingFiles.size()]);
 	}
 	
+	/**
+	 * Collects the specifications that are including the given file.
+	 * @param file file to collect the including specifications of
+	 * @param container container to search in which to search for including files
+	 * @param includingFiles the set to collect the including files into
+	 */
 	private static void collectIncludingFiles(IFile includedFile, IContainer container, Set<IFile> includingFiles) {
 		try {
 			for (IResource member : container.members()) {
@@ -114,6 +125,24 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 			}
 		} catch (CoreException e) {
 		}
+	}
+	
+	/**
+	 * Returns the including and the included files of the given file.
+	 * @param file file to return the included and including specifications of
+	 * @return the set of including and included files
+	 */
+	public static IFile[] getInvolvedFiles(IFile file) {
+		Set<IFile> involvedFiles = new HashSet<IFile>();
+		involvedFiles.add(file);
+		int size = 0;
+		while (size != involvedFiles.size()) {
+			size = involvedFiles.size();
+			collectIncludingFiles(file, file.getProject(), involvedFiles);
+		}
+		for (IFile involvedFile : new HashSet<IFile>(involvedFiles))
+			collectIncludedFiles(involvedFile, true, involvedFiles);
+		return involvedFiles.toArray(new IFile[involvedFiles.size()]);
 	}
 
 	@Override

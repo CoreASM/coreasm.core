@@ -233,6 +233,17 @@
             name="CoreASM Compare View">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Call Hierarchy"
+            icon="icons/CoreASM-Logo.png"
+            category="org.coreasm.eclipse.CoreASM"
+            class="org.coreasm.eclipse.callhierarchy.ASMCallHierarchyView"
+            allowMultiple="true"
+            id="org.coreasm.eclipse.views.ASMCallHierarchy">
+      </view>
+   </extension>
     <extension
           id="org.coreasm.eclipse.perspective"
           name="CoreASM"
@@ -636,5 +647,13 @@
              verticalRulerPreferenceKey="org.coreasm.eclipse.ui.occurrence.write.vertical"
              verticalRulerPreferenceValue="false">
        </specification>
+    </extension>
+    <extension
+          point="org.eclipse.ui.commands">
+       <command
+            name="Open Call Hierarchy"
+            categoryId="org.eclipse.ui.category.navigate"
+            id="org.coreasm.eclipse.actions.OpenCallHierarchy">
+      </command>
     </extension>
 </plugin>

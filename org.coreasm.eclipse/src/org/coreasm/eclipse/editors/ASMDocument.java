@@ -7,6 +7,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.coreasm.eclipse.util.Utilities;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -14,6 +15,7 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.util.Logger;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.Document;
@@ -200,6 +202,51 @@ public class ASMDocument
 			}
 		}
 		return 0;
+	}
+	
+	public IFile getNodeFile(Node node) {
+		return Utilities.getFile(getNodeFilename(node));
+	}
+	
+	public String getNodeFilename(Node node) {
+		if (capi != null) {
+			Parser parser = capi.getParser();
+			CharacterPosition charPos = node.getScannerInfo().getPos(parser.getPositionMap());
+			Specification spec = capi.getSpec();
+			if (spec != null) {
+				String fileName = spec.getAbsolutePath();
+				if (charPos != null)
+					fileName = spec.getLine(charPos.line).fileName;
+				return fileName;
+			}
+		}
+		return null;
+	}
+	
+	public ASTNode getSurroundingDeclarationAt(int offset) {
+		ASTNode declaration = null;
+		for (ASTNode node = ((ASTNode)getRootnode()).getFirst(); node != null; node = node.getNext()) {
+			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
+				int nodeOffset = getNodePosition(node);
+				if (offset >= nodeOffset && (declaration == null || offset - nodeOffset < offset - getNodePosition(declaration)))
+					declaration = node;
+			}
+		}
+		return declaration;
+	}
+	
+	public static ASTNode getSurroundingDeclaration(Node node) {
+		if (node == null)
+			return null;
+		while (node.getParent() != null) {
+			if (node instanceof ASTNode) {
+				ASTNode ast = (ASTNode)node;
+				if (ASTNode.DECLARATION_CLASS.equals(ast.getGrammarClass()))
+					return ast;
+			}
+			node = node.getParent();
+		}
+		return null;
 	}
 	
 	public ASTNode getIDnodeAt(int offset) {
