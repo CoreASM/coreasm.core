@@ -138,12 +138,18 @@ public class ModularityErrorRecognizer implements ITextErrorRecognizer {
 						markers = file.findMarkers(ASMEditor.MARKER_TYPE_PROBLEM, false, IResource.DEPTH_ZERO);
 						for (IMarker marker : markers) {
 							if (MarkerUtilities.getSeverity(marker) == IMarker.SEVERITY_ERROR) {
+								AbstractError error = AbstractError.createFromMarker(marker);
+								if (error instanceof SimpleError) {
+									SimpleError simpleError = (SimpleError)error;
+									if (CHILD_ERROR.equals(simpleError.getErrorID()))
+										continue;	// Skip CHILD_ERROR in included files
+								}
 								String title = "Included file has errors";
 								String message = "The included file \"" + include.filename + "\" has errors";
 								// Mark filename
 								int pos = include.position + include.source.indexOf("\"") + 1;
 								int length = include.filename.length();
-								AbstractError error = new SimpleError(title, message, pos, length, CLASSNAME, CHILD_ERROR);
+								error = new SimpleError(title, message, pos, length, CLASSNAME, CHILD_ERROR);
 								errors.add(error);
 								break;
 							}
