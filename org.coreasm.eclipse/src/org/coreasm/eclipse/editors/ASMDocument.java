@@ -225,11 +225,13 @@ public class ASMDocument
 	
 	public ASTNode getSurroundingDeclarationAt(int offset) {
 		ASTNode declaration = null;
-		for (ASTNode node = ((ASTNode)getRootnode()).getFirst(); node != null; node = node.getNext()) {
-			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
-				int nodeOffset = getNodePosition(node);
-				if (offset >= nodeOffset && (declaration == null || offset - nodeOffset < offset - getNodePosition(declaration)))
-					declaration = node;
+		if (getRootnode() != null) {
+			for (ASTNode node = ((ASTNode)getRootnode()).getFirst(); node != null; node = node.getNext()) {
+				if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
+					int nodeOffset = getNodePosition(node);
+					if (offset >= nodeOffset && (declaration == null || offset - nodeOffset < offset - getNodePosition(declaration)))
+						declaration = node;
+				}
 			}
 		}
 		return declaration;

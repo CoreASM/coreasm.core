@@ -67,7 +67,13 @@ public class ASMCallHierarchyNode {
 		return !getChildren().isEmpty();
 	}
 	
+	public void clear() {
+		children = null;
+	}
+	
 	private static Image getImage(Node node) {
+		if (node == null)
+			return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/error.gif"), null));
 		return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/rule.gif"), null));
 	}
 	

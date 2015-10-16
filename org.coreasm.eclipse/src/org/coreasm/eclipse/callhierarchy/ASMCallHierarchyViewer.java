@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 
 public class ASMCallHierarchyViewer extends TreeViewer {
+	private ASMCallHierarchyNode inputData;
 
 	public ASMCallHierarchyViewer(Composite parent) {
 		super(new Tree(parent, SWT.MULTI));
@@ -38,6 +39,8 @@ public class ASMCallHierarchyViewer extends TreeViewer {
 							ASMDocument document = (ASMDocument)getEditor(file).getInputDocument();
 							getEditor(file).setHighlightRange(document.getUpdatedOffset(document.getNodePosition(node.getNode())), document.calculateLength(node.getNode()), true);
 						}
+						else
+							setInputData(inputData);
 					}
 				} catch (IllegalArgumentException exeption) {
 				} catch (PartInitException e) {
@@ -48,6 +51,9 @@ public class ASMCallHierarchyViewer extends TreeViewer {
 	}
 	
 	public void setInputData(ASMCallHierarchyNode node) {
+		if (this.inputData != null)
+			this.inputData.clear();
+		inputData = node;
 		setInput(new ASMCallHierarchyNode(node));
 		getControl().setFocus();
 	}

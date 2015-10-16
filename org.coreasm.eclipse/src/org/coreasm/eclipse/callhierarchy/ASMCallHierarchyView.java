@@ -17,7 +17,7 @@ public class ASMCallHierarchyView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		treeViewer = new ASMCallHierarchyViewer(parent);
-		treeViewer.setAutoExpandLevel(0);
+		treeViewer.setAutoExpandLevel(2);
 	}
 
 	@Override
