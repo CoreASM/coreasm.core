@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.coreasm.eclipse.CoreASMPlugin;
 import org.coreasm.eclipse.callhierarchy.ASMCallHierarchyView;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.editors.errors.AbstractError;
 import org.coreasm.eclipse.editors.errors.CoreASMEclipseError;
 import org.coreasm.eclipse.editors.errors.ErrorManager;
@@ -55,6 +56,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
@@ -139,7 +141,31 @@ implements IDocumentListener
 		
 		new ASMOccurenceHighlighter(this);
 		
-		Action action = new Action("Open Call Hierarchy") {
+		Action action = new Action("Open Declaration") {
+			@Override
+			public void run() {
+				ASTNode node = getSelectedIDnode();
+				for (IFile file : ASMIncludeWatcher.getInvolvedFiles(getInputFile())) {
+					Declaration declaration = ASMDeclarationWatcher.findDeclaration(node.getToken(), file);
+					if (declaration != null) {
+						try {
+							Utilities.openEditor(declaration.getFile());
+							ASMEditor editor = (ASMEditor)Utilities.getEditor(declaration.getFile());
+							if (editor != null) {
+								ASMDocument document = (ASMDocument)editor.getInputDocument();
+								ASTNode declarationNode = ASMDeclarationWatcher.findDeclarationNode(node.getToken(), document);
+								editor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(declarationNode)), document.calculateLength(declarationNode), true);
+							}
+						} catch (PartInitException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		};
+		action.setActionDefinitionId("org.coreasm.eclipse.actions.OpenDeclaration");
+		setAction("org.coreasm.eclipse.actions.OpenDeclaration", action);
+		action = new Action("Open Call Hierarchy") {
 			@Override
 			public void run() {
 				ASTNode node = getSelectedIDnode();
@@ -175,6 +201,7 @@ implements IDocumentListener
 	@Override
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
+		menu.insertBefore(ICommonMenuConstants.GROUP_OPEN, getAction("org.coreasm.eclipse.actions.OpenDeclaration"));
 		menu.insertBefore(ICommonMenuConstants.GROUP_OPEN, getAction("org.coreasm.eclipse.actions.OpenCallHierarchy"));
 	}
 	

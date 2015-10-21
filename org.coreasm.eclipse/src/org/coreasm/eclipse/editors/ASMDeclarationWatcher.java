@@ -449,6 +449,50 @@ public class ASMDeclarationWatcher implements Observer {
 		return declarations;
 	}
 	
+	public static Declaration findDeclaration(String name, IFile file) {
+		for (Declaration declaration : getDeclarations(file, false)) {
+			if (name.equals(declaration.getName()))
+				return declaration;
+		}
+		return null;
+	}
+	
+	public static ASTNode findDeclarationNode(String name, ASMDocument document) {
+		for (ASTNode node = ((ASTNode)document.getRootnode()).getFirst(); node != null; node = node.getNext()) {
+			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
+				if ("Signature".equals(node.getGrammarRule())) {
+					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
+						if (signature instanceof EnumerationNode) {
+							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature, parseComment(document, node));
+							if (enumeration.getName().equals(name))
+								return signature;
+							for (EnumerationDeclaration.Member member : enumeration.getMembers()) {
+								if (member.getName().equals(name))
+									return signature;
+							}
+						}
+						else if (signature instanceof FunctionNode && new FunctionDeclaration((FunctionNode)signature, null).getName().equals(name))
+							return signature;
+						else if (signature instanceof UniverseNode) {
+							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature, parseComment(document, node));
+							if (universe.getName().equals(name))
+								return signature;
+							for (UniverseDeclaration.Member member : universe.getMembers()) {
+								if (member.getName().equals(name))
+									return signature;
+							}
+						}
+						else if (signature instanceof DerivedFunctionNode && new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), null).getName().equals(name))
+							return signature;
+					}
+				}
+				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()) && new RuleDeclaration(node, null).getName().equals(name))
+					return node;
+			}
+		}
+		return null;
+	}
+	
 	private static void collectDeclarations(IFile file, boolean includedDeclarations, List<Declaration> declarations) {
 		if (file == null)
 			return;

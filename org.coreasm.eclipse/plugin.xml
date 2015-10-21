@@ -651,6 +651,11 @@
     <extension
           point="org.eclipse.ui.commands">
        <command
+            name="Open Declaration"
+            categoryId="org.eclipse.ui.category.navigate"
+            id="org.coreasm.eclipse.actions.OpenDeclaration">
+      </command>
+       <command
             name="Open Call Hierarchy"
             categoryId="org.eclipse.ui.category.navigate"
             id="org.coreasm.eclipse.actions.OpenCallHierarchy">
