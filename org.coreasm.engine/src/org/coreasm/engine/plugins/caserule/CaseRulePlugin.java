@@ -129,7 +129,7 @@ public class CaseRulePlugin extends Plugin
             if (!caseNode.getCaseTerm().isEvaluated()) {
             	// clear the cache of the rules whose guard 
             	// will match the value of the case term
-            	matchingRules.get().put(caseNode, new HashSet<ASTNode>());
+            	matchingRules.get().remove(caseNode);
             	// return the case term for evaluation
             	return caseNode.getCaseTerm();
             } else {
@@ -140,6 +140,12 @@ public class CaseRulePlugin extends Plugin
             	for (ASTNode guard: caseMap.keySet()) {
             		if (!guard.isEvaluated())
             			return guard;
+            	}
+            	
+            	Set<ASTNode> matchingRules = this.matchingRules.get().get(caseNode);
+            	if (matchingRules == null) {
+            		matchingRules = new HashSet<ASTNode>();
+            		this.matchingRules.get().put(caseNode, matchingRules);
             	}
             	
             	// At this point, all guards are evaluated
@@ -153,7 +159,7 @@ public class CaseRulePlugin extends Plugin
         			if (!pair.getValue().isEvaluated()) 
         				if (value.equals(caseNode.getCaseTerm().getValue())) {
         					// add this rule to the cache
-        					matchingRules.get().get(caseNode).add(pair.getValue());
+        					matchingRules.add(pair.getValue());
         					return pair.getValue(); 
         				}
             	}
@@ -161,7 +167,7 @@ public class CaseRulePlugin extends Plugin
             	// At this point all matching rules are evaluated
             	// Time to put all the updates together
             	UpdateMultiset result = new UpdateMultiset();
-            	for (ASTNode rule: matchingRules.get().get(caseNode)) {
+            	for (ASTNode rule: matchingRules) {
             		result.addAll(rule.getUpdates());
             	}
             	
