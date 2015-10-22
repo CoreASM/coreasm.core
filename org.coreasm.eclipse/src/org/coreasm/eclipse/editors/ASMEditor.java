@@ -24,7 +24,6 @@ import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
@@ -144,20 +143,17 @@ implements IDocumentListener
 			@Override
 			public void run() {
 				ASTNode node = getSelectedIDnode();
-				for (IFile file : ASMIncludeWatcher.getInvolvedFiles(getInputFile())) {
-					Declaration declaration = ASMDeclarationWatcher.findDeclaration(node.getToken(), file);
-					if (declaration != null) {
-						try {
-							Utilities.openEditor(declaration.getFile());
-							ASMEditor editor = (ASMEditor)Utilities.getEditor(declaration.getFile());
-							if (editor != null) {
-								ASMDocument document = (ASMDocument)editor.getInputDocument();
-								ASTNode declarationNode = ASMDeclarationWatcher.findDeclarationNode(node.getToken(), document);
-								editor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(declarationNode)), document.calculateLength(declarationNode), true);
-							}
-						} catch (PartInitException e) {
-							e.printStackTrace();
+				Declaration declaration = ASMDeclarationWatcher.findDeclaration(node.getToken(), getInputFile());
+				if (declaration != null) {
+					try {
+						ASMEditor editor = (ASMEditor)Utilities.openEditor(declaration.getFile());
+						if (editor != null) {
+							ASMDocument document = (ASMDocument)editor.getInputDocument();
+							ASTNode declarationNode = ASMDeclarationWatcher.findDeclarationNode(node.getToken(), document);
+							editor.setHighlightRange(document.getUpdatedOffset(document.getNodePosition(declarationNode)), document.calculateLength(declarationNode), true);
 						}
+					} catch (PartInitException e) {
+						e.printStackTrace();
 					}
 				}
 			}
@@ -168,18 +164,24 @@ implements IDocumentListener
 			@Override
 			public void run() {
 				ASTNode node = getSelectedIDnode();
-				if (node != null && !(node.getParent() instanceof FunctionRuleTermNode))
-					node = null;
-				ITextSelection selection = (ITextSelection)currentSelection;
-				IDocumentProvider documentProvider = getDocumentProvider();
-				ASMDocument document = (ASMDocument)documentProvider.getDocument(getEditorInput());
-				if (node == null) {
-					node = document.getSurroundingDeclarationAt(selection.getOffset());
-					if (node != null) {
-						while (node.getFirst() != null)
-							node = node.getFirst();
+				Declaration declaration = ASMDeclarationWatcher.findDeclaration(node.getToken(), getInputFile());
+				if (declaration != null) {
+					try {
+						ASMEditor editor = (ASMEditor)Utilities.openEditor(declaration.getFile());
+						if (editor != null) {
+							editor.getSite().getPage().bringToTop(ASMEditor.this);
+							ASMDocument document = (ASMDocument)editor.getInputDocument();
+							node = ASMDeclarationWatcher.findDeclarationNode(node.getToken(), document);
+							ASMCallHierarchyView.openView(node, declaration.getFile());
+							return;
+						}
+					} catch (PartInitException e) {
+						e.printStackTrace();
 					}
 				}
+				ASMDocument document = (ASMDocument)getInputDocument();
+				ITextSelection selection = (ITextSelection)currentSelection;
+				node = document.getSurroundingDeclarationAt(selection.getOffset());
 				ASMCallHierarchyView.openView(node, document.getNodeFile(node));
 			}
 		};

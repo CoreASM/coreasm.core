@@ -103,14 +103,14 @@ public class ASMCallHierarchyNode {
 	public String toString() {
 		if (ruleNode == null)
 			return "No AST available for " + file.getName();
-		if (parent == null)
-			return "Callers of " + ruleNode.getToken();
 		if (ruleNode instanceof ASTNode) {
 			ASTNode astNode = (ASTNode)ruleNode;
 			while (astNode.getFirst() != null)
 				astNode = astNode.getFirst();
+			if (parent == null)
+				return "Callers of " + astNode.getToken();
 			return astNode.getToken();
 		}
-		return ruleNode.getToken();
+		return "An error occurred";
 	}
 }

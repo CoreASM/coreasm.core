@@ -445,10 +445,12 @@ public class ASMDeclarationWatcher implements Observer {
 		return declarations;
 	}
 	
-	public static Declaration findDeclaration(String name, IFile file) {
-		for (Declaration declaration : getDeclarations(file, false)) {
-			if (name.equals(declaration.getName()))
-				return declaration;
+	public static Declaration findDeclaration(String name, IFile contextfile) {
+		for (IFile file : ASMIncludeWatcher.getInvolvedFiles(contextfile)) {
+			for (Declaration declaration : getDeclarations(file, false)) {
+				if (name.equals(declaration.getName()))
+					return declaration;
+			}
 		}
 		return null;
 	}
