@@ -138,7 +138,8 @@ implements Observer, IResourceChangeListener, IResourceDeltaVisitor
 		int size = 0;
 		while (size != involvedFiles.size()) {
 			size = involvedFiles.size();
-			collectIncludingFiles(file, file.getProject(), involvedFiles);
+			for (IFile involvedFile : new HashSet<IFile>(involvedFiles))
+				collectIncludingFiles(involvedFile, involvedFile.getProject(), involvedFiles);
 		}
 		for (IFile involvedFile : new HashSet<IFile>(involvedFiles))
 			collectIncludedFiles(involvedFile, true, involvedFiles);
