@@ -69,8 +69,7 @@ public class LaunchShortcut implements ILaunchShortcut {
 	}
 
 	private void launch(IFile file, String mode) {
-		String project = IPath.SEPARATOR + file.getProject().getName();
-		String spec = file.getFullPath().toString().replaceFirst(project, "").substring(1);
+		String project = file.getProject().getName();
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = launchManager.getLaunchConfigurationType("org.coreasm.eclipse.launchConfigurationType");
 		
@@ -98,8 +97,8 @@ public class LaunchShortcut implements ILaunchShortcut {
 		try {
 			ILaunchConfigurationWorkingCopy wCopy = type.newInstance(null, file.getName());
 			LaunchCommon.setDefaults(wCopy);
-			wCopy.setAttribute(ICoreASMConfigConstants.PROJECT, project);
-			wCopy.setAttribute(ICoreASMConfigConstants.SPEC, spec);
+			wCopy.setAttribute(ICoreASMConfigConstants.PROJECT, file.getProject().getName());
+			wCopy.setAttribute(ICoreASMConfigConstants.SPEC, file.getProjectRelativePath().toString());
 			wCopy.setMappedResources(new IResource[] { file });
 			ILaunchConfiguration configuration = wCopy.doSave();
 			DebugUITools.launch(configuration, mode);
