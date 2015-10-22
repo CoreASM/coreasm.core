@@ -14,7 +14,6 @@ import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.chooserule.PickExpNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
@@ -30,7 +29,6 @@ import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
-import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -349,23 +347,23 @@ public class ASMDeclarationWatcher implements Observer {
 			return declaration;
 		}
 	}
-	public static class RuleCall {
-		private final ASTNode ruleNode;
+	public static class Call {
+		private final ASTNode declarationNode;
 		private final ASTNode callerNode;
 		private final IFile file;
 		
-		public RuleCall(ASTNode ruleNode, ASTNode callerNode, IFile file) {
-			this.ruleNode = ruleNode;
+		public Call(ASTNode declarationNode, ASTNode callerNode, IFile file) {
+			this.declarationNode = declarationNode;
 			this.callerNode = callerNode;
 			this.file = file;
 		}
 		
-		public RuleCall(IFile file) {
+		public Call(IFile file) {
 			this(null, null, file);
 		}
 
-		public ASTNode getRuleNode() {
-			return ruleNode;
+		public ASTNode getDeclarationNode() {
+			return declarationNode;
 		}
 
 		public ASTNode getCallerNode() {
@@ -401,22 +399,22 @@ public class ASMDeclarationWatcher implements Observer {
 		}
 	}
 	
-	public static List<RuleCall> getRuleCallers(ASTNode ruleNode, IFile ruleFile) {
-		List<RuleCall> callers = new ArrayList<RuleCall>();
-		ASTNode node = ruleNode;
+	public static List<Call> getCallers(ASTNode referenceNode, IFile referenceFile) {
+		List<Call> callers = new ArrayList<Call>();
+		ASTNode node = referenceNode;
 		if (node != null) {
 			while (node.getFirst() != null)
 				node = node.getFirst();
 		}
-		String ruleName = node.getToken();
-		if (ruleName != null) {
-			if (ruleFile != null) {
-				IFile[] files = ASMIncludeWatcher.getInvolvedFiles(ruleFile);
+		String declarationName = node.getToken();
+		if (declarationName != null) {
+			if (referenceFile != null) {
+				IFile[] files = ASMIncludeWatcher.getInvolvedFiles(referenceFile);
 				LinkedList<ASTNode> fringe = new LinkedList<ASTNode>();
 				for (IFile file : files) {
 					ASMEditor editor = (ASMEditor)Utilities.getEditor(file);
 					if (editor == null) {
-						callers.add(new RuleCall(file));
+						callers.add(new Call(file));
 						continue;
 					}
 					ASMDocument document = (ASMDocument)editor.getDocumentProvider().getDocument(editor.getInput());
@@ -426,12 +424,10 @@ public class ASMDeclarationWatcher implements Observer {
 						while (!fringe.isEmpty()) {
 							node = fringe.removeFirst();
 							if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode) {
-								if (node.getParent() instanceof MacroCallRuleNode || node.getParent() instanceof ReturnResultNode) {
-									FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
-									if (frNode.hasName()) {
-										if (ruleName.equals(frNode.getName()))
-											callers.add(new RuleCall(ASMDocument.getSurroundingDeclaration(frNode), frNode.getParent(), document.getNodeFile(frNode)));
-									}
+								FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
+								if (frNode.hasName()) {
+									if (declarationName.equals(frNode.getName()))
+										callers.add(new Call(ASMDocument.getSurroundingDeclaration(frNode), frNode.getParent(), document.getNodeFile(frNode)));
 								}
 							}
 							fringe.addAll(node.getAbstractChildNodes());

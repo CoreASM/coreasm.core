@@ -24,11 +24,10 @@ import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.Specification;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.kernel.MacroCallRuleNode;
 import org.coreasm.engine.parser.CharacterPosition;
 import org.coreasm.engine.parser.Parser;
-import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.coreasm.util.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -169,7 +168,7 @@ implements IDocumentListener
 			@Override
 			public void run() {
 				ASTNode node = getSelectedIDnode();
-				if (node != null && node.getParent() != null && !(node.getParent().getParent() instanceof MacroCallRuleNode) && !(node.getParent().getParent() instanceof ReturnResultNode))
+				if (node != null && !(node.getParent() instanceof FunctionRuleTermNode))
 					node = null;
 				ITextSelection selection = (ITextSelection)currentSelection;
 				IDocumentProvider documentProvider = getDocumentProvider();

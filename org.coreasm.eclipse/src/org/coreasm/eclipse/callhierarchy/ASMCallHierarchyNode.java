@@ -5,10 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
-import org.coreasm.eclipse.editors.ASMDeclarationWatcher.RuleCall;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Call;
 import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
+import org.coreasm.engine.kernel.Kernel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -74,7 +75,12 @@ public class ASMCallHierarchyNode {
 	private static Image getImage(Node node) {
 		if (node == null)
 			return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/error.gif"), null));
-		return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/rule.gif"), null));
+		if (node instanceof ASTNode) {
+			ASTNode astNode = (ASTNode)node;
+			if (Kernel.GR_RULEDECLARATION.equals(astNode.getGrammarRule()))
+				return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/rule.gif"), null));
+		}
+		return IconManager.getIcon(FileLocator.find(FrameworkUtil.getBundle(ASMCallHierarchyNode.class), new Path("/icons/editor/sign.gif"), null));
 	}
 	
 	private List<ASMCallHierarchyNode> getChildren(Node node, IFile file) {
@@ -85,8 +91,8 @@ public class ASMCallHierarchyNode {
 	
 	private List<ASMCallHierarchyNode> getChildren(ASTNode node, IFile file) {
 		ArrayList<ASMCallHierarchyNode> children = new ArrayList<ASMCallHierarchyNode>();
-		for (RuleCall caller : ASMDeclarationWatcher.getRuleCallers(node, file)) {
-			ASMCallHierarchyNode child = new ASMCallHierarchyNode(caller.getRuleNode(), caller.getCallerNode(), caller.getFile());
+		for (Call caller : ASMDeclarationWatcher.getCallers(node, file)) {
+			ASMCallHierarchyNode child = new ASMCallHierarchyNode(caller.getDeclarationNode(), caller.getCallerNode(), caller.getFile());
 			child.parent = this;
 			children.add(child);
 		}
