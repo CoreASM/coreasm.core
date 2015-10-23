@@ -1,0 +1,22 @@
+CoreASM Foreach1
+
+use Standard
+use Math
+use ForeachRule
+
+init Foreach1
+
+/*
+ * @minsteps 2
+ * @maxsteps 2
+ *
+ * @require "[0, 2, 4, 6, 8]\n[0, 2, 4, 6, 8, 0, 2, 4, 6, 8]\n"
+ */
+function evenList : -> LIST initially []
+
+rule Foreach1 =
+	seq
+		foreach a in [0,1,2,3,4,5,6,7,8,9] with isEvenNumber(a) do
+			evenList := evenList + [a]
+	next
+		print evenList
