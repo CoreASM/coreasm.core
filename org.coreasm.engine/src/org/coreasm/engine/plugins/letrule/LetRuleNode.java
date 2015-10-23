@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
+import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
 
 /** 
  *	CondtionalRuleNode is a NodeWrapper for conditional (ifThen) nodes.
@@ -48,6 +49,10 @@ public class LetRuleNode extends ASTNode {
 
     public LetRuleNode(LetRuleNode node) {
     	super(node);
+    }
+    
+    public boolean isLetResultRule() {
+    	return TurboASMPlugin.RETURN_RESULT_TOKEN.equals(getFirst().getNextCSTNode().getToken());
     }
 
     /**

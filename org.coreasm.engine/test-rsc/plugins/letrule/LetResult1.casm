@@ -1,0 +1,21 @@
+CoreASM LetResult1
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 3
+ * @maxsteps 3
+ *
+ * @require "7\n8\n9\n"
+ */
+
+function b : -> NUMBER initially 5
+
+rule Start = let a <- Rule in print a + b
+
+rule Rule = par
+	result := 2
+	b := b + 1
+endpar

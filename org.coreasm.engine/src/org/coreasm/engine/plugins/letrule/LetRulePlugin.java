@@ -26,7 +26,14 @@ import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.letrule.CompilerLetRulePlugin;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.absstorage.AbstractStorage;
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.InvalidLocationException;
+import org.coreasm.engine.absstorage.RuleElement;
+import org.coreasm.engine.absstorage.Update;
+import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.KernelServices;
@@ -35,6 +42,7 @@ import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
+import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
 
 /** 
  *	Plugin for let rule
@@ -75,7 +83,8 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
         if (pos instanceof LetRuleNode) {
            LetRuleNode letNode = (LetRuleNode) (pos);
            Map<String, ASTNode> variableMap = null;
-            
+           AbstractStorage storage = capi.getStorage();
+
            try {
                variableMap = letNode.getVariableMap();
            } 
@@ -83,12 +92,55 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                capi.error(e.getMessage(), pos, interpreter);
                return pos;
            }
-                           
+           
            // evaluate all the terms that will be aliased
-           for (ASTNode n :variableMap.values()) {
-               if (!n.isEvaluated()) {
-                   return n;
+           if (!letNode.isLetResultRule()) {
+        	   for (ASTNode n :variableMap.values()) {
+                   if (!n.isEvaluated())
+                       return n;
                }
+           }
+           else {
+	           for (ASTNode n :variableMap.values()) {
+	               if (!n.isEvaluated()) {
+            		   ASTNode loc = (ASTNode)n.cloneTree();
+            		   loc.getFirst().setToken("-");
+            		   FunctionRuleTermNode rule = (FunctionRuleTermNode)n;
+
+            		   // If the rule part is of the form 'x' or 'x(...)'
+            		   if (rule.hasName() && storage.isRuleName(rule.getName())) {
+            			   String x = rule.getName();
+            			   // If the rule part is of the form 'x' with no arguments
+            			   if (!rule.hasArguments())
+            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), null, loc, pos);
+            			   else // if the rule part 'x(...)' (with arguments)
+            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), rule.getArguments(), loc, pos);
+            			   if (!pos.isEvaluated())
+            				   return pos;
+            			   Set<Update> aggregatedUpdate = storage.performAggregation(pos.getUpdates());
+            			   pos.setNode(null, null, null);
+    	    			   if (storage.isConsistent(aggregatedUpdate)) {
+    	    				   UpdateMultiset newUpdates = new UpdateMultiset();
+    	    				   storage.pushState();
+    	    				   storage.apply(aggregatedUpdate);
+    	    				   Element value = null;
+    	    				   for (Update u: aggregatedUpdate) {
+    	    					   if ("-".equals(u.loc.name)) {
+    	    						   try {
+    	    							   value = storage.getValue(u.loc);
+    	    						   } catch (InvalidLocationException e) {
+    	    						   }
+    	    					   }
+    	    					   else
+    	    						   newUpdates.add(u);
+    	    				   }
+    	    				   storage.popState();
+    	    				   n.setNode(n.getLocation(), newUpdates, value);
+    	    				   return letNode;
+    	    			   }
+            		   }
+            	   }
+	           }
            }
            
            if (!letNode.getInRule().isEvaluated()) {
@@ -101,13 +153,15 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                return letNode.getInRule();
            }
            else {
+        	   UpdateMultiset updates = letNode.getInRule().getUpdates();
                // remove the aliased variables from the environment
                for (String v: variableMap.keySet()) {
+            	   updates.addAll(variableMap.get(v).getUpdates());
                    interpreter.removeEnv(v);
                }
                
                // get the updates
-               pos.setNode(null,letNode.getInRule().getUpdates(),null);
+               pos.setNode(null,updates,null);
                return pos;
                
            }
@@ -160,11 +214,50 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 					new GrammarRule("LetRule", 
 							"'let' ID '=' Term (',' ID '=' Term )* 'in' Rule", 
 							letRuleParser, PLUGIN_NAME));
+			
+			Parser<Object[]> letResultTermParser = pTools.csplus(pTools.seq(
+					idParser,
+					pTools.getOprParser(TurboASMPlugin.RETURN_RESULT_TOKEN),
+					termParser
+					));
+
+			Parser<Node> letResultRuleParser = Parsers.array(
+					new Parser[] {
+					pTools.getKeywParser("let", PLUGIN_NAME),
+					Parsers.or(	pTools.seq(pTools.getOprParser("{"), letResultTermParser, pTools.getOprParser("}")),
+								pTools.seq(pTools.getOprParser("["), letResultTermParser, pTools.getOprParser("]")),
+								letResultTermParser),
+					pTools.getKeywParser("in", PLUGIN_NAME),
+					ruleParser
+					}).map(
+					new LetRuleParseMap());
+			parsers.put("Rule",	
+					new GrammarRule("LetResultRule", 
+							"'let' ID '<-' Term (',' ID '<-' Term )* 'in' Rule", 
+							letResultRuleParser, PLUGIN_NAME));
     	}
     	
     	return parsers;
     }
     
+    /**
+	 * Handles a call to a rule that has <b>result</b>.
+	 * 
+	 * @param name rule name
+	 * @param args arguments
+	 * @param pos current node being interpreted
+	 */
+	private ASTNode ruleCallWithResult(Interpreter interpreter, RuleElement rule, List<ASTNode> args, ASTNode loc, ASTNode pos) {
+		
+		List<String> exParams = new ArrayList<String>(rule.getParam());
+		List<ASTNode> exArgs = new ArrayList<ASTNode>();
+		if (args != null)
+			exArgs.addAll(args);
+		exArgs.add(loc);
+		exParams.add(TurboASMPlugin.RESULT_KEYWORD);
+		
+		return interpreter.ruleCall(rule, exParams, exArgs, pos);
+	}
     
     /* (non-Javadoc)
      * @see org.coreasm.engine.Plugin#initialize()
@@ -239,7 +332,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 				parent.addChild(nextChildName, child);
 			} else {
 				parent.addChild(child);
-				if (child.getToken().equals("="))				// Term
+				if (child.getToken().equals("=") || child.getToken().equals(TurboASMPlugin.RETURN_RESULT_TOKEN))				// Term
 					nextChildName = "beta";
 				else
 					if (child.getToken().equals(","))			// ID
