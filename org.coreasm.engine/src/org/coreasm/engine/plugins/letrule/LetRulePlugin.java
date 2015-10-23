@@ -210,8 +210,8 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 			Parser<Node> letRuleParser = Parsers.array(
 					new Parser[] {
 					pTools.getKeywParser("let", PLUGIN_NAME),
-					Parsers.or(	pTools.seq(pTools.getOprParser("{"), letTermParser, pTools.getOprParser("}")),
-								pTools.seq(pTools.getOprParser("["), letTermParser, pTools.getOprParser("]")),
+					Parsers.or(	pTools.seq(pTools.getOprParser("{"), Parsers.or(letTermParser, letResultTermParser), pTools.getOprParser("}")),
+								pTools.seq(pTools.getOprParser("["), Parsers.or(letTermParser, letResultTermParser), pTools.getOprParser("]")),
 								Parsers.or(letTermParser, letResultTermParser)),
 					pTools.getKeywParser("in", PLUGIN_NAME),
 					ruleParser
