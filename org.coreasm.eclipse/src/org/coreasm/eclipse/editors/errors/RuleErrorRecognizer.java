@@ -22,6 +22,7 @@ import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.MacroCallRuleNode;
+import org.coreasm.engine.plugins.letrule.LetRuleNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
 import org.coreasm.engine.plugins.turboasm.ReturnResultNode;
 import org.eclipse.jface.text.BadLocationException;
@@ -114,7 +115,7 @@ implements ITreeErrorRecognizer
 									errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a rule name", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_RULE_NAME));
 							}
 						}
-						else if (node instanceof FunctionRuleTermNode && !(node.getParent() instanceof MacroCallRuleNode) && !(node.getParent() instanceof ReturnResultNode)) {
+						else if (node instanceof FunctionRuleTermNode && !(node.getParent() instanceof MacroCallRuleNode) && !(node.getParent() instanceof ReturnResultNode) && !(!(node.getParent() instanceof LetRuleNode) || ((LetRuleNode)node.getParent()).isLetResultRule())) {
 							FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 							if (frNode.hasName() && frNode.hasArguments() && ruleDeclarations.containsKey(frNode.getName()))
 								errors.add(new SimpleError(null, "'" + frNode.getName() + "' is not a derived function", frNode, document, frNode.getName().length(), CLASSNAME, NOT_A_DERIVED_FUNCTION));

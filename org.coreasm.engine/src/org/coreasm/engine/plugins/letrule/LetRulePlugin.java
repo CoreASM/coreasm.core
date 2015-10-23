@@ -190,6 +190,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 
 			Parser<Node> ruleParser = kernel.getRuleParser();
 			Parser<Node> termParser = kernel.getTermParser();
+			Parser<Node> funcRuleTermParser = kernel.getFunctionRuleTermParser();
 
 			ParserTools pTools = ParserTools.getInstance(capi);
 			Parser<Node> idParser = pTools.getIdParser();
@@ -199,42 +200,28 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 					pTools.getOprParser("="),
 					termParser
 					));
+			
+			Parser<Object[]> letResultTermParser = pTools.csplus(pTools.seq(
+					idParser,
+					pTools.getOprParser(TurboASMPlugin.RETURN_RESULT_TOKEN),
+					funcRuleTermParser
+					));
 
 			Parser<Node> letRuleParser = Parsers.array(
 					new Parser[] {
 					pTools.getKeywParser("let", PLUGIN_NAME),
 					Parsers.or(	pTools.seq(pTools.getOprParser("{"), letTermParser, pTools.getOprParser("}")),
 								pTools.seq(pTools.getOprParser("["), letTermParser, pTools.getOprParser("]")),
-								letTermParser),
+								Parsers.or(letTermParser, letResultTermParser)),
 					pTools.getKeywParser("in", PLUGIN_NAME),
 					ruleParser
 					}).map(
 					new LetRuleParseMap());
+			
 			parsers.put("Rule",	
 					new GrammarRule("LetRule", 
-							"'let' ID '=' Term (',' ID '=' Term )* 'in' Rule", 
+							"'let' ID ('=' | '<-') Term (',' ID '<-' Term )* 'in' Rule", 
 							letRuleParser, PLUGIN_NAME));
-			
-			Parser<Object[]> letResultTermParser = pTools.csplus(pTools.seq(
-					idParser,
-					pTools.getOprParser(TurboASMPlugin.RETURN_RESULT_TOKEN),
-					termParser
-					));
-
-			Parser<Node> letResultRuleParser = Parsers.array(
-					new Parser[] {
-					pTools.getKeywParser("let", PLUGIN_NAME),
-					Parsers.or(	pTools.seq(pTools.getOprParser("{"), letResultTermParser, pTools.getOprParser("}")),
-								pTools.seq(pTools.getOprParser("["), letResultTermParser, pTools.getOprParser("]")),
-								letResultTermParser),
-					pTools.getKeywParser("in", PLUGIN_NAME),
-					ruleParser
-					}).map(
-					new LetRuleParseMap());
-			parsers.put("Rule",	
-					new GrammarRule("LetResultRule", 
-							"'let' ID '<-' Term (',' ID '<-' Term )* 'in' Rule", 
-							letResultRuleParser, PLUGIN_NAME));
     	}
     	
     	return parsers;
