@@ -26,7 +26,6 @@ import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineModeEvent;
-import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -64,7 +63,7 @@ import org.eclipse.swt.widgets.Display;
  * @author Michael Stegmaier
  *
  */
-public class EngineDebugger extends EngineDriver implements EngineModeObserver, InterpreterListener {
+public class EngineDebugger extends EngineDriver implements InterpreterListener {
 	
 	private ControlAPI capi = (ControlAPI)engine;
 	private WatchExpressionAPI wapi = new WatchExpressionAPI(capi);

@@ -40,6 +40,7 @@ import org.coreasm.engine.EngineErrorEvent;
 import org.coreasm.engine.EngineErrorObserver;
 import org.coreasm.engine.EngineEvent;
 import org.coreasm.engine.EngineModeEvent;
+import org.coreasm.engine.EngineModeObserver;
 import org.coreasm.engine.EngineStepObserver;
 import org.coreasm.engine.EngineWarningEvent;
 import org.coreasm.engine.EngineWarningObserver;
@@ -64,7 +65,7 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 
 
-public class EngineDriver implements Runnable, EngineStepObserver, EngineErrorObserver, EngineWarningObserver {
+public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObserver, EngineErrorObserver, EngineWarningObserver {
 
 	private static EngineDriver syntaxInstance=null;
 	protected static EngineDriver runningInstance=null;
