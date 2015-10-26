@@ -25,6 +25,7 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.letrule.CompilerLetRulePlugin;
+import org.coreasm.engine.EngineError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
@@ -144,26 +145,40 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
            }
            
            if (!letNode.getInRule().isEvaluated()) {
-               // add the aliased variables to the environment
+        	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
+            	   updates.addAll(variableMap.get(v).getUpdates());
                    interpreter.addEnv(v,variableMap.get(v).getValue());
                }
                
-               // evaluate the rule
-               return letNode.getInRule();
+               Set<Update> aggregatedUpdate = null;
+               try {
+            	   aggregatedUpdate = storage.performAggregation(updates);
+            	   if (storage.isConsistent(aggregatedUpdate)) {
+            		   storage.pushState();
+            		   storage.apply(aggregatedUpdate);
+            		   return letNode.getInRule();
+            	   }
+            	   else
+            		   throw new EngineError();
+               } catch (EngineError e) {
+            	   capi.warning(PLUGIN_NAME, "TurboASM Plugin: Inconsistent updates computed in sequence. Leaving the sequence", letNode.getInRule(), interpreter);
+            	   pos.setNode(null, updates, null);
+               }
+               
+               return pos;
            }
            else {
-        	   UpdateMultiset updates = letNode.getInRule().getUpdates();
-               // remove the aliased variables from the environment
+        	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
             	   updates.addAll(variableMap.get(v).getUpdates());
                    interpreter.removeEnv(v);
                }
                
-               // get the updates
-               pos.setNode(null,updates,null);
+               UpdateMultiset composed = storage.compose(updates, letNode.getInRule().getUpdates());
+               storage.popState();
+               pos.setNode(null,composed,null);
                return pos;
-               
            }
         }
         
