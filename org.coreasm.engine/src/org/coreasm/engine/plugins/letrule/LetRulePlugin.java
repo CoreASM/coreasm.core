@@ -29,7 +29,6 @@ import org.coreasm.engine.EngineError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.InvalidLocationException;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.absstorage.UpdateMultiset;
@@ -118,27 +117,17 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
             				   pos = ruleCallWithResult(interpreter, storage.getRule(x), rule.getArguments(), loc, pos);
             			   if (!pos.isEvaluated())
             				   return pos;
-            			   Set<Update> aggregatedUpdate = storage.performAggregation(pos.getUpdates());
-            			   pos.setNode(null, null, null);
-    	    			   if (storage.isConsistent(aggregatedUpdate)) {
-    	    				   UpdateMultiset newUpdates = new UpdateMultiset();
-    	    				   storage.pushState();
-    	    				   storage.apply(aggregatedUpdate);
-    	    				   Element value = null;
-    	    				   for (Update u: aggregatedUpdate) {
-    	    					   if ("-".equals(u.loc.name)) {
-    	    						   try {
-    	    							   value = storage.getValue(u.loc);
-    	    						   } catch (InvalidLocationException e) {
-    	    						   }
-    	    					   }
-    	    					   else
-    	    						   newUpdates.add(u);
-    	    				   }
-    	    				   storage.popState();
-    	    				   n.setNode(n.getLocation(), newUpdates, value);
-    	    				   return letNode;
-    	    			   }
+	    				   UpdateMultiset newUpdates = new UpdateMultiset();
+	    				   Element value = null;
+	    				   for (Update u: pos.getUpdates()) {
+	    					   if ("-".equals(u.loc.name))
+    							   value = u.value;
+	    					   else
+	    						   newUpdates.add(u);
+	    				   }
+	    				   pos.setNode(null, null, null);	// The updates got stored into pos by ruleCallWithResult but they should be stored in n instead
+	    				   n.setNode(n.getLocation(), newUpdates, value);
+	    				   return letNode;
             		   }
             	   }
 	           }
@@ -147,13 +136,12 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
            if (!letNode.getInRule().isEvaluated()) {
         	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
-            	   updates.addAll(variableMap.get(v).getUpdates());
+            	   updates = storage.compose(updates, variableMap.get(v).getUpdates());
                    interpreter.addEnv(v,variableMap.get(v).getValue());
                }
                
-               Set<Update> aggregatedUpdate = null;
                try {
-            	   aggregatedUpdate = storage.performAggregation(updates);
+            	   Set<Update> aggregatedUpdate = storage.performAggregation(updates);
             	   if (storage.isConsistent(aggregatedUpdate)) {
             		   storage.pushState();
             		   storage.apply(aggregatedUpdate);
@@ -169,13 +157,13 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                return pos;
            }
            else {
-        	   UpdateMultiset updates = new UpdateMultiset();
+        	   UpdateMultiset composed = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
-            	   updates.addAll(variableMap.get(v).getUpdates());
+            	   composed = storage.compose(composed, variableMap.get(v).getUpdates());
                    interpreter.removeEnv(v);
                }
                
-               UpdateMultiset composed = storage.compose(updates, letNode.getInRule().getUpdates());
+               composed = storage.compose(composed, letNode.getInRule().getUpdates());
                storage.popState();
                pos.setNode(null,composed,null);
                return pos;
