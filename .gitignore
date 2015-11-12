@@ -1,6 +1,7 @@
 /*/bin/
 /*/target/
 /*/report/
+.metadata
 .DS_Store
 *.class
 *.iml
