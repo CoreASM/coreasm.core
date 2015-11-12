@@ -491,6 +491,8 @@ implements IDocumentListener
 	}
 	
 	public static void createRuntimeErrorMark(CoreASMError error, ControlAPI capi) {
+		if (error.getSpec() == null)
+			error.setContext(capi.getParser(), capi.getSpec());
 		IEditorPart editor = Utilities.getEditor(getIssueFileName(error, capi));
 		if (editor instanceof ASMEditor) {
 			ASMEditor asmEditor = (ASMEditor)editor;
@@ -501,17 +503,19 @@ implements IDocumentListener
 	
 	private static String getIssueFileName(CoreASMIssue issue, ControlAPI capi) {
 		CharacterPosition charPos = issue.pos;
+		Specification spec = issue.getSpec();
 		if (capi != null) {
+			if (spec == null)
+				spec = capi.getSpec();
 			Parser parser = capi.getParser();
 			Node node = issue.node;
-			Specification spec = capi.getSpec();
 			if (charPos == null && node != null && node.getScannerInfo() != null)
 				charPos = node.getScannerInfo().getPos(parser.getPositionMap());
-			if (spec != null) {
-				if (charPos != null)
-					return spec.getLine(charPos.line).fileName;
-				return spec.getAbsolutePath();
-			}
+		}
+		if (spec != null) {
+			if (charPos != null)
+				return spec.getLine(charPos.line).fileName;
+			return spec.getAbsolutePath();
 		}
 		return null;
 	}

@@ -558,9 +558,12 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 			if (((EngineModeEvent)event).getNewMode() == EngineMode.emStepFailed) {
 				ControlAPI capi = (ControlAPI) engine;
 				for (Update update : capi.getStorage().getLastInconsistentUpdate()) {
-					for (ScannerInfo scannerInfo : update.sources)
-						showErrorInEclipse(new CoreASMError("Inconsistent Update: " + update, scannerInfo.getPos(capi
-								.getParser().getPositionMap())));
+					for (ScannerInfo scannerInfo : update.sources) {
+						CoreASMError error = new CoreASMError("Inconsistent Update: " + update, scannerInfo.getPos(capi
+								.getParser().getPositionMap()));
+						error.setContext(capi.getParser(), capi.getSpec());
+						showErrorInEclipse(error);
+					}
 				}
 			}
 		}
