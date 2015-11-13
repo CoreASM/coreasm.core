@@ -38,7 +38,7 @@ public class OutputFunctionElement extends FunctionElement {
 		setFClass(FunctionClass.fcOut);
 		outputValues = new StringElement("");
 		locations = new HashSet<Location>();
-		locations.add(IOPlugin.OUTPUT_FUNC_LOC);
+		locations.add(IOPlugin.PRINT_OUTPUT_FUNC_LOC);
 	}
 
 	/* (non-Javadoc)

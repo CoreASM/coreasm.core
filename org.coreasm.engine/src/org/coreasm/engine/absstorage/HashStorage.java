@@ -222,8 +222,7 @@ public class HashStorage implements AbstractStorage {
 
 		//TODO this should be done in a transactional fashion
 		for (Update u: updateSet) {
-			if (u.action.equals(Update.UPDATE_ACTION)) 
-				state.setValue(u.loc, u.value);
+			state.setValue(u.loc, u.value);
 		}
 		monitoredCache.clear();
 	}
@@ -404,21 +403,10 @@ public class HashStorage implements AbstractStorage {
 	}
 	
 	public synchronized boolean isConsistent(Collection<Update> updateSet) {
-		boolean isRegularUpdateSet = true;
 		Collection<Update> uSet = updateSet;
 		lastInconsistentUpdates = null;
-		
-		for (Update u: uSet) 
-			if (!u.action.equals(Update.UPDATE_ACTION))
-				isRegularUpdateSet = false;
-		if (!isRegularUpdateSet) {
-			if (uSet instanceof UpdateMultiset) {
-				uSet = performAggregation((UpdateMultiset)uSet);
-				logger.debug("Consistency check is performing aggregation.");
-			} else
-				throw new EngineError("Consistency check expects an update multiset.");
-		}                
-        HashMap<Location,Update> updateMap = new HashMap<Location,Update>();
+
+		HashMap<Location, Update> updateMap = new HashMap<Location, Update>();
 		for (Update u: uSet) {
 			if (updateMap.containsKey(u.loc)) {
 				lastInconsistentUpdates = new HashSet<Update>();

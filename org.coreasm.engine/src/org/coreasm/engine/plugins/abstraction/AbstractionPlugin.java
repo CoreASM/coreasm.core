@@ -167,7 +167,7 @@ public class AbstractionPlugin extends Plugin
 					null, 
 					new UpdateMultiset(
 							new Update(
-									IOPlugin.OUTPUT_FUNC_LOC,
+									IOPlugin.PRINT_OUTPUT_FUNC_LOC,
 									new StringElement("Abstract Call: " + pos.getMessage().getValue().toString()),
 									IOPlugin.PRINT_ACTION,
 									interpreter.getSelf(),
