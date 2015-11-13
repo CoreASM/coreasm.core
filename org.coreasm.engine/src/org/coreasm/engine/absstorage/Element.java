@@ -112,6 +112,8 @@ import org.coreasm.engine.ControlAPI;
  	 * of <code>Element</code>
  	 */
  	public boolean equals(Object anElement) {
+		if (anElement == null)
+			return false;
  		if (anElement instanceof Element)
  			return (((Element)anElement).id == this.id);
  		else
