@@ -17,12 +17,12 @@
 
 \documentclass{article}
 
-%\DeclareFontShape{OT1}{cmtt}{bx}{n}{
-%  <5><6><7><8><9><10><10.95><12><14.4><17.28><20.74><24.88>cmttb10}{}
-
-
 \newcommand{\version}{1.6.5-beta}
 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{csquotes}
 \usepackage{fixme}
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -45,16 +45,9 @@
 \setlength{\textwidth}{5.8in}
 \addtolength{\parskip}{0.07in}
 
-\makeindex
-
 \pagestyle{fancy}
 \lhead{{\small \leftmark}}
 \rhead{{\small \CoreASM\ {\scshape Language User Manual}}}
-% You need to turn the 'twoside' option on, 
-% before uncommenting the following lines.
-%\fancyhead{}
-%\fancyhead[LO,RE]{{\small \leftmark}}
-%\fancyhead[RO,LE]{{\small \CoreASM Execution Engine}}
 
 % ----------------- Commands
 \newcommand{\CoreASM}{{\sffamily CoreASM}\xspace}
@@ -83,6 +76,8 @@
 
 %asm listing configuration
 \input{lst-asm-conf.tex}
+
+\makeindex
 
 \begin{document}
 % ----------------- Title and Abstract
@@ -1212,8 +1207,7 @@ but the update to \asm{foo(5, 7)} will be discarded afterwards.
 			/i/@\vspace{-1.2em}@/ next i/
 				newValue := foo(5, 7)
 \end{lstlisting}\fxnote{why is there a single seq? Does it really work?}
-
-
+\vspace{-1em}
 % -------------------------------- STRING
 \subsection{String Background}
 \label{string}
@@ -1225,7 +1219,7 @@ use String
 \end{lstlisting}
 
 \noindent This plugin provides the string background (\asm{String})\index{String background} and
-a small set of functions and expression forms. 
+few functions and expression forms. 
 
 \opform{
 	\asm{value$_1$ + value$_2$}
@@ -1239,6 +1233,7 @@ With this operator, one can simply put values together to create a customized me
 \begin{lstlisting}
 print "The amount of /@\asmstring\$@/" + amount + " is deposited to your account."
 \end{lstlisting}
+\vspace{-1em}
 
 \AsmDerivedFunction{toString}
 \funcform{
@@ -1274,7 +1269,10 @@ The IO plugin\index{IO plugin} can be loaded by the following \asm{use} phrase:
 use IO
 \end{lstlisting}
 
-\noindent This plugin provides the following rule form and function:
+\noindent This plugin provides the following rule form and function which enable user input and output as well as file input and output:
+
+\paragraph{Remark}
+\textit{All values that describe file destinations are terms from the String background. A file destination can be either described relatively to the executed specification, i.\,e. the main specification that is executed by CoreASM (not necessary the module which contains the print-to-file construct), e.\,g. \asm{"./"}, or the file destination is described relatively to the systems root folder, e.\,g. \asm{"c:\"} or \asm{"/"} }
 
 \ruleform{
 	\asm{print value}
@@ -1282,6 +1280,20 @@ use IO
 \indexrule{print}
 
 Prints out \asm{value} to the environment. Depending on the environment (engine driver) this value can be printed on the standard output.
+
+\ruleform{
+	\asm{print value$_1$ to value$_2$}
+}{IO Plugin}
+\indexrule{print in file}
+
+Prints \asm{value$_1$} into a new file named \asm{value$_2$}, if consistent. If it does not exist, this file will be created. If it already exists it is overwritten without any further warning.  Instead of the keyword \asm{to}, maybe some linux users prefer the operator \texttt{\frq} (which can be used, too).
+
+\ruleform{
+	\asm{print value$_1$ into value$_2$}
+}{IO Plugin}
+\indexrule{print into file}
+
+Prints \asm{value$_1$} into an existing file named \asm{value$_2$}, if consistent. If the file already exists the value is appended to the existing content of the file. If it does not exist, this file will be created. The alternative operator \texttt{\frqq} can be used Instead of the keyword \asm{into}.
 
 \AsmDerivedFunction{input}
 \funcform{
@@ -1291,6 +1303,14 @@ Prints out \asm{value} to the environment. Depending on the environment (engine 
 
 \AsmVariable{arg}
 Reads a string value from the environment. Given a step and given an argument \asm{arg}, every evaluation of \asm{input(arg)} during this step will result in the same value. Please refer to Section~\ref{string} for an introduction to the String Plugin. 
+
+\AsmDerivedFunction{read}
+\funcform{
+\asm{read : String -> List}
+}{IO Plugin}
+\index{read function@\asm{read} function}
+
+The derived function \asm{read(value)} returns the content from the given filename as List of elements from the String Background. The returned list contains the lines from the source file in ascending order.
 
 The machine specified in \hyperref[spec:sayshello]{CoreASM-Says-Hello example with IO extension} is an extension of our \hyperref[spec:thisiscoreasm]{CoreASM-Says-Hello example} that reads a name from the environment and prints out a greeting to that name:
 
@@ -1320,7 +1340,6 @@ init InitRule
 		program(self) := undef
 \end{lstlisting}
 \end{tcolorbox}
-
 
 % -------------------------------- COLLECTION
 \subsection{Collection}
@@ -1632,7 +1651,7 @@ Returns the n$^{th}$ element of the list. The index of the first element is 1.
 
 \AsmDerivedFunction{setnth}
 \funcform{
-	\asm{setnth: List times Number times Element-> List}
+	\asm{setnth: List times Number times Element -> List}
 }{List Plugin}
 \indexfunc{setnth}
 

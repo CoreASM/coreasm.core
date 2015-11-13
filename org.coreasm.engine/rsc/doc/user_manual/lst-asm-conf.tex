@@ -112,6 +112,10 @@
     {<-}{{$\leftarrow$}}1
     {->}{{$\rightarrow$}}1
     {times}{{$\times$}}1
+    {<<}{{\texttt{\flqq}}}1
+    {<}{{\texttt{\flq}}}1
+    {>>}{{\texttt{\frqq}}}1
+    {>}{{\texttt{\frq}}}1
     %{memberof}{{$\in$}}1
     ,
 	 commentstyle=\asmlstcommentstyle,
@@ -164,7 +168,7 @@
 	 },
 	 keywordstyle=[8]{\asmlstconstant}, %CONSTATNTS VALUES / ENUM VALUES lower camel cased
 	 morekeywords=[8]{
-	 id, loc, value, guard, function, bin-op, expression
+	 id, loc, value, guard, function, bin-op, expression, filename
 	 }
 }
 \newcommand{\AsmKeyword}[1]{\lstset{morekeywords=[1]{#1}}}
