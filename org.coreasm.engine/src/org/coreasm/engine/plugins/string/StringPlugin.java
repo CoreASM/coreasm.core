@@ -202,6 +202,8 @@ public class StringPlugin extends Plugin
 					new StringLengthFunctionElement());
 			funcs.put(StringMatchingFunction.STRING_MATCHES_FUNCTION_NAME, 
 					new StringMatchingFunction(capi));
+			funcs.put(StringSubstringFunction.STRING_SUBSTRING_FUNCTION_NAME,
+					new StringSubstringFunction());
 		}
 		return funcs;
 	}

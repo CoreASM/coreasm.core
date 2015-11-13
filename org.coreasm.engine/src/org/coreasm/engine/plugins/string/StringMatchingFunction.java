@@ -30,7 +30,7 @@ import org.coreasm.engine.absstorage.FunctionElement;
  */
 public class StringMatchingFunction extends FunctionElement {
 
-	public static String STRING_MATCHES_FUNCTION_NAME = "matches";
+	public final static String STRING_MATCHES_FUNCTION_NAME = "matches";
 	//needed for ErrorHandling
 	private ControlAPI capi;
 
