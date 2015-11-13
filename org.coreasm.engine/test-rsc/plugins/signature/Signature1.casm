@@ -22,11 +22,11 @@ init Start
  * @refuse "Eating a melon makes me realy happy\n"
  *
  * @require "Drinking this orangejuice is awesome.\n"
- * @require "I like orangejuice more, but this applejuice is stil cool.\n"
- * @require "I like orangejuice more, but this bananajuice is stil cool.\n"
+ * @require "I like orangejuice more, but this applejuice is still cool.\n"
+ * @require "I like orangejuice more, but this bananajuice is still cool.\n"
  * @require "Eating a mango makes me realy happy\n"
- * @require "Eating a melon makes me stil happy\n"
- * @require "Eating a strawberry makes me realy happy\n"
+ * @require "Eating a melon makes me still happy\n"
+ * @require "Eating a strawberry makes me really happy\n"
  */
 rule Start =
 	seqblock
@@ -49,12 +49,12 @@ rule Taste(fruit) =
 	endseqblock
 rule Feeling(fruit) =
 	seqblock
-		if(howYummyIsIt(fruit) = enormous) then happiness(fruit) := "realy happy"
-			else happiness(fruit) := "stil happy"
+		if(howYummyIsIt(fruit) = enormous) then happiness(fruit) := "really happy"
+			else happiness(fruit) := "still happy"
 		print "Eating a " + fruit + " makes me " + happiness(fruit)
 	endseqblock
 rule Drink(juicyFruit) =
 	seqblock
 		if(juicyFruit = orange) then print "Drinking this " + juicyFruit + "juice is awesome."
-			else print "I like orangejuice more, but this " + juicyFruit + "juice is stil cool."
+			else print "I like orangejuice more, but this " + juicyFruit + "juice is still cool."
 	endseqblock
