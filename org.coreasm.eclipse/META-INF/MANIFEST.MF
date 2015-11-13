@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.jdt.ui,
  org.eclipse.ui.navigator
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: ., target/lib/org.coreasm.engine.jar
 Import-Package: org.eclipse.ui.dialogs,
  org.eclipse.ui.texteditor.templates,
