@@ -17,8 +17,10 @@ package org.coreasm.engine.plugins.letrule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
@@ -63,6 +65,8 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 	
 	private final CompilerPlugin compilerPlugin = new CompilerLetRulePlugin(this);
 	
+	private ThreadLocal<Map<Node, Map<Node, LetResultChildNode>>> letResultChildNodes;
+	
 	@Override
 	public CompilerPlugin getCompilerPlugin(){
 		return compilerPlugin;
@@ -101,10 +105,13 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                }
            }
            else {
-	           for (ASTNode n :variableMap.values()) {
+	           for (Entry<String, ASTNode> entry :variableMap.entrySet()) {
+	        	   ASTNode n = entry.getValue();
 	               if (!n.isEvaluated()) {
             		   ASTNode loc = (ASTNode)n.cloneTree();
-            		   loc.getFirst().setToken("-");
+            		   loc.getFirst().setToken("-" + entry.getKey());
+            		   while (loc.getFirst().getNext() != null)	// Remove arguments from copy
+            			   loc.getFirst().getNext().removeFromTree();
             		   FunctionRuleTermNode rule = (FunctionRuleTermNode)n;
 
             		   // If the rule part is of the form 'x' or 'x(...)'
@@ -112,15 +119,15 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
             			   String x = rule.getName();
             			   // If the rule part is of the form 'x' with no arguments
             			   if (!rule.hasArguments())
-            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), null, loc, pos);
+            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), null, loc, getLetResultChildNodes(letNode, n));
             			   else // if the rule part 'x(...)' (with arguments)
-            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), rule.getArguments(), loc, pos);
+            				   pos = ruleCallWithResult(interpreter, storage.getRule(x), rule.getArguments(), loc, getLetResultChildNodes(letNode, n));
             			   if (!pos.isEvaluated())
             				   return pos;
 	    				   UpdateMultiset newUpdates = new UpdateMultiset();
 	    				   Element value = null;
 	    				   for (Update u: pos.getUpdates()) {
-	    					   if ("-".equals(u.loc.name))
+	    					   if (("-" + entry.getKey()).equals(u.loc.name))
     							   value = u.value;
 	    					   else
 	    						   newUpdates.add(u);
@@ -134,6 +141,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
            }
            
            if (!letNode.getInRule().isEvaluated()) {
+        	   clearLetResultChildNodes(letNode);
         	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
             	   updates = storage.compose(updates, variableMap.get(v).getUpdates());
@@ -169,10 +177,12 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                return pos;
            }
         }
+        if (pos instanceof LetResultChildNode)
+        	return pos.getParent();
         
         return pos;
     }
-
+    
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();
 	}
@@ -254,7 +264,35 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
      */
     @Override
     public void initialize() {
-        
+        letResultChildNodes = new ThreadLocal<Map<Node, Map<Node, LetResultChildNode>>>() {
+			@Override
+			protected Map<Node, Map<Node, LetResultChildNode>> initialValue() {
+				return new IdentityHashMap<Node, Map<Node, LetResultChildNode>>();
+			}
+		};
+    }
+    
+    private LetResultChildNode getLetResultChildNodes(LetRuleNode letNode, Node node) {
+    	Map<Node, Map<Node, LetResultChildNode>> allLetResultChildNodes = this.letResultChildNodes.get();
+    	Map<Node, LetResultChildNode> letResultChildNodes = allLetResultChildNodes.get(letNode);
+    	if (letResultChildNodes == null) {
+    		letResultChildNodes = new IdentityHashMap<Node, LetResultChildNode>();
+    		allLetResultChildNodes.put(letNode, letResultChildNodes);
+    	}
+    	LetResultChildNode letResultChildNode = letResultChildNodes.get(node);
+    	if (letResultChildNode == null) {
+    		letResultChildNode = new LetResultChildNode(letNode);
+    		letResultChildNodes.put(node, letResultChildNode);
+    	}
+    	return letResultChildNode;
+    }
+    
+    private void clearLetResultChildNodes(LetRuleNode letNode) {
+    	Map<Node, LetResultChildNode> letResultChildNodes = this.letResultChildNodes.get().get(letNode);
+    	if (letResultChildNodes != null) {
+    		letResultChildNodes.clear();
+    		this.letResultChildNodes.get().remove(letNode);
+    	}
     }
 
 	public VersionInfo getVersionInfo() {
