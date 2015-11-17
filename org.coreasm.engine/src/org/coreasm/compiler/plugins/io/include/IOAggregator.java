@@ -5,17 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.Location;
+import org.coreasm.engine.absstorage.Update;
 import org.coreasm.engine.plugins.string.StringElement;
 
 import CompilerRuntime.AggregationHelper;
 import CompilerRuntime.AggregationHelper.Flag;
-
-import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.Location;
-
 import CompilerRuntime.PluginCompositionAPI;
-import org.coreasm.engine.absstorage.Update;
-
 import CompilerRuntime.UpdateAggregator;
 
 /**
@@ -34,7 +31,7 @@ public class IOAggregator implements UpdateAggregator {
 			
 			// for all locations to aggregate
 			for (Location l : locsToAggregate) {
-				if (l.equals(IOPlugin.OUTPUT_FUNC_LOC)) {
+				if (l.equals(IOPlugin.PRINT_OUTPUT_FUNC_LOC)) {
 					String outputResult = "";
 					
 					// if regular update affects this location
@@ -52,7 +49,7 @@ public class IOAggregator implements UpdateAggregator {
 					}
 					pluginAgg.addResultantUpdate(
 							new Update(
-									IOPlugin.OUTPUT_FUNC_LOC, 
+									IOPlugin.PRINT_OUTPUT_FUNC_LOC, 
 									new	StringElement(outputResult),  
 									Update.UPDATE_ACTION,
 									new HashSet<Element>(contributingAgents), null
@@ -73,7 +70,7 @@ public class IOAggregator implements UpdateAggregator {
 			List<Element> contributingAgents = new ArrayList<Element>();
 			
 			// First, add all the updates in the second set
-			for (Update u: compAPI.getLocUpdates(2, IOPlugin.OUTPUT_FUNC_LOC)) {
+			for (Update u: compAPI.getLocUpdates(2, IOPlugin.PRINT_OUTPUT_FUNC_LOC)) {
 				if (u.action.equals(IOPlugin.PRINT_ACTION)) {
 					if (!outputResult2.isEmpty())
 						outputResult2 += '\n';
@@ -86,8 +83,8 @@ public class IOAggregator implements UpdateAggregator {
 			
 			// if the second set does not have a basic update, 
 			// add all the updates from the first set as well
-			if (!compAPI.isLocUpdatedWithActions(2, IOPlugin.OUTPUT_FUNC_LOC, Update.UPDATE_ACTION)) {
-				for (Update u: compAPI.getLocUpdates(1, IOPlugin.OUTPUT_FUNC_LOC)) {
+			if (!compAPI.isLocUpdatedWithActions(2, IOPlugin.PRINT_OUTPUT_FUNC_LOC, Update.UPDATE_ACTION)) {
+				for (Update u: compAPI.getLocUpdates(1, IOPlugin.PRINT_OUTPUT_FUNC_LOC)) {
 					if (u.action.equals(IOPlugin.PRINT_ACTION)) {
 						if (!outputResult1.isEmpty())
 							outputResult1 += '\n';
@@ -104,7 +101,7 @@ public class IOAggregator implements UpdateAggregator {
 					outputResult = outputResult2;
 				else if (!outputResult2.isEmpty())
 					outputResult = outputResult1 + '\n' + outputResult2;
-				compAPI.addComposedUpdate(new Update(IOPlugin.OUTPUT_FUNC_LOC, 
+				compAPI.addComposedUpdate(new Update(IOPlugin.PRINT_OUTPUT_FUNC_LOC, 
 						new StringElement(outputResult), 
 						IOPlugin.PRINT_ACTION, new HashSet<Element>(contributingAgents), null), "IOPlugin");
 			}

@@ -22,7 +22,7 @@ public class IOPlugin {
 	/**
 	 * The location for the output function
 	 */
-	public static final Location OUTPUT_FUNC_LOC = new Location(OUTPUT_FUNC_NAME, new ArrayList<Element>());
+	public static final Location PRINT_OUTPUT_FUNC_LOC = new Location(OUTPUT_FUNC_NAME, new ArrayList<Element>());
 	/**
 	 * The location for the input function
 	 */

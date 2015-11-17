@@ -26,7 +26,7 @@ public class AbstractionAbstractHandler implements CompilerCodeHandler {
 		result.appendFragment(engine.compile(node.getAbstractChildNodes().get(0), CodeType.R));
 		result.appendLine("@decl(String,msg)=evalStack.pop().toString();\n");
 		result.appendLine("@decl(@RuntimePkg@.UpdateList,ulist)=new @RuntimePkg@.UpdateList();\n");
-		result.appendLine("@ulist@.add(new @RuntimePkg@.Update(" + iopluginloc + ".OUTPUT_FUNC_LOC , new " + stringelement + "(\"Abstract Call: \" + @msg@), " + iopluginloc + ".PRINT_ACTION, this.getUpdateResponsible(), null));\n");
+		result.appendLine("@ulist@.add(new @RuntimePkg@.Update(" + iopluginloc + ".PRINT_OUTPUT_FUNC_LOC , new " + stringelement + "(\"Abstract Call: \" + @msg@), " + iopluginloc + ".PRINT_ACTION, this.getUpdateResponsible(), null));\n");
 		result.appendLine("evalStack.push(@ulist@);\n");
 	}
 
