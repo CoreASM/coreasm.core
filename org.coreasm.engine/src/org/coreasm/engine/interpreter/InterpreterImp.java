@@ -1117,7 +1117,7 @@ public class InterpreterImp implements Interpreter {
 			return null;
 		List<ASTNode> result = new ArrayList<ASTNode>();
 		for (ASTNode arg : args)
-			result.add(injectEnvVars(arg));
+			result.add(injectEnvVars((ASTNode)copyTree(arg)));
 		return result;
 	}
 	

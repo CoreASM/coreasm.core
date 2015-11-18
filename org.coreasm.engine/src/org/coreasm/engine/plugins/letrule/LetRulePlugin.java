@@ -110,8 +110,8 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 	               if (!n.isEvaluated()) {
             		   ASTNode loc = (ASTNode)n.cloneTree();
             		   loc.getFirst().setToken("-" + entry.getKey());
-            		   while (loc.getFirst().getNext() != null)	// Remove arguments from copy
-            			   loc.getFirst().getNext().removeFromTree();
+            		   while (loc.getFirst().getNextCSTNode() != null)	// Remove arguments from copy
+            			   loc.getFirst().getNextCSTNode().removeFromTree();
             		   FunctionRuleTermNode rule = (FunctionRuleTermNode)n;
 
             		   // If the rule part is of the form 'x' or 'x(...)'
