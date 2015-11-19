@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,6 +71,7 @@ public class Node implements Serializable {
 	
 	/** list of child nodes */
 	protected final ArrayList<NameNodeTuple> children;
+	private final IdentityHashMap<Node, NameNodeTuple> successor;
 	
 	/** link to parent node */
 	protected Node parent;
@@ -106,6 +108,7 @@ public class Node implements Serializable {
 		this.concreteType = concreteType;
 		this.id = nextId++;
 		this.children = new ArrayList<NameNodeTuple>();
+		this.successor = new IdentityHashMap<Node, NameNodeTuple>();
 	}
 
     /** 
@@ -154,7 +157,10 @@ public class Node implements Serializable {
 	 * @param node node
 	 */
 	public void addChild(String name, Node node) {
-		children.add(new NameNodeTuple(name, node));
+		NameNodeTuple newNode = new NameNodeTuple(name, node);
+		if (!children.isEmpty())
+			successor.put(children.get(children.size() - 1).node, newNode);
+		children.add(newNode);
 		node.setParent(this);
 	}
 	
@@ -170,15 +176,21 @@ public class Node implements Serializable {
 	 */
 	public void addChildAfter(Node indexNode, String name, Node node) 
 			throws IllegalArgumentException {
+		NameNodeTuple newNode = new NameNodeTuple(name, node);
 		if (indexNode == null) {
-			children.add(0, new NameNodeTuple(name, node));
+			if (!children.isEmpty())
+				successor.put(children.get(children.size() - 1).node, newNode);
+			children.add(0, newNode);
 			node.setParent(this);
 			return;
 		}
 		int index = 0;
 		for (NameNodeTuple nameNodeTuple : children) {
 			if (nameNodeTuple.node == indexNode) {
-				children.add(index + 1, new NameNodeTuple(name, node));
+				successor.put(children.get(index).node, newNode);
+				if (index + 1 < children.size())
+					successor.put(node, children.get(index + 1));
+				children.add(index + 1, newNode);
 				node.setParent(this);
 				return;
 			}
@@ -279,15 +291,9 @@ public class Node implements Serializable {
 	 * Returns <code>null</code> if this is the last child.
 	 */
 	public Node getNextCSTNode() {
-		if (this.getParent() == null)
+		if (getParent() == null || getParent().successor.get(this) == null)
 			return null;
-		Iterator<Node> it = this.getParent().getChildNodes().iterator();
-		while (it.hasNext()) {
-			Node current = it.next();
-			if (current == this && it.hasNext())
-				return it.next();
-		}
-		return null;
+		return getParent().successor.get(this).node;
 	}
 
 	/**
@@ -598,8 +604,12 @@ public class Node implements Serializable {
 		int index = 0;
 		for (NameNodeTuple nameNodeTuple : this.getParent().children) {
 			if (nameNodeTuple.node == this) {
+				NameNodeTuple newNode = new NameNodeTuple(nameNodeTuple.name, replacement);
+				if (index > 0)
+					getParent().successor.put(getParent().children.get(index - 1).node, newNode);
 				this.getParent().children.remove(index);
-				this.getParent().children.add(index, new NameNodeTuple(nameNodeTuple.name, replacement));
+				getParent().successor.put(replacement, getParent().successor.get(this));
+				this.getParent().children.add(index, newNode);
 				replacement.setParent(this.getParent());
 				this.setParent(null);
 				return;
@@ -610,7 +620,7 @@ public class Node implements Serializable {
 	}
 
 	public Node removeFromTree(){
-		Iterator<NameNodeTuple> it = parent.children.iterator();
+		Iterator<NameNodeTuple> it = getParent().children.iterator();
 		NameNodeTuple prev = null;
 		while (it.hasNext()) {
 			NameNodeTuple nameNodeTuple = it.next();
@@ -618,6 +628,7 @@ public class Node implements Serializable {
 				it.remove();
 				if (prev == null)
 					return null;
+				getParent().successor.put(prev.node, getParent().successor.get(nameNodeTuple.node));
 				return prev.node;
 			}
 			prev = nameNodeTuple;
