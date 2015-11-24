@@ -125,7 +125,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
             			   if (!pos.isEvaluated())
             				   return pos;
 	    				   UpdateMultiset newUpdates = new UpdateMultiset();
-	    				   Element value = null;
+	    				   Element value = Element.UNDEF;
 	    				   for (Update u: pos.getUpdates()) {
 	    					   if (("-" + entry.getKey()).equals(u.loc.name))
     							   value = u.value;
