@@ -19,12 +19,12 @@ init Start
  *
  * @refuse "Drinking this applejuice is awesome.\n"
  * @refuse "Drinking this bananajuice is awesome.\n
- * @refuse "Eating a melon makes me realy happy\n"
+ * @refuse "Eating a melon makes me really happy\n"
  *
  * @require "Drinking this orangejuice is awesome.\n"
  * @require "I like orangejuice more, but this applejuice is still cool.\n"
  * @require "I like orangejuice more, but this bananajuice is still cool.\n"
- * @require "Eating a mango makes me realy happy\n"
+ * @require "Eating a mango makes me really happy\n"
  * @require "Eating a melon makes me still happy\n"
  * @require "Eating a strawberry makes me really happy\n"
  */
