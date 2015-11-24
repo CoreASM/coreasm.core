@@ -475,6 +475,16 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 								}
 								
 							}
+							if (pos.isEvaluated()) {
+								String name = loc.getFirst().getToken();
+								if (name != null) {
+									for (Update update : pos.getUpdates()) {
+										if (name.equals(update.loc.name))
+											return pos;
+									}
+									capi.warning(PLUGIN_NAME, "result hasn't been set by the rule " + x + ".", rule, interpreter);
+								}
+							}
 						}
 	
 						

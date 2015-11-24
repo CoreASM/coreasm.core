@@ -125,12 +125,16 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
             			   if (!pos.isEvaluated())
             				   return pos;
 	    				   UpdateMultiset newUpdates = new UpdateMultiset();
-	    				   Element value = Element.UNDEF;
+	    				   Element value = null;
 	    				   for (Update u: pos.getUpdates()) {
 	    					   if (("-" + entry.getKey()).equals(u.loc.name))
     							   value = u.value;
 	    					   else
 	    						   newUpdates.add(u);
+	    				   }
+	    				   if (value == null) {
+	    					   value = Element.UNDEF;
+	    					   capi.warning(PLUGIN_NAME, "result hasn't been set by the rule " + x + ".", n, interpreter);
 	    				   }
 	    				   pos.setNode(null, null, null);	// The updates got stored into pos by ruleCallWithResult but they should be stored in n instead
 	    				   n.setNode(n.getLocation(), newUpdates, value);
