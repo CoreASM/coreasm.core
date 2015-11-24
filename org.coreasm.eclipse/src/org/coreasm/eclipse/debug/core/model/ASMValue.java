@@ -18,7 +18,7 @@ public class ASMValue extends ASMDebugElement implements IValue {
 	private IVariable[] variables;
 
 	public ASMValue(ASMStackFrame frame, Element value) {
-		this(frame, value.toString());
+		this(frame, (value == null ? "Invalid (null)" : value.toString()));
 		this.value = value;
 	}
 	
