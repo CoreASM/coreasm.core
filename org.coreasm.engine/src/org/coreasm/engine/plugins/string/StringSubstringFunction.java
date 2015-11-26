@@ -26,7 +26,7 @@ import org.coreasm.engine.plugins.number.NumberElement;
  */
 public class StringSubstringFunction extends FunctionElement {
 
-	public static final String STRING_SUBSTRING_FUNCTION_NAME = "stringSubstring";
+	public static final String STRING_SUBSTRING_FUNCTION_NAME = "substring";
    
     /**
      * Creates a new StringLengthFunction 
