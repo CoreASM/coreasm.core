@@ -78,6 +78,24 @@ public class ASMDeclarationWatcher implements Observer {
 				return new RuleDeclaration(declaration, file);
 			return null;
 		}
+		
+		public static Declaration from(ASTNode signature) {
+			return from(signature, null);
+		}
+		
+		public static Declaration from(ASTNode signature, String comment) {
+			if (signature instanceof EnumerationNode)
+				return new EnumerationDeclaration((EnumerationNode)signature, comment);
+			if (signature instanceof FunctionNode)
+				return new FunctionDeclaration((FunctionNode)signature, comment);
+			if (signature instanceof UniverseNode)
+				new UniverseDeclaration((UniverseNode)signature, comment);
+			if (signature instanceof DerivedFunctionNode)
+				return new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), comment);
+			if (Kernel.GR_RULEDECLARATION.equals(signature.getGrammarRule()))
+				return new RuleDeclaration(signature, comment);
+			return null;
+		}
 	}
 	public static class FunctionDeclaration extends Declaration {
 		private final Signature signature;
@@ -402,11 +420,17 @@ public class ASMDeclarationWatcher implements Observer {
 	public static List<Call> getCallers(ASTNode referenceNode, IFile referenceFile) {
 		List<Call> callers = new ArrayList<Call>();
 		ASTNode node = referenceNode;
-		if (node != null) {
-			while (node.getFirst() != null)
-				node = node.getFirst();
+		Declaration declaration = Declaration.from(referenceNode);
+		String declarationName;
+		if (declaration == null) {
+			if (node != null) {
+				while (node.getFirst() != null)
+					node = node.getFirst();
+			}
+			declarationName = node.getToken();
 		}
-		String declarationName = node.getToken();
+		else
+			declarationName = declaration.getName();
 		if (declarationName != null) {
 			if (referenceFile != null) {
 				IFile[] files = ASMIncludeWatcher.getInvolvedFiles(referenceFile);
@@ -460,28 +484,23 @@ public class ASMDeclarationWatcher implements Observer {
 			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
 				if ("Signature".equals(node.getGrammarRule())) {
 					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
-						if (signature instanceof EnumerationNode) {
-							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature, parseComment(document, node));
-							if (enumeration.getName().equals(name))
-								return signature;
+						Declaration declaration = Declaration.from(signature);
+						if (declaration != null && declaration.getName().equals(name))
+							return signature;
+						if (declaration instanceof EnumerationDeclaration) {
+							EnumerationDeclaration enumeration = (EnumerationDeclaration)declaration;
 							for (EnumerationDeclaration.Member member : enumeration.getMembers()) {
 								if (member.getName().equals(name))
 									return signature;
 							}
 						}
-						else if (signature instanceof FunctionNode && new FunctionDeclaration((FunctionNode)signature, null).getName().equals(name))
-							return signature;
-						else if (signature instanceof UniverseNode) {
-							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature, parseComment(document, node));
-							if (universe.getName().equals(name))
-								return signature;
+						else if (declaration instanceof UniverseDeclaration) {
+							UniverseDeclaration universe = (UniverseDeclaration)declaration;
 							for (UniverseDeclaration.Member member : universe.getMembers()) {
 								if (member.getName().equals(name))
 									return signature;
 							}
 						}
-						else if (signature instanceof DerivedFunctionNode && new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), null).getName().equals(name))
-							return signature;
 					}
 				}
 				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()) && new RuleDeclaration(node, null).getName().equals(name))
@@ -504,6 +523,16 @@ public class ASMDeclarationWatcher implements Observer {
 							Declaration decodedDeclaration = Declaration.decode(declaration, file);
 							if (decodedDeclaration != null)
 								declarations.add(decodedDeclaration);
+							if (decodedDeclaration instanceof EnumerationDeclaration) {
+								EnumerationDeclaration enumeration = (EnumerationDeclaration)decodedDeclaration;
+								for (EnumerationDeclaration.Member member : enumeration.getMembers())
+									declarations.add(member);
+							}
+							else if (decodedDeclaration instanceof UniverseDeclaration) {
+								UniverseDeclaration universe = (UniverseDeclaration)decodedDeclaration;
+								for (UniverseDeclaration.Member member : universe.getMembers())
+									declarations.add(member);
+							}
 						}
 					}
 				}
@@ -523,22 +552,19 @@ public class ASMDeclarationWatcher implements Observer {
 			if (ASTNode.DECLARATION_CLASS.equals(node.getGrammarClass())) {
 				if ("Signature".equals(node.getGrammarRule())) {
 					for (ASTNode signature = node.getFirst(); signature != null; signature = signature.getNext()) {
-						if (signature instanceof EnumerationNode) {
-							EnumerationDeclaration enumeration = new EnumerationDeclaration((EnumerationNode)signature, parseComment(document, node));
-							declarations.add(enumeration);
+						Declaration declaration = Declaration.from(signature, parseComment(document, node));
+						if (declaration != null)
+							declarations.add(declaration);
+						if (declaration instanceof EnumerationDeclaration) {
+							EnumerationDeclaration enumeration = (EnumerationDeclaration)declaration;
 							for (EnumerationDeclaration.Member member : enumeration.getMembers())
 								declarations.add(member);
 						}
-						else if (signature instanceof FunctionNode)
-							declarations.add(new FunctionDeclaration((FunctionNode)signature, parseComment(document, node)));
-						else if (signature instanceof UniverseNode) {
-							UniverseDeclaration universe = new UniverseDeclaration((UniverseNode)signature, parseComment(document, node));
-							declarations.add(universe);
+						else if (declaration instanceof UniverseDeclaration) {
+							UniverseDeclaration universe = (UniverseDeclaration)declaration;
 							for (UniverseDeclaration.Member member : universe.getMembers())
 								declarations.add(member);
 						}
-						else if (signature instanceof DerivedFunctionNode)
-							declarations.add(new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), parseComment(document, node)));
 					}
 				}
 				else if (Kernel.GR_RULEDECLARATION.equals(node.getGrammarRule()))

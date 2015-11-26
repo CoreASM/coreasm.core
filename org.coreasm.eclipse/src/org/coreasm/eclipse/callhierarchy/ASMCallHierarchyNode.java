@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher;
 import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Call;
+import org.coreasm.eclipse.editors.ASMDeclarationWatcher.Declaration;
 import org.coreasm.eclipse.util.IconManager;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
@@ -104,11 +105,14 @@ public class ASMCallHierarchyNode {
 		if (ruleNode == null)
 			return "No AST available for " + file.getName();
 		if (ruleNode instanceof ASTNode) {
+			Declaration declaration = Declaration.from((ASTNode)ruleNode);
+			if (declaration != null) {
+				if (parent == null)
+					return "Callers of " + declaration.getName();
+			}
 			ASTNode astNode = (ASTNode)ruleNode;
 			while (astNode.getFirst() != null)
 				astNode = astNode.getFirst();
-			if (parent == null)
-				return "Callers of " + astNode.getToken();
 			return astNode.getToken();
 		}
 		return "An error occurred";
