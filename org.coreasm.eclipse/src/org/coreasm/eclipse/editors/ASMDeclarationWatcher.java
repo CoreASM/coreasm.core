@@ -89,7 +89,7 @@ public class ASMDeclarationWatcher implements Observer {
 			if (signature instanceof FunctionNode)
 				return new FunctionDeclaration((FunctionNode)signature, comment);
 			if (signature instanceof UniverseNode)
-				new UniverseDeclaration((UniverseNode)signature, comment);
+				return new UniverseDeclaration((UniverseNode)signature, comment);
 			if (signature instanceof DerivedFunctionNode)
 				return new DerivedFunctionDeclaration(((DerivedFunctionNode)signature), comment);
 			if (Kernel.GR_RULEDECLARATION.equals(signature.getGrammarRule()))
