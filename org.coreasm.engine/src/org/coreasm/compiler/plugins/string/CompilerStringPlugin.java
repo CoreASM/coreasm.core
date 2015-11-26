@@ -178,7 +178,8 @@ public class CompilerStringPlugin extends CompilerCodePlugin implements Compiler
 			result.appendLine("}\n");
 
 			return result;
-		} else if (fname.equals("stringSubstring")) {
+		}
+		else if (StringSubstringFunction.STRING_SUBSTRING_FUNCTION_NAME.equals(fname)) {
 			if (children.size() != 4)
 				throw new CompilerException(
 						"wrong number of arguments for function " + fname);
