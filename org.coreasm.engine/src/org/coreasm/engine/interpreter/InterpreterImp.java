@@ -1283,8 +1283,11 @@ public class InterpreterImp implements Interpreter {
 	}
 
 	public void cleanUp() {
-		interpreters.set(this);
+		interpreters.remove();
+		workCopies.clear();
 		envMap.clear();
+		hiddenEnvMaps.clear();
+		oprImpPluginsCache.clear();
 		ruleCallStack.clear();
 	}
 
