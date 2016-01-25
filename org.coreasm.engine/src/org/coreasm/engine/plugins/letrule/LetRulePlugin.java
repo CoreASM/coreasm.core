@@ -27,6 +27,7 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.letrule.CompilerLetRulePlugin;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractStorage;
@@ -140,6 +141,8 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 	    				   n.setNode(n.getLocation(), newUpdates, value);
 	    				   return letNode;
             		   }
+            		   else
+            			   throw new CoreASMError("\"" + rule.getName() + "\" is not a rule name.", pos.getFirst());
             	   }
 	           }
            }
