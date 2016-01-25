@@ -14,6 +14,7 @@ import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.plugins.bag.BagCompNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.chooserule.PickExpNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
@@ -668,6 +669,8 @@ public class ASMDeclarationWatcher implements Observer {
 			return true;
 		if (isSetComprehensionVariable(frNode))
 			return true;
+		if (isBagComprehensionVariable(frNode))
+			return true;
 		if (isListComprehensionVariable(frNode))
 			return true;
 		if (isImportRuleVariable(frNode))
@@ -757,11 +760,11 @@ public class ASMDeclarationWatcher implements Observer {
 	}
 	
 	private static ForeachRuleNode getParentForeachRuleNode(ASTNode node) {
-		ASTNode forallRuleNode = node.getParent();
-		while (forallRuleNode != null && !(forallRuleNode instanceof ForeachRuleNode))
-			forallRuleNode = forallRuleNode.getParent();
-		if (forallRuleNode instanceof ForeachRuleNode)
-			return (ForeachRuleNode)forallRuleNode;
+		ASTNode foreachRuleNode = node.getParent();
+		while (foreachRuleNode != null && !(foreachRuleNode instanceof ForeachRuleNode))
+			foreachRuleNode = foreachRuleNode.getParent();
+		if (foreachRuleNode instanceof ForeachRuleNode)
+			return (ForeachRuleNode)foreachRuleNode;
 		return null;
 	}
 	
@@ -852,6 +855,28 @@ public class ASMDeclarationWatcher implements Observer {
 			setCompNode = setCompNode.getParent();
 		if (setCompNode instanceof SetCompNode)
 			return (SetCompNode)setCompNode;
+		return null;
+	}
+	
+	private static boolean isBagComprehensionVariable(FunctionRuleTermNode frNode) {
+		for (BagCompNode bagCompNode = getParentBagCompNode(frNode); bagCompNode != null; bagCompNode = getParentBagCompNode(bagCompNode)) {
+			try {
+				if (bagCompNode.getVarBindings().containsKey(frNode.getName()))
+					return true;
+			} catch (EngineException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+	
+	private static BagCompNode getParentBagCompNode(ASTNode node) {
+		ASTNode bagCompNode = node.getParent();
+		while (bagCompNode != null && !(bagCompNode instanceof BagCompNode))
+			bagCompNode = bagCompNode.getParent();
+		if (bagCompNode instanceof BagCompNode)
+			return (BagCompNode)bagCompNode;
 		return null;
 	}
 	
