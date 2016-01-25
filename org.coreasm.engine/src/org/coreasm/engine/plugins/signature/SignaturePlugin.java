@@ -506,6 +506,7 @@ public class SignaturePlugin extends Plugin
 	                    }                                  
 	                }
 	            }
+	            function.setFClass(functionNode.getFunctionClass());
 	        }
         }
     }
@@ -900,10 +901,8 @@ public class SignaturePlugin extends Plugin
         
         if (!functionNode.hasInitializer() && functionNode.getInitNode()!=null)
         	functionsWithInit.put(functionNode, function);
-        
-        function.setFClass(functionNode.getFunctionClass()); 
-        //functionClass.put(functionNode.getName(), functionNode.getFunctionClass());
-        
+        else
+        	function.setFClass(functionNode.getFunctionClass());
     }
     
     private void createDerivedFunction(ASTNode currentSignature, Interpreter interpreter) {
