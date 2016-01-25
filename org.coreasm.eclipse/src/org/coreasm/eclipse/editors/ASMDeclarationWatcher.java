@@ -18,6 +18,7 @@ import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.chooserule.PickExpNode;
 import org.coreasm.engine.plugins.extendrule.ExtendRuleNode;
 import org.coreasm.engine.plugins.forallrule.ForallRuleNode;
+import org.coreasm.engine.plugins.foreachrule.ForeachRuleNode;
 import org.coreasm.engine.plugins.letrule.LetRuleNode;
 import org.coreasm.engine.plugins.list.ListCompNode;
 import org.coreasm.engine.plugins.predicatelogic.ExistsExpNode;
@@ -655,6 +656,8 @@ public class ASMDeclarationWatcher implements Observer {
 			return true;
 		if (isForallExpVariable(frNode))
 			return true;
+		if (isForeachRuleVariable(frNode))
+			return true;
 		if (isExistsExpVariable(frNode))
 			return true;
 		if (isChooseVariable(frNode))
@@ -742,6 +745,23 @@ public class ASMDeclarationWatcher implements Observer {
 			forallExpNode = forallExpNode.getParent();
 		if (forallExpNode instanceof ForallExpNode)
 			return (ForallExpNode)forallExpNode;
+		return null;
+	}
+	
+	private static boolean isForeachRuleVariable(FunctionRuleTermNode frNode) {
+		for (ForeachRuleNode foreachRuleNode = getParentForeachRuleNode(frNode); foreachRuleNode != null; foreachRuleNode = getParentForeachRuleNode(foreachRuleNode)) {
+			if (foreachRuleNode.getVariableMap().containsKey(frNode.getName()))
+				return true;
+		}
+		return false;
+	}
+	
+	private static ForeachRuleNode getParentForeachRuleNode(ASTNode node) {
+		ASTNode forallRuleNode = node.getParent();
+		while (forallRuleNode != null && !(forallRuleNode instanceof ForeachRuleNode))
+			forallRuleNode = forallRuleNode.getParent();
+		if (forallRuleNode instanceof ForeachRuleNode)
+			return (ForeachRuleNode)forallRuleNode;
 		return null;
 	}
 	
