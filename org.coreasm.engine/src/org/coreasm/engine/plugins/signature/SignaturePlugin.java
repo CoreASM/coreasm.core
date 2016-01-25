@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
@@ -96,6 +98,8 @@ public class SignaturePlugin extends Plugin
     private HashMap<String,UniverseElement> universes;
     private HashMap<String,BackgroundElement> backgrounds;
     private HashMap<String,RuleElement> rules;
+    
+    private IdentityHashMap<FunctionNode, FunctionElement> functionsWithInit;
     
     private Set<String>	dependencyNames;
     private Map<String, GrammarRule> parsers = null;
@@ -370,6 +374,7 @@ public class SignaturePlugin extends Plugin
     		sourceModes = new HashMap<EngineMode, Integer>();
         	//sourceModes.add(EngineMode.emParsingSpec);
         	sourceModes.put(EngineMode.emAggregation, ExtensionPointPlugin.DEFAULT_PRIORITY);
+        	sourceModes.put(EngineMode.emInitializingState, ExtensionPointPlugin.DEFAULT_PRIORITY);
     	}
         return sourceModes;
     }
@@ -451,6 +456,58 @@ public class SignaturePlugin extends Plugin
             }
         }
         */
+        if (source == EngineMode.emInitializingState) {
+        	Interpreter interpreter = capi.getInterpreter();
+        	
+        	for (Entry<FunctionNode, FunctionElement> entry : functionsWithInit.entrySet()) {
+        		FunctionNode functionNode = entry.getKey();
+        		FunctionElement function = entry.getValue();
+	        	try {
+	                interpreter.interpret(functionNode.getInitNode(), interpreter.getSelf());
+	            } catch (InterpreterException e) {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+	            }
+	            
+	            Element initValue = functionNode.getInitNode().getValue();            
+	            
+	            if (functionNode.getDomain().size() == 0) {
+	                try {
+	                    function.setValue(ElementList.NO_ARGUMENT, initValue);
+	                } catch (UnmodifiableFunctionException e) {
+	                	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
+	                }
+	            } else {
+	                if (initValue instanceof FunctionElement) {
+	                    FunctionElement map = (FunctionElement) initValue;
+	                    int dSize = functionNode.getDomain().size();
+	                    for (Location l: map.getLocations(functionNode.getName())) {
+	                    	if (l.args.size() == dSize) {
+		                        try {
+		                            function.setValue(l.args, map.getValue(l.args));
+		                        } catch (UnmodifiableFunctionException e) {
+		                        	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
+		                        }
+	                    	} else {
+	                    		if (l.args.size() == 1 
+	                    				&& l.args.get(0) instanceof Enumerable 
+	                    				&& ((Enumerable)l.args.get(0)).enumerate().size() == dSize) 
+	                    		{
+	    	                        try {
+	    	                            function.setValue(ElementList.create(((Enumerable)l.args.get(0)).enumerate()), map.getValue(l.args));
+	    	                        } catch (UnmodifiableFunctionException e) {
+	    	                        	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
+	    	                        }
+	                    		}
+	                    		else
+		                        	throw new EngineError("Initial value of function " + functionNode.getName() + " does not match the function signature.");
+	                    	}
+		                        
+	                    }                                  
+	                }
+	            }
+	        }
+        }
     }
     
 //    private void setStaticFunctions() {
@@ -650,6 +707,8 @@ public class SignaturePlugin extends Plugin
         if (rules == null) {
             rules = new HashMap<String,RuleElement>();
         }
+        if (functionsWithInit == null)
+        	functionsWithInit = new IdentityHashMap<FunctionNode, FunctionElement>();
         
         ASTNode node = capi.getParser().getRootNode().getFirst();
         
@@ -839,54 +898,8 @@ public class SignaturePlugin extends Plugin
         }
     
         
-        if (!functionNode.hasInitializer() && functionNode.getInitNode()!=null) {
-            //hasInit = true;
-            
-            try {
-                interpreter.interpret(functionNode.getInitNode(), interpreter.getSelf());
-            } catch (InterpreterException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-            Element initValue = functionNode.getInitNode().getValue();            
-            
-            if (functionNode.getDomain().size() == 0) {
-                try {
-                    function.setValue(ElementList.NO_ARGUMENT, initValue);
-                } catch (UnmodifiableFunctionException e) {
-                	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
-                }
-            } else {
-                if (initValue instanceof FunctionElement) {
-                    FunctionElement map = (FunctionElement) initValue;
-                    int dSize = functionNode.getDomain().size();
-                    for (Location l: map.getLocations(functionNode.getName())) {
-                    	if (l.args.size() == dSize) {
-	                        try {
-	                            function.setValue(l.args, map.getValue(l.args));
-	                        } catch (UnmodifiableFunctionException e) {
-	                        	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
-	                        }
-                    	} else {
-                    		if (l.args.size() == 1 
-                    				&& l.args.get(0) instanceof Enumerable 
-                    				&& ((Enumerable)l.args.get(0)).enumerate().size() == dSize) 
-                    		{
-    	                        try {
-    	                            function.setValue(ElementList.create(((Enumerable)l.args.get(0)).enumerate()), map.getValue(l.args));
-    	                        } catch (UnmodifiableFunctionException e) {
-    	                        	throw new EngineError("Cannot set initial value for unmodifiable function " + functionNode.getName());
-    	                        }
-                    		}
-                    		else
-	                        	throw new EngineError("Initial value of function " + functionNode.getName() + " does not match the function signature.");
-                    	}
-	                        
-                    }                                  
-                }
-            }
-        }
+        if (!functionNode.hasInitializer() && functionNode.getInitNode()!=null)
+        	functionsWithInit.put(functionNode, function);
         
         function.setFClass(functionNode.getFunctionClass()); 
         //functionClass.put(functionNode.getName(), functionNode.getFunctionClass());
