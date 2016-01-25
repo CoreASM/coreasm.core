@@ -134,6 +134,15 @@ public class SignaturePlugin extends Plugin
 		funcRangeFunction = new FunctionRangeFunctionElement();
 		funcDomainFunction = new FunctionDomainFunctionElement();
     }
+    
+    @Override
+    public void terminate() {
+    	super.terminate();
+    	functions = null;
+    	universes = null;
+    	backgrounds = null;
+    	rules = null;
+    }
 
 	public Set<Parser<? extends Object>> getLexers() {
 		return Collections.emptySet();

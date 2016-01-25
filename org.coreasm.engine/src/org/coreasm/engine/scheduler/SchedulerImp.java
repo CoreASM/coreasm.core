@@ -440,4 +440,8 @@ public class SchedulerImp implements Scheduler {
 		return size;
 	}
 
+	@Override
+	public void dispose() {
+		agentContextMap.clear();
+	}
 }

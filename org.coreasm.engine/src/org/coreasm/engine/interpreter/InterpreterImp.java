@@ -1285,7 +1285,14 @@ public class InterpreterImp implements Interpreter {
 	public void cleanUp() {
 		interpreters.set(this);
 		envMap.clear();
+		hiddenEnvMaps.clear();
 		ruleCallStack.clear();
 	}
 
+	@Override
+	public void dispose() {
+		cleanUp();
+		interpreters.remove();
+		workCopies.clear();
+	}
 }

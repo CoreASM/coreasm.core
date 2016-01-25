@@ -31,4 +31,13 @@ public class AgentContextMap {
 	public synchronized AgentContext get(Element agent) {
 		return map.get(agent);
 	}
+	
+	public synchronized void clear() {
+		for (AgentContext context : map.values()) {
+			context.interpreter.dispose();
+			context.interpreter = null;
+			context.nodeCopyCache.clear();
+		}
+		map.clear();
+	}
 }

@@ -24,7 +24,6 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
-import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -58,15 +57,11 @@ import org.coreasm.engine.plugins.number.NumberElement;
  * 
  */
 public class TreePlugin extends Plugin 
-implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReader {
+implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 
 	// prefix for all the functions offered by the plugin
 	public static final String TREE_PREFIX = "tree";
 	
-	
-	public static TreeOptionsReader optionsReader;
-	public static TreePlugin instance;
-
 	// Class constants required by the CoreASM framework
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 0, 1, "alpha");
 	public static final String PLUGIN_NAME = TreePlugin.class.getSimpleName();
@@ -111,12 +106,6 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 	// Background offered by this plugin
 	private TreeBackgroundElement treeBackground; 
 
-	protected String inputListFormatStr = null;
-	protected String treeTraversalModeStr = null;
-	protected String treeOutputStringFormatStr = null;
-
-
-
 	// Interface VocabularyExtender
 	private Map<String, BackgroundElement> backgrounds = null;
 	private Map<String, FunctionElement> functions = null;
@@ -135,21 +124,9 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 	private HashSet<String> dependencyList = new HashSet<String>();
 
 
-	public static AbstractStorage getAbstractStorage() {
-		return instance.capi.getStorage();
-	} // getAbstractStorage
-
-	public static ControlAPI getCAPI() {
-		return instance.capi;
-	} // getCAPI
-
-
-
 	public TreePlugin() {
 		dependencyList.add("ListPlugin");
 		treeBackground = new TreeBackgroundElement();
-		optionsReader = this;
-		instance = this;
 	} // TreePlugin
 
 
@@ -667,35 +644,22 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 
 
 
-	public String getInputListFormatOption() {
-		// PRE: capi is not null	
-		if ( inputListFormatStr == null ) {
-			inputListFormatStr = capi.getProperty(LIST_FOR_TREES_OPT);
-			if (inputListFormatStr == null) {
-				inputListFormatStr = LIST_FOR_TREES_OPT_DEFAULT;
-			} // 2nd if
-		} // if listFormat == null
+	public static String getInputListFormatOption(ControlAPI capi) {
+		String inputListFormatStr = capi.getProperty(LIST_FOR_TREES_OPT);
+		if (inputListFormatStr == null)
+			inputListFormatStr = LIST_FOR_TREES_OPT_DEFAULT;
 		return inputListFormatStr;
-	} // getListFormat()
+	}
 
 
-	public String getTreeTraversalOption() {
-		if (treeTraversalModeStr == null) {
-			treeTraversalModeStr = capi.getProperty(TREE_TRAVERSAL_OPT);
-		} // if
-
-		return treeTraversalModeStr;
-	} // getTreeTraversalOption
+	public static String getTreeTraversalOption(ControlAPI capi) {
+		return capi.getProperty(TREE_TRAVERSAL_OPT);
+	}
 
 
-	public String getOutputStringFormatOption() {
-		if(treeOutputStringFormatStr == null) {
-			treeOutputStringFormatStr = capi.getProperty(TREE_OUTPUT_STRING_OPT);
-		} // if
-
-		return treeOutputStringFormatStr;
-
-	} // getOutputStringFormatOption
+	public static String getOutputStringFormatOption(ControlAPI capi) {
+		return capi.getProperty(TREE_OUTPUT_STRING_OPT);
+	}
 
 
 	protected TreeNodeElement createTreeFromList(ListElement list) {			
@@ -704,7 +668,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender, TreeOptionsReade
 
 		TreeNodeElement tree = new TreeNodeElement(); 
 
-		String listFormat = getInputListFormatOption();		
+		String listFormat = getInputListFormatOption(capi);		
 
 		if(listFormat.equals(LIST_FOR_TREES_OPT_LONG)) {
 			tree = createTreeFromLongList(list);

@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.HashStorage;
@@ -54,6 +53,8 @@ import org.coreasm.engine.plugin.ServiceRequest;
 import org.coreasm.engine.scheduler.Scheduler;
 import org.coreasm.engine.scheduler.SchedulerImp;
 import org.coreasm.util.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides the actual implementation of a CoreASM engine. It
@@ -1027,6 +1028,9 @@ public class Engine implements ControlAPI {
 						//   logger.error( ste.toString());
 					}
 				}
+				
+				storage.clearState();
+				scheduler.dispose();
 
 				// Terminating plugins
 				for (Plugin p: pluginLoader.getPlugins())

@@ -219,4 +219,6 @@ public interface Scheduler {
      * Increments <i>stepCount</i> by 1.
      */       
     public void incrementStepCount();
+    
+    public void dispose();
 }

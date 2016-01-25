@@ -104,11 +104,11 @@ public class TreeNodeElement extends Element implements Enumerable {
 	// **********************************************************************************************
 	
 	protected ControlAPI getCAPI() {
-		return TreePlugin.getCAPI();
+		return capi;
 	} // getCAPI
 	
 	protected AbstractStorage getAbstractStorage() {
-		return TreePlugin.getAbstractStorage();
+		return capi.getStorage();
 	} // getAbstractStorage
 	
 	@Override
@@ -134,10 +134,8 @@ public class TreeNodeElement extends Element implements Enumerable {
 	public String getOutpuStringFormat() {
 		if(outputStringFormat == null) {
 			outputStringFormat = TREE_OUTPUT_STRING_OPT_DEFAULT;
-			if(TreePlugin.optionsReader != null) {
-				String optValue = TreePlugin.optionsReader.getOutputStringFormatOption();
-				setOutputStringFormat(optValue);
-			} // if treePlugin
+			String optValue = TreePlugin.getOutputStringFormatOption(capi);
+			setOutputStringFormat(optValue);
 		} // if outputStringFormat != null
 		return outputStringFormat;
 	} // getOutputStringFormat;
@@ -155,10 +153,8 @@ public class TreeNodeElement extends Element implements Enumerable {
 	public String getTraversalMode () {
 		if (traversalMode == null) {
 			traversalMode = TREE_TRAVERSAL_OPT_DEFAULT;
-			if(TreePlugin.optionsReader != null) {
-				String optValue = TreePlugin.optionsReader.getTreeTraversalOption();
-				setTraversalMode(optValue);
-			} // if treePlugin
+			String optValue = TreePlugin.getTreeTraversalOption(capi);
+			setTraversalMode(optValue);
 		} // if
 		
 		return traversalMode;
