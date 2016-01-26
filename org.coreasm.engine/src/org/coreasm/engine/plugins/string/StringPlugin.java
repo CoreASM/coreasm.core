@@ -180,8 +180,6 @@ public class StringPlugin extends Plugin
 	 */
 	@Override
 	public void initialize() {
-		getFunctions();
-		getBackgrounds();
 	}
 
 	//--------------------------------

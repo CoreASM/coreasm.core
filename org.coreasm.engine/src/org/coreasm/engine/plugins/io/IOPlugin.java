@@ -119,11 +119,6 @@ public class IOPlugin extends Plugin implements
 	
 	protected Map<String, GrammarRule> parsers = null;
 	protected IOPluginPSI pluginPSI;
-	protected FunctionElement filereadFunction;
-	protected FunctionElement filewriteFunction;
-	protected FunctionElement outputFunction;
-	protected FunctionElement inputFunction;
-	protected FunctionElement fileInputFunction;
 	protected InputProvider inputProvider;
 	protected PrintStream outputStream;
 
@@ -195,10 +190,6 @@ public class IOPlugin extends Plugin implements
 	 */
 	@Override
 	public void initialize() {
-		filereadFunction = new FileReadFunctionElement(this);
-		filewriteFunction = new FileWriteFunctionElement();
-		outputFunction = new OutputFunctionElement();
-		inputFunction = new InputFunctionElement(this);
 		outputMessages = new ArrayList<String>();
 		outputStream = System.out;
 		pluginPSI = new IOPluginPSI();
@@ -334,10 +325,10 @@ public class IOPlugin extends Plugin implements
 	public Map<String,FunctionElement> getFunctions() {
 		if (functions == null) {
 			functions = new HashMap<String,FunctionElement>();
-			functions.put(INPUT_FUNC_NAME, inputFunction);
-			functions.put(PRINT_OUTPUT_FUNC_NAME, outputFunction);
-			functions.put(READ_FUNC_NAME, filereadFunction);
-			functions.put(FILE_OUTPUT_FUNC_NAME, filewriteFunction);
+			functions.put(INPUT_FUNC_NAME, new InputFunctionElement(this));
+			functions.put(PRINT_OUTPUT_FUNC_NAME, new OutputFunctionElement());
+			functions.put(READ_FUNC_NAME, new FileReadFunctionElement(this));
+			functions.put(FILE_OUTPUT_FUNC_NAME, new FileWriteFunctionElement());
 		}
 		return functions;
 	}

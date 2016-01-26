@@ -14,10 +14,10 @@
 package org.coreasm.engine.plugins.time;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.time.CompilerTimePlugin;
@@ -40,8 +40,6 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 2, 0, "");
 	
 	private final Set<String> dependencyList;
-	
-	private NowFunctionElement nowFunction;
 	
 	private Map<String, FunctionElement> functions = null;
 	
@@ -68,7 +66,6 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 	 */
 	@Override
 	public void initialize() {
-		nowFunction = new NowFunctionElement();
 	}
 
 	/**
@@ -77,7 +74,7 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 	public Map<String,FunctionElement> getFunctions() {
 		if (functions == null) {
 			functions = new HashMap<String,FunctionElement>();
-			functions.put(NowFunctionElement.NOW_FUNC_NAME, nowFunction);
+			functions.put(NowFunctionElement.NOW_FUNC_NAME, new NowFunctionElement());
 			functions.put(StepCountFunctionElement.FUNC_NAME, new StepCountFunctionElement(capi));
 		}
 		return functions;

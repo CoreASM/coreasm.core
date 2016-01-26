@@ -112,8 +112,6 @@ public class SignaturePlugin extends Plugin
     //private boolean hasInit = false;
     private boolean processingSignatures = false;
 
-	private FunctionRangeFunctionElement funcRangeFunction;
-	private FunctionDomainFunctionElement funcDomainFunction;
 
 	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "initialized", "by", "derived"};
 	private final String[] operators = {"=", "{", "}", ",", ":", "->"};
@@ -131,8 +129,6 @@ public class SignaturePlugin extends Plugin
     public void initialize() {                
         typeCheckingMode = CheckMode.cmOff;
         idCheckingMode = CheckMode.cmOff;
-		funcRangeFunction = new FunctionRangeFunctionElement();
-		funcDomainFunction = new FunctionDomainFunctionElement();
     }
     
     @Override
@@ -768,12 +764,12 @@ public class SignaturePlugin extends Plugin
         // add the default range function to functions
         if (functions.get(FunctionRangeFunctionElement.FUNCTION_NAME) == null)
         	functions.put(FunctionRangeFunctionElement.FUNCTION_NAME,
-        			funcRangeFunction);
+        			new FunctionRangeFunctionElement());
         // if the user did not define a domain function, 
         // add the default domain function to functions
         if (functions.get(FunctionDomainFunctionElement.FUNCTION_NAME) == null)
         	functions.put(FunctionDomainFunctionElement.FUNCTION_NAME,
-        			funcDomainFunction);
+        			new FunctionDomainFunctionElement());
         
         processingSignatures = false;
     }   
