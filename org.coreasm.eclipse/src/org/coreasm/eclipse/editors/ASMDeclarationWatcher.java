@@ -14,6 +14,7 @@ import org.coreasm.engine.absstorage.Signature;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.FunctionRuleTermNode;
 import org.coreasm.engine.kernel.Kernel;
+import org.coreasm.engine.kernel.RuleOrFuncElementNode;
 import org.coreasm.engine.plugins.bag.BagCompNode;
 import org.coreasm.engine.plugins.chooserule.ChooseRuleNode;
 import org.coreasm.engine.plugins.chooserule.PickExpNode;
@@ -449,12 +450,17 @@ public class ASMDeclarationWatcher implements Observer {
 						fringe.add(rootNode);
 						while (!fringe.isEmpty()) {
 							node = fringe.removeFirst();
-							if (ASTNode.FUNCTION_RULE_CLASS.equals(node.getGrammarClass()) && node instanceof FunctionRuleTermNode) {
+							if (node instanceof FunctionRuleTermNode) {
 								FunctionRuleTermNode frNode = (FunctionRuleTermNode)node;
 								if (frNode.hasName()) {
 									if (declarationName.equals(frNode.getName()))
 										callers.add(new Call(ASMDocument.getSurroundingDeclaration(frNode), frNode.getParent(), document.getNodeFile(frNode)));
 								}
+							}
+							else if (node instanceof RuleOrFuncElementNode) {
+								RuleOrFuncElementNode rofNode = (RuleOrFuncElementNode)node;
+								if (declarationName.equals(rofNode.getElementName()))
+									callers.add(new Call(ASMDocument.getSurroundingDeclaration(rofNode), rofNode.getParent(), document.getNodeFile(rofNode)));
 							}
 							fringe.addAll(node.getAbstractChildNodes());
 						}
