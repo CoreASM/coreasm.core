@@ -662,6 +662,8 @@ public class IOPlugin extends Plugin implements
 	 */
 	private void composeAppend(PluginCompositionAPI compAPI) {
 		for (Location l : compAPI.getAffectedLocations()) {
+			if (!FILE_OUTPUT_FUNC_NAME.equals(l.name))
+				continue;
 			LinkedList<Element> elems1 = new LinkedList<>();
 			LinkedList<Element> elems2 = new LinkedList<>();
 			Set<Element> contributingAgents = new HashSet<Element>();

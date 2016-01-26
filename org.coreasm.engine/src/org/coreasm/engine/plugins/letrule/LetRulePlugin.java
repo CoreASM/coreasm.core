@@ -151,7 +151,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
         	   clearLetResultChildNodes(letNode);
         	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
-            	   updates = storage.compose(updates, variableMap.get(v).getUpdates());
+            	   updates.addAll(variableMap.get(v).getUpdates());
                    interpreter.addEnv(v,variableMap.get(v).getValue());
                }
                
@@ -172,15 +172,15 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                return pos;
            }
            else {
-        	   UpdateMultiset composed = new UpdateMultiset();
+        	   UpdateMultiset updates = new UpdateMultiset();
                for (String v: variableMap.keySet()) {
-            	   composed = storage.compose(composed, variableMap.get(v).getUpdates());
+            	   updates.addAll(variableMap.get(v).getUpdates());
                    interpreter.removeEnv(v);
                }
                
-               composed = storage.compose(composed, letNode.getInRule().getUpdates());
+               updates = storage.compose(updates, letNode.getInRule().getUpdates());
                storage.popState();
-               pos.setNode(null,composed,null);
+               pos.setNode(null,updates,null);
                return pos;
            }
         }

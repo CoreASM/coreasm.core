@@ -14,8 +14,8 @@
 package org.coreasm.engine.absstorage;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.coreasm.engine.plugin.Plugin;
@@ -71,18 +71,23 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 
 	public boolean isLocUpdatedWithActions(int setIndex, Location l, String... action) {
 		// getting updates affecting location 'l'
-		UpdateMultiset updates = getLocUpdates(setIndex, l);
-		
-		for (Update u: updates) 
-			for (String act: action) 
-				if (u.action.equals(act)) 
-					return true;
+		for (Update u: updates[setIndex]) {
+			if (u.loc.equals(l)) {
+				for (String act: action) {
+					if (u.action.equals(act)) 
+						return true;
+				}
+			}
+		}
 		
 		return false;
 	}
 
 	public boolean isLocationUpdated(int setIndex, Location l) {
-		return !getLocUpdates(setIndex, l).isEmpty();
+		for (Update u: updates[setIndex]) 
+			if (u.loc.equals(l))
+				return true;
+		return false;
 	}
 
 	public UpdateMultiset getAllUpdates(int setIndex) {
