@@ -944,7 +944,7 @@ public class Kernel extends Plugin
 
 	private boolean isBasicUpdate(UpdateMultiset uMset, Update u) {
 		for (Update update: uMset) 
-			if (update.loc.equals(u.loc) && !update.action.equals(Update.UPDATE_ACTION))
+			if (!update.action.equals(Update.UPDATE_ACTION) && update.loc.equals(u.loc))
 				return false;
 		return true;
 	}

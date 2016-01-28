@@ -106,9 +106,9 @@ public class Update {
 		boolean result = false;
 		if (obj instanceof Update) {
 			Update u = (Update)obj;
-			result = this.loc.equals(u.loc) 
-					&& this.value.equals(u.value) 
-					&& this.action.equals(u.action);
+			result = this.value.equals(u.value) 
+					&& this.action.equals(u.action)
+					&& this.loc.equals(u.loc);
 		}
 		return result;
 	}

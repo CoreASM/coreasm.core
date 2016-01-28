@@ -1,31 +1,19 @@
-/*	
- * CompositionAPIImp.java 	1.0 	$Revision: 243 $
- * 
- * Copyright (C) 2006 Roozbeh Farahbod
- *
- * Last modified by $Author: rfarahbod $ on $Date: 2011-03-29 02:05:21 +0200 (Di, 29 Mrz 2011) $.
- *
- * Licensed under the Academic Free License version 3.0
- *   http://www.opensource.org/licenses/afl-3.0.php
- *   http://www.coreasm.org/afl-3.0.php
- *
- */
- 
 package org.coreasm.engine.absstorage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.coreasm.engine.plugin.Plugin;
 
-// TODO The performance of this class in general can be improved. 
 /** 
  *	Provide composition related services to the engine and to the plugins, but
  *  encapsulate all composition and datastructure specific information in this object.
  *   
- * @author Roozbeh Farahbod
+ * @author Roozbeh Farahbod, Michael Stegmaier
  * 
  */
 public class CompositionAPIImp implements EngineCompositionAPI,
@@ -33,10 +21,19 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 
 	protected UpdateMultiset[] updates = new UpdateMultiset[3];
 	protected List<UpdatePluginPair> composedUpdates = new ArrayList<UpdatePluginPair>();
+	protected boolean affectedLocationsComputed;
+	protected Map<String, Set<Location>> actionLocations1;
+	protected Map<String, Set<Location>> actionLocations2;
+	protected Map<Location, UpdateMultiset> locUpdates1;
+	protected Map<Location, UpdateMultiset> locUpdates2;
 	
 	public void setUpdateInstructions(UpdateMultiset updates1, UpdateMultiset updates2) {
 		this.updates[1] = new UpdateMultiset(updates1);
 		this.updates[2] = new UpdateMultiset(updates2);
+		actionLocations1 = new HashMap<String, Set<Location>>();
+		actionLocations2 = new HashMap<String, Set<Location>>();
+		locUpdates1 = new HashMap<Location, UpdateMultiset>();
+		locUpdates2 = new HashMap<Location, UpdateMultiset>();
 	}
 
 	public UpdateMultiset getComposedUpdates() {
@@ -49,45 +46,88 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 	}
 
 	public Set<Location> getAffectedLocations() {
-		Set<Location> result = new HashSet<Location>();
-		
-		for (Update u: updates[1]) 
-			result.add(u.loc);
-		for (Update u: updates[2]) 
-			result.add(u.loc);
+		if (!affectedLocationsComputed) {
+			for (Update u: updates[1]) {
+				UpdateMultiset locUpdates = locUpdates1.get(u.loc);
+				if (locUpdates == null) {
+					locUpdates = new UpdateMultiset();
+					locUpdates1.put(u.loc, locUpdates);
+				}
+				locUpdates.add(u);
+			}
+			for (Update u: updates[2]) {
+				UpdateMultiset locUpdates = locUpdates2.get(u.loc);
+				if (locUpdates == null) {
+					locUpdates = new UpdateMultiset();
+					locUpdates2.put(u.loc, locUpdates);
+				}
+				locUpdates.add(u);
+			}
+		}
+		Set<Location> affectedLocations = new HashSet<Location>(locUpdates1.keySet());
+		affectedLocations.addAll(locUpdates2.keySet());
 
-		return result;
+		return affectedLocations;
 	}
 
 	public UpdateMultiset getLocUpdates(int setIndex, Location l) {
-		UpdateMultiset result = new UpdateMultiset();
+		UpdateMultiset locUpdates;
+		Map<Location, UpdateMultiset> locUpdateMap;
 		
-		for (Update u: updates[setIndex]) 
-			if (u.loc.equals(l))
-				result.add(u);
+		if (setIndex == 1)
+			locUpdateMap = locUpdates1;
+		else if (setIndex == 2)
+			locUpdateMap = locUpdates2;
+		else
+			return null;
 		
-		return result;
+		locUpdates = locUpdateMap.get(l);
+		if (locUpdates == null) {
+			locUpdates = new UpdateMultiset();
+			locUpdateMap.put(l, locUpdates);
+			for (Update u: updates[setIndex]) 
+				if (u.loc.equals(l))
+					locUpdates.add(u);
+		}
+		
+		return locUpdates;
+	}
+	
+	private Set<Location> getActionLocations(int setIndex, String action) {
+		Set<Location> locations;
+		Map<String, Set<Location>> actionLocationsMap;
+		
+		if (setIndex == 1)
+			actionLocationsMap = actionLocations1;
+		else if (setIndex == 2)
+			actionLocationsMap = actionLocations2;
+		else
+			return null;
+		
+		locations = actionLocationsMap.get(action);
+		if (locations == null) {
+			locations = new HashSet<Location>();
+			actionLocationsMap.put(action, locations);
+			for (Update u : updates[setIndex]) {
+				if (u.action.equals(action))
+					locations.add(u.loc);
+			}
+		}
+		
+		return locations;
 	}
 
 	public boolean isLocUpdatedWithActions(int setIndex, Location l, String... action) {
-		// getting updates affecting location 'l'
-		for (Update u: updates[setIndex]) {
-			if (u.loc.equals(l)) {
-				for (String act: action) {
-					if (u.action.equals(act)) 
-						return true;
-				}
-			}
+		for (String act: action) {
+			if (getActionLocations(setIndex, act).contains(l))
+				return true;
 		}
 		
 		return false;
 	}
 
 	public boolean isLocationUpdated(int setIndex, Location l) {
-		for (Update u: updates[setIndex]) 
-			if (u.loc.equals(l))
-				return true;
-		return false;
+		return setIndex == 1 && locUpdates1.containsKey(l) || setIndex == 2 && locUpdates2.containsKey(l);
 	}
 
 	public UpdateMultiset getAllUpdates(int setIndex) {

@@ -605,7 +605,7 @@ public class IOPlugin extends Plugin implements
 
 		// for all locations to aggregate
 		for (Location l : locsToAggregate) {
-			if (l.equals(PRINT_OUTPUT_FUNC_LOC)) {
+			if (PRINT_OUTPUT_FUNC_LOC.name.equals(l.name)) {
 				String outputResult = "";
 
 				// if regular update affects this location
