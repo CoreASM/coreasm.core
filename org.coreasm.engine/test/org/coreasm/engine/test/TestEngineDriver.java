@@ -197,7 +197,7 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		}
 	}
 
-	public synchronized void resume() {
+	public void resume() {
 		if (stepsLimit == 0)
 			stepsLimit = -1;
 		shouldPause = false;
@@ -205,13 +205,13 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 			Thread.yield();
 	}
 
-	public synchronized void stop() {
+	public void stop() {
 		shouldStop = true;
 		while (getStatus() != TestEngineDriverStatus.stopped)
 			Thread.yield();
 	}
 
-	public synchronized void executeSteps(int numberOfSteps) {
+	public void executeSteps(int numberOfSteps) {
 		stepsLimit = numberOfSteps;
 		resume();
 		while (getStatus() == TestEngineDriverStatus.running)
