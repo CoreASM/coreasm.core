@@ -87,6 +87,13 @@ public class WatchExpressionAPI implements ControlAPI {
 		return interpreter.getPosition().getValue();
 	}
 	
+	public void dispose() {
+		capi = null;
+		storage = null;
+		lastError = null;
+		warnings = null;
+	}
+	
 	private void bindPlugins() {
 		for (Plugin plugin : getPlugins())
 			plugin.setControlAPI(this);
@@ -100,6 +107,7 @@ public class WatchExpressionAPI implements ControlAPI {
 	private void copyOprRegFromCapi() {
 		OperatorRegistry oprRegCapi = OperatorRegistry.getInstance(capi);
 		OperatorRegistry oprReg = OperatorRegistry.getInstance(this);
+		OperatorRegistry.removeInstance(this);
 		oprReg.binOps.clear();
     	oprReg.binOps.putAll(oprRegCapi.binOps);
     	oprReg.unOps.clear();

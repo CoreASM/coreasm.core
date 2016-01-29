@@ -1049,6 +1049,7 @@ public class Engine implements ControlAPI {
 			}
 
 			engineBusy = false;
+			System.gc();
 		}
 
 		/**

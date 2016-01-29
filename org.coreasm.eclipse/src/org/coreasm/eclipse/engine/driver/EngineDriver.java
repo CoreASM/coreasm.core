@@ -362,6 +362,8 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 			
 			runningInstance.engine.hardInterrupt();
 			
+			runningInstance.engine = null;
+			
 			runningInstance = null;
 			
 			postExecutionCallback();

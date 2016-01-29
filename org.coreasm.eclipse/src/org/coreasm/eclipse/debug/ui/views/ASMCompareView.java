@@ -2,7 +2,11 @@ package org.coreasm.eclipse.debug.ui.views;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
+import org.coreasm.eclipse.CoreASMPlugin;
+import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.ui.DebugUITools;
@@ -27,9 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.part.ViewPart;
-
-import org.coreasm.eclipse.CoreASMPlugin;
-import org.coreasm.eclipse.debug.core.model.ASMStackFrame;
 
 /**
  * Implementation of the ASM Compare View
@@ -201,61 +202,48 @@ public class ASMCompareView extends ViewPart implements IDebugContextListener {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-
+	
 	@Override
 	public void debugContextChanged(DebugContextEvent event) {
 		ISelection context = event.getContext();
 		if (context instanceof IStructuredSelection) {
 			clearColumns();
-			IVariable[][] variables = new IVariable[((IStructuredSelection)context).size()][];
+			ArrayList<IVariable[]> variables = new ArrayList<IVariable[]>();
 			int selectedSteps = 0;
 			for (Object element : ((IStructuredSelection)context).toList()) {
 				if (element instanceof ASMStackFrame) {
 					ASMStackFrame frame = (ASMStackFrame)element;
 					try {
-						columns.add(createColumn(frame.getStep(), selectedSteps));
-						variables[selectedSteps] = frame.getVariables();
+						columns.add(createColumn(frame.getStep(), selectedSteps++));
+						variables.add(frame.getVariables());
 					}
 					catch (DebugException e) {
 						e.printStackTrace();
 					}
-					selectedSteps++;
 				}
 			}
-			String prevVariableName = "";
-			ArrayList<String> variableNames = new ArrayList<String>();
-			if (variables.length > 0 && variables[0] != null) {
+			
+			HashMap<String, String[]> variableValues = new HashMap<String, String[]>();
+			if (!variables.isEmpty() && variables.get(0) != null) {
 				for (int i = 0; i < selectedSteps; i++) {
-					for (IVariable var : variables[i]) {
+					for (IVariable var : variables.get(i)) {
 						try {
-							String name = var.getName();
-							if (!variableNames.contains(name))
-								variableNames.add(variableNames.indexOf(prevVariableName) + 1, name);
-							prevVariableName = name;
+							String[] values = variableValues.get(var.getName());
+							if (values == null) {
+								values = new String[selectedSteps];
+								variableValues.put(var.getName(), values);
+							}
+							values[i] = var.getValue().getValueString();
 						} catch (DebugException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			}
-			compareViewElements = new ASMCompareViewElement[variableNames.size()];
-			for (int i = 0; i < compareViewElements.length; i++) {
-				String name = variableNames.get(i);
-				try {
-					String[] values = new String[selectedSteps];
-					for (int j = 0; j < selectedSteps; j++) {
-						for (IVariable var : variables[j]) {
-							if (name.equals(var.getName())) {
-								values[j] = var.getValue().getValueString();
-								break;
-							}
-						}
-					}
-					compareViewElements[i] = new ASMCompareViewElement(name, values);
-				} catch (DebugException e) {
-					e.printStackTrace();
-				}
-			}
+			compareViewElements = new ASMCompareViewElement[variableValues.size()];
+			int i = 0;
+			for (Entry<String, String[]> entry : variableValues.entrySet())
+				compareViewElements[i++] = new ASMCompareViewElement(entry.getKey(), entry.getValue());
 			if (differencesOnly) {
 				ArrayList<ASMCompareViewElement> elementsWithDifferences = new ArrayList<ASMCompareViewElement>();
 				for (ASMCompareViewElement element : compareViewElements) {

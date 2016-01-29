@@ -66,7 +66,7 @@ import org.eclipse.swt.widgets.Display;
 public class EngineDebugger extends EngineDriver implements InterpreterListener {
 	
 	private ControlAPI capi = (ControlAPI)engine;
-	private WatchExpressionAPI wapi = new WatchExpressionAPI(capi);
+	private WatchExpressionAPI wapi;
 	private Stack<ASMStorage> states = new Stack<ASMStorage>();
 	private ASMDebugTarget debugTarget;
 	private String sourceName;
@@ -252,11 +252,14 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	@Override
 	protected void preExecutionCallback() {
 		debugTarget.fireCreationEvent();
+		wapi = new WatchExpressionAPI(capi);
 	};
 	
 	@Override
 	protected void postExecutionCallback() {
 		states.clear();
+		wapi.dispose();
+		capi = null;
 	}
 	
 	@Override
