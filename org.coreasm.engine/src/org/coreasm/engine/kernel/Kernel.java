@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.Engine;
@@ -66,10 +69,6 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.PluginServiceInterface;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.plugins.kernel.CompilerKernelPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** 
  * Provides essential services to Kernel.
@@ -82,8 +81,6 @@ public class Kernel extends Plugin
 		implements VocabularyExtender, Aggregator, OperatorProvider, ParserPlugin, PluginServiceInterface {
 
 
-	private static final Logger logger = LoggerFactory.getLogger(Kernel.class);
-	
 	public static final VersionInfo VERSION_INFO = Engine.VERSION_INFO;
 
 	public static final String PLUGIN_NAME = Kernel.class.getSimpleName();
@@ -925,27 +922,21 @@ public class Kernel extends Plugin
 		UpdateMultiset updateSet2 = compAPI.getAllUpdates(2);
 		
 		for (Update ui1: updateSet1) {
-			if (!locUpdated(updateSet2, ui1.loc) && isBasicUpdate(updateSet1, ui1))
+			if (!compAPI.isLocationUpdated(2, ui1.loc) && isBasicUpdate(compAPI, 1, ui1))
 				compAPI.addComposedUpdate(ui1, this);
 		}
 		
 		for (Update ui2: updateSet2) {
-			if (isBasicUpdate(updateSet2, ui2))
+			if (isBasicUpdate(compAPI, 2, ui2))
 				compAPI.addComposedUpdate(ui2, this);
 		}
 	}
 	
-	private boolean locUpdated(UpdateMultiset uMset, Location l) {
-		for (Update u: uMset) 
-			if (u.loc.equals(l))
-				return true;
-		return false;
-	}
-
-	private boolean isBasicUpdate(UpdateMultiset uMset, Update u) {
-		for (Update update: uMset) 
-			if (!update.action.equals(Update.UPDATE_ACTION) && update.loc.equals(u.loc))
+	private boolean isBasicUpdate(PluginCompositionAPI compAPI, int setIndex, Update u) {
+		for (Update update : compAPI.getLocUpdates(setIndex, u.loc)) {
+			if (!update.action.equals(Update.UPDATE_ACTION))
 				return false;
+		}
 		return true;
 	}
 	

@@ -31,10 +31,10 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	protected Engine engine;
 
 	public enum TestEngineDriverStatus {
-		stopped, running, paused
+		stopped, running
 	};
 
-	private TestEngineDriverStatus status = TestEngineDriverStatus.stopped;
+	private TestEngineDriverStatus status = TestEngineDriverStatus.running;
 
 	private boolean updateFailed;
 	protected CoreASMError lastError;
@@ -45,7 +45,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	private boolean stopOnFailedUpdates;
 	private boolean stopOnStepsLimit;
 	private boolean shouldStop;
-	private boolean shouldPause;
 
 	private TestEngineDriver() {
 		if (runningInstances == null)
@@ -55,8 +54,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		engine = (Engine) org.coreasm.engine.CoreASMEngineFactory.createEngine();
 		engine.addObserver(this);
 		shouldStop = false;
-		shouldPause = true;
-		status = TestEngineDriverStatus.paused;
 
 		String pluginFolders = Tools.getRootFolder(Engine.class)+"/plugins";
 		if (System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY) != null)
@@ -151,10 +148,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 					engine.waitWhileBusy();
 					break;
 				}
-				else if (shouldPause || stepsLimit == 0) {
-					status = TestEngineDriverStatus.paused;
-					Thread.sleep(100);
-				}
 				else
 				{
 					status = TestEngineDriverStatus.running;
@@ -200,14 +193,12 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	 * starts the engine and resets
 	 */
 	public void start() {
-		shouldPause = false;
 		shouldStop = false;
 		stopOnStepsLimit = false;
 		resume();
 	}
 
 	public void restart() {
-		shouldPause = false;
 		shouldStop = false;
 		stopOnStepsLimit = false;
 		stepsLimit = -1;
@@ -223,30 +214,11 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	public void resume() {
 		if (stepsLimit == 0)
 			stepsLimit = -1;
-		shouldPause = false;
-		while (getStatus() == TestEngineDriverStatus.paused)
-			try {
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 	}
 
 	public void stop() {
 		shouldStop = true;
 		while (getStatus() != TestEngineDriverStatus.stopped)
-			try {
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-	}
-
-	public void pause() {
-		shouldPause = true;
-		while (getStatus() == TestEngineDriverStatus.running)
 			try {
 				Thread.sleep(50);
 			}

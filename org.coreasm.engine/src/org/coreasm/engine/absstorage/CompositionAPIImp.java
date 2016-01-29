@@ -34,6 +34,7 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 		actionLocations2 = new HashMap<String, Set<Location>>();
 		locUpdates1 = new HashMap<Location, UpdateMultiset>();
 		locUpdates2 = new HashMap<Location, UpdateMultiset>();
+		affectedLocationsComputed = false;
 	}
 
 	public UpdateMultiset getComposedUpdates() {
@@ -47,6 +48,7 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 
 	public Set<Location> getAffectedLocations() {
 		if (!affectedLocationsComputed) {
+			locUpdates1 = new HashMap<Location, UpdateMultiset>();
 			for (Update u: updates[1]) {
 				UpdateMultiset locUpdates = locUpdates1.get(u.loc);
 				if (locUpdates == null) {
@@ -54,7 +56,16 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 					locUpdates1.put(u.loc, locUpdates);
 				}
 				locUpdates.add(u);
+				if (!Update.UPDATE_ACTION.equals(u.action)) {
+					Set<Location> locations = actionLocations1.get(u.action);
+					if (locations == null) {
+						locations = new HashSet<Location>();
+						actionLocations1.put(u.action, locations);
+					}
+					locations.add(u.loc);
+				}
 			}
+			locUpdates2 = new HashMap<Location, UpdateMultiset>();
 			for (Update u: updates[2]) {
 				UpdateMultiset locUpdates = locUpdates2.get(u.loc);
 				if (locUpdates == null) {
@@ -62,7 +73,16 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 					locUpdates2.put(u.loc, locUpdates);
 				}
 				locUpdates.add(u);
+				if (!Update.UPDATE_ACTION.equals(u.action)) {
+					Set<Location> locations = actionLocations2.get(u.action);
+					if (locations == null) {
+						locations = new HashSet<Location>();
+						actionLocations2.put(u.action, locations);
+					}
+					locations.add(u.loc);
+				}
 			}
+			affectedLocationsComputed = true;
 		}
 		Set<Location> affectedLocations = new HashSet<Location>(locUpdates1.keySet());
 		affectedLocations.addAll(locUpdates2.keySet());
@@ -127,6 +147,8 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 	}
 
 	public boolean isLocationUpdated(int setIndex, Location l) {
+		if (!affectedLocationsComputed)
+			getAffectedLocations();
 		return setIndex == 1 && locUpdates1.containsKey(l) || setIndex == 2 && locUpdates2.containsKey(l);
 	}
 
