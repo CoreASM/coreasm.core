@@ -70,6 +70,11 @@ public final class OperatorRegistry {
 		return instance;
 	}
 	
+	public static void removeInstance(ControlAPI capi) {
+		if (instances != null)
+			instances.remove(capi);
+	}
+	
 	/**
 	 * Returns a set of the names of all the plugins that contribute an operator
 	 * with the given token and the grammar class.

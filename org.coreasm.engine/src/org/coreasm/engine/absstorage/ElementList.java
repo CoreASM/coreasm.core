@@ -16,7 +16,6 @@ package org.coreasm.engine.absstorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /** 
  *	A helper class that implements an umodifiable list of Elements.
@@ -88,28 +87,6 @@ public class ElementList extends ArrayList<Element> {
 			return NO_ARGUMENT;
 		else
 			return new ElementList(c);
-	}
-	
-	/**
-	 * An element list is equivalent to any List if both have the
-	 * same size and all the elements, in the same order, are equal.
-	 * 
-	 * @see java.util.AbstractList#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		boolean result = false;
-		if (obj instanceof List) {
-			List<?> list = (List<?>)obj;
-			result = list.size() == this.size();
-			if (result && this.size() > 0) {
-				for (int i = 0; i < this.size(); i++)
-					if (!this.get(i).equals(list.get(i))) {
-						result = false;
-						break;
-					}
-			}
-		}
-		return result;
 	}
 	
 	public String toString() {

@@ -41,9 +41,11 @@ import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.loader.PluginManager;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.JParsecParser;
+import org.coreasm.engine.parser.OperatorRegistry;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.Parser;
 import org.coreasm.engine.parser.ParserException;
+import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.PackagePlugin;
 import org.coreasm.engine.plugin.Plugin;
@@ -1031,6 +1033,8 @@ public class Engine implements ControlAPI {
 				
 				storage.clearState();
 				scheduler.dispose();
+				ParserTools.removeInstance(Engine.this);
+				OperatorRegistry.removeInstance(Engine.this);
 
 				// Terminating plugins
 				for (Plugin p: pluginLoader.getPlugins())

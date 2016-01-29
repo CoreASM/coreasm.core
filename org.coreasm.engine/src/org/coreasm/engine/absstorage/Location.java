@@ -86,32 +86,34 @@ public class Location {
 		return name + result;
 	}
 
-	/**
-	 * Indicates whether an object is equal to this location. 
-	 *  
-	 * @see Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object o) {
-		boolean result = false;
-		if (o instanceof Location) {
-			Location l = (Location)o;
-			result = this.name.equals(l.name) && this.args.equals(l.args);
-		}
-		return result;
-	}
-	
-	/**
-	 * Hashcode for locations. Must be overridden because equality is overridden. 
-	 *  
-	 * @see Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
-		int result = name.hashCode();
-		for (Element e: args)
-			result += e.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((args == null) ? 0 : args.hashCode());
 		return result;
 	}
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Location other = (Location) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (args == null) {
+			if (other.args != null)
+				return false;
+		} else if (!args.equals(other.args))
+			return false;
+		return true;
+	}
 }

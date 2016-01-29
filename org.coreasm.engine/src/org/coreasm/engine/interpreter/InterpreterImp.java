@@ -106,7 +106,6 @@ public class InterpreterImp implements Interpreter {
 		this.envMap = new HashMap<String, Stack<Element>>();
 		this.storage = capi.getStorage();
 		this.workCopies = new IdentityHashMap<ASTNode,Map<String, ASTNode>>();
-		interpreters.set(this);
 	}
 	
 	public Interpreter getInterpreterInstance() {
@@ -1283,7 +1282,6 @@ public class InterpreterImp implements Interpreter {
 	}
 
 	public void cleanUp() {
-		interpreters.set(this);
 		envMap.clear();
 		hiddenEnvMaps.clear();
 		ruleCallStack.clear();
