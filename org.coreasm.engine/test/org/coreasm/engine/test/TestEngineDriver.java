@@ -31,7 +31,7 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	protected Engine engine;
 
 	public enum TestEngineDriverStatus {
-		stopped, running
+		stopped, running, paused
 	};
 
 	private TestEngineDriverStatus status = TestEngineDriverStatus.running;
@@ -43,10 +43,11 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 	private boolean stopOnStableUpdates;
 	private boolean stopOnEmptyActiveAgents;
 	private boolean stopOnFailedUpdates;
-	private boolean stopOnStepsLimit;
-	private boolean shouldStop;
+	
+	private volatile boolean shouldStop;
+	private volatile boolean shouldPause;
 
-	private TestEngineDriver() {
+	private TestEngineDriver(String pluginFolders) {
 		if (runningInstances == null)
 			runningInstances = new LinkedList<TestEngineDriver>();
 		runningInstances.add(this);
@@ -55,7 +56,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		engine.addObserver(this);
 		shouldStop = false;
 
-		String pluginFolders = Tools.getRootFolder(Engine.class)+"/plugins";
 		if (System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY) != null)
 			pluginFolders += EngineProperties.PLUGIN_FOLDERS_DELIM
 					+ System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY);
@@ -85,7 +85,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		stopOnStableUpdates = false;
 		stopOnEmptyActiveAgents = true;
 		stopOnFailedUpdates = false;
-		stopOnStepsLimit = false; 	// TODO this should probably be false
 		stepsLimit = -1; //means infinite steps
 	}
 
@@ -97,8 +96,8 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		return runningInstances.contains(this);
 	}
 
-	public static TestEngineDriver newLaunch(String abspathname) {
-		TestEngineDriver td = new TestEngineDriver();
+	public static TestEngineDriver newLaunch(String abspathname, String pluginFolders) {
+		TestEngineDriver td = new TestEngineDriver(pluginFolders);
 		td.setDefaultConfig();
 		td.dolaunch(abspathname);
 		return td;
@@ -144,9 +143,13 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 			while (engine.getEngineMode() == EngineMode.emIdle) {
 
 				//set current mode
-				if (shouldStop && stepsLimit <= 0) {
+				if (shouldStop) {
 					engine.waitWhileBusy();
 					break;
+				}
+				else if (shouldPause) {
+					status = TestEngineDriverStatus.paused;
+					Thread.sleep(1);
 				}
 				else
 				{
@@ -159,10 +162,13 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 					engine.waitWhileBusy();
 
 					updates = engine.getUpdateSet(0);
-					if (terminated(step, updates, prevupdates))
+					if (terminated(updates, prevupdates))
 						break;
 					prevupdates = updates;
-					stepsLimit--;
+					if (step == stepsLimit) {
+						step = 0;
+						shouldPause = true;
+					}
 				}
 
 			}
@@ -183,65 +189,37 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 
 				this.engine.terminate();
 				this.engine.hardInterrupt();
+				
+				engine.waitWhileBusy();
 
 				status = TestEngineDriverStatus.stopped;
 			}
 		}
 	}
 
-	/**
-	 * starts the engine and resets
-	 */
-	public void start() {
-		shouldStop = false;
-		stopOnStepsLimit = false;
-		resume();
-	}
-
-	public void restart() {
-		shouldStop = false;
-		stopOnStepsLimit = false;
-		stepsLimit = -1;
-		while (getStatus() == TestEngineDriverStatus.running)
-			try {
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-	}
-
-	public void resume() {
+	public synchronized void resume() {
 		if (stepsLimit == 0)
 			stepsLimit = -1;
+		shouldPause = false;
+		while (getStatus() != TestEngineDriverStatus.running)
+			Thread.yield();
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		shouldStop = true;
 		while (getStatus() != TestEngineDriverStatus.stopped)
-			try {
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			Thread.yield();
 	}
 
-	public void executeSteps(int numberOfSteps) {
+	public synchronized void executeSteps(int numberOfSteps) {
 		stepsLimit = numberOfSteps;
-		stopOnStepsLimit = true;
 		resume();
-		while (stepsLimit > 0 && getStatus() != TestEngineDriverStatus.stopped)
-			try {
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		while (getStatus() == TestEngineDriverStatus.running)
+			Thread.yield();
 	}
 
 
-	private boolean terminated(int step, Set<Update> updates, Set<Update> prevupdates) {
+	private boolean terminated(Set<Update> updates, Set<Update> prevupdates) {
 		if (stopOnEmptyUpdates && updates.isEmpty())
 			return true;
 		if (stopOnStableUpdates && updates.equals(prevupdates))
@@ -249,8 +227,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		if (stopOnEmptyActiveAgents && engine.getAgentSet().size() < 1)
 			return true;
 		if (stopOnFailedUpdates && updateFailed)
-			return true;
-		if (stopOnStepsLimit && stepsLimit <= 0 && shouldStop)
 			return true;
 		return false;
 	}

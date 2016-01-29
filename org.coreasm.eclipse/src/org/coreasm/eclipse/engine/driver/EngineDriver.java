@@ -180,11 +180,6 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 		}
 	}
 	
-	public void finalize() {
-		engine.terminate();
-		//syntaxEngine.terminate();
-	}
-	
 	public static void newLaunch(String abspathname) throws CoreException {
 		newLaunch(abspathname, null);
 	}
@@ -305,7 +300,7 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 				engine.step(); step++;
 
 				while (!shouldStop && engine.isBusy())
-					Thread.sleep(50);
+					Thread.sleep(1);
 				
 				if (shouldStop) {
 					// give some time to the engine to finish
@@ -384,7 +379,7 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 			return true;
 		if (stopOnError && lastError!=null)
 			return true;
-		if (stopOnStepsLimit && step>stepsLimit)
+		if (stopOnStepsLimit && step>=stepsLimit)
 			return true;
 		return false;
 	}

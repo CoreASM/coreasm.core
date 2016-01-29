@@ -15,13 +15,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-
+import org.coreasm.engine.Engine;
 import org.coreasm.util.Tools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 public class TestAllCasm {
 
@@ -31,7 +32,7 @@ public class TestAllCasm {
 	public static void onlyOnce() {
 		//setup the test by finding the test specifications
 		URL url = TestAllCasm.class.getClassLoader().getResource("./without_test_class");
-
+		
 		try {
 			testFiles = new LinkedList<File>();
 			//recursively search for specifications
@@ -189,7 +190,7 @@ public class TestAllCasm {
 		try {
 			outContent.reset();
 			errContent.reset();
-			td = TestEngineDriver.newLaunch(testFile.getAbsolutePath());
+			td = TestEngineDriver.newLaunch(testFile.getAbsolutePath(), Tools.getRootFolder(Engine.class)+"/plugins");
 			if (TestEngineDriver.TestEngineDriverStatus.stopped.equals(td.getStatus()))
 				return new TestReport(
 						testFile, "engine is stopped!", steps, false);
