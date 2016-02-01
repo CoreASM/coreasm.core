@@ -14,11 +14,13 @@
 package org.coreasm.engine.plugins.turboasm;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
@@ -57,8 +59,13 @@ public class LocalRuleNode extends ASTNode {
 	 * @return a node
 	 */
 	public Collection<String> getFunctionNames() {
-		if (functionNames == null)
-			functionNames = new HashSet<String>(getFunctionMap().keySet());
+		if (functionNames == null) {
+			try {
+				functionNames = new HashSet<String>(getFunctionMap().keySet());
+			} catch (CoreASMError e) {
+				functionNames = Collections.emptySet();
+			}
+		}
 		return functionNames;
 	}
 	
@@ -66,14 +73,15 @@ public class LocalRuleNode extends ASTNode {
      * Returns a map of the function names to the nodes which
      * represent the terms that will be evaluated
      */
-    public Map<String,ASTNode> getFunctionMap() {
+    public Map<String,ASTNode> getFunctionMap() throws CoreASMError {
     	Map<String,ASTNode> functionMap = new HashMap<String,ASTNode>();
         
         ASTNode current = getFirst();
         
         while (current != null && current.getNextCSTNode() != null) {
         	if (TurboASMPlugin.LOCAL_INIT_OPERATOR.equals(current.getNextCSTNode().getToken())) {
-        		functionMap.put(current.getToken(),current.getNext());
+        		if (functionMap.put(current.getToken(),current.getNext()) != null)
+        			throw new CoreASMError("There must not be multiple initializations for the same function.", current);
         		current = current.getNext().getNext();
         	}
         	else {
