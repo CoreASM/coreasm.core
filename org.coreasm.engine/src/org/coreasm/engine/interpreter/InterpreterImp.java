@@ -1285,6 +1285,7 @@ public class InterpreterImp implements Interpreter {
 		envMap.clear();
 		hiddenEnvMaps.clear();
 		ruleCallStack.clear();
+		interpreters.set(this);
 	}
 
 	@Override
