@@ -13,12 +13,13 @@
  
 package org.coreasm.engine.plugins.turboasm;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.coreasm.engine.interpreter.ASTNode;
-import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
 /** 
@@ -31,7 +32,7 @@ public class LocalRuleNode extends ASTNode {
 
 	private static final long serialVersionUID = 1L;
 
-	private List<String> functionNames = null;
+	private Set<String> functionNames = null;
 	
 	/**
 	 */
@@ -56,13 +57,32 @@ public class LocalRuleNode extends ASTNode {
 	 * @return a node
 	 */
 	public Collection<String> getFunctionNames() {
-		if (functionNames == null) {
-			functionNames = new ArrayList<String>();
-			for (Node n: getAbstractChildNodes("lambda"))
-				functionNames.add(n.getToken());
-		}
+		if (functionNames == null)
+			functionNames = new HashSet<String>(getFunctionMap().keySet());
 		return functionNames;
 	}
+	
+	/**
+     * Returns a map of the function names to the nodes which
+     * represent the terms that will be evaluated
+     */
+    public Map<String,ASTNode> getFunctionMap() {
+    	Map<String,ASTNode> functionMap = new HashMap<String,ASTNode>();
+        
+        ASTNode current = getFirst();
+        
+        while (current != null && current.getNextCSTNode() != null) {
+        	if (TurboASMPlugin.LOCAL_INIT_OPERATOR.equals(current.getNextCSTNode().getToken())) {
+        		functionMap.put(current.getToken(),current.getNext());
+        		current = current.getNext().getNext();
+        	}
+        	else {
+        		functionMap.put(current.getToken(), null);
+        		current = current.getNext();
+        	}
+        }
+        return functionMap;
+    }
 	
 	/** 
 	 * Returns the sub-rule part of this rule

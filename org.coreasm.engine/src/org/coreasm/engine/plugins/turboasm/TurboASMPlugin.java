@@ -18,9 +18,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.codehaus.jparsec.Parser;
@@ -33,7 +35,9 @@ import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
+import org.coreasm.engine.absstorage.ElementList;
 import org.coreasm.engine.absstorage.FunctionElement;
+import org.coreasm.engine.absstorage.Location;
 import org.coreasm.engine.absstorage.MapFunction;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.Signature;
@@ -90,13 +94,14 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 	public static final String SEQ_KEYWORD = "seq";
 	public static final String RETURN_KEYWORD = "return";
 	public static final String LOCAL_KEYWORD = "local";
+	public static final String LOCAL_INIT_OPERATOR = ":=";
 
 	private Map<String, FunctionElement> functions;
 	private FunctionElement resultFunction;
 
 	private final String[] keywords = {"seq", "next", "endseq", "seqblock", "endseqblock", "iterate", "while", 
 			"local", "in", "return", "result"};
-	private final String[] operators = {",", "<-", "[", "]"};
+	private final String[] operators = {",", "<-", "[", "]", LOCAL_INIT_OPERATOR};
 	
 	private final CompilerPlugin compilerPlugin = new CompilerTurboASMPlugin(this);
 	
@@ -252,17 +257,21 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					new GrammarRule("ReturnRule", "'return' Term 'in' Rule", 
 							returnRuleParser, PLUGIN_NAME));
 
-			// LocalRule : 'local' ID (',' ID)* 'in' Rule
+			// LocalRule : 'local' ID (':=' Term)? (',' ID (':=' Term)?)* 'in' Rule
 			Parser<Node> localRuleParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser("local", PLUGIN_NAME),
-						pTools.csplus(idParser),
+						Parsers.array(	pTools.getOprParser(LOCAL_INIT_OPERATOR),
+										termParser).optional(),
+						pTools.csplus(	Parsers.array(	idParser,
+														Parsers.array(	pTools.getOprParser(LOCAL_INIT_OPERATOR),
+																		termParser).optional())),
 						pTools.getKeywParser("in", PLUGIN_NAME),
 						ruleParser
 					}).map(
 					new LocalRuleParseMap());
 			parsers.put("LocalRule",
-					new GrammarRule("LocalRule", "'local' ID (',' ID)* 'in' Rule", 
+					new GrammarRule("LocalRule", "'local' ID (':=' Term)? (',' ID (':=' Term)?)* 'in' Rule", 
 							localRuleParser, PLUGIN_NAME));
 			
 			// TurboASMRules : SeqRule | IterateRule | WhileRule | ReturnResultRule | LocalRule
@@ -522,11 +531,35 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 							if (pos instanceof LocalRuleNode) {
 								LocalRuleNode node = (LocalRuleNode)pos;
 								ASTNode rule = node.getRuleNode();
+								Map<String, ASTNode> variableMap = node.getFunctionMap();
+					
+								// evaluate all the terms that will be aliased
+								for (ASTNode n : variableMap.values()) {
+									if (n != null && !n.isEvaluated())
+										return n;
+								}
 								
 								// Evaluate the rule
-								if (!rule.isEvaluated()) 
+								if (!rule.isEvaluated()) {
+									Set<Update> updates = new HashSet<Update>();
+									for (Entry<String, ASTNode> entry : variableMap.entrySet()) {
+										ASTNode n = entry.getValue();
+										if (n != null)
+											updates.add(new Update(new Location(entry.getKey(), ElementList.NO_ARGUMENT), n.getValue(), Update.UPDATE_ACTION, interpreter.getSelf(), node.getScannerInfo()));
+									}
+									if (!updates.isEmpty()) {
+										storage.pushState();
+										storage.apply(updates);
+									}
 									return rule;
+								}
 								else {
+									for (ASTNode n : variableMap.values()) {
+										if (n != null) {
+											storage.popState();
+											break;
+										}
+									}
 									// Remove updates of local functions
 									UpdateMultiset updates = rule.getUpdates();
 									UpdateMultiset newUpdates = new UpdateMultiset();
