@@ -5,13 +5,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IDropToFrame;
-import org.eclipse.debug.core.model.IRegisterGroup;
-import org.eclipse.debug.core.model.IStackFrame;
-import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.core.model.IVariable;
-
 import org.coreasm.eclipse.debug.ui.views.ASMUpdate;
 import org.coreasm.eclipse.engine.debugger.EngineDebugger;
 import org.coreasm.engine.absstorage.AbstractStorage;
@@ -20,6 +13,12 @@ import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.Location;
+import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IDropToFrame;
+import org.eclipse.debug.core.model.IRegisterGroup;
+import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.core.model.IVariable;
 
 /**
  * This class contains the variables of the current state
@@ -28,13 +27,12 @@ import org.coreasm.engine.absstorage.Location;
  */
 public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDropToFrame {
 	private ASMThread thread;
-	private IVariable[] variables;
-	private ASMStorage state;
+	private int id;
 
-	public ASMStackFrame(ASMThread thread, ASMStorage state) {
+	public ASMStackFrame(ASMThread thread, int id) {
 		super((ASMDebugTarget) thread.getDebugTarget());
 		this.thread = thread;
-		this.state = state;
+		this.id = id;
 	}
 
 	@Override
@@ -85,7 +83,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	@Override
 	public void dropToFrame() throws DebugException {
 		if (EngineDebugger.getRunningInstance() != null)
-			EngineDebugger.getRunningInstance().dropToState(state);
+			EngineDebugger.getRunningInstance().dropToState(getState());
 	}
 
 	@Override
@@ -135,7 +133,8 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 
 	@Override
 	public IVariable[] getVariables() throws DebugException {
-		if (this.variables == null) {
+		ASMStorage state = getState();
+		if (thread.getVariables(state) == null) {
 			Set<Location> updateLocations = new HashSet<Location>();
 			ArrayList<IVariable> variables = new ArrayList<IVariable>();
 			ArrayList<IVariable> backgrounds = new ArrayList<IVariable>();
@@ -182,19 +181,19 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 				}
 			}
 			variables.add(new ASMVariable(this, "Backgrounds", new ASMValue(this, backgrounds.toArray(new IVariable[backgrounds.size()])), false));
-			this.variables = variables.toArray(new IVariable[variables.size()]);
+			thread.setVariables(state, variables.toArray(new IVariable[variables.size()]));
 		}
-		return this.variables;
+		return thread.getVariables(state);
 	}
 
 	@Override
 	public boolean hasVariables() throws DebugException {
-		return variables != null && variables.length > 0;
+		return getVariables() != null && getVariables().length > 0;
 	}
 
 	@Override
 	public int getLineNumber() throws DebugException {
-		return state.getLineNumber();
+		return getState().getLineNumber();
 	}
 
 	@Override
@@ -226,7 +225,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime * result + id;
 		return result;
 	}
 
@@ -239,20 +238,17 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 		if (getClass() != obj.getClass())
 			return false;
 		ASMStackFrame other = (ASMStackFrame) obj;
-		if (state == null) {
-			if (other.state != null)
-				return false;
-		} else if (!state.equals(other.state))
+		if (id != other.id)
 			return false;
 		return true;
 	}
-	
+
 	/**
 	 * Returns the state of the state assigned to this stack frame.
 	 * @return the state of the state assigned to this stack frame
 	 */
 	public ASMStorage getState() {
-		return state;
+		return thread.getState(this);
 	}
 
 	/**
@@ -260,7 +256,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the step of the state assigned to this stack frame
 	 */
 	public int getStep() {
-		return state.getStep();
+		if (getState() == null)
+			return -1;
+		return getState().getStep();
 	}
 	
 	/**
@@ -268,7 +266,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the last selected agents of the state assigned to this stack frame
 	 */
 	public String getLastSelectedAgents() {
-		return state.getLastSelectedAgents().toString();
+		return getState().getLastSelectedAgents().toString();
 	}
 	
 	/**
@@ -276,9 +274,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the name of the current rule of the state assigned to this stack frame
 	 */
 	public String getRuleName() {
-		if (state.getCallStack().isEmpty())
+		if (getState().getCallStack().isEmpty())
 			return "";
-		return state.getCallStack().peek().toString();
+		return getState().getCallStack().peek().toString();
 	}
 	
 	/**
@@ -286,7 +284,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the name of the source file of the state assigned to this stack frame
 	 */
 	public String getSourceName() {
-		return state.getSourceName();
+		return getState().getSourceName();
 	}
 	
 	/**
@@ -294,7 +292,7 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the updates of the state assigned to this stack frame
 	 */
 	public Set<ASMUpdate> getUpdates() {
-		return state.getUpdates();
+		return getState().getUpdates();
 	}
 	
 	/**
@@ -302,6 +300,6 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the agents of the state assigned to this stack frame
 	 */
 	public Set<? extends Element> getAgents() {
-		return state.getAgents();
+		return getState().getAgents();
 	}
 }

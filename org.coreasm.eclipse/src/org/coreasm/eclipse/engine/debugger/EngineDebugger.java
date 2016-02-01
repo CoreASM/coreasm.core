@@ -257,9 +257,24 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	
 	@Override
 	protected void postExecutionCallback() {
+		cleanUp();
+	}
+	
+	private void cleanUp() {
+		for (ASMStorage storage : states)
+			storage.clearState();
+		debugTarget.fireTerminateEvent();
+		debugTarget.cleanUp();
 		states.clear();
+		updates.clear();
+		ruleArgs.clear();
 		wapi.dispose();
 		capi = null;
+		prevPos = null;
+		stepOverPos = null;
+		stepReturnPos = null;
+		stateToDropTo = null;
+		System.gc();
 	}
 	
 	@Override
@@ -335,6 +350,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 							capi.getState().setValue(update.getLocation(), Element.UNDEF);
 					}
 				}
+				state.clearState();
 			}
 			ASTNode pos = stateToDropTo.getPosition();
 			if (pos == null) {
@@ -448,7 +464,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 			if (!states.isEmpty() && capi.getStepCount() == states.peek().getStep())
 				return;
 			while (!states.isEmpty() && states.peek().getStep() < 0)
-				states.pop();
+				states.pop().clearState();
 			state = new ASMStorage(wapi, capi.getStorage(), capi.getStepCount(), capi.getLastSelectedAgents(), envVars, updates, capi.getAgentSet(), callStack, sourceName, lineNumber);
 		}
 		else {

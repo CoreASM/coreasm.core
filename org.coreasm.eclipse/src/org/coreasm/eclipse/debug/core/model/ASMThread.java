@@ -7,6 +7,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.core.model.IVariable;
 
 /**
  * This class is needed by the eclipse debug framework. Incoming calls are redirected to the debug target.
@@ -14,10 +15,16 @@ import org.eclipse.debug.core.model.IThread;
  *
  */
 public class ASMThread extends ASMDebugElement implements IThread {
-	private HashMap<ASMStorage, IStackFrame> stackFrames = new HashMap<ASMStorage, IStackFrame>();
+	private HashMap<ASMStorage, IVariable[]> variables = new HashMap<ASMStorage, IVariable[]>();
+	private HashMap<IStackFrame, ASMStorage> states = new HashMap<IStackFrame, ASMStorage>();
 
 	public ASMThread(ASMDebugTarget debugTarget) {
 		super(debugTarget);
+	}
+	
+	public void cleanUp() {
+		variables.clear();
+		states.clear();
 	}
 
 	@Override
@@ -102,20 +109,29 @@ public class ASMThread extends ASMDebugElement implements IThread {
 		if (isSuspended()) {
 			ASMStorage[] states = EngineDebugger.getRunningInstance().getStates();
 			IStackFrame[] frames = new IStackFrame[states.length];
-			HashMap<ASMStorage, IStackFrame> stackFrames = new HashMap<ASMStorage, IStackFrame>();
+			this.states.clear();
 			
 			for (int i = 0; i < frames.length; i++) {
-				IStackFrame stackFrame = this.stackFrames.get(states[i]);
-				if (stackFrame == null)
-					stackFrame = new ASMStackFrame(this, states[i]);
+				IStackFrame stackFrame = new ASMStackFrame(this, i);
+				this.states.put(stackFrame, states[i]);
 				frames[frames.length - 1 - i] = stackFrame;
-				stackFrames.put(states[i], stackFrame);
 			}
-			this.stackFrames = stackFrames;
 			
 			return frames;
 		}
 		return new IStackFrame[0];
+	}
+	
+	public void setVariables(ASMStorage state, IVariable[] variables) {
+		this.variables.put(state, variables);
+	}
+	
+	public IVariable[] getVariables(ASMStorage state) {
+		return variables.get(state);
+	}
+	
+	public ASMStorage getState(ASMStackFrame stackFrame) {
+		return states.get(stackFrame);
 	}
 
 	@Override

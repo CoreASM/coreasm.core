@@ -101,6 +101,12 @@ public class ASMStorage extends HashStorage {
 		initAggregatorPluginCache();
 	}
 	
+	@Override
+	public synchronized void clearState() {
+		super.clearState();
+		storage = null;
+	}
+	
 	public void updateState(ASTNode pos, Set<? extends Element> lastSelectedAgents, Map<String, Element> envVars, Set<ASMUpdate> updates, Stack<CallStackElement> callStack, String sourceName, int lineNumber) {
 		this.pos = pos;
 		this.lastSelectedAgents = new HashSet<Element>(lastSelectedAgents);

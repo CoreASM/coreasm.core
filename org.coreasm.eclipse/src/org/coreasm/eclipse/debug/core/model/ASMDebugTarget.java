@@ -44,6 +44,10 @@ public class ASMDebugTarget extends ASMDebugElement implements IDebugTarget {
 		debugger.setDebugTarget(this);
 	}
 	
+	public void cleanUp() {
+		((ASMThread)threads[0]).cleanUp();
+	}
+	
 	public boolean isStepFailed() {
 		return debugger.isStepFailed();
 	}
