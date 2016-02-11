@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>org.coreasm.parent</artifactId>
 		<groupId>org.coreasm</groupId>
-		<version>1.7.2-SNAPSHOT</version>
+		<version>1.7.2</version>
 		<relativePath>../org.coreasm.parent</relativePath>
 	</parent>
 
@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>org.coreasm</groupId>
 			<artifactId>org.coreasm.util</artifactId>
-			<version>1.7.2-SNAPSHOT</version>
+			<version>1.7.2</version>
 		</dependency>
 	</dependencies>
 </project>
