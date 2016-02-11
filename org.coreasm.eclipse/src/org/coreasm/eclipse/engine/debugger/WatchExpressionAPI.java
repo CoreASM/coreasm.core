@@ -51,12 +51,11 @@ public class WatchExpressionAPI implements ControlAPI {
 	}
 	
 	public synchronized Element evaluateExpression(ASTNode expression, Element agent, ASMStorage storage) throws InterpreterException {
-		if (Thread.holdsLock(capi.getInterpreter().getInterpreterInstance()))
-			throw new InterpreterException(new CoreASMError("The current thread already holds a lock on the interpreter instance!"));
 		this.storage = storage;
 		copyOprRegFromCapi();
 		
 		Interpreter interpreter = new InterpreterImp(this);
+		interpreter.cleanUp();
 		
 		for (Entry<String, Element> environmentVariable : storage.getEnvVars().entrySet())
 			interpreter.addEnv(environmentVariable.getKey(), environmentVariable.getValue());
@@ -79,12 +78,13 @@ public class WatchExpressionAPI implements ControlAPI {
 		finally {
 			unbindPlugins();
 			storage.discardStackedUpdates();
+			OperatorRegistry.removeInstance(this);
 		}
 		
 		if (hasErrorOccurred())
 			throw new InterpreterException(lastError);
 		
-		return interpreter.getPosition().getValue();
+		return expression.getValue();
 	}
 	
 	public void dispose() {
@@ -107,7 +107,6 @@ public class WatchExpressionAPI implements ControlAPI {
 	private void copyOprRegFromCapi() {
 		OperatorRegistry oprRegCapi = OperatorRegistry.getInstance(capi);
 		OperatorRegistry oprReg = OperatorRegistry.getInstance(this);
-		OperatorRegistry.removeInstance(this);
 		oprReg.binOps.clear();
     	oprReg.binOps.putAll(oprRegCapi.binOps);
     	oprReg.unOps.clear();
