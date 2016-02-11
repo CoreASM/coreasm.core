@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.coreasm</groupId>
 	<artifactId>org.coreasm.parent</artifactId>
-	<version>1.7.2</version>
+	<version>1.7.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>CoreASM Parent Project</name>
 	<url>https://github.com/coreasm/coreasm.core</url>
@@ -67,8 +67,8 @@
 		<url>https://github.com/coreasm/coreasm.core</url>
 		<connection>scm:git:git://github.com/CoreASM/coreasm.core.git</connection>
 		<developerConnection>scm:git:git@github.com:CoreASM/coreasm.core.git</developerConnection>
-	  <tag>org.coreasm.parent-1.7.2</tag>
-  </scm>
+		<tag>org.coreasm.parent-1.7.2</tag>
+	</scm>
 
 	<distributionManagement>
 		<snapshotRepository>
