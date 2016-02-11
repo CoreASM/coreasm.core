@@ -3,12 +3,11 @@
 	<artifactId>org.coreasm.engine</artifactId>
 	<packaging>jar</packaging>
 	<name>CoreASM Engine</name>
-	<version>1.7.1</version>
 
 	<parent>
 		<artifactId>org.coreasm.parent</artifactId>
 		<groupId>org.coreasm</groupId>
-		<version>1.7.1</version>
+		<version>1.7.2-SNAPSHOT</version>
 		<relativePath>../org.coreasm.parent</relativePath>
 	</parent>
 
@@ -135,7 +134,7 @@
 		<dependency>
 			<groupId>org.coreasm</groupId>
 			<artifactId>org.coreasm.util</artifactId>
-			<version>1.7.1</version>
+			<version>1.7.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

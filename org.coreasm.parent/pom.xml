@@ -2,9 +2,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.coreasm</groupId>
 	<artifactId>org.coreasm.parent</artifactId>
-	<version>1.7.1</version>
+	<version>1.7.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>CoreASM Parent Project</name>
+	<url>https://github.com/coreasm/coreasm.core</url>
+	<description>The CoreASM project focuses on the design of a lean executable ASM (Abstract State Machines) language, in combination with a supporting tool environment for high-level design, experimental validation and formal verification (where appropriate) of abstract system models.</description>
 
 	<modules>
 		<module>../org.coreasm.util</module>
@@ -23,6 +25,7 @@
 			<comments> The CoreASM project is licensed under the Academic Free License version 3.0. This includes: -CoreASM Engine (also read JParsec-license.txt) -Standard plugins of the engine -Carma (command line driver of the engine) -CoreASM Eclipse Plugin A copy of this license can be found here: http://www.opensource.org/licenses/afl-3.0.php http://www.coreasm.org/afl-3.0.php</comments>
 		</license>
 	</licenses>
+
 	<developers>
 		<developer>
 			<name>Roozbeh Farahbod</name>
@@ -77,100 +80,146 @@
 		</repository>
 	</distributionManagement>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.6</version>
-				<extensions>true</extensions>
-				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-				</configuration>
+<build>
+	<sourceDirectory>src</sourceDirectory>
+	<resources>
+		<resource>
+			<directory>rsc</directory>
+		</resource>
+	</resources>
+	<testSourceDirectory>test</testSourceDirectory>
+	<testResources>
+		<testResource>
+			<directory>test-rsc</directory>
+		</testResource>
+	</testResources>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.1</version>
+			<configuration>
+				<source>1.7</source>
+				<target>1.7</target>
+			</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.2</version>
+				<version>2.5.3</version>
 				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<useReleaseProfile>false</useReleaseProfile>
 					<releaseProfiles>release</releaseProfiles>
-					<goals>deploy</goals>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 
 		</plugins>
+</build>
 
-		<sourceDirectory>src</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>rsc</directory>
-			</resource>
-		</resources>
-		<testSourceDirectory>test</testSourceDirectory>
-		<testResources>
-			<testResource>
-				<directory>test-rsc</directory>
-			</testResource>
-		</testResources>
-	</build>
+<profiles>
+	<profile>
+		<id>release</id>
+		<activation>
+			<activeByDefault>false</activeByDefault>
+		</activation>
+		<!-- requires the following entries in your maven setting.xml:
+			* ossrh account with access to https://issues.sonatype.org/browse/OSSRH-11541 (CoreASM at osshr)
+			* gpg2 / pgp signing information for ossrh maven central repository (default key of the system is used)
+
+			<settings>
+				<servers>
+					<server>
+						<id>ossrh</id>
+						<username>XXXXXXXXX</username>
+						<password>XXXXXXXXX</password>
+					</server>
+				</servers>
+				<profiles>
+					<profile>
+						<id>deploy</id>
+						<properties>
+							<gpg.executable>gpg2</gpg.executable>
+							<gpg.passphrase>XXXXXXXXX</gpg.passphrase>
+						</properties>
+					</profile>
+				</profiles>
+			</settings>
+		-->
+
+		<build>
+			<plugins>
+
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.6.6</version>
+					<extensions>true</extensions>
+					<configuration>
+						<serverId>ossrh</serverId>
+						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.2</version>
+					<configuration>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<useReleaseProfile>false</useReleaseProfile>
+						<releaseProfiles>release</releaseProfiles>
+						<goals>deploy</goals>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.9.1</version>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.5</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+			</plugins>
+		</build>
+	</profile>
+</profiles>
 
 	<dependencies>
 		<dependency>
@@ -195,6 +244,4 @@
 			<version>1.1.2</version>
 		</dependency>
 	</dependencies>
-	<url>https://github.com/coreasm/coreasm.core</url>
-	<description>The CoreASM project focuses on the design of a lean executable ASM (Abstract State Machines) language, in combination with a supporting tool environment for high-level design, experimental validation and formal verification (where appropriate) of abstract system models.</description>
 </project>
