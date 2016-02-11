@@ -10,8 +10,6 @@
 		<module>../org.coreasm.util</module>
 		<module>../org.coreasm.config</module>
 		<module>../org.coreasm.engine</module>
-		<module>../org.coreasm.ui.carma</module>
-		<!--<module>../org.coreasm.eclipse.parent</module>-->
 	</modules>
 
 	<properties>
@@ -64,9 +62,9 @@
 
 	<scm>
 		<url>https://github.com/coreasm/coreasm.core</url>
-		<connection>scm:git:https://github.com/CoreASM/coreasm.core.git</connection>
-	  <tag>org.coreasm.parent-1.7.1</tag>
-  </scm>
+		<connection>scm:git:git://github.com/CoreASM/coreasm.core.git</connection>
+		<developerConnection>scm:git:git@github.com:CoreASM/coreasm.core.git</developerConnection>
+	</scm>
 
 	<distributionManagement>
 		<snapshotRepository>
