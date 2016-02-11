@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Engine implements ControlAPI {
-	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 7, 1, "stable");
+	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 7, 3, "SNAPSHOT");
 
 	private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 

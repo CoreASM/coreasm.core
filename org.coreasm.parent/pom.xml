@@ -67,7 +67,7 @@
 		<url>https://github.com/coreasm/coreasm.core</url>
 		<connection>scm:git:git://github.com/CoreASM/coreasm.core.git</connection>
 		<developerConnection>scm:git:git@github.com:CoreASM/coreasm.core.git</developerConnection>
-		<tag>org.coreasm.parent-1.7.2</tag>
+		<tag>org.coreasm.parent-1.7.3-SNAPSHOT</tag>
 	</scm>
 
 	<distributionManagement>

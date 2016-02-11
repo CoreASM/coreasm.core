@@ -4,13 +4,6 @@
 	<name>CoreASM Carma</name>
 	<version>0.8.1-SNAPSHOT</version>
 
-	<parent>
-		<artifactId>org.coreasm.parent</artifactId>
-		<groupId>org.coreasm</groupId>
-		<version>1.7.1</version>
-		<relativePath>../org.coreasm.parent</relativePath>
-	</parent>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -67,7 +60,7 @@
 		<dependency>
 			<groupId>org.coreasm</groupId>
 			<artifactId>org.coreasm.engine</artifactId>
-			<version>1.7.1</version>
+			<version>1.7.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -80,4 +73,5 @@
 			<version>2.1</version>
 		</dependency>
 	</dependencies>
+	<groupId>org.coreasm</groupId>
 </project>
