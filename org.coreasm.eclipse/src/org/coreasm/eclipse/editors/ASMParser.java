@@ -173,6 +173,7 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 			else
 				// specification is not a module -> run root parser
 				parser = rootParser.from(parserTools.getTokenizer(), parserTools.getIgnored());
+			ParserTools.removeInstance(slimengine);
 			
 			rootnode = parser.parse(getSpec().getText());
 			doc.setRootnode(rootnode);

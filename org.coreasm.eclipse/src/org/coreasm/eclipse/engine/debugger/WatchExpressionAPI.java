@@ -76,6 +76,7 @@ public class WatchExpressionAPI implements ControlAPI {
 			} while (!(interpreter.isExecutionComplete() || hasErrorOccurred()));
 		}
 		finally {
+			interpreter.dispose();
 			unbindPlugins();
 			storage.discardStackedUpdates();
 			OperatorRegistry.removeInstance(this);
