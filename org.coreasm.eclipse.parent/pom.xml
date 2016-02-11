@@ -10,7 +10,7 @@
 	<parent>
 		<artifactId>org.coreasm.parent</artifactId>
 		<groupId>org.coreasm</groupId>
-		<version>1.7.1-SNAPSHOT</version>
+		<version>1.7.1</version>
 		<relativePath>../org.coreasm.parent</relativePath>
 	</parent>
 
@@ -22,34 +22,15 @@
 
 	<properties>
 		<tycho-version>0.20.0</tycho-version>
-		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
 		<kepler-repo.url>http://download.eclipse.org/releases/kepler</kepler-repo.url>
+		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
+		<luna-repo.url>http://download.eclipse.org/releases/mars</luna-repo.url>
+		<mars-repo.url>http://download.eclipse.org/releases/mars</mars-repo.url>
 	</properties>
-	
-	<distributionManagement>
-	  <snapshotRepository>
-	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-	  </snapshotRepository>
-	  <repository>
-	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-	  </repository>
-	</distributionManagement>
-	
+
 	<build>
 		<plugins>
-			<plugin>
-		      <groupId>org.sonatype.plugins</groupId>
-		      <artifactId>nexus-staging-maven-plugin</artifactId>
-		      <version>1.6.3</version>
-		      <extensions>true</extensions>
-		      <configuration>
-		        <serverId>ossrh</serverId>
-		        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-		        <autoReleaseAfterClose>true</autoReleaseAfterClose>
-		      </configuration>
-		    </plugin>			
+
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-versions-plugin</artifactId>
@@ -167,14 +148,9 @@
 
 	<repositories>
 		<repository>
-			<id>kepler</id>
+			<id>eclipse version</id>
 			<url>${kepler-repo.url}</url>
 			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>juno</id>
-			<layout>p2</layout>
-			<url>${juno-repo.url}</url>
 		</repository>
 	</repositories>
 </project>

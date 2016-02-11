@@ -67,8 +67,8 @@ import org.slf4j.LoggerFactory;
  * @author Roozbeh Farahbod, Michael Stegmaier, Marcel Dausend
  * 
  */
-public class Engine implements ControlAPI {	
-	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 6, 5, "beta");
+public class Engine implements ControlAPI {
+	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 7, 1, "stable");
 
 	private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 
@@ -85,7 +85,7 @@ public class Engine implements ControlAPI {
 	private final Interpreter interpreter;
 	
 	/** Loader used to obtain plugin classes */
-	private PluginManager pluginLoader;
+	private final PluginManager pluginLoader;
 
 	/** List of grammar rules gathered from plugins */
 	private ArrayList<GrammarRule> grammarRules = null;
@@ -106,23 +106,23 @@ public class Engine implements ControlAPI {
 	private volatile boolean engineBusy = false;
 
 	/** Cache of EngineMode events */
-	private Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
+	private final Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
 
 	/** CoreASM Plugin Service Registry */
 	private Map<String, Set<ServiceProvider>> serviceRegistry;
 
 	/** User command queue */
 //	private Queue<EngineCommand> commandQueue;
-	private CommandQueue commandQueue;
+	private final CommandQueue commandQueue;
 
 	/** Properties of the engine */
 	private EngineProperties properties;
 
 	/** Collection of registered observers */
-	private Collection<EngineObserver> observers;
+	private final Collection<EngineObserver> observers;
 
 	/** List of interpreter listeners */
-	private LinkedList<InterpreterListener> interpreterListeners;
+	private final LinkedList<InterpreterListener> interpreterListeners;
 
 	/** Remaining steps of the current run */
 	private int remainingRunCount = 0;
@@ -138,7 +138,7 @@ public class Engine implements ControlAPI {
 
 	private boolean isStateInitialized = false;
 
-	private List<CoreASMWarning> warnings;
+	private final List<CoreASMWarning> warnings;
 
 	/**
 	 * Constructs a new CoreASM engine with the specified properties. This is
