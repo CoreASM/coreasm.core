@@ -67,7 +67,7 @@
 		<url>https://github.com/coreasm/coreasm.core</url>
 		<connection>scm:git:git://github.com/CoreASM/coreasm.core.git</connection>
 		<developerConnection>scm:git:git@github.com:CoreASM/coreasm.core.git</developerConnection>
-		<tag>org.coreasm.parent-1.7.3-SNAPSHOT</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<distributionManagement>
@@ -168,9 +168,19 @@
 					<version>2.5.2</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<useReleaseProfile>false</useReleaseProfile>
-						<releaseProfiles>release</releaseProfiles>
+						<!-- Keep changes in the local repo, push will be done afterwards -->
+						<pushChanges>false</pushChanges>
+						<localCheckout>true</localCheckout>
+						<!-- Use a better name for the tag -->
+						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<goals>deploy</goals>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.maven.scm</groupId>
+								<artifactId>maven-scm-provider-gitexe</artifactId>
+								<version>1.9</version>
+							</dependency>
+						</dependencies>
 					</configuration>
 				</plugin>
 
