@@ -741,7 +741,7 @@ public class Engine implements ControlAPI {
 	public void waitWhileBusy() {
 		while (isBusy()) {
 			try {
-				Thread.sleep(1);
+				Thread.sleep(0);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -805,11 +805,11 @@ public class Engine implements ControlAPI {
 						}
 
 						// if engine mode is idle and there is no user command,
-						// sleep for a short time (5ms)
+						// sleep for a short time
 						if ((engineMode == EngineMode.emIdle && commandQueue.isEmpty())
 									|| engineMode == EngineMode.emError) {
 							try {
-								Thread.sleep(1);
+								Thread.sleep(0);
 							} catch (InterruptedException e) {
 								logger.debug( "Engine is forced to stop.");
 							}

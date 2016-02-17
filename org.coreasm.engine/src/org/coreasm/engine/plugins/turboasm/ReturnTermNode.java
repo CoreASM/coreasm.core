@@ -22,22 +22,22 @@ import org.coreasm.engine.interpreter.ScannerInfo;
  * @author  Roozbeh Farahbod
  * 
  */
-public class ReturnRuleNode extends ASTNode {
+public class ReturnTermNode extends ASTNode {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 */
-	public ReturnRuleNode(ScannerInfo info) {
+	public ReturnTermNode(ScannerInfo info) {
 		super(
 				TurboASMPlugin.PLUGIN_NAME,
 				ASTNode.EXPRESSION_CLASS,
-				"ReturnRule",
+				"ReturnTerm",
 				null,
 				info);
 	}
 
-	public ReturnRuleNode(ReturnRuleNode node) {
+	public ReturnTermNode(ReturnTermNode node) {
 		super(node);
 	}
 	

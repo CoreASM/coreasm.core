@@ -162,12 +162,10 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
             		   storage.apply(aggregatedUpdate);
             		   return letNode.getInRule();
             	   }
-            	   else
-            		   throw new EngineError();
                } catch (EngineError e) {
-            	   capi.warning(PLUGIN_NAME, "TurboASM Plugin: Inconsistent updates computed in sequence. Leaving the sequence", letNode.getInRule(), interpreter);
-            	   pos.setNode(null, updates, null);
                }
+               capi.warning(PLUGIN_NAME, "TurboASM Plugin: Inconsistent updates computed in sequence. Leaving the sequence", letNode.getInRule(), interpreter);
+               pos.setNode(null, updates, null);
                
                return pos;
            }

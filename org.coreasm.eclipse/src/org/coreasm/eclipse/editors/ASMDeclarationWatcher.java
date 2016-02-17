@@ -32,7 +32,7 @@ import org.coreasm.engine.plugins.signature.EnumerationNode;
 import org.coreasm.engine.plugins.signature.FunctionNode;
 import org.coreasm.engine.plugins.signature.UniverseNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
-import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
+import org.coreasm.engine.plugins.turboasm.ReturnTermNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -264,7 +264,7 @@ public class ASMDeclarationWatcher implements Observer {
 			super(node.getNameSignatureNode().getFirst().getToken(), null);
 			for (ASTNode param = node.getNameSignatureNode().getFirst().getNext(); param != null; param = param.getNext()) 
 				params.add(param.getToken());
-			if (node.getFirst().getNext() instanceof ReturnRuleNode)
+			if (node.getFirst().getNext() instanceof ReturnTermNode)
 				returnExpression = node.getFirst().getNext().getFirst().unparseTree().replace("  ", " ");
 			this.comment = comment;
 		}
@@ -622,7 +622,7 @@ public class ASMDeclarationWatcher implements Observer {
 			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
 				return true;
 		}
-		if (isReturnRuleExpression(frNode))
+		if (isReturnTermExpression(frNode))
 			return true;
 		return false;
 	}
@@ -636,21 +636,21 @@ public class ASMDeclarationWatcher implements Observer {
 		return null;
 	}
 	
-	private static boolean isReturnRuleExpression(FunctionRuleTermNode frNode) {
-		for (ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode); returnRuleNode != null; returnRuleNode = getParentReturnRuleNode(returnRuleNode)) {
-			ASTNode expression = returnRuleNode.getExpressionNode();
+	private static boolean isReturnTermExpression(FunctionRuleTermNode frNode) {
+		for (ReturnTermNode returnTermNode = getParentReturnTermNode(frNode); returnTermNode != null; returnTermNode = getParentReturnTermNode(returnTermNode)) {
+			ASTNode expression = returnTermNode.getExpressionNode();
 			if (expression instanceof FunctionRuleTermNode && ((FunctionRuleTermNode)expression).getName().equals(frNode.getName()))
 				return true;
 		}
 		return false;
 	}
 	
-	private static ReturnRuleNode getParentReturnRuleNode(ASTNode node) {
-		ASTNode returnRuleNode = node.getParent();
-		while (returnRuleNode != null && !(returnRuleNode instanceof ReturnRuleNode))
-			returnRuleNode = returnRuleNode.getParent();
-		if (returnRuleNode instanceof ReturnRuleNode)
-			return (ReturnRuleNode)returnRuleNode;
+	private static ReturnTermNode getParentReturnTermNode(ASTNode node) {
+		ASTNode returnTermNode = node.getParent();
+		while (returnTermNode != null && !(returnTermNode instanceof ReturnTermNode))
+			returnTermNode = returnTermNode.getParent();
+		if (returnTermNode instanceof ReturnTermNode)
+			return (ReturnTermNode)returnTermNode;
 		return null;
 	}
 	

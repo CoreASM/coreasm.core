@@ -31,7 +31,7 @@ import org.coreasm.engine.plugins.predicatelogic.ForallExpNode;
 import org.coreasm.engine.plugins.set.SetCompNode;
 import org.coreasm.engine.plugins.signature.DerivedFunctionNode;
 import org.coreasm.engine.plugins.turboasm.LocalRuleNode;
-import org.coreasm.engine.plugins.turboasm.ReturnRuleNode;
+import org.coreasm.engine.plugins.turboasm.ReturnTermNode;
 
 public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 	private final ASMEditor parentEditor;
@@ -169,7 +169,7 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 			if (localRuleNode.getFunctionNames().contains(frNode.getName()))
 				return true;
 		}
-		if (isReturnRuleExpression(frNode))
+		if (isReturnTermExpression(frNode))
 			return true;
 		return false;
 	}
@@ -329,21 +329,21 @@ public class NumberOfArgumentsWarningRecognizer implements IWarningRecognizer {
 		return null;
 	}
 	
-	private boolean isReturnRuleExpression(FunctionRuleTermNode frNode) {
-		for (ReturnRuleNode returnRuleNode = getParentReturnRuleNode(frNode); returnRuleNode != null; returnRuleNode = getParentReturnRuleNode(returnRuleNode)) {
-			ASTNode expression = returnRuleNode.getExpressionNode();
+	private boolean isReturnTermExpression(FunctionRuleTermNode frNode) {
+		for (ReturnTermNode returnTermNode = getParentReturnTermNode(frNode); returnTermNode != null; returnTermNode = getParentReturnTermNode(returnTermNode)) {
+			ASTNode expression = returnTermNode.getExpressionNode();
 			if (expression instanceof FunctionRuleTermNode && ((FunctionRuleTermNode)expression).getName().equals(frNode.getName()))
 				return true;
 		}
 		return false;
 	}
 	
-	private ReturnRuleNode getParentReturnRuleNode(ASTNode node) {
-		ASTNode returnRuleNode = node.getParent();
-		while (returnRuleNode != null && !(returnRuleNode instanceof ReturnRuleNode))
-			returnRuleNode = returnRuleNode.getParent();
-		if (returnRuleNode instanceof ReturnRuleNode)
-			return (ReturnRuleNode)returnRuleNode;
+	private ReturnTermNode getParentReturnTermNode(ASTNode node) {
+		ASTNode returnTermNode = node.getParent();
+		while (returnTermNode != null && !(returnTermNode instanceof ReturnTermNode))
+			returnTermNode = returnTermNode.getParent();
+		if (returnTermNode instanceof ReturnTermNode)
+			return (ReturnTermNode)returnTermNode;
 		return null;
 	}
 	

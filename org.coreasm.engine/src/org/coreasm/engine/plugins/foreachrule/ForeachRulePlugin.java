@@ -224,17 +224,17 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
 	                }
             	}
             	if (shouldChoose) {
-        			if (foreachNode.getIfnoneRule() == null || updates.containsKey(foreachNode)) {
+            		UpdateMultiset updateSet = updates.remove(foreachNode);
+        			if (updateSet != null) {
             			// we're done
-        				UpdateMultiset updateSet = updates.remove(pos);
-        				if (updateSet == null)
-        					updateSet = new UpdateMultiset();
         				storage.popState();
         				foreachNode.setNode(null, updateSet, null);
         	            return foreachNode;
         			}
-        			// pos := delta
-        			pos = foreachNode.getIfnoneRule();
+        			if (foreachNode.getIfnoneRule() != null) {
+	        			// pos := delta
+	        			pos = foreachNode.getIfnoneRule();
+        			}
         		}
             }
             else if (((foreachNode.getCondition() != null) && foreachNode.getCondition().isEvaluated()) &&
@@ -265,18 +265,18 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             }
             else if (((foreachNode.getCondition() == null) || foreachNode.getCondition().isEvaluated()) && 
                     (foreachNode.getDoRule().isEvaluated())) {
-            	if (!updates.containsKey(pos))
+            	if (!updates.containsKey(foreachNode)) {
+            		updates.put(foreachNode, new UpdateMultiset());
             		storage.pushState();
+            	}
                 
             	if (foreachNode.getDoRule().getUpdates() != null) {
-	            	UpdateMultiset composedUpdates = updates.get(pos);
-					if (composedUpdates == null)
-						composedUpdates = new UpdateMultiset();
+	            	UpdateMultiset composedUpdates = updates.get(foreachNode);
 					Set<Update> aggregatedUpdates = storage.performAggregation(foreachNode.getDoRule().getUpdates());
 					if (!storage.isConsistent(aggregatedUpdates))
 						throw new CoreASMError("Inconsistent updates computed in loop.", pos);
 					storage.apply(aggregatedUpdates);
-					updates.put(pos, storage.compose(composedUpdates, foreachNode.getDoRule().getUpdates()));
+					updates.put(foreachNode, storage.compose(composedUpdates, foreachNode.getDoRule().getUpdates()));
             	}
                 
                 // ClearTree(gamma/delta)
