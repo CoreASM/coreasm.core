@@ -741,7 +741,7 @@ public class Engine implements ControlAPI {
 	public void waitWhileBusy() {
 		while (isBusy()) {
 			try {
-				Thread.sleep(0);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -809,7 +809,7 @@ public class Engine implements ControlAPI {
 						if ((engineMode == EngineMode.emIdle && commandQueue.isEmpty())
 									|| engineMode == EngineMode.emError) {
 							try {
-								Thread.sleep(0);
+								Thread.sleep(1);
 							} catch (InterruptedException e) {
 								logger.debug( "Engine is forced to stop.");
 							}
