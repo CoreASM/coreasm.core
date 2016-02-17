@@ -29,6 +29,7 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.predicatelogic.CompilerPredicateLogicPlugin;
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
+import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Enumerable;
@@ -203,7 +204,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             	if (r.equals(Element.UNDEF)) {
             		result = Element.UNDEF;
 					capi.warning(PLUGIN_NAME, "The operand of the unary operator '" + x + "' was undef.", opNode, interpreter);
-            	} else 
+            	} else {
 	                if (r instanceof Enumerable) {
 		                Enumerable enumerableElement = (Enumerable) r;
 		                
@@ -214,6 +215,14 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 		                    result = BooleanElement.valueOf(!enumerableElement.contains(l));
 		                }
 	                }
+	                else if (r instanceof AbstractUniverse) {
+	                	AbstractUniverse universe = (AbstractUniverse)r;
+						if (IN_OP.equals(x))
+							result = BooleanElement.valueOf(universe.member(l));
+						else if (NOTIN_OP.equals(x))
+							result = BooleanElement.valueOf(!universe.member(l));
+	                }
+            	}
             }
             else {
                 // confirm that operands are boolean elements, otherwise throw an error
