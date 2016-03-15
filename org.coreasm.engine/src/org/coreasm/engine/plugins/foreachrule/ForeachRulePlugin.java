@@ -225,16 +225,16 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             	}
             	if (shouldChoose) {
             		UpdateMultiset updateSet = updates.remove(foreachNode);
-        			if (updateSet != null) {
+        			if (foreachNode.getIfnoneRule() == null || updateSet != null) {
             			// we're done
+        				if (updateSet == null)
+        					updateSet = new UpdateMultiset();
         				storage.popState();
         				foreachNode.setNode(null, updateSet, null);
         	            return foreachNode;
         			}
-        			if (foreachNode.getIfnoneRule() != null) {
-	        			// pos := delta
-	        			pos = foreachNode.getIfnoneRule();
-        			}
+        			// pos := delta
+        			pos = foreachNode.getIfnoneRule();
         		}
             }
             else if (((foreachNode.getCondition() != null) && foreachNode.getCondition().isEvaluated()) &&
