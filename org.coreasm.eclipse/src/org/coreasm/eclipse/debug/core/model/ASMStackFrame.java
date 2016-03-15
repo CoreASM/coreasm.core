@@ -1,6 +1,7 @@
 package org.coreasm.eclipse.debug.core.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -197,7 +198,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 
 	@Override
 	public int getLineNumber() throws DebugException {
-		return getState().getLineNumber();
+		ASMStorage state = getState();
+		if (state == null)
+			return -1;
+		return state.getLineNumber();
 	}
 
 	@Override
@@ -260,9 +264,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the step of the state assigned to this stack frame
 	 */
 	public int getStep() {
-		if (getState() == null)
+		ASMStorage state = getState();
+		if (state == null)
 			return -1;
-		return getState().getStep();
+		return state.getStep();
 	}
 	
 	/**
@@ -270,7 +275,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the last selected agents of the state assigned to this stack frame
 	 */
 	public String getLastSelectedAgents() {
-		return getState().getLastSelectedAgents().toString();
+		ASMStorage state = getState();
+		if (state == null)
+			return "";
+		return state.getLastSelectedAgents().toString();
 	}
 	
 	/**
@@ -278,9 +286,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the name of the current rule of the state assigned to this stack frame
 	 */
 	public String getRuleName() {
-		if (getState().getCallStack().isEmpty())
+		ASMStorage state = getState();
+		if (state == null || state.getCallStack().isEmpty())
 			return "";
-		return getState().getCallStack().peek().toString();
+		return state.getCallStack().peek().toString();
 	}
 	
 	/**
@@ -299,7 +308,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the updates of the state assigned to this stack frame
 	 */
 	public Set<ASMUpdate> getUpdates() {
-		return getState().getUpdates();
+		ASMStorage state = getState();
+		if (state == null)
+			return Collections.emptySet();
+		return state.getUpdates();
 	}
 	
 	/**
@@ -307,6 +319,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the agents of the state assigned to this stack frame
 	 */
 	public Set<? extends Element> getAgents() {
-		return getState().getAgents();
+		ASMStorage state = getState();
+		if (state == null)
+			return Collections.emptySet();
+		return state.getAgents();
 	}
 }
