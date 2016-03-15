@@ -271,6 +271,8 @@ public class SchedulerImp implements Scheduler {
 		UpdateMultiset updates = cpe.getResultantUpdateSet();
 
 		if (updates == null) {
+			if (cpe.getError() == null)
+				throw new EngineException("A fatal error occurred that could not be caught.");
 			logger.error(cpe.getError().toString());
 			StackTraceElement[] trace = cpe.getError().getStackTrace();
 			for (StackTraceElement ste : trace)
