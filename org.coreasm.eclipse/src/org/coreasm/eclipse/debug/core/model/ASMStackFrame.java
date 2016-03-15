@@ -26,13 +26,17 @@ import org.eclipse.debug.core.model.IVariable;
  *
  */
 public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDropToFrame {
-	private ASMThread thread;
-	private int id;
+	private final ASMThread thread;
+	private final int id;
+	
+	private String sourceName = "";
 
 	public ASMStackFrame(ASMThread thread, int id) {
 		super((ASMDebugTarget) thread.getDebugTarget());
 		this.thread = thread;
 		this.id = id;
+		// Cache the initial source name
+		getSourceName();
 	}
 
 	@Override
@@ -284,7 +288,10 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the name of the source file of the state assigned to this stack frame
 	 */
 	public String getSourceName() {
-		return getState().getSourceName();
+		ASMStorage state = getState();
+		if (state == null)
+			return sourceName;
+		return sourceName = state.getSourceName();
 	}
 	
 	/**

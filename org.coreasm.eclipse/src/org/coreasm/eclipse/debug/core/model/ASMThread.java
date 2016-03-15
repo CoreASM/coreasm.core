@@ -127,6 +127,8 @@ public class ASMThread extends ASMDebugElement implements IThread {
 	}
 	
 	public IVariable[] getVariables(ASMStorage state) {
+		if (state == null)
+			return new IVariable[0];
 		return variables.get(state);
 	}
 	

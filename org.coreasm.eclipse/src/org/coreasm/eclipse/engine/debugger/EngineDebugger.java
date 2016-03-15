@@ -221,7 +221,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	}
 	
 	public boolean isStepFailed() {
-		return capi.getStorage().getLastInconsistentUpdate() != null;
+		return capi.getStorage() != null && capi.getStorage().getLastInconsistentUpdate() != null;
 	}
 	
 	public boolean isUpdateConsistent(ASMUpdate update) {
