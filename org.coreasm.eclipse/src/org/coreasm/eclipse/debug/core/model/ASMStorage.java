@@ -39,7 +39,7 @@ import org.coreasm.engine.plugin.ParserPlugin;
 public class ASMStorage extends HashStorage {
 	private WatchExpressionAPI wapi;
 	private AbstractStorage storage;
-	private int step;
+	private final int step;
 	private Set<Element> lastSelectedAgents = new HashSet<Element>();
 	private Map<String, Element> envVars;
 	private Map<Location, Element> stackedUpdates;
