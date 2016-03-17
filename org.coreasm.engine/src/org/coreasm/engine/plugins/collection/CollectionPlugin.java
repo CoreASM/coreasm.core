@@ -23,6 +23,7 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.collection.CompilerCollectionPlugin;
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.FunctionElement;
@@ -213,15 +214,15 @@ public class CollectionPlugin extends Plugin
 											
 									null);
 							} catch (InterpreterException e) {
-								capi.error(e.getMessage(), pos, interpreter);
+								throw new CoreASMError(e.getMessage(), pos);
 							}
 
 						} else
-							capi.error("Incremental add update only applies to modifiable enumerables." + Tools.getEOL() 
-									+ "Failed adding " + atNode.getAddElement() + " to " + collectionNode.getValue() + " at " + collectionNode.getLocation() + ".",
-									atNode, interpreter);
+							throw new CoreASMError("Incremental add update only applies to modifiable enumerables." + Tools.getEOL() 
+									+ "Failed to add " + atNode.getAddElement() + " to " + atNode.getToLocation() + " because " + atNode.getToLocation() + " was " + collectionNode.getValue() + ".",
+									atNode);
 					} else
-						capi.error("Cannot perform incremental add update on a non-location!", atNode, interpreter);
+						throw new CoreASMError("Cannot perform incremental add update on a non-location!", atNode);
 				}
 				
 			}
@@ -255,15 +256,15 @@ public class CollectionPlugin extends Plugin
 												pos),
 										null);
 							} catch (InterpreterException e) {
-								capi.error(e.getMessage(), pos, interpreter);
+								throw new CoreASMError(e.getMessage(), pos);
 							}
 							
 						} else
-							capi.error("Incremental remove update only applies to modifiable enumerables." + Tools.getEOL() 
-										+ "Failed removing " + rfNode.getRemoveElement() + " from " + collectionNode.getValue() + " at " + collectionNode.getLocation() + ".",
-										rfNode, interpreter);
+							throw new CoreASMError("Incremental remove update only applies to modifiable enumerables." + Tools.getEOL() 
+										+ "Failed to remove " + rfNode.getRemoveElement() + " from " + rfNode.getFromLocation() + " because " + rfNode.getFromLocation() + " was " + collectionNode.getValue() + ".",
+										rfNode);
 					} else
-						capi.error("Cannot perform incremental remove update on a non-location!", rfNode, interpreter);
+						throw new CoreASMError("Cannot perform incremental remove update on a non-location!", rfNode);
 				}
 			}
 		}
