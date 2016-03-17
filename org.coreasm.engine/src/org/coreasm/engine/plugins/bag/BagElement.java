@@ -44,7 +44,7 @@ public class BagElement extends AbstractBagElement implements ModifiableCollecti
 	protected final Map<Element,Integer> members;
 	
 	// It is a list to improve performance
-	protected List<Element> enumerationCachse = null;
+	protected List<Element> enumerationCache = null;
 	
 	public BagElement() {
 		members = new HashMap<Element,Integer>();
@@ -303,16 +303,16 @@ public class BagElement extends AbstractBagElement implements ModifiableCollecti
 
 	public List<Element> getIndexedView()
 			throws UnsupportedOperationException {
-		if (enumerationCachse == null) {
+		if (enumerationCache == null) {
 			List<Element> result = new ArrayList<Element>();
 			for (Entry<? extends Element, Integer> e: members.entrySet())
 				if (e.getValue() != null && e.getValue() > 0) {
 					for (int i=0; i < e.getValue(); i++)
 						result.add(e.getKey());
 				}
-			enumerationCachse = Collections.unmodifiableList(result);
+			enumerationCache = Collections.unmodifiableList(result);
 		}
-		return enumerationCachse;
+		return enumerationCache;
 	}
 
 	public boolean supportsIndexedView() {

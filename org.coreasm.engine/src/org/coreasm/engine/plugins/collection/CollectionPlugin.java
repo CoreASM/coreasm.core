@@ -218,7 +218,7 @@ public class CollectionPlugin extends Plugin
 
 						} else
 							capi.error("Incremental add update only applies to modifiable enumerables." + Tools.getEOL() 
-									+ "Failed adding " + atNode.getAddElement() + " to " + collectionNode.getValue() + ".", 
+									+ "Failed adding " + atNode.getAddElement() + " to " + collectionNode.getValue() + " at " + collectionNode.getLocation() + ".",
 									atNode, interpreter);
 					} else
 						capi.error("Cannot perform incremental add update on a non-location!", atNode, interpreter);
@@ -260,7 +260,7 @@ public class CollectionPlugin extends Plugin
 							
 						} else
 							capi.error("Incremental remove update only applies to modifiable enumerables." + Tools.getEOL() 
-										+ "Failed adding " + rfNode.getRemoveElement() + " to " + collectionNode.getValue() + ".", 
+										+ "Failed removing " + rfNode.getRemoveElement() + " from " + collectionNode.getValue() + " at " + collectionNode.getLocation() + ".",
 										rfNode, interpreter);
 					} else
 						capi.error("Cannot perform incremental remove update on a non-location!", rfNode, interpreter);

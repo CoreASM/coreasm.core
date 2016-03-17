@@ -98,9 +98,7 @@ public class ParserTools
 			Parser<Node> parser = terminals_keyw.token(keyword).map(new Map<Token, Node>() {
 				@Override
 				public Node map(Token from) {
-					int index = -1;
-					if (from instanceof Token)
-						index = ((Token)from).index();
+					int index = from.index();
 					return new Node(
 						pluginName,
 						from.toString(),
@@ -119,9 +117,7 @@ public class ParserTools
 			Parser<Node> parser = terminals_keyw.token(operator).map(new Map<Token, Node>() {
 				@Override
 				public Node map(Token from) {
-					int index = -1;
-					if (from instanceof Token)
-						index = ((Token)from).index();
+					int index = from.index();
 					return new Node(
 							"Kernel",
 							from.toString(),
