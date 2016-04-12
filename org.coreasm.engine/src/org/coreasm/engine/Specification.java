@@ -91,6 +91,7 @@ public class Specification {
 	private Set<String> requiredPluginNames = null;
 	private Set<String> keywords = null;
 	private Set<String> operators = null;
+	private Set<String> options = null;
 	private Set<FunctionInfo> functions = null;
 	private Set<UniverseInfo> universes = null;
 	private Set<BackgroundInfo> backgrounds = null;
@@ -523,6 +524,27 @@ public class Specification {
 			}
 		}
 		return operators;
+	}
+	
+	/**
+	 * Returns the set of options defined by the plug-ins of this 
+	 * specifications.
+	 */
+	public Set<String> getOptions() {
+		if (options == null) {
+			if (getRequiredPlugins() == null)
+				return Collections.emptySet();
+			options = new HashSet<String>();
+			for (Plugin p : requiredPlugins) {
+				for (String option : p.getOptions()) {
+					String pluginName = p.getName();
+					if (pluginName.endsWith("Plugin"))
+						pluginName = pluginName.substring(0, pluginName.length() - "Plugin".length());
+					options.add(pluginName + "." + option);
+				}
+			}
+		}
+		return options;
 	}
 
 	/**

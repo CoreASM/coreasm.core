@@ -14,6 +14,7 @@
 
 package org.coreasm.engine.plugins.schedulingpolicies;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +25,8 @@ import java.util.Set;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
@@ -78,7 +81,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 	public static final String PLUGIN_NAME = SchedulingPoliciesPlugin.class.getSimpleName();
 	
 	/** The name of the SchedulingPolicies.Policy property */
-	public static final String POLICY_PROPERTY = "SchedulingPolicies.policy";
+	public static final String POLICY_PROPERTY = "policy";
 	
 	/** default value of {@link #POLICY_PROPERTY} property */ 
 	public static final String DEFAULT_POLICY_NAME = "default";
@@ -104,6 +107,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 
 	private final String[] keywords = {RESUME_AGENT_KEYWORD, SUSPEND_AGENT_KEYWORD, TERMINATE_AGENT_KEYWORD, SHUTDOWN_KEYWORD};
 	private final String[] operators = {};
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { POLICY_PROPERTY })));
 	private Map<EngineMode, Integer> targetModes = null;
 	
 	private SchedulingPolicy currentPolicy = null;
@@ -133,7 +137,7 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 	 * the POLICY_PROPERTY property. 
 	 */
 	private SchedulingPolicy createPolicy() {
-		String policyName = capi.getProperty(POLICY_PROPERTY);
+		String policyName = getOptionValue(POLICY_PROPERTY);
 		if (policyName == null) 
 			policyName = DEFAULT_POLICY_NAME;
 		
@@ -162,6 +166,20 @@ public class SchedulingPoliciesPlugin extends Plugin implements
 
 	public String[] getOperators() {
 		return operators;
+	}
+	
+	@Override
+	public Set<String> getOptions() {
+		return options;
+	}
+	
+	@Override
+	public void checkOptionValue(String option, String value) throws CoreASMIssue {
+		if (!DEFAULT_POLICY_NAME.equals(value)
+		&&  !ALL_FIRST_NAME.equals(value)
+		&&  !ONE_BY_ONE_NAME.equals(value)
+		&&  !ONE_BY_ONE_UNFAIR_NAME.equals(value)) 
+			throw new CoreASMError("Scheduling policy '" + value + "' not found.");
 	}
 
 	public Parser<Node> getParser(String nonterminal) {

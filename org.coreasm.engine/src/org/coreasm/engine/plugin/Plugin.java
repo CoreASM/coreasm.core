@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.registry.ICoreASMPlugin;
 import org.coreasm.engine.registry.PluginInfo;
@@ -101,6 +102,23 @@ public abstract class Plugin implements ICoreASMPlugin {
 	@Override
 	public double getLoadPriority() {
 		return DEFAULT_LOAD_PRIORITY;
+	}
+	
+	@Override
+	public void checkOptionValue(String option, String value) throws CoreASMIssue {
+	}
+	
+	protected String getOptionValue(String option) {
+		return capi.getProperty(getName() + "." + option);
+	}
+	
+	protected static String getOptionValue(Class<?> clazz, ControlAPI capi, String option) {
+		return capi.getProperty(clazz.getSimpleName() + "." + option);
+	}
+	
+	@Override
+	public Set<String> getOptions() {
+		return Collections.emptySet();
 	}
 	
 	@Override

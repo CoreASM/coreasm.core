@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.engine.ControlAPI;
+import org.coreasm.engine.CoreASMIssue;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.VersionInfoProvider;
 import org.coreasm.engine.plugin.InitializationFailedException;
@@ -110,6 +111,21 @@ public interface ICoreASMPlugin extends VersionInfoProvider {
 	 * @see #DEFAULT_LOAD_PRIORITY
 	 */
 	public double getLoadPriority();
+	
+	/**
+	 * Returns the options of this plugin.
+	 * @return the options of this plugin.
+	 */
+	public Set<String> getOptions();
+	
+	/**
+	 * Checks whether the given value is valid for the given option.
+	 * @param option the option to check the given value for
+	 * @param value the value to check the given option with
+	 * @throws CoreASMIssue if the given value is not valid for the given option
+	 */
+	public void checkOptionValue(String option, String value) throws CoreASMIssue;
+	
 	/**
 	 * Returns the compiler component of the plugin, or null, if there is no
 	 * compiler implementation of it

@@ -16,6 +16,7 @@ package org.coreasm.engine.plugins.debuginfo;
 
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,7 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 	
 	public static final VersionInfo VERSION_INFO = new VersionInfo(1, 1, 1, "");
 
-	private static final String ACTIVE_CHANNELS_PROPERTY = "DebugInfo.activeChannels";
+	private static final String ACTIVE_CHANNELS_PROPERTY = "activeChannels";
 	
 	public static final String DEBUGINFO_KEYWORD = "debuginfo";
 	
@@ -80,6 +81,7 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 
 	private final String[] keywords = {DEBUGINFO_KEYWORD};
 	private final String[] operators = {};
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ACTIVE_CHANNELS_PROPERTY)));
 
 	@Override
 	public void initialize() throws InitializationFailedException {
@@ -92,7 +94,7 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 	protected void updateChannelsList() {
 		if (activeChannels == null) {
 			activeChannels = new HashSet<String>();
-			String channels = capi.getProperty(ACTIVE_CHANNELS_PROPERTY);
+			String channels = getOptionValue(ACTIVE_CHANNELS_PROPERTY);
 			if (channels != null && channels.length() > 0) {
 				channels = Tools.trimAllDoubleQuotes(channels);
 				StringTokenizer tokenizer = new StringTokenizer(channels, " ," + Tools.getEOL());
@@ -119,6 +121,11 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 
 	public String[] getKeywords() {
 		return keywords;
+	}
+	
+	@Override
+	public Set<String> getOptions() {
+		return options;
 	}
 
 	public Set<Parser<? extends Object>> getLexers() {

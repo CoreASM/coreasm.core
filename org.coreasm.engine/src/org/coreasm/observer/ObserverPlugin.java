@@ -19,8 +19,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +89,8 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 	protected String specDir = null;
 	protected String outputFileName = null;
 	protected String outputFileNameProperty = null;
+	
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { OBSERVER_OUTPUT_FILE })));
 	
 	int stepCounter = 0;
 	
@@ -169,6 +173,11 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 		}
 	}
 	
+	@Override
+	public Set<String> getOptions() {
+		return options;
+	}
+	
 	public Map<EngineMode, Integer> getSourceModes() {
 		return Collections.emptyMap();
 	}
@@ -180,7 +189,7 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 		}
 		return targetModes;
 	}
-
+	
 	/*
 	 * Creates an XML element of the state. 
 	 */
@@ -209,7 +218,7 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 	private void ensureLocationListIsLoaded() {
 		if (locationListProperty == null) {
 			// This is the first time we are here
-			locationListProperty = capi.getProperty(OBSERVER_LOCATIONS_OF_INTEREST);
+			locationListProperty = getOptionValue(OBSERVER_LOCATIONS_OF_INTEREST);
 			locationListProperty = Tools.trimDoubleQuotes(locationListProperty);
 
 			if (locationListProperty != null) {
@@ -235,7 +244,7 @@ public class ObserverPlugin extends Plugin implements ExtensionPointPlugin {
 	 * Sets the name of the output file
 	 */
 	private void setFileName() {
-		String temp = capi.getProperty(OBSERVER_OUTPUT_FILE);
+		String temp = getOptionValue(OBSERVER_OUTPUT_FILE);
 		
 		// if there is no user-defined value
 		if (temp == null) {

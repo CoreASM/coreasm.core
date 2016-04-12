@@ -23,6 +23,9 @@ import org.codehaus.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.options.CompilerOptionsPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
+import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.CoreASMIssue;
+import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
@@ -76,8 +79,8 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	
 	public OptionsPlugin() {
 		sourceModes = new HashMap<EngineMode, Integer>();
+		sourceModes.put(EngineMode.emParsingSpec, ExtensionPointPlugin.DEFAULT_PRIORITY);
 		targetModes = new HashMap<EngineMode, Integer>();
-		targetModes.put(EngineMode.emInitializingState, ExtensionPointPlugin.DEFAULT_PRIORITY);
 	}
 	
 	/* (non-Javadoc)
@@ -238,9 +241,8 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	 * @see org.coreasm.engine.plugin.ExtensionPointPlugin#fireOnModeTransition(org.coreasm.engine.CoreASMEngine.EngineMode, org.coreasm.engine.CoreASMEngine.EngineMode)
 	 */
 	public void fireOnModeTransition(EngineMode source, EngineMode target) {
-		if (target.equals(EngineMode.emInitializingState)) {
+		if (source == EngineMode.emParsingSpec)
 			loadProperties();
-		}
 	}
 
 	/*
@@ -248,14 +250,31 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	 * specified in the specification into the engine.
 	 */
 	private void loadProperties() {
+		Set<String> definedOptions = capi.getSpec().getOptions();
         ASTNode currentNode = capi.getParser().getRootNode().getFirst();
         OptionNode optionNode = null;
         
         while (currentNode != null) {
             if (currentNode instanceof OptionNode) {
-            	optionNode = (OptionNode)currentNode; 
-            	capi.setProperty(optionNode.getOptionName(), optionNode.getOptionValue());
-                logger.debug("Option '{}' is set to '{}'.", optionNode.getOptionName(), optionNode.getOptionValue());
+            	optionNode = (OptionNode)currentNode;
+            	if (definedOptions.contains(optionNode.getOptionName())) {
+            		try {
+            			String pluginName = optionNode.getOptionName().substring(0, optionNode.getOptionName().indexOf('.'));
+            			String optionName = optionNode.getOptionName().substring(pluginName.length() + 1);
+            			capi.getPlugin(pluginName).checkOptionValue(optionName, optionNode.getOptionValue());
+            			capi.setProperty(optionNode.getOptionName(), optionNode.getOptionValue());
+                        logger.debug("Option '{}' is set to '{}'.", optionNode.getOptionName(), optionNode.getOptionValue());
+            		} catch (CoreASMIssue e) {
+            			if (e instanceof CoreASMWarning)
+            				capi.warning(new CoreASMWarning(((CoreASMWarning)e).src, e.getMessage(), optionNode.getFirst().getNext()));
+            			else if (e instanceof CoreASMError)
+            				capi.error(new CoreASMError(e.getMessage(), optionNode.getFirst().getNext()));
+            			else
+            				throw e;
+            		}
+            	}
+            	else
+            		capi.warning(getName(), "The option '" + optionNode.getOptionName() + "' is undefined and will be ignored.", optionNode.getFirst(), capi.getInterpreter());
             }
             currentNode = currentNode.getNext();
         }

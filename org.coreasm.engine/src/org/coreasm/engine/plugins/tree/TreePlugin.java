@@ -13,6 +13,7 @@
 
 package org.coreasm.engine.plugins.tree;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -116,6 +117,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 	// Keywords (Used by CoreASM in the construction of the lexer
 	private final String[] keywords = {ADD_STR, CHILD_STR, TO_STR, AT_STR, REMOVE_STR, FROM_STR, MAKE_STR, INTO_STR, TREE_STR};
 	private final String[] operators = {};
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { TREE_TRAVERSAL_OPT, TREE_OUTPUT_STRING_OPT, LIST_FOR_TREES_OPT })));
 
 	// XXX REMOVE
 	// private Parser<Node>[] treeTermParserArray = new Parser[1];
@@ -151,6 +153,10 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 		return Collections.emptySet();
 	} // getLexers
 
+	@Override
+	public Set<String> getOptions() {
+		return options;
+	}
 
 	public Map<String, GrammarRule> getParsers() {		
 		if(parsers == null) {
@@ -645,7 +651,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 
 
 	public static String getInputListFormatOption(ControlAPI capi) {
-		String inputListFormatStr = capi.getProperty(LIST_FOR_TREES_OPT);
+		String inputListFormatStr = getOptionValue(TreePlugin.class, capi, LIST_FOR_TREES_OPT);
 		if (inputListFormatStr == null)
 			inputListFormatStr = LIST_FOR_TREES_OPT_DEFAULT;
 		return inputListFormatStr;
@@ -653,12 +659,12 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 
 
 	public static String getTreeTraversalOption(ControlAPI capi) {
-		return capi.getProperty(TREE_TRAVERSAL_OPT);
+		return getOptionValue(TreePlugin.class, capi, TREE_TRAVERSAL_OPT);
 	}
 
 
 	public static String getOutputStringFormatOption(ControlAPI capi) {
-		return capi.getProperty(TREE_OUTPUT_STRING_OPT);
+		return getOptionValue(TreePlugin.class, capi, TREE_OUTPUT_STRING_OPT);
 	}
 
 

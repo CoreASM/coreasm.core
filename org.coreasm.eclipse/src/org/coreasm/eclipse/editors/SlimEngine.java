@@ -531,8 +531,6 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public void setProperty(String property, String value) {
-		throw new UnsupportedOperationException();
-
 	}
 
 	@Override
@@ -682,8 +680,7 @@ public class SlimEngine implements ControlAPI {
 
 	@Override
 	public Interpreter getInterpreter() {
-		throw new UnsupportedOperationException();
-		
+		return null;
 	}
 
 	@Override

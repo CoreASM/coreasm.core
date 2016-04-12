@@ -15,6 +15,7 @@
 package org.coreasm.engine.plugins.signature;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.signature.CompilerSignaturePlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.CoreASMError;
+import org.coreasm.engine.CoreASMIssue;
+import org.coreasm.engine.CoreASMWarning;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineTools;
 import org.coreasm.engine.VersionInfo;
@@ -85,14 +88,14 @@ public class SignaturePlugin extends Plugin
 	 * The name of the Signature.NoUndefinedId property. If the engine has any value for this 
 	 * property ths signature plug-in would not allow use of udefined identifiers.
 	 */
-	public static final String NO_UNDEFINED_ID_PROPERTY = "Signature.NoUndefinedId";
+	public static final String NO_UNDEFINED_ID_PROPERTY = "NoUndefinedId";
 	
 	/**
 	 * The name of the Signature.TypeChecking property. This property can
 	 * have any of the "off", "warning", "strict", and "on" values. 
 	 * "on" and "strict" are equivalent. 
 	 */
-	public static final String TYPE_CHECKING_PROPERTY = "Signature.TypeChecking";
+	public static final String TYPE_CHECKING_PROPERTY = "TypeChecking";
 	
     private HashMap<String,FunctionElement> functions;
     private HashMap<String,UniverseElement> universes;
@@ -105,7 +108,7 @@ public class SignaturePlugin extends Plugin
     private Map<String, GrammarRule> parsers = null;
     private Map<EngineMode, Integer> sourceModes = null;
     
-    public static enum CheckMode {cmOff, cmWarn, cmStrict};
+    public static enum CheckMode {OFF, WARN, STRICT};
     private CheckMode typeCheckingMode;    
     private CheckMode idCheckingMode;    
     //private HashMap<String,FunctionClass> functionClass;
@@ -115,6 +118,7 @@ public class SignaturePlugin extends Plugin
 
 	private final String[] keywords = {"enum", "universe", "controlled", "monitored", "static", "function", "initially", "initialized", "by", "derived"};
 	private final String[] operators = {"=", "{", "}", ",", ":", "->"};
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { NO_UNDEFINED_ID_PROPERTY, TYPE_CHECKING_PROPERTY })));
 	
 	private final CompilerPlugin compilerPlugin = new CompilerSignaturePlugin(this);
 	
@@ -127,8 +131,8 @@ public class SignaturePlugin extends Plugin
      * @see org.coreasm.engine.plugin.Plugin#initialize()
      */
     public void initialize() {                
-        typeCheckingMode = CheckMode.cmOff;
-        idCheckingMode = CheckMode.cmOff;
+        typeCheckingMode = CheckMode.OFF;
+        idCheckingMode = CheckMode.OFF;
     }
     
     @Override
@@ -157,6 +161,22 @@ public class SignaturePlugin extends Plugin
 
 	public String[] getOperators() {
 		return operators;
+	}
+	
+	@Override
+	public Set<String> getOptions() {
+		return options;
+	}
+	
+	@Override
+	public void checkOptionValue(String option, String value) throws CoreASMIssue {
+		if (TYPE_CHECKING_PROPERTY.equals(option) || NO_UNDEFINED_ID_PROPERTY.equals(option)) {
+			try {
+				CheckMode.valueOf(value.toUpperCase());
+			} catch (IllegalArgumentException e) {
+				throw new CoreASMWarning(getName(), "'" + value + "' is not valid and will be treated as 'off'");
+			}
+		}
 	}
 
 	public Map<String, GrammarRule> getParsers() {
@@ -389,14 +409,14 @@ public class SignaturePlugin extends Plugin
      * TYPE_CHECKING_PROPERTY of the engine.
      */
     private CheckMode getTypeCheckMode() {
-    	String mode = capi.getProperty(TYPE_CHECKING_PROPERTY);
-    	typeCheckingMode = CheckMode.cmOff;
+    	String mode = getOptionValue(TYPE_CHECKING_PROPERTY);
+    	typeCheckingMode = CheckMode.OFF;
     	if (mode != null) {
     		if (mode.equals("warning"))
-    			typeCheckingMode = CheckMode.cmWarn;
+    			typeCheckingMode = CheckMode.WARN;
     		else
     			if (mode.equals("on") || mode.equals("strict"))
-    				typeCheckingMode = CheckMode.cmStrict;
+    				typeCheckingMode = CheckMode.STRICT;
     			else
     				if (!mode.equals("off"))
     					capi.warning(PLUGIN_NAME, 
@@ -411,14 +431,14 @@ public class SignaturePlugin extends Plugin
      * NO_UNDEFINED_ID_PROPERTY of the engine.
      */
     private CheckMode getIdCheckMode() {
-    	String mode = capi.getProperty(NO_UNDEFINED_ID_PROPERTY);
-    	idCheckingMode = CheckMode.cmOff;
+    	String mode = getOptionValue(NO_UNDEFINED_ID_PROPERTY);
+    	idCheckingMode = CheckMode.OFF;
     	if (mode != null) {
     		if (mode.equals("warning"))
-    			idCheckingMode = CheckMode.cmWarn;
+    			idCheckingMode = CheckMode.WARN;
     		else
     			if (mode.equals("on") || mode.equals("strict"))
-    				idCheckingMode = CheckMode.cmStrict;
+    				idCheckingMode = CheckMode.STRICT;
     			else
     				if (!mode.equals("off")) {
     					capi.warning(PLUGIN_NAME, 
@@ -444,7 +464,7 @@ public class SignaturePlugin extends Plugin
          * if ((source == EngineMode.emAggregation && target == EngineMode.emStepSucceeded) && 
     	 */
         if ((source == EngineMode.emAggregation) && 
-            (getTypeCheckMode() != CheckMode.cmOff)) {
+            (getTypeCheckMode() != CheckMode.OFF)) {
             checkUpdateSet(target == EngineMode.emStepSucceeded);
         }
         /*
@@ -563,7 +583,7 @@ public class SignaturePlugin extends Plugin
 					u.loc.name + ": " + func.getSignature() + "'." + 
 				getContextInfo(u);
 				
-				if (typeCheckingMode == CheckMode.cmStrict) {
+				if (typeCheckingMode == CheckMode.STRICT) {
 					if (isUpdateSuccessful) {
 					 	capi.error("Error: " + message);
 					 	return;
@@ -572,7 +592,7 @@ public class SignaturePlugin extends Plugin
 						continue;
 					}
 				}
-				else if (typeCheckingMode == CheckMode.cmWarn) {
+				else if (typeCheckingMode == CheckMode.WARN) {
 					logger.warn(message);
 				}
 
@@ -599,7 +619,7 @@ public class SignaturePlugin extends Plugin
 	                           		"in the domain of the function (i.e., not a member of " + domName + ".";
 	                           		*/
 	                            
-	                            if (typeCheckingMode == CheckMode.cmStrict) {
+	                            if (typeCheckingMode == CheckMode.STRICT) {
 	                            	if (isUpdateSuccessful) {
 	                            		capi.error("Error: " + message);
 	                            		return;
@@ -608,7 +628,7 @@ public class SignaturePlugin extends Plugin
 	                            		continue;
 	                            	}
 	                            }
-	                            else if (typeCheckingMode == CheckMode.cmWarn) {
+	                            else if (typeCheckingMode == CheckMode.WARN) {
 	                                logger.warn(message);
 	                            }
 	                        }
@@ -640,7 +660,7 @@ public class SignaturePlugin extends Plugin
 	                        rangeName + ".";
 	                        */
 	                    
-	                    if (typeCheckingMode == CheckMode.cmStrict) {
+	                    if (typeCheckingMode == CheckMode.STRICT) {
 	                    	if (isUpdateSuccessful) {
 	                    		capi.error("Error: " + message);
 	                    		return;
@@ -649,7 +669,7 @@ public class SignaturePlugin extends Plugin
 	                    		continue;
 	                    	}
 	                    }
-	                    else if (typeCheckingMode == CheckMode.cmWarn) {
+	                    else if (typeCheckingMode == CheckMode.WARN) {
 	                    	logger.warn(message);
 	                    }
 	                }
@@ -1035,7 +1055,7 @@ public class SignaturePlugin extends Plugin
     
     public void handleUndefinedIndentifier(Interpreter interpreter, ASTNode pos, String id, List<? extends Element> args) {
     	getIdCheckMode();
-        if (processingSignatures || idCheckingMode != CheckMode.cmOff) {
+        if (processingSignatures || idCheckingMode != CheckMode.OFF) {
             if (functions.keySet().contains(id)) {
                 FunctionElement f = functions.get(id);
                 Location l = new Location(id,args);
@@ -1044,11 +1064,11 @@ public class SignaturePlugin extends Plugin
             else {
             	String msg = "unknown identifier \""+id+"\".";
             	
-				if (idCheckingMode == CheckMode.cmStrict) {
+				if (idCheckingMode == CheckMode.STRICT) {
 					capi.error("Error: " + msg, pos, interpreter);
 					return;
 				}
-				else if (idCheckingMode == CheckMode.cmWarn) {
+				else if (idCheckingMode == CheckMode.WARN) {
 					logger.warn(msg);
 				}
             }

@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -107,7 +108,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	 * The name of the JASMine.ConversionMode property. The value of this property can
 	 * be either "implicit", "explicit", or "default". The default value is "implicit". 
 	 */
-	public static final String CONVERSION_MODE_PROPERTY = "JASMine.ConversionMode";
+	public static final String CONVERSION_MODE_PROPERTY = "ConversionMode";
 	
 	private HashMap<String, GrammarRule> parsers = null;
 
@@ -125,6 +126,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	
 	public static final String JASMINE_CLASSPATH__SYSTEM = "JASMINE_CLASSPATH";
 	public static final String JASMINE_CLASSPATH__ENGINE = "JASMine.ClassPath";
+	
+	private static final Set<String> options = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[] { CONVERSION_MODE_PROPERTY, JASMINE_CLASSPATH__ENGINE })));
 	
 	private ClassLoader loader = null;
 	private boolean classPathUpdatedThroughOptions = false;
@@ -145,7 +148,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	 * @see ConversionMode
 	 */
 	public ConversionMode getConversionMode() {
-		String mode = capi.getProperty(CONVERSION_MODE_PROPERTY);
+		String mode = getOptionValue(CONVERSION_MODE_PROPERTY);
 		if (mode == null)
 			mode = "implicit";
 		if (mode.equals("explicit"))
@@ -188,7 +191,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		this.loader = this.getClass().getClassLoader();
 		
 		updateClassPath(System.getenv(JASMINE_CLASSPATH__SYSTEM));
-		//updateClassPath(capi.getProperty(JASMINE_CLASSPATH__ENGINE));
+		//updateClassPath(getOptionValue(JASMINE_CLASSPATH__ENGINE));
 		classPathUpdatedThroughOptions = false;
 	}
 
@@ -253,6 +256,11 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 	 */
 	public String[] getOperators() {
 		return operators;
+	}
+	
+	@Override
+	public Set<String> getOptions() {
+		return options;
 	}
 
 	private Parser<Node> getBasicJavaIdParser() {
@@ -439,7 +447,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 
 		if (!classPathUpdatedThroughOptions) {
 			classPathUpdatedThroughOptions = true;
-			updateClassPath(capi.getProperty(JASMINE_CLASSPATH__ENGINE));
+			updateClassPath(getOptionValue(JASMINE_CLASSPATH__ENGINE));
 		}
 		
 		// import native ...

@@ -51,6 +51,14 @@ public class ASMContentAssistProcessor implements IContentAssistProcessor {
 			while (offset > 0 && Character.isLetterOrDigit(document.getChar(offset - 1)))
 				offset--;
 			String prefix = document.get(offset, end - offset);
+			int line = document.getLineOfOffset(offset);
+			if (document.get(document.getLineOffset(line), document.getLineLength(line)).trim().startsWith("option")) {
+				for (String option : editor.getSpec().getOptions()) {
+					if (option.startsWith(prefix))
+						proposals.add(new CompletionProposal(option, offset, end - offset, option.length(), IconManager.getIcon("/icons/editor/option.gif"), option, null, null));
+				}
+				return proposals.toArray(new ICompletionProposal[proposals.size()]);
+			}
 			for (Declaration declaration : ASMDeclarationWatcher.getDeclarations(editor.getInputFile(), true)) {
 				if (declaration.getName().startsWith(prefix)) {
 					Image icon = null;
