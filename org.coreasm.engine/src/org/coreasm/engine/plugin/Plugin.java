@@ -109,7 +109,10 @@ public abstract class Plugin implements ICoreASMPlugin {
 	}
 	
 	protected String getOptionValue(String option) {
-		return capi.getProperty(getName() + "." + option);
+		String name = getName();
+		if (name.endsWith("Plugin"))
+			name = name.substring(0, name.length() - "Plugin".length());
+		return capi.getProperty(name + "." + option);
 	}
 	
 	protected static String getOptionValue(Class<?> clazz, ControlAPI capi, String option) {
