@@ -104,7 +104,7 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 					// if 'ALL' is mentioned as a channel, ignore the list and 
 					// add only 'ALL' to the channel list. This will make all
 					// channels to become active.
-					if (cid.equals(ALL_CHANNELS_ID)) {
+					if (cid.equalsIgnoreCase(ALL_CHANNELS_ID)) {
 						activeChannels.clear();
 						activeChannels.add(ALL_CHANNELS_ID);
 						break;
