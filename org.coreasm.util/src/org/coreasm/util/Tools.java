@@ -190,9 +190,8 @@ public class Tools {
 	 *  @return the same string with all the escape sequences converted to their 
 	 *  		corresponding special characters
 	 *   
-	 * @throws IllegalArgumentException if there is an invalid escape character
 	 */
-	public static String convertFromEscapeSequence(String str) throws IllegalArgumentException {
+	public static String convertFromEscapeSequence(String str) {
 		char[] chars = new char[str.length()];
 		char[] result = new char[str.length()];
 		str.getChars(0, str.length(), chars, 0);
@@ -217,7 +216,8 @@ public class Tools {
 					result[resIndex] = '"';
 					break;
 				default:
-					throw new IllegalArgumentException("Invalid escape sequence '\\" + chars[srcIndex+1] + "' in the string constant.");
+					result[resIndex] = chars[srcIndex];
+					srcIndex--;
 				}
 				srcIndex++;
 			} else
@@ -227,9 +227,6 @@ public class Tools {
 		}
 		
 		if (chars.length > 0 && srcIndex < chars.length ) {
-			if (chars[srcIndex] == '\\')
-				throw new IllegalArgumentException("Invalid escape sequence '\\' in the string constant.");
-
 			result[resIndex] = chars[srcIndex];
 			srcIndex++;
 			resIndex++;

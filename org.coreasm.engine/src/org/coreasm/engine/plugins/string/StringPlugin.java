@@ -155,13 +155,7 @@ public class StringPlugin extends Plugin
 					new org.codehaus.jparsec.functors.Map<Token,Node>() {
 						@Override
 						public Node map(Token from) {
-							String token = from.toString();
-							try {
-								token = StringElement.processEscapeCharacters(token);
-							} catch (IllegalArgumentException e) {
-								throw new IllegalArgumentException(e.getMessage());
-							}
-							return new StringNode(token, new ScannerInfo(from));
+							return new StringNode(StringElement.processEscapeCharacters(from.toString()), new ScannerInfo(from));
 						}						
 					}
 			);

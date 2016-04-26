@@ -135,9 +135,8 @@ public class StringElement extends Element implements Enumerable {
 	/**
 	 * Converts escape sequences to their corresponding characters.
 	 *  
-	 * @throws IllegalArgumentException if there is an invalid escape character
 	 */
-	public static String processEscapeCharacters(String str) throws IllegalArgumentException {
+	public static String processEscapeCharacters(String str) {
 		return Tools.convertFromEscapeSequence(str);
 	}
 
