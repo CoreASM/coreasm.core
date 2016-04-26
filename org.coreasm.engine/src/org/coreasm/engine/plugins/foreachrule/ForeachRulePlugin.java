@@ -229,7 +229,8 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             			// we're done
         				if (updateSet == null)
         					updateSet = new UpdateMultiset();
-        				popState();
+        				else
+        					popState();
         				foreachNode.setNode(null, updateSet, null);
         	            return foreachNode;
         			}

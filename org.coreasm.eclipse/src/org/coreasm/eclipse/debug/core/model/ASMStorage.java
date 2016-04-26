@@ -131,7 +131,7 @@ public class ASMStorage extends HashStorage {
 	public void applyStackedUpdates() {
 		if (stackedUpdates != null && !stackedUpdates.isEmpty()) {
 			if (getStackedUpdates().isEmpty())
-				pushState();
+				pushState("Debugger");
 			HashSet<Update> updates = new HashSet<Update>();
 			for (Entry<Location, Element> stackedUpdate : stackedUpdates.entrySet())
 				updates.add(new Update(stackedUpdate.getKey(), stackedUpdate.getValue(), Update.UPDATE_ACTION, (Element)null, null));
@@ -141,7 +141,7 @@ public class ASMStorage extends HashStorage {
 	
 	public void discardStackedUpdates() {
 		if (stackedUpdates != null && !stackedUpdates.isEmpty())
-			popState();
+			popState("Debugger");
 	}
 	
 	public int getStep() {
