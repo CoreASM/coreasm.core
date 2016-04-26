@@ -349,7 +349,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					aggregatedUpdate = 
 						storage.performAggregation(firstRule.getUpdates());
 					if (storage.isConsistent(aggregatedUpdate)) {
-						storage.pushState();
+						pushState();
 						storage.apply(aggregatedUpdate);
 						return secondRule; 
 					}
@@ -364,7 +364,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 				// second rule is evaluated...
 				
 				UpdateMultiset composed = storage.compose(firstRule.getUpdates(), secondRule.getUpdates());
-				storage.popState();
+				popState();
 				pos.setNode(null, composed, null);
 			}
 			
@@ -377,7 +377,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 				Map<ASTNode, UpdateMultiset> composedUpdates = getThreadComposedUpdates();
 
 				if (!childRule.isEvaluated()) {
-					storage.pushState();
+					pushState();
 					composedUpdates.put(pos, new UpdateMultiset()); 
 					return childRule;
 				} else {
@@ -398,7 +398,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					}
 					pos.setNode(null, composedUpdates.get(pos), null);
 					composedUpdates.remove(pos);
-					storage.popState();
+					popState();
 				}
 			} else
 				if (pos instanceof WhileRuleNode) {
@@ -410,7 +410,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					
 					// if the guard is not evaluated, evaluate it
 					if (!whileCond.isEvaluated()) {
-						storage.pushState();
+						pushState();
 						composedUpdates.put(pos, new UpdateMultiset()); 
 						return whileCond;
 					}
@@ -436,7 +436,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 							}
 						}
 					}
-					storage.popState();
+					popState();
 					pos.setNode(null, composedUpdates.get(pos), null);
 					composedUpdates.remove(pos);
 				} else
@@ -494,7 +494,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 									aggregatedUpdate = 
 										storage.performAggregation(rule.getUpdates());
 									if (storage.isConsistent(aggregatedUpdate)) {
-										storage.pushState();
+										pushState();
 										storage.apply(aggregatedUpdate);
 										return exp; 
 									}
@@ -503,7 +503,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 								pos.setNode(null, new UpdateMultiset(), Element.UNDEF);
 							} else {
 								// expression is evaluated...
-								storage.popState();
+								popState();
 								pos.setNode(null, new UpdateMultiset(), exp.getValue());
 							}
 						} else 
@@ -527,7 +527,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 											updates.add(new Update(new Location(entry.getKey(), ElementList.NO_ARGUMENT), n.getValue(), Update.UPDATE_ACTION, interpreter.getSelf(), node.getScannerInfo()));
 									}
 									if (!updates.isEmpty()) {
-										storage.pushState();
+										pushState();
 										storage.apply(updates);
 									}
 									return rule;
@@ -535,7 +535,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 								else {
 									for (ASTNode n : variableMap.values()) {
 										if (n != null) {
-											storage.popState();
+											popState();
 											break;
 										}
 									}

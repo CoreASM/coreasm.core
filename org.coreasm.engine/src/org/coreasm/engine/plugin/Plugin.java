@@ -124,6 +124,14 @@ public abstract class Plugin implements ICoreASMPlugin {
 		return Collections.emptySet();
 	}
 	
+	protected void pushState() {
+		capi.getStorage().pushState(getName());
+	}
+	
+	protected void popState() {
+		capi.getStorage().popState(getName());
+	}
+	
 	@Override
 	public String toString() {
 		return this.getName();

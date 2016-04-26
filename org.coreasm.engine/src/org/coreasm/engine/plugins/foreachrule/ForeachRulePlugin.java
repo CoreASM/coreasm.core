@@ -229,7 +229,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             			// we're done
         				if (updateSet == null)
         					updateSet = new UpdateMultiset();
-        				storage.popState();
+        				popState();
         				foreachNode.setNode(null, updateSet, null);
         	            return foreachNode;
         			}
@@ -267,7 +267,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
                     (foreachNode.getDoRule().isEvaluated())) {
             	if (!updates.containsKey(foreachNode)) {
             		updates.put(foreachNode, new UpdateMultiset());
-            		storage.pushState();
+            		pushState();
             	}
                 
             	if (foreachNode.getDoRule().getUpdates() != null) {

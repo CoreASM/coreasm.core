@@ -71,13 +71,16 @@ public class HashStorage implements AbstractStorage {
 	 * to increase performance.
 	 */
 	private final ThreadLocal<Stack<Map<Location,Element>>> updateStack;
+	/**
+	 * Stack of the names of the plugins that pushed states
+	 * 
+	 * We want to make sure that only the plugin that has pushed the state can pop it.
+	 */
+	private final ThreadLocal<Stack<String>> updateStackPluginNames;
 	
 	/** Cache for monitored function values */
 	private final ConcurrentMap<Location,Element> monitoredCache;
 	
-	/** Indicates if there is any state in the stack. */
-	private ThreadLocal<Boolean> stateStacked;
-
 	/** keeps the last inconsistent updates */
 	private Set<Update> lastInconsistentUpdates; 
 	
@@ -92,10 +95,11 @@ public class HashStorage implements AbstractStorage {
 	             return new Stack<Map<Location,Element>>();
 	         }
 		};
-		stateStacked = new ThreadLocal<Boolean>() {
-	         protected Boolean initialValue() {
-	             return false;
-	         }
+		updateStackPluginNames = new ThreadLocal<Stack<String>>() {
+			@Override
+			protected Stack<String> initialValue() {
+				return new Stack<String>();
+			}
 		};
 		monitoredCache = new ConcurrentHashMap<Location, Element>();
 		lastInconsistentUpdates = null;
@@ -129,12 +133,12 @@ public class HashStorage implements AbstractStorage {
 		return updateStack.get();
 	}
 	
-	private boolean isStateStacked() {
-		return stateStacked.get();
+	private Stack<String> getUpdateStackPluginNames() {
+		return updateStackPluginNames.get();
 	}
 	
-	private void setStateStackedFlag(boolean value) {
-		stateStacked.set(value);
+	private boolean isStateStacked() {
+		return !getUpdateStack().isEmpty();
 	}
 	
 	public void initAbstractStorage() {
@@ -442,27 +446,28 @@ public class HashStorage implements AbstractStorage {
 	}
 	*/
 
-	/**
-	 * Pushes the current state in the stack.
-	 */
-	public void pushState() {
-		Stack<Map<Location, Element>> updateStack = getUpdateStack();
-		setStateStackedFlag(true);
+	@Override
+	public void pushState(String pluginName) {
 		Map<Location,Element> updates = new HashMap<Location,Element>();
-		updateStack.push(updates);
+		getUpdateStack().push(updates);
+		getUpdateStackPluginNames().push(pluginName);
 	}
 
-	/**
-	 * Retrieves the state from the top of the stack 
-	 * (thus discarding the current state). 
-	 */
-	public void popState() {
+	@Override
+	public void popState(String pluginName) {
 		Stack<Map<Location, Element>> updateStack = getUpdateStack();
 
-		if (updateStack.size() > 0)
-			updateStack.pop();
-		if (updateStack.size() == 0)
-			setStateStackedFlag(false);
+		if (updateStack.isEmpty())
+			throw new CoreASMError("Cannot pop state when the state stack is empty.");
+		
+		if (pluginName == null)
+			throw new NullPointerException("pluginName");
+		
+		if (!pluginName.equals(getUpdateStackPluginNames().peek()))
+			throw new CoreASMError(pluginName + " tried to pop the state which was pushed by " + getUpdateStackPluginNames().peek());
+		
+		updateStack.pop();
+		getUpdateStackPluginNames().pop();
 	}
 
 	/**

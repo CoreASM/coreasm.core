@@ -157,14 +157,16 @@ public interface AbstractStorage extends State {
 	
 	/**
 	 * Pushes the current state in the stack.
+	 * @param pluginName The name of the plugin that wants to push the state to the stack
 	 */
-	public void pushState();
+	public void pushState(String pluginName);
 
 	/**
 	 * Retrieves the state from the top of the stack 
 	 * (thus discarding the current state). 
+	 * @param pluginName The name of the plugin that wants to pop the state from the stack
 	 */
-	public void popState();
+	public void popState(String pluginName);
 	
 	/**
 	 * Applies the updates in the given update set to the current state.

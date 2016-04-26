@@ -158,7 +158,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                try {
             	   Set<Update> aggregatedUpdate = storage.performAggregation(updates);
             	   if (storage.isConsistent(aggregatedUpdate)) {
-            		   storage.pushState();
+            		   pushState();
             		   storage.apply(aggregatedUpdate);
             		   return letNode.getInRule();
             	   }
@@ -177,7 +177,7 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
                }
                
                updates = storage.compose(updates, letNode.getInRule().getUpdates());
-               storage.popState();
+               popState();
                pos.setNode(null,updates,null);
                return pos;
            }
