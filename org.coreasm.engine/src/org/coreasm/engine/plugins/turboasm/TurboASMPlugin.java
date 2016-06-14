@@ -425,16 +425,15 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 							try {
 								uSet = storage.performAggregation(u);
 								composedUpdates.put(pos, storage.compose(composedUpdates.get(pos), u));
-								if (storage.isConsistent(uSet)) {
+								if (storage.isConsistent(uSet))
 									storage.apply(uSet);
-									interpreter.clearTree(childRule);
-									interpreter.clearTree(whileCond);
-									return whileCond;
-								}
 							} catch (EngineError e) {
 								// inconsistent aggregation or updateset
 							}
 						}
+						interpreter.clearTree(childRule);
+						interpreter.clearTree(whileCond);
+						return whileCond;
 					}
 					popState();
 					pos.setNode(null, composedUpdates.get(pos), null);

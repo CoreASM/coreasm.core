@@ -1,0 +1,19 @@
+CoreASM TurboASM7_while
+
+//use standard plugins
+use Standard
+
+//set program for the executing agent
+init Start
+
+function counter : -> NUMBER initially 0
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ * @require "10\n"
+ */
+rule Start = seq
+    while counter < 10 do if pick b in BOOLEAN then counter := counter + 1
+next
+    print counter
