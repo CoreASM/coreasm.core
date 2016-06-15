@@ -1,10 +1,9 @@
 package org.coreasm.engine.plugins.foreachrule;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -48,7 +47,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
 	private final String[] keywords = {"foreach", "in", "with", "do", "ifnone", "endforeach"};
 	private final String[] operators = {};
 	
-    private ThreadLocal<Map<Node,List<Element>>> remained;
+    private ThreadLocal<Map<Node,Iterator<? extends Element>>> iterators;
     private ThreadLocal<Map<Node,UpdateMultiset>> updates;
     
     private Map<String, GrammarRule> parsers;
@@ -60,10 +59,10 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
     
     @Override
     public void initialize() {
-        remained = new ThreadLocal<Map<Node, List<Element>>>() {
+        iterators = new ThreadLocal<Map<Node, Iterator<? extends Element>>>() {
 			@Override
-			protected Map<Node, List<Element>> initialValue() {
-				return new IdentityHashMap<Node, List<Element>>();
+			protected Map<Node, Iterator<? extends Element>> initialValue() {
+				return new IdentityHashMap<Node, Iterator<? extends Element>>();
 			}
         };
         updates= new ThreadLocal<Map<Node,UpdateMultiset>>() {
@@ -74,8 +73,8 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
         };
     }
  
-    private Map<Node, List<Element>> getRemainedMap() {
-    	return remained.get();
+    private Map<Node, Iterator<? extends Element>> getIteratorMap() {
+    	return iterators.get();
     }
 
     private Map<Node, UpdateMultiset> getUpdatesMap() {
@@ -130,7 +129,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
         
         if (pos instanceof ForeachRuleNode) {
             ForeachRuleNode foreachNode = (ForeachRuleNode) pos;
-            Map<Node, List<Element>> remained = getRemainedMap();
+            Map<Node, Iterator<? extends Element>> iterators = getIteratorMap();
             Map<Node, UpdateMultiset> updates = getUpdatesMap();
             Map<String, ASTNode> variableMap = null;
             AbstractStorage storage = capi.getStorage();
@@ -147,7 +146,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             for (ASTNode domain : variableMap.values()) {
             	if (!domain.isEvaluated()) {
             		// SPEC: considered := {}
-                	remained.remove(domain);
+                	iterators.remove(domain);
                     
                     // SPEC: pos := beta
             		return domain;
@@ -168,21 +167,17 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
 	                if (variable.getValue().getValue() instanceof Enumerable) {
 	                    
 	                    // SPEC: s := enumerate(v)/considered                    
-	                    // ArrayList<Element> s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-	                    // s.removeAll(considered.get(variable.getValue()));
-	                	// 
-	                	// changed to the following to improve performance:
-	        			List<Element> s = remained.get(variable.getValue());
-	                	if (s == null) {
+	        			Iterator<? extends Element> it = iterators.get(variable.getValue());
+	                	if (it == null) {
 	            			Enumerable domain = (Enumerable)variable.getValue().getValue();
 	            			if (domain.supportsIndexedView())
-	            				s = new ArrayList<Element>(domain.getIndexedView());
+	            				it = domain.getIndexedView().iterator();
 	            			else
-	            				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-	            			if (s.isEmpty()) {
+	            				it = domain.enumerate().iterator();
+	            			if (!it.hasNext()) {
 	            				if (foreachNode.getIfnoneRule() == null) {
 	                    			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
-	                	    			if (remained.remove(var.getValue()) != null)
+	                	    			if (iterators.remove(var.getValue()) != null)
 	                	    				interpreter.removeEnv(var.getKey());
 	                	    		}
 	                				// [pos] := (undef,{},undef)
@@ -193,25 +188,23 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
 	                           	pos = foreachNode.getIfnoneRule();
 	                           	interpreter.addEnv(variable.getKey(), Element.UNDEF);
 	                    	}
-	            			remained.put(variable.getValue(), s);
+	            			iterators.put(variable.getValue(), it);
 	                		shouldChoose = true;
 	                	}
 	                	else if (shouldChoose)
 	                		interpreter.removeEnv(variable.getKey());
 	                	
 	                	if (shouldChoose) {
-		                    if (!s.isEmpty()) {
+		                    if (it.hasNext()) {
 		                    	// SPEC: considered := considered union {t}
-		                        // choose t in s, for simplicty choose the first 
-		                        // since we have to go through all of them
-		                        Element chosen = s.remove(0);
+		                        Element chosen = it.next();
 		                        shouldChoose = false;
 		                        
 		                        // SPEC: AddEnv(x,t)
 		                        interpreter.addEnv(variable.getKey(),chosen);
 		                    }   
 		                    else {
-		                        remained.remove(variable.getValue());
+		                        iterators.remove(variable.getValue());
 		                        if (pos != foreachNode.getIfnoneRule())
 			            			pos = foreachNode;
 		                    }
@@ -298,7 +291,7 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
             if (pos == foreachNode.getIfnoneRule()) {
             	// RemoveEnv(x)
         		for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
-        			if (remained.remove(variable.getValue()) != null)
+        			if (iterators.remove(variable.getValue()) != null)
         				interpreter.removeEnv(variable.getKey());
         		}
             }
