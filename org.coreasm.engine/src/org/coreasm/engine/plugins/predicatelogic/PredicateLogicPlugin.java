@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -73,7 +73,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
     public static final String NOTIN_OP = "notmemberof";
     
     // for keeping track of considered elements in Exists and Forall expressions
-    private ThreadLocal<Map<ASTNode, List<Element>>> remained;
+    private ThreadLocal<Map<ASTNode, Iterator<? extends Element>>> iterators;
  
     private ArrayList<OperatorRule> opRules = null;
     private Map<String, GrammarRule> parsers = null; 
@@ -94,16 +94,16 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	 */
 	public PredicateLogicPlugin() {
 		super();
-        remained = new ThreadLocal<Map<ASTNode, List<Element>>>() {
+        iterators = new ThreadLocal<Map<ASTNode, Iterator<? extends Element>>>() {
 			@Override
-			protected Map<ASTNode, List<Element>> initialValue() {
-				return new IdentityHashMap<ASTNode, List<Element>>();
+			protected Map<ASTNode, Iterator<? extends Element>> initialValue() {
+				return new IdentityHashMap<ASTNode, Iterator<? extends Element>>();
 			}
         };
     }
 
-	private Map<ASTNode, List<Element>> getRemainedMap() {
-		return remained.get();
+	private Map<ASTNode, Iterator<? extends Element>> getIteratorMap() {
+		return iterators.get();
 	}
 
 	public String[] getKeywords() {
@@ -385,7 +385,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
     private ASTNode interpretExists(Interpreter interpreter, ASTNode pos) {
         ExistsExpNode existsExpNode = (ExistsExpNode) pos;
         
-        Map<ASTNode, List<Element>> remained = getRemainedMap();
+        Map<ASTNode, Iterator<? extends Element>> iterators = getIteratorMap();
         Map<String, ASTNode> variableMap = null;
         
         try {
@@ -400,7 +400,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
         for (ASTNode domain : variableMap.values()) {
         	if (!domain.isEvaluated()) {
         		// SPEC: considered := {}
-            	remained.remove(domain);
+            	iterators.remove(domain);
                 
                 // SPEC: pos := beta
         		return domain;
@@ -414,45 +414,39 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	            if (variable.getValue().getValue() instanceof Enumerable) {
 	            	   
                     // SPEC: s := enumerate(v)/considered                    
-                    // ArrayList<Element> s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-                    // s.removeAll(considered.get(variable.getValue()));
-                	// 
-                	// changed to the following to improve performance:
-        			List<Element> s = remained.get(variable.getValue());
-                	if (s == null) {
+	            	Iterator<? extends Element> it = iterators.get(variable.getValue());
+                	if (it == null) {
             			Enumerable domain = (Enumerable)variable.getValue().getValue();
             			if (domain.supportsIndexedView())
-            				s = new ArrayList<Element>(domain.getIndexedView());
+            				it = domain.getIndexedView().iterator();
             			else
-            				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-            			if (s.isEmpty()) {
+            				it = domain.enumerate().iterator();
+            			if (!it.hasNext()) {
                 			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
-            	    			if (remained.remove(var.getValue()) != null)
+            	    			if (iterators.remove(var.getValue()) != null)
             	    				interpreter.removeEnv(var.getKey());
             	    		}
             				// [pos] := (undef,undef,ff)
                 			existsExpNode.setNode(null, null, BooleanElement.FALSE);
             	            return existsExpNode;
                     	}
-            			remained.put(variable.getValue(), s);
+            			iterators.put(variable.getValue(), it);
                 		shouldChoose = true;
                 	}
                 	else if (shouldChoose)
                 		interpreter.removeEnv(variable.getKey());
                 	
                 	if (shouldChoose) {
-	                    if (!s.isEmpty()) {
+	                    if (it.hasNext()) {
 	                    	// SPEC: considered := considered union {t}
-	                        // choose t in s, for simplicty choose the first 
-	                        // since we have to go through all of them
-	                        Element chosen = s.remove(0);
+	                        Element chosen = it.next();
 	                        shouldChoose = false;
 	                        
 	                        // SPEC: AddEnv(x,t)
 	                        interpreter.addEnv(variable.getKey(),chosen);
 	                    }   
 	                    else {
-	                        remained.remove(variable.getValue());
+	                        iterators.remove(variable.getValue());
 	                        pos = existsExpNode;
 	                    }
                 	}
@@ -486,7 +480,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             
             if (value) {
             	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
-        			if (remained.remove(variable.getValue()) != null)
+        			if (iterators.remove(variable.getValue()) != null)
         				interpreter.removeEnv(variable.getKey());
         		}
                 //considered.remove(existsExpNode.getDomain());
@@ -512,7 +506,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
     private ASTNode interpretForall(Interpreter interpreter, ASTNode pos) {
         ForallExpNode forallExpNode = (ForallExpNode) pos;
         
-        Map<ASTNode, List<Element>> remained = getRemainedMap();
+        Map<ASTNode, Iterator<? extends Element>> iterators = getIteratorMap();
         Map<String, ASTNode> variableMap = null;
         
         try {
@@ -527,7 +521,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
         for (ASTNode domain : variableMap.values()) {
         	if (!domain.isEvaluated()) {
         		// SPEC: considered := {}
-            	remained.remove(domain);
+            	iterators.remove(domain);
                 
                 // SPEC: pos := beta
         		return domain;
@@ -541,45 +535,39 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 	            if (variable.getValue().getValue() instanceof Enumerable) {
 	            	   
                     // SPEC: s := enumerate(v)/considered                    
-                    // ArrayList<Element> s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-                    // s.removeAll(considered.get(variable.getValue()));
-                	// 
-                	// changed to the following to improve performance:
-        			List<Element> s = remained.get(variable.getValue());
-                	if (s == null) {
+	            	Iterator<? extends Element> it = iterators.get(variable.getValue());
+                	if (it == null) {
             			Enumerable domain = (Enumerable)variable.getValue().getValue();
             			if (domain.supportsIndexedView())
-            				s = new ArrayList<Element>(domain.getIndexedView());
+            				it = domain.getIndexedView().iterator();
             			else
-            				s = new ArrayList<Element>(((Enumerable) variable.getValue().getValue()).enumerate());
-            			if (s.isEmpty()) {
+            				it = domain.enumerate().iterator();
+            			if (!it.hasNext()) {
                 			for (Entry<String, ASTNode> var : variableMap.entrySet()) {
-            	    			if (remained.remove(var.getValue()) != null)
+            	    			if (iterators.remove(var.getValue()) != null)
             	    				interpreter.removeEnv(var.getKey());
             	    		}
             				// [pos] := (undef,undef,tt)
                 			forallExpNode.setNode(null, null, BooleanElement.TRUE);
             	            return forallExpNode;
                     	}
-            			remained.put(variable.getValue(), s);
+            			iterators.put(variable.getValue(), it);
                 		shouldChoose = true;
                 	}
                 	else if (shouldChoose)
                 		interpreter.removeEnv(variable.getKey());
                 	
                 	if (shouldChoose) {
-	                    if (!s.isEmpty()) {
+	                    if (it.hasNext()) {
 	                    	// SPEC: considered := considered union {t}
-	                        // choose t in s, for simplicty choose the first 
-	                        // since we have to go through all of them
-	                        Element chosen = s.remove(0);
+	                        Element chosen = it.next();
 	                        shouldChoose = false;
 	                        
 	                        // SPEC: AddEnv(x,t)
 	                        interpreter.addEnv(variable.getKey(),chosen);
 	                    }   
 	                    else {
-	                        remained.remove(variable.getValue());
+	                        iterators.remove(variable.getValue());
 	                        pos = forallExpNode;
 	                    }
                 	}
@@ -617,7 +605,7 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
             }
             else {
             	for (Entry<String, ASTNode> variable : variableMap.entrySet()) {
-        			if (remained.remove(variable.getValue()) != null)
+        			if (iterators.remove(variable.getValue()) != null)
         				interpreter.removeEnv(variable.getKey());
         		}
                 //considered.remove(forallExpNode.getDomain());
