@@ -31,20 +31,19 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	private final int id;
 	
 	private String sourceName = "";
-	private final int step;
+	private int step = Integer.MIN_VALUE;
 
 	public ASMStackFrame(ASMThread thread, int id) {
 		super((ASMDebugTarget) thread.getDebugTarget());
 		this.thread = thread;
 		this.id = id;
-		step = getStep(getState());
 		// Cache the initial source name
 		getSourceName();
 	}
 	
 	private static final int getStep(ASMStorage state) {
 		if (state == null)
-			return -1;
+			return Integer.MIN_VALUE;
 		return state.getStep();
 	}
 
@@ -272,7 +271,9 @@ public class ASMStackFrame extends ASMDebugElement implements IStackFrame, IDrop
 	 * @return the step of the state assigned to this stack frame
 	 */
 	public int getStep() {
-		return step;
+		if (step != Integer.MIN_VALUE)
+			return step;
+		return getStep(getState());
 	}
 	
 	/**
