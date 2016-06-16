@@ -1,7 +1,7 @@
 package org.coreasm.engine.absstorage;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -11,14 +11,15 @@ import org.coreasm.util.Tools;
 public class RandomElementIterator implements Iterator<Element> {
 	private final int size;
 	private final List<Element> elements;
-	private HashSet<Integer> considered;
+	private BitSet considered;
+	private int numConsidered;
 	private List<Element> remaining;
 	
 	public RandomElementIterator(Enumerable enumerable) {
 		if (enumerable.supportsIndexedView()) {
 			elements = enumerable.getIndexedView();
 			if (enumerable.size() > 0)
-				considered = new HashSet<Integer>();
+				considered = new BitSet();
 		}
 		else {
 			elements = null;
@@ -37,19 +38,20 @@ public class RandomElementIterator implements Iterator<Element> {
 		if (!hasNext())
 			throw new NoSuchElementException();
 		if (considered != null) {
-			if (considered.size() >= size / 2) {
+			if (numConsidered >= size / 2) {
 				remaining = new ArrayList<Element>((size - 1) / 2 + 1);
 				for (int i = 0; i < size; i++) {
-					if (!considered.contains(i))
+					if (!considered.get(i))
 						remaining.add(elements.get(i));
 				}
 				considered = null;
 			}
 			else {
 				int i = Tools.randInt(size);
-				while (considered.contains(i))
+				while (considered.get(i))
 					i = Tools.randInt(size);
-				considered.add(i);
+				considered.set(i);
+				numConsidered++;
 				return elements.get(i);
 			}
 		}
