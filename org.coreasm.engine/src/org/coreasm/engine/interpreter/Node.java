@@ -129,6 +129,9 @@ public class Node implements Serializable {
 				if (node == lastReturned) {
 					if (it.hasNext())
 						return next();
+					// We were looking for the successor of the last node so for the next search we will
+					// start from the beginning. It is safe to free up this memory without any loss.
+					successorFinder = null;
 					return null;
 				}
 				next();
@@ -343,7 +346,7 @@ public class Node implements Serializable {
 	}
 	
 	
-	protected SuccessorFinder getSuccessorFinder() {
+	private SuccessorFinder getSuccessorFinder() {
 		if (successorFinder != null)
 			return successorFinder;
 		return successorFinder = new SuccessorFinder();

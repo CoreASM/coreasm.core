@@ -13,13 +13,11 @@
  
 package org.coreasm.engine.interpreter;
 
-import java.util.ArrayList;
+import java.util.AbstractList;
 import java.util.Collections;
 import java.util.List;
 
 import org.coreasm.engine.kernel.Kernel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** 
  * Wrapper around a <code>Node</code> object, to see the node as a 
@@ -32,8 +30,6 @@ public class FunctionRuleTermNode extends ASTNode {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = LoggerFactory.getLogger(FunctionRuleTermNode.class);
-    
     private ASTNode actualNode = null;
 
 	private List<ASTNode> argsList = null;
@@ -72,17 +68,22 @@ public class FunctionRuleTermNode extends ASTNode {
 	 */
 	public List<ASTNode> getArguments() {
 		if (argsList == null) {
-			List<Node> args = getActualFunctionRuleNode().getChildNodes("lambda");
+			final List<Node> args = getActualFunctionRuleNode().getChildNodes("lambda");
 			if (args.size() == 0)
 				argsList = Collections.emptyList();
 			else {
-				argsList = new ArrayList<ASTNode>();
-			
-				for (Node n: args) 
-					if (n instanceof ASTNode)
-						argsList.add((ASTNode)n);
-					else
-						logger.warn("Bad argument node in a FunctionRuleTerm!");
+				argsList = new AbstractList<ASTNode>() {
+
+					@Override
+					public ASTNode get(int index) {
+						return (ASTNode)args.get(index);
+					}
+
+					@Override
+					public int size() {
+						return args.size();
+					}
+				};
 			}
 		}
 
@@ -105,10 +106,9 @@ public class FunctionRuleTermNode extends ASTNode {
 	 * <code>null</code>.
 	 */
 	public String getName() {
-		if (hasName()) { 
+		if (hasName()) 
 			return getActualFunctionRuleNode().getChildNode("alpha").getToken();
-		} else
-			return null;
+		return null;
 	}
 
 	public ASTNode getActualFunctionRuleNode() {

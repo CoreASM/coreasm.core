@@ -946,6 +946,7 @@ public class SignaturePlugin extends Plugin
 			// get next parameter
 			currentParams = currentParams.getNext();
 		}
+		params.trimToSize();
 
 		DerivedFunctionElement func = new DerivedFunctionElement(capi, params, exprNode);
 		

@@ -18,6 +18,7 @@ package org.coreasm.engine.plugins.letrule;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
@@ -60,20 +61,14 @@ public class LetRuleNode extends ASTNode {
      * represent the terms that will be aliased
      * @throws Exception 
      */
-    public Map<String,ASTNode> getVariableMap() throws Exception {
+    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
     	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
         
-        ASTNode current = getFirst();
-        
-        while (current.getNext() != null) {
-            if (variableMap.keySet().contains(current.getToken())) {
-                throw new Exception("Token \""+current.getToken()+"\" already defined in let rule.");
-            }
-            else {
-                variableMap.put(current.getToken(),current.getNext());
-            }
-            current = current.getNext().getNext();
+        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+            if (variableMap.put(current.getToken(),current.getNext()) != null)
+                throw new CoreASMError("Token \""+current.getToken()+"\" already defined in let rule.", this);
         }
+        
         return variableMap;
     }
        

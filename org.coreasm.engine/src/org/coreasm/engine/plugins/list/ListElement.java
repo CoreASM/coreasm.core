@@ -14,6 +14,7 @@
 package org.coreasm.engine.plugins.list;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,23 +35,39 @@ import org.coreasm.engine.plugins.number.NumberElement;
 /** 
  * This class implements list elements in CoreASM.
  *   
- * @author  Roozbeh Farahbod
+ * @author  Roozbeh Farahbod, Michael Stegmaier
  * 
  */
 public class ListElement extends AbstractListElement implements ModifiableIndexedCollection {
 
 	private List<Element> listElements;
-	private List<Element> enumerationCache = null;
 	
 	public ListElement() {
 		listElements = Collections.emptyList();
 	}
 	
 	public ListElement(Collection<? extends Element> collection) {
-		if (collection.size() == 0)
+		if (collection.isEmpty())
 			listElements = Collections.emptyList();
 		else
-			listElements = Collections.unmodifiableList(new ArrayList<Element>(collection));
+			listElements = unmodifiableList(collection);
+	}
+	
+	private static List<Element> unmodifiableList(Collection<? extends Element> collection) {
+		if (collection instanceof List<?>)
+			return unmodifiableList((List<? extends Element>)collection);
+		return Collections.unmodifiableList(new ArrayList<Element>(collection));
+	}
+	
+	private static List<Element> unmodifiableList(List<? extends Element> list) {
+		if (list instanceof ArrayList<?>)
+			return unmodifiableList((ArrayList<? extends Element>)list);
+		return Collections.unmodifiableList(list);
+	}
+	
+	private static List<Element> unmodifiableList(ArrayList<? extends Element> list) {
+		list.trimToSize();
+		return Collections.unmodifiableList(list);
 	}
 	
 	public ListElement(ListElement list) {
@@ -60,21 +77,18 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	public ListElement(Element ... elements) {
 		if (elements.length == 0)
 			listElements = Collections.emptyList();
-		else {
-			listElements = new ArrayList<Element>();
-			for (Element e: elements) 
-				listElements.add(e);
-			listElements = Collections.unmodifiableList(listElements);
-		}
+		else
+			listElements = Collections.unmodifiableList(Arrays.asList(elements));
 	}
 	
 	/**
 	 * Creates a new list which is <i>cons(e, list)</i>.
 	 */
 	public ListElement(Element e, ListElement list) {
-		listElements = new ArrayList<Element>(list.listElements);
-		listElements.add(0, e);
-		listElements = Collections.unmodifiableList(listElements);
+		ArrayList<Element> listElements = new ArrayList<Element>();
+		listElements.add(e);
+		listElements.addAll(list.listElements);
+		this.listElements = unmodifiableList(listElements);
 	}
 	
 	@Override
@@ -108,7 +122,7 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	 * @see AbstractListElement#getList()
 	 */
 	public List<? extends Element> getList() {
-		return Collections.unmodifiableList(listElements);
+		return listElements;
 	}
 	
 	@Override
@@ -346,7 +360,7 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 		if (this.intSize() < 2)
 			return new ListElement();
 		else {
-			return new ListElement(new ArrayList<Element>(listElements.subList(1, listElements.size())));
+			return new ListElement(listElements.subList(1, listElements.size()));
 		}
 			
 	}
@@ -361,7 +375,7 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 		if (e.size() == 0)
 			return this;
 		else {
-			List<Element> list = new ArrayList<Element>(this.getList());
+			List<Element> list = new ArrayList<Element>(listElements);
 			list.addAll(e.enumerate());
 			return new ListElement(list);
 		}
@@ -379,9 +393,7 @@ public class ListElement extends AbstractListElement implements ModifiableIndexe
 	}
 
 	public List<Element> getIndexedView() throws UnsupportedOperationException {
-		if (enumerationCache == null) 
-			enumerationCache = Collections.unmodifiableList(listElements);
-		return enumerationCache;
+		return listElements;
 	}
 
 	public boolean supportsIndexedView() {

@@ -188,7 +188,8 @@ public class Specification {
 	 * 
 	 * @param lines new text
 	 */
-	public void updateLines(List<SpecLine> lines) {
+	public void updateLines(ArrayList<SpecLine> lines) {
+		lines.trimToSize();
 		this.lines = Collections.unmodifiableList(lines);
 		StringBuffer txt = new StringBuffer();
 		Iterator<SpecLine> it = lines.iterator();

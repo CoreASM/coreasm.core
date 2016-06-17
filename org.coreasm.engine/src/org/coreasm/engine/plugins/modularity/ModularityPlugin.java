@@ -94,7 +94,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	public void fireOnModeTransition(EngineMode source, EngineMode target) {
     	if (target == EngineMode.emParsingSpec) {
     		loadedModules = new HashSet<String>();
-    		final List<SpecLine> newSpec = injectModules(capi.getSpec().getLines(), capi.getSpec().getFileDir());
+    		final ArrayList<SpecLine> newSpec = injectModules(capi.getSpec().getLines(), capi.getSpec().getFileDir());
     		capi.getSpec().updateLines(newSpec);
     		/*
     		System.out.println("** ModularityPlugin :  Specification is modified as follows:");
@@ -227,7 +227,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 		return parsers;
 	}
 
-	private List<SpecLine> injectModules(List<SpecLine> lines, String relativePath) {
+	private ArrayList<SpecLine> injectModules(List<SpecLine> lines, String relativePath) {
 		// CHANGE: Includes inside included specifications will be looked up relative to the including specification now
 		ArrayList<SpecLine> newSpec = new ArrayList<SpecLine>();
 		String useRegex;
