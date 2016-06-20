@@ -67,7 +67,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	
 	private ControlAPI capi = (ControlAPI)engine;
 	private WatchExpressionAPI wapi;
-	private Stack<ASMStorage> states = new Stack<ASMStorage>();
+	private final Stack<ASMStorage> states = new Stack<ASMStorage>();
 	private ASMDebugTarget debugTarget;
 	private String sourceName;
 	private String specPath;
@@ -77,7 +77,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	private ASTNode stepOverPos;
 	private ASTNode stepReturnPos;
 	private ASTNode prevPos;
-	private Stack<Map<ASTNode, String>> ruleArgs = new Stack<Map<ASTNode, String>>();
+	private final Stack<Map<ASTNode, String>> ruleArgs = new Stack<Map<ASTNode, String>>();
 	private Set<ASMUpdate> updates = new HashSet<ASMUpdate>();
 	private IBreakpoint prevWatchpoint;
 	private boolean stepSucceeded = false;
@@ -221,7 +221,7 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	}
 	
 	public boolean isStepFailed() {
-		return capi.getStorage() != null && capi.getStorage().getLastInconsistentUpdate() != null;
+		return capi != null && capi.getStorage() != null && capi.getStorage().getLastInconsistentUpdate() != null;
 	}
 	
 	public boolean isUpdateConsistent(ASMUpdate update) {
@@ -263,12 +263,16 @@ public class EngineDebugger extends EngineDriver implements InterpreterListener 
 	private void cleanUp() {
 		for (ASMStorage storage : states)
 			storage.clearState();
-		debugTarget.fireTerminateEvent();
-		debugTarget.cleanUp();
+		if (debugTarget != null) {
+			debugTarget.fireTerminateEvent();
+			debugTarget.cleanUp();
+		}
 		states.clear();
-		updates.clear();
+		if (updates != null)
+			updates.clear();
 		ruleArgs.clear();
-		wapi.dispose();
+		if (wapi != null)
+			wapi.dispose();
 		capi = null;
 		prevPos = null;
 		stepOverPos = null;
