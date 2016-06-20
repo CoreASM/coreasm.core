@@ -17,7 +17,7 @@ import org.coreasm.engine.interpreter.ASTNode;
  * @author Spellmaker
  *
  */
-public class ReturnRuleHandler implements CompilerCodeHandler {
+public class ReturnTermHandler implements CompilerCodeHandler {
 
 	@Override
 	public void compile(CodeFragment result, ASTNode node, CompilerEngine engine)
