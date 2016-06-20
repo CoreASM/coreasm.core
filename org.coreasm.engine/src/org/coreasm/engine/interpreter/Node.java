@@ -286,13 +286,15 @@ public class Node implements Serializable {
 		if (children.isEmpty()) 
 			return Collections.emptyList();
 		else {
-			List<Node> result = new ArrayList<Node>();
+			ArrayList<Node> result = new ArrayList<Node>();
 			
 			for (NameNodeTuple tuple : children)
 				if (name.equals(tuple.name))
 					result.add(tuple.node);
+			result.trimToSize();
+			successorFinder = null;
 			
-			return result;
+			return Collections.unmodifiableList(result);
 		}
 	}
 	
