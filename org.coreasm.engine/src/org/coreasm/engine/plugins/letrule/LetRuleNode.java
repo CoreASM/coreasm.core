@@ -15,11 +15,11 @@
  
 package org.coreasm.engine.plugins.letrule;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 import org.coreasm.engine.plugins.turboasm.TurboASMPlugin;
 
@@ -35,6 +35,7 @@ public class LetRuleNode extends ASTNode {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private VariableMap variableMap;
 
     /**
      * Creates a new LetRuleNode
@@ -52,24 +53,34 @@ public class LetRuleNode extends ASTNode {
     	super(node);
     }
     
+    @Override
+	public void addChild(String name, Node node) {
+		if (node instanceof ASTNode) {
+			ASTNode astNode = (ASTNode)node;
+			if (ASTNode.ID_CLASS.equals(astNode.getGrammarClass())) {
+				for (ASTNode current = getFirst(); current != null && current.getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+		            if (astNode.getToken().equals(current.getToken())) {
+		            	super.addChild(name, node);
+		            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in let rule.", node);
+		            }
+		        }
+			}
+		}
+		super.addChild(name, node);
+	}
+    
     public boolean isLetResultRule() {
     	return TurboASMPlugin.RETURN_RESULT_TOKEN.equals(getFirst().getNextCSTNode().getToken());
     }
 
     /**
      * Returns a map of the variable names to the nodes which
-     * represent the terms that will be aliased
-     * @throws Exception 
+     * represent the domains that variable should be taken from
      */
-    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
-    	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
-        
-        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
-            if (variableMap.put(current.getToken(),current.getNext()) != null)
-                throw new CoreASMError("Token \""+current.getToken()+"\" already defined in let rule.", this);
-        }
-        
-        return variableMap;
+    public Map<String,ASTNode> getVariableMap() {
+    	if (variableMap != null)
+    		return variableMap;
+    	return variableMap = new VariableMap(this);
     }
        
     /**

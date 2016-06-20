@@ -14,11 +14,11 @@
  
 package org.coreasm.engine.plugins.chooserule;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.coreasm.engine.CoreASMError;
 import org.coreasm.engine.interpreter.ASTNode;
+import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.interpreter.ScannerInfo;
 
 /** 
@@ -31,6 +31,7 @@ import org.coreasm.engine.interpreter.ScannerInfo;
 public class ChooseRuleNode extends ASTNode {
 
     private static final long serialVersionUID = 1L;
+    private VariableMap variableMap;
     
     public ChooseRuleNode(ChooseRuleNode node) {
 		super(node);
@@ -44,20 +45,30 @@ public class ChooseRuleNode extends ASTNode {
 				scannerInfo);
 	}
 	
+	@Override
+	public void addChild(String name, Node node) {
+		if (node instanceof ASTNode) {
+			ASTNode astNode = (ASTNode)node;
+			if (ASTNode.ID_CLASS.equals(astNode.getGrammarClass())) {
+				for (ASTNode current = getFirst(); current != null && current.getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
+		            if (astNode.getToken().equals(current.getToken())) {
+		            	super.addChild(name, node);
+		            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in choose rule.", node);
+		            }
+		        }
+			}
+		}
+		super.addChild(name, node);
+	}
+	
 	/**
      * Returns a map of the variable names to the nodes which
      * represent the domains that variable should be taken from
-     * @throws CoreASMError 
      */
-    public Map<String,ASTNode> getVariableMap() throws CoreASMError {
-    	Map<String,ASTNode> variableMap = new HashMap<String,ASTNode>();
-        
-        for (ASTNode current = getFirst(); current.getNext() != null && current.getNext().getNext() != null && ASTNode.ID_CLASS.equals(current.getGrammarClass()); current = current.getNext().getNext()) {
-            if (variableMap.put(current.getToken(),current.getNext()) != null)
-            	throw new CoreASMError("Variable \""+current.getToken()+"\" already defined in choose rule.", this);
-        }
-        
-        return variableMap;
+    public Map<String,ASTNode> getVariableMap() {
+    	if (variableMap != null)
+    		return variableMap;
+    	return variableMap = new VariableMap(this);
     }
 
     /**

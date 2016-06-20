@@ -14,9 +14,15 @@
 package org.coreasm.engine.interpreter;
 
 import java.io.Serializable;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Location;
@@ -383,5 +389,92 @@ public class ASTNode extends Node implements Serializable {
 			return super.equals(obj);
 		}
 		
+	}
+	
+	protected static final class VariableMap extends AbstractMap<String, ASTNode> {
+		private final ASTNode node;
+		
+		public VariableMap(ASTNode node) {
+			this.node = node;
+		}
+
+		@Override
+		public Set<Entry<String, ASTNode>> entrySet() {
+			return new AbstractSet<Entry<String,ASTNode>>() {
+				private final int size;
+				
+				{
+					int count = 0;
+					Iterator<Entry<String, ASTNode>> it = iterator();
+					while (it.hasNext()) {
+						count++;
+						it.next();
+					}
+					size = count;
+				}
+				
+				@Override
+				public Iterator<Entry<String, ASTNode>> iterator() {
+					return new VariableMapIterator(node);
+				}
+
+				@Override
+				public int size() {
+					return size;
+				}
+			};
+		}
+		
+		private final class VariableMapIterator implements Iterator<Entry<String, ASTNode>> {
+			private ASTNode current;
+
+			VariableMapIterator(ASTNode node) {
+				current = node.getFirst();
+			}
+			
+			@Override
+			public boolean hasNext() {
+				return current != null && ASTNode.ID_CLASS.equals(current.getGrammarClass());
+			}
+
+			@Override
+			public Entry<String, ASTNode> next() {
+				if (!hasNext())
+					throw new NoSuchElementException();
+				ASTNodeEntry entry = new ASTNodeEntry(current) {
+					@Override
+					public ASTNode getValue() {
+						return super.getValue().getNext();
+					}
+				};
+				current = (current.getNext() != null ? current.getNext().getNext() : null);
+				return entry;
+			}
+		}
+	}
+	
+	protected static class ASTNodeEntry implements Entry<String, ASTNode> {
+		private final ASTNode astNode;
+		
+		ASTNodeEntry(ASTNode astNode) {
+			if (astNode == null)
+				throw new IllegalArgumentException("astNode of ASTNodeEntry must not be null.");
+			this.astNode = astNode;
+		}
+		
+		@Override
+		public String getKey() {
+			return astNode.getToken();
+		}
+
+		@Override
+		public ASTNode getValue() {
+			return astNode;
+		}
+
+		@Override
+		public ASTNode setValue(ASTNode value) {
+			throw new UnsupportedOperationException();
+		}
 	}
 }
