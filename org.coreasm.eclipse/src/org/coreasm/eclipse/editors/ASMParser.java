@@ -206,6 +206,11 @@ public class ASMParser extends Observable implements org.coreasm.engine.parser.P
 			}
 					
 			result = new ParsingResult(false, doc, pe);	// result for the observers
+		} catch (CoreASMError e) {
+			slimengine.error(e);
+			rootnode = null;
+			doc.setRootnode(null);
+			result = new ParsingResult(false, doc, null);
 		}
 		
 		parentEditor.createPluginMark(uses);
