@@ -74,7 +74,7 @@ public class Node implements Serializable {
 	protected final ArrayList<NameNodeTuple> children;
 	
 	/** link to parent node */
-	protected Node parent;
+	protected ASTNode parent;
 	
 	/** name of the plugin associated with this node */
 	protected String pluginName;
@@ -322,7 +322,9 @@ public class Node implements Serializable {
 	 * Sets the parent of this node.
 	 */
 	public void setParent(Node parent) {
-		this.parent = parent;
+		if (parent != null && !(parent instanceof ASTNode))
+			throw new IllegalArgumentException("A parent must be an ASTNode.");
+		this.parent = (ASTNode)parent;
 	}
 	
 	/**

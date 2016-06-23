@@ -250,15 +250,10 @@ public class ASTNode extends Node implements Serializable {
 	 * Returns the parent node of this node in form 
 	 * of an <code>ASTNode</code>. This should always be possible
 	 * otherwise an error is thrown.
-	 * 
-	 * @throws Error if the parent is not an abstract node
 	 */
 	@Override
 	public ASTNode getParent() {
-		if (parent == null || parent instanceof ASTNode)
-			return (ASTNode)parent;
-		else
-			throw new Error("Parent of this node should be an Abstract Node. " + this.toString());
+		return parent;
 	}
 
 	/**
