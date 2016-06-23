@@ -12,7 +12,7 @@
  
 package org.coreasm.engine.plugins.number;
 
-import java.util.ArrayList;
+import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
 
@@ -161,13 +161,20 @@ public class NumberRangeElement extends Element implements Enumerable {
 
 	public List<Element> getIndexedView() throws UnsupportedOperationException {
     	if (enumeration == null) {
-	        enumeration = new ArrayList<Element>();
-	        
-	        for (double n = start; n <= end; n+=step) {
-	            enumeration.add(NumberElement.getInstance(n));
-	        }
-	        
-    	} 
+    		final int size = (int)Math.min((end - start) / step + 1.0, (double)Integer.MAX_VALUE);
+	        enumeration = new AbstractList<Element>() {
+
+				@Override
+				public Element get(int index) {
+					return NumberElement.getInstance(start + index * step);
+				}
+
+				@Override
+				public int size() {
+					return size;
+				}
+			};
+    	}
     	return enumeration;
 	}
 
