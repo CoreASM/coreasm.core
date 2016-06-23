@@ -30,6 +30,8 @@ import org.codehaus.jparsec.Tokens.Fragment;
 import org.codehaus.jparsec.Tokens.Tag;
 import org.codehaus.jparsec.pattern.Pattern;
 import org.codehaus.jparsec.pattern.Patterns;
+import org.coreasm.compiler.interfaces.CompilerPlugin;
+import org.coreasm.compiler.plugins.number.CompilerNumberPlugin;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -55,8 +57,6 @@ import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugin.VocabularyExtender;
-import org.coreasm.compiler.interfaces.CompilerPlugin;
-import org.coreasm.compiler.plugins.number.CompilerNumberPlugin;
 
 /**
  * Plugin for number related literals, operations, and functions.
@@ -235,17 +235,12 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 
 				// convert string representationg to numeric
 				double number = Double.parseDouble(x);
+				
+				if (numberBackgroundElement == null)
+					getBackgrounds();
 
-				NumberElement ne = null;
-				try {
-					// get new number element from the number background
-					ne = numberBackgroundElement.getNewValue(number);
-				} catch (Throwable e) {
-					System.out.println(x);
-					System.out.println(numberBackgroundElement);
-					System.out.println(number);
-					throw new Error(e);
-				}
+				// get new number element from the number background
+				NumberElement ne = numberBackgroundElement.getNewValue(number);
 
 				// result of this node is the number element produced
 				pos.setNode(null, null, ne);
