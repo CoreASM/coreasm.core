@@ -739,14 +739,8 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void waitWhileBusy() {
-		while (isBusy()) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		logger.debug("Finished waiting. (Mode: {})",getEngineMode());
+		while (isBusy())
+			Thread.yield();
 	}
 
 	@Override
@@ -807,21 +801,21 @@ public class Engine implements ControlAPI {
 						// if engine mode is idle and there is no user command,
 						// sleep for a short time
 						if ((engineMode == EngineMode.emIdle && commandQueue.isEmpty())
-									|| engineMode == EngineMode.emError) {
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException e) {
-								logger.debug( "Engine is forced to stop.");
-							}
-						}
+									|| engineMode == EngineMode.emError)
+							Thread.yield();
 
 						engineMode = getEngineMode();
 
 						switch (engineMode) {
 
 						case emIdle:
-							processNextCommand();
-							engineBusy = (getEngineMode() != EngineMode.emIdle);
+							// Synchronize this with isBusy to avoid isBusy from returning false while the engine actually is busy
+							// What happens is that engineBusy is read as false right before it is set to true and commandQueue.isEmpty()
+							// is checked right after removing the command from the queue. In that case isBusy returns false.
+							synchronized (Engine.this) {
+								processNextCommand();
+								engineBusy = (getEngineMode() != EngineMode.emIdle);
+							}
 							break;
 
 						case emInitKernel:

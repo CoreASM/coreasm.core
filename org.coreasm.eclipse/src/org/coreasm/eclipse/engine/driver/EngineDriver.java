@@ -300,7 +300,7 @@ public class EngineDriver implements Runnable, EngineModeObserver, EngineStepObs
 				engine.step(); step++;
 
 				while (!shouldStop && engine.isBusy())
-					Thread.sleep(1);
+					Thread.yield();
 				
 				if (shouldStop) {
 					// give some time to the engine to finish
