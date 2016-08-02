@@ -242,7 +242,7 @@ public abstract class AbstractMultiset<E> implements Multiset<E> {
 	}
 	
 	/**
-	 * Returns a sub-instance of <code>Map<E,Integer></code>. This
+	 * Returns a sub-instance of <code>Map&lt;E,Integer&gt;</code>. This
 	 * is used by the constructor of this class to create the map, 
 	 * which is the main data structure of this class.
 	 */
