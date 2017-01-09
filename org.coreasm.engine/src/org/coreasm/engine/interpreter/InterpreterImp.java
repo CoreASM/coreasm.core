@@ -971,10 +971,10 @@ public class InterpreterImp implements Interpreter {
 			ASTNode node = fringe.pop();
 			if (node instanceof ConstantValueNode) {
 				ConstantValueNode constantValueNode = (ConstantValueNode)node;
-				if (getEnv(constantValueNode.getToken()) != null)
-					constantValueNode.setValue(getEnv(constantValueNode.getToken()));
-				else if (constantValues.containsKey(constantValueNode))
+				if (constantValues.containsKey(constantValueNode))
 					constantValueNode.setValue(constantValues.get(constantValueNode));
+				else if (getEnv(constantValueNode.getToken()) != null)
+					constantValueNode.setValue(getEnv(constantValueNode.getToken()));
 			}
 			fringe.addAll(node.getAbstractChildNodes());
 		}

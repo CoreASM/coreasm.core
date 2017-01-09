@@ -13,7 +13,8 @@
 
 package org.coreasm.engine.interpreter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +34,9 @@ public class TestNode {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		youngParent = new Node("Young", "Yount", null);
-		oldParent1 = new Node("Old1", "Old1", null);
-		oldParent2 = new Node("Old2", "Old2", null);
+		youngParent = new ASTNode("Young", "Young", "Young", "Young", null);
+		oldParent1 = new ASTNode("Old1", "Old1", "Old1", "Old1", null);
+		oldParent2 = new ASTNode("Old2", "Old2", "Old2", "Old2", null);
 		oldParent1.addChild(new Node("child1", "child1", null));
 		oldParent2.addChild(new Node("child2", "child2", null));
 		oldParent2.addChild(new Node("child3", "child3", null));
