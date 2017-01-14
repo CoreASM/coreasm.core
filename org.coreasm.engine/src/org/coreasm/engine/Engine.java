@@ -57,6 +57,9 @@ import org.coreasm.engine.scheduler.SchedulerImp;
 import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class provides the actual implementation of a CoreASM engine. It
@@ -104,6 +107,9 @@ public class Engine implements ControlAPI {
 
 	/** A flag which is on while engine is busy */
 	private volatile boolean engineBusy = false;
+
+	private final Lock isBusyLock = new ReentrantLock();
+	private final Condition isBusyChange = isBusyLock.newCondition();
 
 	/** Cache of EngineMode events */
 	private final Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
@@ -733,13 +739,29 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void waitWhileBusy() {
-		while (isBusy())
-			Thread.yield();
+		while (isBusy()) {
+			isBusyLock.lock();
+			try {
+				isBusyChange.await();
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			finally {
+				isBusyLock.unlock();
+			}
+		}
 	}
 
 	@Override
-	public synchronized boolean isBusy() {
-		return (engineMode != EngineMode.emTerminated) && (engineBusy || !commandQueue.isEmpty());
+	public boolean isBusy() {
+		isBusyLock.lock();
+		try {
+			return (engineMode != EngineMode.emTerminated) && (engineBusy || !commandQueue.isEmpty());
+		}
+		finally {
+			isBusyLock.unlock();
+		}
 	}
 
 	/**
@@ -779,7 +801,15 @@ public class Engine implements ControlAPI {
 		@Override
 		public void run() {
 			try {
-				engineBusy = true;
+				isBusyLock.lock();
+				try {
+					engineBusy = true;
+					isBusyChange.signalAll();
+				}
+				finally {
+					isBusyLock.unlock();
+				}
+
 
 				while (!terminating) {
 					try {
@@ -806,9 +836,14 @@ public class Engine implements ControlAPI {
 							// Synchronize this with isBusy to avoid isBusy from returning false while the engine actually is busy
 							// What happens is that engineBusy is read as false right before it is set to true and commandQueue.isEmpty()
 							// is checked right after removing the command from the queue. In that case isBusy returns false.
-							synchronized (Engine.this) {
+							isBusyLock.lock();
+							try {
 								processNextCommand();
 								engineBusy = (getEngineMode() != EngineMode.emIdle);
+								isBusyChange.signalAll();
+							}
+							finally {
+								isBusyLock.unlock();
 							}
 							break;
 
@@ -978,26 +1013,33 @@ public class Engine implements ControlAPI {
 							*/
 
 						case emError:
-							// Throw out all commands except a recovery command
-							while (!commandQueue.isEmpty()) {
-								EngineCommand cmd = commandQueue.remove(0);
-								if (cmd != null) {
-									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
-										next(EngineMode.emTerminating);
-										lastError = null;
-										logger.debug("Engine terminated by user command.");
-										break;
-									}
-									else if (cmd.type == EngineCommand.CmdType.ecRecover) {
-										// Recover by going to the idle mode
-										next(EngineMode.emIdle);
-										lastError = null;
-										logger.debug("Engine recovered from error by user command.");
-										break;
+							isBusyLock.lock();
+							try {
+								// Throw out all commands except a recovery command
+								while (!commandQueue.isEmpty()) {
+									EngineCommand cmd = commandQueue.remove(0);
+									if (cmd != null) {
+										if (cmd.type == EngineCommand.CmdType.ecTerminate) {
+											next(EngineMode.emTerminating);
+											lastError = null;
+											logger.debug("Engine terminated by user command.");
+											break;
+										} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
+											// Recover by going to the idle mode
+											next(EngineMode.emIdle);
+											lastError = null;
+											logger.debug("Engine recovered from error by user command.");
+											break;
+										}
 									}
 								}
+
+								engineBusy = false;
+								isBusyChange.signalAll();
 							}
-							engineBusy = false;
+							finally {
+								isBusyLock.unlock();
+							}
 						case emTerminated:
 						break;
 						default:
@@ -1028,15 +1070,22 @@ public class Engine implements ControlAPI {
 				for (Plugin p: pluginLoader.getPlugins())
 					p.terminate();
 
-				// empty command queue
-				commandQueue.clear();
-
-
 			} catch (Error e) {
 				e.printStackTrace();
 			}
 
-			engineBusy = false;
+			isBusyLock.lock();
+			try {
+				// empty command queue
+				commandQueue.clear();
+
+				engineBusy = false;
+				isBusyChange.signalAll();
+			}
+			finally {
+				isBusyLock.unlock();
+			}
+
 			System.gc();
 		}
 
@@ -1047,13 +1096,18 @@ public class Engine implements ControlAPI {
 		 *            new mode of the engine
 		 */
 		private void next(EngineMode newMode) throws EngineException {
-			engineBusy = true;
+			EngineMode oldMode;
 
-			EngineMode oldMode = null;
-
-			synchronized (engineMode) {
+			isBusyLock.lock();
+			try {
 				oldMode = engineMode;
 				engineMode = newMode;
+
+				engineBusy = true;
+				isBusyChange.signalAll();
+			}
+			finally {
+				isBusyLock.unlock();
 			}
 
 			Map<EngineMode, EngineModeEvent> map = null;
@@ -1096,92 +1150,92 @@ public class Engine implements ControlAPI {
 			// a state that is right before changing its
 			// state
 			boolean shouldRemoveFirstCommand = false;
-			synchronized (engineMode) {
-				EngineCommand cmd = null;
-				int rrc = 0;
-				String tempMsg = null;
+			EngineCommand cmd = null;
+			int rrc = 0;
+			String tempMsg = null;
 
-				synchronized (this) {
-					rrc = remainingRunCount--;
+			synchronized (this) {
+				rrc = remainingRunCount--;
+			}
+			if (rrc > 0)
+				cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
+			else if (!commandQueue.isEmpty()) {
+				cmd = commandQueue.get(0);
+				shouldRemoveFirstCommand = true;
+			}
+
+			if (cmd == null)
+				return;
+			else
+				lastCommand = cmd;
+
+			switch (cmd.type) {
+
+			case ecTerminate:
+				next(EngineMode.emTerminating);
+				break;
+
+			case ecInit:
+				next(EngineMode.emInitKernel);
+				break;
+
+			case ecLoadSpec:
+				tempMsg = "Loading specification file";
+			case ecOnlyParseSpec:
+				tempMsg = "Parsing specification file";
+			case ecOnlyParseHeader:
+				tempMsg = "Parsing the header of the specification file";
+				ParseCommandData cmdData = null;
+				if (cmd.metaData instanceof ParseCommandData)
+					cmdData = (ParseCommandData)cmd.metaData;
+				else {
+					cmdData = new ParseCommandData(true, cmd.metaData);
 				}
-				if (rrc > 0)
-					cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
-				else if (!commandQueue.isEmpty()) {
-					cmd = commandQueue.get(0);
-					shouldRemoveFirstCommand = true;
-				}
-
-				if (cmd == null)
-					return;
-				else
-					lastCommand = cmd;
-
-				switch (cmd.type) {
-
-				case ecTerminate:
-					next(EngineMode.emTerminating);
-					break;
-
-				case ecInit:
-					next(EngineMode.emInitKernel);
-					break;
-
-				case ecLoadSpec:
-					tempMsg = "Loading specification file";
-				case ecOnlyParseSpec:
-					tempMsg = "Parsing specification file";
-				case ecOnlyParseHeader:
-					tempMsg = "Parsing the header of the specification file";
-					ParseCommandData cmdData = null;
-					if (cmd.metaData instanceof ParseCommandData)
-						cmdData = (ParseCommandData)cmd.metaData;
-					else {
-						cmdData = new ParseCommandData(true, cmd.metaData);
+				if (cmdData.specInfo instanceof String) {
+					try {
+						specification = new Specification(Engine.this, new File((String)cmdData.specInfo));
+						parser.setSpecification(specification);
+						logger.debug("{}: {}", tempMsg, cmdData.specInfo);
+						next(EngineMode.emParsingHeader);
+					} catch (FileNotFoundException e) {
+						error("Specification file is not found (" + cmdData.specInfo + ")\n. Nothing is loaded.");
+					} catch (IOException e) {
+						error("Specification file cannot be read from (" + cmdData.specInfo + ")\n. Nothing is loaded.");
 					}
-					if (cmdData.specInfo instanceof String) {
+				} else
+					if (cmdData.specInfo instanceof NamedStringReader) {
+						final NamedStringReader nsrData = (NamedStringReader)cmdData.specInfo;
 						try {
-							specification = new Specification(Engine.this, new File((String)cmdData.specInfo));
+							specification = new Specification(Engine.this, nsrData.reader, nsrData.fileName);
 							parser.setSpecification(specification);
-							logger.debug("{}: {}", tempMsg, cmdData.specInfo);
+							logger.debug("{}.", tempMsg);
 							next(EngineMode.emParsingHeader);
-						} catch (FileNotFoundException e) {
-							error("Specification file is not found (" + cmdData.specInfo + ")\n. Nothing is loaded.");
 						} catch (IOException e) {
-							error("Specification file cannot be read from (" + cmdData.specInfo + ")\n. Nothing is loaded.");
+							error("Specification file cannot be read from (" + nsrData.fileName + ")\n. Nothing is loaded.");
 						}
 					} else
-						if (cmdData.specInfo instanceof NamedStringReader) {
-							final NamedStringReader nsrData = (NamedStringReader)cmdData.specInfo;
-							try {
-								specification = new Specification(Engine.this, nsrData.reader, nsrData.fileName);
-								parser.setSpecification(specification);
-								logger.debug("{}.", tempMsg);
-								next(EngineMode.emParsingHeader);
-							} catch (IOException e) {
-								error("Specification file cannot be read from (" + nsrData.fileName + ")\n. Nothing is loaded.");
-							}
-						} else
-							error("The specification passed to the engine is invalid.");
-					break;
-
-				case ecStep:
-					next(EngineMode.emStartingStep);
-					break;
-
-				case ecRun:
-					if (cmd.metaData instanceof Integer) {
-						int i = ((Integer) cmd.metaData).intValue();
-						if (i > 0)
-							synchronized (this) {
-								remainingRunCount = i;
-							}
-					}
-					break;
-				case ecRecover:
+						error("The specification passed to the engine is invalid.");
 				break;
+
+			case ecStep:
+				next(EngineMode.emStartingStep);
+				break;
+
+			case ecRun:
+				if (cmd.metaData instanceof Integer) {
+					int i = ((Integer) cmd.metaData).intValue();
+					if (i > 0)
+						synchronized (this) {
+							remainingRunCount = i;
+						}
 				}
-				if (shouldRemoveFirstCommand)
-					commandQueue.remove(0);
+				break;
+			case ecRecover:
+			break;
+			}
+
+			if (shouldRemoveFirstCommand) {
+				commandQueue.remove(0);
 			}
 		}
 	}
