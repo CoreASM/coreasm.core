@@ -732,12 +732,6 @@ public class Engine implements ControlAPI {
 	}
 
 	@Override
-	@Deprecated
-	public void waitForIdleOrError() {
-		waitWhileBusy();
-	}
-
-	@Override
 	public void waitWhileBusy() {
 		while (isBusy())
 			Thread.yield();
