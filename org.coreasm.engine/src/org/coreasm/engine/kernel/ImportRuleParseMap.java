@@ -13,6 +13,8 @@
  
 package org.coreasm.engine.kernel;
 
+import java.util.ArrayList;
+
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.ParseMap;
@@ -38,15 +40,24 @@ public class ImportRuleParseMap extends ParseMap<Object[], Node> {
 				((Node)v[0]).getScannerInfo()
 				);
 		
-		for (int i=0; i < v.length; i++) {
-			if (i == 2)
-				node.addChild("alpha", (Node)v[i]); 	// ID
-			else
-				if (i == 6) 
-					node.addChild("beta", (Node)v[i]); 	// Rule
-				else
-					if (v[i] != null)
-						node.addChild((Node)v[i]);  	// whitespace or keywords
+		if (v[1] instanceof Node) {
+			final ASTNode firstId = (ASTNode)v[1];
+			node.addChild(firstId); 	// ID
+			if (v[2] instanceof ArrayList) {
+				@SuppressWarnings("unchecked")
+				ArrayList<Object[]>furtherIds = (ArrayList<Object[]>)v[2];
+				for (int i = 0; i < furtherIds.size();i++) {
+					final Object[] tuple = (Object[])furtherIds.get(i);
+					if (tuple[1] instanceof ASTNode) {
+						node.addChild((ASTNode)tuple[1]); 	// ID
+					}
+				}
+			}
+		}
+
+		final Object rule = v[v.length - 1];
+		if (rule != null && rule instanceof ASTNode) {
+			node.addChild("beta", (ASTNode)rule); 	// Rule
 		}
 		return node;
 	}

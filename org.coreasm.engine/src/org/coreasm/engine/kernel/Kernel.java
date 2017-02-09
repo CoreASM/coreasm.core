@@ -483,14 +483,15 @@ public class Kernel extends Plugin
        	
        	// ImportRule : 'import' ID 'do' Rule 
        	Parser<Node> importRuleParser = Parsers.array(
-       			parserTools.getKeywParser("import", PLUGIN_NAME),
-       			idParser,
-       			parserTools.getKeywParser("do", PLUGIN_NAME),
-       			refRuleParser.lazy()
-       			).map(new ImportRuleParseMap());
-       	parsers.put("ImportRule", 
-       			new GrammarRule("ImportRule",
-       					"'import' ID 'do' Rule", importRuleParser, PLUGIN_NAME));
+				parserTools.getKeywParser("import", PLUGIN_NAME),
+				idParser,
+				Parsers.array(parserTools.getOprParser(","), idParser).many(),
+				parserTools.getKeywParser("do", PLUGIN_NAME),
+				refRuleParser.lazy()
+				).map(new ImportRuleParseMap());
+		parsers.put("ImportRule",
+				new GrammarRule("ImportRule",
+						"'import' ID (',', ID)* 'do' Rule", importRuleParser, PLUGIN_NAME));
        	rules.add(importRuleParser);
        	
        	
