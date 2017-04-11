@@ -37,7 +37,7 @@ import org.coreasm.engine.plugin.VocabularyExtender;
  */
 public class TimePlugin extends Plugin implements VocabularyExtender {
 
-	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 2, 0, "");
+	public static final VersionInfo VERSION_INFO = new VersionInfo(0, 3, 0, "");
 	
 	private final Set<String> dependencyList;
 	
@@ -75,6 +75,7 @@ public class TimePlugin extends Plugin implements VocabularyExtender {
 		if (functions == null) {
 			functions = new HashMap<String,FunctionElement>();
 			functions.put(NowFunctionElement.NOW_FUNC_NAME, new NowFunctionElement());
+			functions.put(NanoTimeFunctionElement.NANOTIME_FUNC_NAME, new NanoTimeFunctionElement());
 			functions.put(StepCountFunctionElement.FUNC_NAME, new StepCountFunctionElement(capi));
 		}
 		return functions;
