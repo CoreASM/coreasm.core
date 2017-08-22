@@ -610,6 +610,7 @@ public class SignaturePlugin extends Plugin
 	        						"The " + Tools.getIth(i+1) + " argument in update '" + updateToString(u) +  
 	        						"' is not a member of " + domName + " and does not match the signature of " +
 	        						"function '" + u.loc.name + ": " + func.getSignature() + "'." +
+	        						(!isUpdateSuccessful && domain instanceof UniverseElement ? " The update was not successful so it might not be added to the universe." : "") +
 	                            	getContextInfo(u);
 	                            	
 	                            	/*
@@ -652,6 +653,7 @@ public class SignaturePlugin extends Plugin
 							"The value of update '" + updateToString(u) +  
 							"' is not a member of " + rangeName + " and does not match the signature of " +
 							"function '" + u.loc.name + ": " + func.getSignature() + "'." +
+							(!isUpdateSuccessful && range instanceof UniverseElement ? " The update was not successful so it might not be added to the universe." : "") +
 	                    	getContextInfo(u);
 	                    	/*
 	                    	"There is an update for function '" + u.loc.name + 
