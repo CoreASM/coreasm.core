@@ -78,7 +78,7 @@ public class AggregationAPIImp implements EngineAggregationAPI, PluginAggregatio
 		// successfully
 		if (getUnprocessedInstructions().size() == 0 && getFailedInstructions().size() == 0)
 			return true;
-		// else aggregiation failed
+		// else aggregation failed
 		else
 			return false;
 	}

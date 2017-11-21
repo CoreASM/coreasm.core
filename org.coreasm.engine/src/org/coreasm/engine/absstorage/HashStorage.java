@@ -410,6 +410,12 @@ public class HashStorage implements AbstractStorage {
 		Collection<Update> uSet = updateSet;
 		lastInconsistentUpdates = null;
 
+		// updateMap is a hashmap from locations to updates. 
+		// every update in the updateSet is added to the updateMap, 
+		// except, the key (aka the location) already exists. 
+		// In this case, the pair of the two conflicting updates is added
+		// to lastInconsistentUpdates and this method is immediately exited
+		// with result false. 
 		HashMap<Location, Update> updateMap = new HashMap<Location, Update>();
 		for (Update u: uSet) {
 			if (updateMap.containsKey(u.loc)) {

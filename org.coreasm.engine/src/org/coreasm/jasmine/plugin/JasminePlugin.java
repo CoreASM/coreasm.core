@@ -224,10 +224,10 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 				try {
 					url = new URL("file://" + token);
 					Logger.log(Logger.INFORMATION, Logger.plugins,
-							"JASMine plugin adds '" + token + "' to its calsspath.");
+							"JASMine plugin adds '" + token + "' to its classpath.");
 				} catch (MalformedURLException e1) {
 					Logger.log(Logger.WARNING, Logger.plugins,
-							"JASMine plugin ignores '" + token + "' from its calsspath.");
+							"JASMine plugin ignores '" + token + "' from its classpath.");
 					continue;
 				}
 				urls.add(url);

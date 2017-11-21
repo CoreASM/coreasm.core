@@ -36,7 +36,7 @@ public class UpdateRuleParseMap extends ParseMap<Object[], Node> {
 				node.addChild("alpha", (Node)v[i]); 	// LHS
 			else
 				if (i == 2) 
-					node.addChild("beta", (Node)v[i]); 	// LHS
+					node.addChild("beta", (Node)v[i]); 	// RHS
 				else
 					if (v[i] != null)
 						node.addChild((Node)v[i]);  	// whitespace or ':='
