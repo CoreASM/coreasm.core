@@ -645,17 +645,27 @@ public class InterpreterImp implements Interpreter {
 		
 		//If the current node is an 'import'
 		else if (gRule.equals("ImportRule")) {
-			final String id = pos.getFirst().getToken();
-			final ASTNode ruleNode = pos.getFirst().getNext();
-			
+
+			final List<ASTNode> children = pos.getAbstractChildNodes();
+			final ASTNode ruleNode = children.get(children.size()-1);
+
 			if (!ruleNode.isEvaluated()) {
-				addEnv(id, capi.getStorage().getNewElement());
+				/*consider id nodes and not the last node which is the rule node*/
+				for(int i = 0; i < children.size() - 1; i++) {
+					final String id = children.get(i).getToken();
+					addEnv(id, capi.getStorage().getNewElement());
+				}
 				pos = ruleNode;
+
 			} else {
-				removeEnv(id);
+				/*consider id nodes and not the last node which is the rule node*/
+				for(int i = 0; i < children.size() - 1; i++) {
+					final String id = children.get(i).getToken();
+					removeEnv(id);
+				}
 				pos.setNode(null, ruleNode.getUpdates(), null);
 			}
-			
+
 		}
 
 		//If the current node is an 'skip'
