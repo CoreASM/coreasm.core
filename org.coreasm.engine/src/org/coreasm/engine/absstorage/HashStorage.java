@@ -232,15 +232,12 @@ public class HashStorage implements AbstractStorage {
 	}
 
 	public Element getChosenProgram(Element agent) {
-		Element p = null;
-		Element s = null;
-		
 		try {
-			p = getValue(new Location(PROGRAM_FUNCTION_NAME, ElementList.create(agent)));
+			Element p = getValue(new Location(PROGRAM_FUNCTION_NAME, ElementList.create(agent)));
 			if (p instanceof RuleElement)
 				return p;
 			else {
-				capi.error("Value of program(" + s + ") is not a Rule element.");
+				capi.error("Value of program(" + agent + ") is not a Rule element.");
 				return Element.UNDEF;
 			}
 		} catch (InvalidLocationException e) {
