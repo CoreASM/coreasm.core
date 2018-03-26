@@ -15,17 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
@@ -57,6 +48,8 @@ import org.coreasm.engine.scheduler.SchedulerImp;
 import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -118,8 +111,7 @@ public class Engine implements ControlAPI {
 	private Map<String, Set<ServiceProvider>> serviceRegistry;
 
 	/** User command queue */
-//	private Queue<EngineCommand> commandQueue;
-	private final CommandQueue commandQueue;
+	private final LinkedBlockingQueue<EngineCommand> commandQueue;
 
 	/** Properties of the engine */
 	private EngineProperties properties;
@@ -168,7 +160,7 @@ public class Engine implements ControlAPI {
 		engineThread = new EngineThread(name);
 
 		// initializing objects
-		commandQueue = new CommandQueue();
+		commandQueue = new LinkedBlockingQueue<>();
 		//allPlugins = new HashMap<String, Plugin>();
 		//loadedPlugins = new PluginDB();
 		pluginLoader = new PluginManager(this);
@@ -220,8 +212,8 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void initialize() {
-		commandQueue
-				.add(new EngineCommand(EngineCommand.CmdType.ecInit, null));
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecInit,
+				null));
 	}
 
 	@Override
@@ -460,8 +452,8 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void step() {
-		commandQueue
-				.add(new EngineCommand(EngineCommand.CmdType.ecStep, null));
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecStep,
+				null));
 	}
 
 	@Override
@@ -1016,21 +1008,19 @@ public class Engine implements ControlAPI {
 							isBusyLock.lock();
 							try {
 								// Throw out all commands except a recovery command
-								while (!commandQueue.isEmpty()) {
-									EngineCommand cmd = commandQueue.remove(0);
-									if (cmd != null) {
-										if (cmd.type == EngineCommand.CmdType.ecTerminate) {
-											next(EngineMode.emTerminating);
-											lastError = null;
-											logger.debug("Engine terminated by user command.");
-											break;
-										} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
-											// Recover by going to the idle mode
-											next(EngineMode.emIdle);
-											lastError = null;
-											logger.debug("Engine recovered from error by user command.");
-											break;
-										}
+								EngineCommand cmd;
+								while ((cmd = commandQueue.poll()) != null) {
+									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
+										next(EngineMode.emTerminating);
+										lastError = null;
+										logger.debug("Engine terminated by user command.");
+										break;
+									} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
+										// Recover by going to the idle mode
+										next(EngineMode.emIdle);
+										lastError = null;
+										logger.debug("Engine recovered from error by user command.");
+										break;
 									}
 								}
 
@@ -1150,7 +1140,7 @@ public class Engine implements ControlAPI {
 			// a state that is right before changing its
 			// state
 			boolean shouldRemoveFirstCommand = false;
-			EngineCommand cmd = null;
+			EngineCommand cmd;
 			int rrc = 0;
 			String tempMsg = null;
 
@@ -1159,9 +1149,11 @@ public class Engine implements ControlAPI {
 			}
 			if (rrc > 0)
 				cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
-			else if (!commandQueue.isEmpty()) {
-				cmd = commandQueue.get(0);
-				shouldRemoveFirstCommand = true;
+			else {
+				cmd = commandQueue.peek();
+				if (cmd != null) {
+					shouldRemoveFirstCommand = true;
+				}
 			}
 
 			if (cmd == null)
@@ -1235,7 +1227,7 @@ public class Engine implements ControlAPI {
 			}
 
 			if (shouldRemoveFirstCommand) {
-				commandQueue.remove(0);
+				commandQueue.poll();
 			}
 		}
 	}
@@ -1390,68 +1382,6 @@ class EngineCommand {
 	public EngineCommand(CmdType type, Object metaData) {
 		this.type = type;
 		this.metaData = metaData;
-	}
-
-}
-
-/**
- * An array list with synchronized methods.
- *
- * @author Roozbeh Farahbod
- *
- */
-class CommandQueue extends ArrayList<EngineCommand> {
-
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public synchronized boolean add(EngineCommand e) {
-		return super.add(e);
-	}
-
-	@Override
-	public synchronized void add(int index, EngineCommand element) {
-		super.add(index, element);
-	}
-
-	@Override
-	public synchronized void clear() {
-		super.clear();
-	}
-
-	@Override
-	public synchronized boolean contains(Object o) {
-		return super.contains(o);
-	}
-
-	@Override
-	public synchronized EngineCommand get(int index) {
-		return super.get(index);
-	}
-
-	@Override
-	public synchronized boolean isEmpty() {
-		return super.isEmpty();
-	}
-
-	@Override
-	public synchronized EngineCommand remove(int index) {
-		return super.remove(index);
-	}
-
-	@Override
-	public synchronized boolean remove(Object o) {
-		return super.remove(o);
-	}
-
-	@Override
-	public synchronized int size() {
-		return super.size();
-	}
-
-	@Override
-	public synchronized String toString() {
-		return super.toString();
 	}
 
 }
