@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -123,7 +124,7 @@ public class Engine implements ControlAPI {
 	private final LinkedList<InterpreterListener> interpreterListeners;
 
 	/** Remaining steps of the current run */
-	private int remainingRunCount = 0;
+	private AtomicInteger remainingRunCount = new AtomicInteger(0);
 
 	/** Last error occurred in the engine */
 	private volatile CoreASMError lastError = null;
@@ -445,9 +446,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void softInterrupt() {
-		synchronized (engineThread) {
-			remainingRunCount = 0;
-		}
+		remainingRunCount.set(0);
 	}
 
 	@Override
@@ -1141,12 +1140,9 @@ public class Engine implements ControlAPI {
 			// state
 			boolean shouldRemoveFirstCommand = false;
 			EngineCommand cmd;
-			int rrc = 0;
+			int rrc = remainingRunCount.getAndDecrement();
 			String tempMsg = null;
 
-			synchronized (this) {
-				rrc = remainingRunCount--;
-			}
 			if (rrc > 0)
 				cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
 			else {
@@ -1216,10 +1212,9 @@ public class Engine implements ControlAPI {
 			case ecRun:
 				if (cmd.metaData instanceof Integer) {
 					int i = ((Integer) cmd.metaData).intValue();
-					if (i > 0)
-						synchronized (this) {
-							remainingRunCount = i;
-						}
+					if (i > 0) {
+						remainingRunCount.set(i);
+					}
 				}
 				break;
 			case ecRecover:
