@@ -1037,13 +1037,13 @@ public class Engine implements ControlAPI {
 						}
 					} catch (CoreASMError ce) {
 						error(ce);
-						logger.error( "Error occured: {}", ce.showError());
+						logger.error( "Error occurred: {}", ce.showError());
 					} catch (Throwable e) {
 						if (e instanceof ParserException)
 							error(new CoreASMError((ParserException)e));
 						else
 							error(e);
-						logger.error("Exception occured. ", e);
+						logger.error("Exception occurred. ", e);
 						// StackTraceElement[] trace = e.getStackTrace();
 						// for (StackTraceElement ste: trace)
 						//   logger.error( ste.toString());
