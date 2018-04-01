@@ -1,9 +1,6 @@
 package org.coreasm.engine.parser;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
@@ -59,7 +56,7 @@ public class ParserTools
 		initialized = false;
 	}
 	
-	public void init(String [] keywords, String[] operators, Set<Parser<? extends Object>> lexers)
+	public void init(String [] keywords, String[] ops, Set<Parser<? extends Object>> lexers)
 	{
 		if (initialized == true)
 			throw new EngineError("Cannot re-initialize ParserTools.");
@@ -67,7 +64,7 @@ public class ParserTools
 		keywParsers = new HashMap<String, Parser<Node>>();
 		oprParsers = new HashMap<String, Parser<Node>>();
 		
-		terminals_keyw = Terminals.caseSensitive(operators, keywords);
+		terminals_keyw = Terminals.operators(ops).words(Scanners.IDENTIFIER).keywords(Arrays.asList(keywords)).build();
 		tokenizer_keyw = terminals_keyw.tokenizer();
 		tokenizer_id = Terminals.Identifier.TOKENIZER;
 		

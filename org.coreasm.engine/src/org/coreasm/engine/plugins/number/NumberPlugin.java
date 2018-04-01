@@ -263,7 +263,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 			
 			Pattern pDigits = Patterns.range('0', '9').many1();
 			Pattern pFloat = pDigits.next(Patterns.isChar('.').next(pDigits).optional());
-			Parser<String> sFloat = Scanners.pattern(pFloat, "NUMBER").source();
+			Parser<String> sFloat = pFloat.toScanner("NUMBER").source();
 			tokenizer_nr = sFloat.map(
 				new org.codehaus.jparsec.functors.Map<String,Fragment>() {
 					@Override
