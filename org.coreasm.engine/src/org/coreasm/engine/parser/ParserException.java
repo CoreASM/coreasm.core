@@ -48,10 +48,10 @@ public class ParserException extends EngineException {
 	}
 	
 	public ParserException(Throwable cause) {
-		if (cause instanceof org.codehaus.jparsec.error.ParserException) {
-			org.codehaus.jparsec.error.ParserException pcause = (org.codehaus.jparsec.error.ParserException) cause;
+		if (cause instanceof org.jparsec.error.ParserException) {
+			org.jparsec.error.ParserException pcause = (org.jparsec.error.ParserException) cause;
 			StringBuffer buf = new StringBuffer();
-			org.codehaus.jparsec.error.ParseErrorDetails err = pcause.getErrorDetails();
+			org.jparsec.error.ParseErrorDetails err = pcause.getErrorDetails();
 			if (err != null) {
 		        showExpecting(buf, err.getExpected().toArray(new String[] {} ));
 		        showUnexpected(buf, new String[] {err.getUnexpected()} );

@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.OperatorTable;
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.functors.Binary;
-import org.codehaus.jparsec.functors.Unary;
+import org.jparsec.OperatorTable;
+import org.jparsec.Parser;
+import org.jparsec.functors.Binary;
+import org.jparsec.functors.Unary;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.interpreter.ASTNode;

@@ -57,7 +57,7 @@ public class JParsecParser implements Parser {
 	private boolean headerParsed = false;
 	
 	/** the actual parser -- a JParsec parser */ 
-	private org.codehaus.jparsec.Parser<Node> parser;
+	private org.jparsec.Parser<Node> parser;
 	
 	/** the root grammar rule */
 	private GrammarRule rootGrammarRule;
@@ -167,11 +167,11 @@ public class JParsecParser implements Parser {
 				this.rootGrammarRule = ((ParserPlugin)kernel).getParsers().get("CoreASM");
 				this.parser = rootGrammarRule.parser;
 				try {
-					org.codehaus.jparsec.Parser<Node> _parser =  parser.from(parserTools.getTokenizer(), parserTools.getIgnored());
+					org.jparsec.Parser<Node> _parser =  parser.from(parserTools.getTokenizer(), parserTools.getIgnored());
 					rootNode = (ASTNode) _parser.parse(specification.getText());
 				} catch (Throwable e) {
-					if (e instanceof org.codehaus.jparsec.error.ParserException) {
-						org.codehaus.jparsec.error.ParserException pe = (org.codehaus.jparsec.error.ParserException) e;
+					if (e instanceof org.jparsec.error.ParserException) {
+						org.jparsec.error.ParserException pe = (org.jparsec.error.ParserException) e;
 						Throwable cause = pe.getCause();
 						String msg = pe.getMessage();
 						msg = msg.substring(msg.indexOf("\n")+1);

@@ -20,16 +20,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Scanners;
-import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.Tokens;
-import org.codehaus.jparsec.Tokens.Fragment;
-import org.codehaus.jparsec.Tokens.Tag;
-import org.codehaus.jparsec.pattern.Pattern;
-import org.codehaus.jparsec.pattern.Patterns;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
+import org.jparsec.Scanners;
+import org.jparsec.Terminals;
+import org.jparsec.Token;
+import org.jparsec.Tokens;
+import org.jparsec.Tokens.Fragment;
+import org.jparsec.Tokens.Tag;
+import org.jparsec.pattern.Pattern;
+import org.jparsec.pattern.Patterns;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.number.CompilerNumberPlugin;
 import org.coreasm.engine.ControlAPI;
@@ -265,7 +265,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 			Pattern pFloat = pDigits.next(Patterns.isChar('.').next(pDigits).optional());
 			Parser<String> sFloat = pFloat.toScanner("NUMBER").source();
 			tokenizer_nr = sFloat.map(
-				new org.codehaus.jparsec.functors.Map<String,Fragment>() {
+				new org.jparsec.functors.Map<String,Fragment>() {
 					@Override
 					public Fragment map(String from) {
 						return Tokens.fragment(from, Tag.DECIMAL);
@@ -358,7 +358,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	
 		if (refNumberTermParser.get() == null) {
 			Parser<Node> nrParser = Terminals.fragment(Tag.DECIMAL).token().map(
-				new org.codehaus.jparsec.functors.Map<Token,Node> () {
+				new org.jparsec.functors.Map<Token,Node> () {
 					@Override
 					public Node map(Token from) {
 						return new NumberTermNode(new ScannerInfo(from), from.toString());

@@ -33,11 +33,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.Tokens;
-import org.codehaus.jparsec.Tokens.Fragment;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
+import org.jparsec.Token;
+import org.jparsec.Tokens;
+import org.jparsec.Tokens.Fragment;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.Specification;
@@ -269,7 +269,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			ParserTools.getInstance(capi);
 			Parser<Token> tokp = Parsers.ANY_TOKEN.token();
 			
-			basicJavaIdParser = tokp.map( new org.codehaus.jparsec.functors.Map<Token,Node>() {
+			basicJavaIdParser = tokp.map( new org.jparsec.functors.Map<Token,Node>() {
 				@Override
 				public Node map(Token from) {
 					if (from.value() instanceof Tokens.Fragment) {

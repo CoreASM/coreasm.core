@@ -2,13 +2,13 @@ package org.coreasm.engine.parser;
 
 import java.util.*;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Scanners;
-import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.Tokens.Fragment;
-import org.codehaus.jparsec.functors.Map;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
+import org.jparsec.Scanners;
+import org.jparsec.Terminals;
+import org.jparsec.Token;
+import org.jparsec.Tokens.Fragment;
+import org.jparsec.functors.Map;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.interpreter.ASTNode;

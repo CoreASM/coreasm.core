@@ -15,7 +15,7 @@ package org.coreasm.engine.parser;
 
 import org.coreasm.engine.plugin.Plugin;
 
-import org.codehaus.jparsec.functors.Map;
+import org.jparsec.functors.Map;
 
 /** 
  * Specialized version of {@link Map} that gets a plug-in name as well. 

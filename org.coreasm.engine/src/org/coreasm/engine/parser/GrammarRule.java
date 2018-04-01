@@ -15,10 +15,10 @@ package org.coreasm.engine.parser;
 
 import org.coreasm.engine.interpreter.Node;
 
-import org.codehaus.jparsec.Parser;
+import org.jparsec.Parser;
 
 /** 
- * A structure to hold a grammar rule, and a {@link jfun.parsec.Parser} instance
+ * A structure to hold a grammar rule, and a {@link org.jparsec.Parser} instance
  * for that grammar rule.
  *   
  * @author Roozbeh Farahbod

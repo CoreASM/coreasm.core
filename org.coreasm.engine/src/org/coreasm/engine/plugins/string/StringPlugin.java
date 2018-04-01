@@ -22,9 +22,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Token;
+import org.jparsec.Parser;
+import org.jparsec.Terminals;
+import org.jparsec.Token;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.string.CompilerStringPlugin;
 import org.coreasm.engine.VersionInfo;
@@ -152,7 +152,7 @@ public class StringPlugin extends Plugin
 			parsers = new HashMap<String, GrammarRule>();
 			
 			Parser<Node> stringParser = Terminals.StringLiteral.PARSER.token().map(
-					new org.codehaus.jparsec.functors.Map<Token,Node>() {
+					new org.jparsec.functors.Map<Token,Node>() {
 						@Override
 						public Node map(Token from) {
 							return new StringNode(StringElement.processEscapeCharacters(from.toString()), new ScannerInfo(from));
