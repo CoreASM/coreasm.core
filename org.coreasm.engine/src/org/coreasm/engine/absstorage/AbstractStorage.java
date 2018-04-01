@@ -173,7 +173,7 @@ public interface AbstractStorage extends State {
 	 * This method should only be called when there is a state in the stack.
 	 * 
 	 * @param u the update multiset
-	 * @see #pushState()
+	 * @see #pushState(String pluginName)
 	 */
 	public void apply(Set<Update> u);
 	
