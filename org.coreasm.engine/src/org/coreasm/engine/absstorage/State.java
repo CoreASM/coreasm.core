@@ -52,16 +52,6 @@ public interface State {
 	public void addUniverse(String name, AbstractUniverse universe) 
 			throws NameConflictException;
 	
-//	/**
-//	 * Removes a universe from the state.
-//	 * 
-//	 * @param universe universe to be removed
-//	 * @throws IdentifierNotFoundException if no such universe
-//	 * is found in the state
-//	 */
-//	public void removeUniverse(UniverseElement universe) 
-//			throws IdentifierNotFoundException;
-	
 	/**
 	 * Set of all the functions (including universes) defined in the state.
 	 * 
@@ -95,16 +85,6 @@ public interface State {
 	 */
 	public void addFunction(String name, FunctionElement function) 
 			throws NameConflictException;
-	
-//	/**
-//	 * Removes a function from the state.
-//	 * 
-//	 * @param function function to be removed.
-//	 * @throws IdentifierNotFoundException if there is no
-//	 * such function in the state.
-//	 */
-//	public void removeFunction(FunctionElement function) 
-//			throws IdentifierNotFoundException;
 		
 	/**
 	 * Set of all the rules defined in 
@@ -132,16 +112,6 @@ public interface State {
 	 */
 	public void addRule(String name, RuleElement rule) 
 			throws NameConflictException;
-	
-//	/**
-//	 * Removes a rule from the state.
-//	 * 
-//	 * @param rule the rule to be removed
-//	 * @throws IdentifierNotFoundException if there is no
-//	 * such rule in the state.
-//	 */
-//	public void removeRule(RuleElement rule) 
-//			throws IdentifierNotFoundException;
 	
 	/**
 	 * Set of all the defined locations in the state
