@@ -197,7 +197,8 @@ public class CaseRulePlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
             Node node = new CaseRuleNode(((Node)vals[0]).getScannerInfo());
             addChildren(node, vals);

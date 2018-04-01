@@ -164,7 +164,8 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 								termParser).optional()
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+					    @Override
+						public Node apply(Object[] vals) {
 							Node node = new PickExpNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -729,8 +730,9 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 	    public ChooseParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new ChooseRuleNode(((Node)v[0]).getScannerInfo());
 

@@ -402,8 +402,9 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	    public SignalRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new SignalRuleNode(((Node)v[0]).getScannerInfo());
 
@@ -436,8 +437,9 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	    public OnSignalRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			ASTNode node = new OnSignalRuleNode(((Node)v[0]).getScannerInfo());
 			addChildren(node, v);
 			return node;

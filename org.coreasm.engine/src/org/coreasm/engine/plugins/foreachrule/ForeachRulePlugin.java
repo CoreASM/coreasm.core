@@ -313,7 +313,8 @@ public class ForeachRulePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
             Node node = new ForeachRuleNode(((Node)vals[0]).getScannerInfo());
             addChildren(node, vals);

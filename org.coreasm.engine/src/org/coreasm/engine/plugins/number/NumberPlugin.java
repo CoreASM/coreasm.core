@@ -264,14 +264,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 			Pattern pDigits = Patterns.range('0', '9').many1();
 			Pattern pFloat = pDigits.next(Patterns.isChar('.').next(pDigits).optional());
 			Parser<String> sFloat = pFloat.toScanner("NUMBER").source();
-			tokenizer_nr = sFloat.map(
-				new org.jparsec.functors.Map<String,Fragment>() {
-					@Override
-					public Fragment map(String from) {
-						return Tokens.fragment(from, Tag.DECIMAL);
-					}				
-				}
-			);
+			tokenizer_nr = sFloat.map(from -> Tokens.fragment(from, Tag.DECIMAL));
 			lexers.add(tokenizer_nr);
 		}
 		return lexers;
@@ -311,7 +304,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 								termParser).optional(),
 						pTools.getOprParser("]")
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new NumberRangeNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -330,7 +324,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 						termParser,
 						pTools.getOprParser("|")
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new SizeOfEnumNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -358,12 +353,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	
 		if (refNumberTermParser.get() == null) {
 			Parser<Node> nrParser = Terminals.fragment(Tag.DECIMAL).token().map(
-				new org.jparsec.functors.Map<Token,Node> () {
-					@Override
-					public Node map(Token from) {
-						return new NumberTermNode(new ScannerInfo(from), from.toString());
-					}
-				}
+					from -> new NumberTermNode(new ScannerInfo(from), from.toString())
 			);
 			refNumberTermParser.set(nrParser);
 		}

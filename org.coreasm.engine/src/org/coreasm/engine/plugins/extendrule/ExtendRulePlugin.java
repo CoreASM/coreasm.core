@@ -179,7 +179,8 @@ public class ExtendRulePlugin extends Plugin implements ParserPlugin, Interprete
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new ExtendRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

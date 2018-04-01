@@ -230,23 +230,21 @@ public class IOPlugin extends Plugin implements
 											npTools.getKeywParser(KEYWORD_INTO, PLUGIN_NAME),
 											npTools.getOprParser(OPERATOR_LINUX_INTO)),
 									termParser).optional()
-					}).map(new org.jparsec.functors.Map<Object[], Node>() {
-						public Node map(Object[] vals) {
-							if (vals[2] == null) {
-								Node node = new PrintRuleNode(((Node) vals[0]).getScannerInfo());
-								node.addChild((Node) vals[0]);
-								node.addChild("alpha", (Node) vals[1]);
-								return node;
-							}
-							Node node = new PrintToFileRuleNode(((Node) vals[0]).getScannerInfo());
-							node.addChild((Node) vals[0]);
-							node.addChild("alpha", (Node) vals[1]);
-							Object[] toPart = (Object[]) vals[2];
-							node.addChild((Node) toPart[0]);
-							node.addChild("beta", (Node) toPart[1]);
-							return node;
-						}
-					});
+					}).map(vals -> {
+                        if (vals[2] == null) {
+                            Node node = new PrintRuleNode(((Node) vals[0]).getScannerInfo());
+                            node.addChild((Node) vals[0]);
+                            node.addChild("alpha", (Node) vals[1]);
+                            return node;
+                        }
+                        Node node = new PrintToFileRuleNode(((Node) vals[0]).getScannerInfo());
+                        node.addChild((Node) vals[0]);
+                        node.addChild("alpha", (Node) vals[1]);
+                        Object[] toPart = (Object[]) vals[2];
+                        node.addChild((Node) toPart[0]);
+                        node.addChild("beta", (Node) toPart[1]);
+                        return node;
+                    });
 
 
 			parsers.put("Rule",

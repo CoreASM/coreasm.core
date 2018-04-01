@@ -170,8 +170,9 @@ public class PropertyPlugin extends Plugin implements ParserPlugin, OperatorProv
  		public PropertyParseMap() {
  			super(PLUGIN_NAME);
  		}
- 		
- 		public Node map(Object[] vals) {
+
+ 		@Override
+ 		public Node apply(Object[] vals) {
 	        PropertyListNode node = new PropertyListNode(null);
 	        addChildren(node, vals);
 	        node.setScannerInfo(node.getFirstCSTNode());

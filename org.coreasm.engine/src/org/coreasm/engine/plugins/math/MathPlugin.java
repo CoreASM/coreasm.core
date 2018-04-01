@@ -194,7 +194,8 @@ public class MathPlugin extends Plugin implements VocabularyExtender, ParserPlug
 					pTools.getKeywParser(KW_RANDOM_VALUE, PLUGIN_NAME).map(
 					new ParseMap<Node, Node>(PLUGIN_NAME) {
 
-						public Node map(Node v) {
+						@Override
+						public Node apply(Node v) {
 							Node node = new ASTNode(
 									PLUGIN_NAME, 
 									ASTNode.EXPRESSION_CLASS, 

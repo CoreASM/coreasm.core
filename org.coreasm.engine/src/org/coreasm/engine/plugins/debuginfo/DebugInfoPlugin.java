@@ -163,7 +163,8 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new DebugInfoNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

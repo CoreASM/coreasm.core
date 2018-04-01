@@ -149,7 +149,7 @@ public class BlockRulePlugin extends Plugin
 					).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] from) {
+						public Node apply(Object[] from) {
 							ASTNode node = new ASTNode(
 									BlockRulePlugin.PLUGIN_NAME,
 									ASTNode.RULE_CLASS,

@@ -149,7 +149,8 @@ public class PlotterPlugin extends Plugin implements
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new PlotRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

@@ -313,8 +313,9 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 		}
 
 		String nextChildName = "alpha";
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
 			LetRuleNode node = new LetRuleNode(((Node)vals[0]).getScannerInfo());
 			if (vals[1] instanceof Object[] && ((Object[])vals[1])[0] instanceof Node) {

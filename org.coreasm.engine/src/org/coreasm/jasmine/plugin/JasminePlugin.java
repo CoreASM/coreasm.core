@@ -269,25 +269,22 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			ParserTools.getInstance(capi);
 			Parser<Token> tokp = Parsers.ANY_TOKEN.token();
 			
-			basicJavaIdParser = tokp.map( new org.jparsec.functors.Map<Token,Node>() {
-				@Override
-				public Node map(Token from) {
-					if (from.value() instanceof Tokens.Fragment) {
-						Tokens.Fragment frag = (Fragment) from.value();
-						if (frag.tag() == Tokens.Tag.IDENTIFIER || frag.tag() == Tokens.Tag.RESERVED) {
-							return new ASTNode(
-								"Jasemine",
-								ASTNode.ID_CLASS,
-								"BasicJavaID",
-								from.toString(),
-								new ScannerInfo(from),
-								Node.OTHER_NODE
-							);
-						} // else...
-					} // else...
-					return null;
-				}				
-			});
+			basicJavaIdParser = tokp.map(from -> {
+                if (from.value() instanceof Fragment) {
+                    Fragment frag = (Fragment) from.value();
+                    if (frag.tag() == Tokens.Tag.IDENTIFIER || frag.tag() == Tokens.Tag.RESERVED) {
+                        return new ASTNode(
+                            "Jasemine",
+                            ASTNode.ID_CLASS,
+                            "BasicJavaID",
+                            from.toString(),
+                            new ScannerInfo(from),
+                            Node.OTHER_NODE
+                        );
+                    } // else...
+                } // else...
+                return null;
+            });
 		}
 		
 		return basicJavaIdParser;
@@ -1229,7 +1226,8 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] nodes) {
+		@Override
+		public Node apply(Object[] nodes) {
 			ASTNode node = new ASTNode(
 					PLUGIN_NAME, 
 					ASTNode.ID_CLASS, 
@@ -1368,8 +1366,9 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		public InvokeParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			resultSeen = false;
 			Node node = new InvokeRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
@@ -1405,8 +1404,9 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		public StoreParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] nodes) {
+
+		@Override
+		public Node apply(Object[] nodes) {
 			Node node = new StoreRuleNode(((Node)nodes[0]).getScannerInfo());
 			addChildren(node, nodes);
 			return node;
@@ -1423,8 +1423,9 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 		public NativeImportParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			nextIsLocation = false;
 			Node node = new NativeImportRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);

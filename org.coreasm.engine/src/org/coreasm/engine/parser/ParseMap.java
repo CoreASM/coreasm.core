@@ -15,16 +15,16 @@ package org.coreasm.engine.parser;
 
 import org.coreasm.engine.plugin.Plugin;
 
-import org.jparsec.functors.Map;
+import java.util.function.Function;
 
 /** 
- * Specialized version of {@link Map} that gets a plug-in name as well. 
+ * Specialized version that gets a plug-in name as well.
  *   
  * @author Roozbeh Farahbod
  * 
  */
 
-public abstract class ParseMap<To, From> implements Map<To, From> {
+public abstract class ParseMap<To, From> implements Function<To, From> {
 
 	public final String pluginName;
 	

@@ -185,7 +185,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							ASTNode node = new MapletNode((Node)vals[0]);
 							addChildren(node, vals);
 							return node;
@@ -205,7 +205,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							Node node = new MapTermNode((Node)vals[0]);
 							addChildren(node, vals);
 							return node;
@@ -537,8 +537,9 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 		public MapComprehensionParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new MapCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

@@ -319,7 +319,8 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 						termParser
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ForallExpNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -340,7 +341,8 @@ public class PredicateLogicPlugin extends Plugin implements OperatorProvider, Pa
 						termParser
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ExistsExpNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

@@ -201,7 +201,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 						ruleParser,
 					}).map(
 					new ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new IterateRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -232,7 +233,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					}).map(
 					new ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ReturnResultNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -289,7 +291,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			Parser<Node> resultLocationParser = //Parsers.map("ResultLocation",
 						pTools.getKeywParser(RESULT_KEYWORD, PLUGIN_NAME).map(
 					new ParseMap<Node, Node>(PLUGIN_NAME) {
-						public Node map(Node v) {
+						@Override
+						public Node apply(Node v) {
 							/*
 							 *  Here we do a little bit of cheating! :-)
 							 *  We basically make 'result' act as an identifier.
@@ -589,7 +592,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "cond";
 			Node node = new WhileRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
@@ -614,7 +618,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "lambda";
 			Node node = new LocalRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
@@ -641,7 +646,8 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
 			Node node = new ReturnTermNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
@@ -665,8 +671,9 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 		public SeqRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			SeqRuleNode node = new SeqRuleNode(((Node)vals[0]).getScannerInfo());
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			int i = unpackChildren(nodes, vals);

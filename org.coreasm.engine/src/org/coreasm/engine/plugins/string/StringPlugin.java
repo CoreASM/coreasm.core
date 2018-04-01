@@ -152,12 +152,7 @@ public class StringPlugin extends Plugin
 			parsers = new HashMap<String, GrammarRule>();
 			
 			Parser<Node> stringParser = Terminals.StringLiteral.PARSER.token().map(
-					new org.jparsec.functors.Map<Token,Node>() {
-						@Override
-						public Node map(Token from) {
-							return new StringNode(StringElement.processEscapeCharacters(from.toString()), new ScannerInfo(from));
-						}						
-					}
+					from -> new StringNode(StringElement.processEscapeCharacters(from.toString()), new ScannerInfo(from))
 			);
 			
 			refStringTermParser.set(stringParser);

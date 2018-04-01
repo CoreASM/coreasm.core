@@ -305,7 +305,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] nodes) {
+						public Node apply(Object[] nodes) {
 							NewEdgeNode node = new NewEdgeNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;
@@ -322,7 +322,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 					
 						@Override
-						public Node map(Object[] nodes) {
+						public Node apply(Object[] nodes) {
 							ShowGraphNode node = new ShowGraphNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;

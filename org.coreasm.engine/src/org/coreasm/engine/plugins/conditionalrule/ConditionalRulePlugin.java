@@ -188,12 +188,13 @@ public class ConditionalRulePlugin extends Plugin
 					termParser,
 					pTools.getKeywParser("else", PLUGIN_NAME),
 					termParser).map(new ArrayParseMap(PLUGIN_NAME) {
-				public Node map(Object[] vals) {
-					Node node = new ConditionalTermNode(((Node)vals[0]).getScannerInfo());
-					addChildren(node, vals);
-					return node;
-				}
-			});
+						@Override
+						public Node apply(Object[] vals) {
+							Node node = new ConditionalTermNode(((Node)vals[0]).getScannerInfo());
+							addChildren(node, vals);
+							return node;
+						}
+					});
 			parsers.put("BasicTerm", new GrammarRule("ConditionalTerm", "'if' Term 'then' Term 'else' Term",
 					condTermParser, PLUGIN_NAME));
 
@@ -225,7 +226,7 @@ public class ConditionalRulePlugin extends Plugin
 		}
 
 		@Override
-		public Node map(Object[] vals) {
+		public Node apply(Object[] vals) {
 			nextChildName = "guard";
 			Node node = new ConditionalRuleNode(((Node) vals[0]).getScannerInfo());
 			addChildren(node, vals);

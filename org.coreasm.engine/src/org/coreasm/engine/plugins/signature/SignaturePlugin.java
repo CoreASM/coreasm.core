@@ -210,7 +210,8 @@ public class SignaturePlugin extends Plugin
 							pTools.getOprParser("}"),
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new EnumerationNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -233,7 +234,8 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new UniverseNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -257,7 +259,8 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ASTNode(
 				            		SignaturePlugin.PLUGIN_NAME,
 				            		ASTNode.DECLARATION_CLASS,
@@ -279,7 +282,8 @@ public class SignaturePlugin extends Plugin
 					pTools.getKeywParser("static", PLUGIN_NAME),
 					pTools.getKeywParser("monitored", PLUGIN_NAME)).map(new ParseMap<Node, Node>(PLUGIN_NAME) {
 
-						public Node map(Node v) {
+						@Override
+						public Node apply(Node v) {
 							return new ASTNode(
 					        		SignaturePlugin.PLUGIN_NAME,
 					        		ASTNode.DECLARATION_CLASS,
@@ -315,7 +319,8 @@ public class SignaturePlugin extends Plugin
 						).optional()
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new FunctionNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -335,7 +340,8 @@ public class SignaturePlugin extends Plugin
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							ScannerInfo info = null;
 							if (vals[0] != null)
 								info = ((Node)((Object[])vals[0])[0]).getScannerInfo();
@@ -360,7 +366,8 @@ public class SignaturePlugin extends Plugin
 						}).map(
 						new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-							public Node map(Object[] vals) {
+							@Override
+							public Node apply(Object[] vals) {
 								Node node = new ASTNode(
 					        			SignaturePlugin.PLUGIN_NAME,
 					        			ASTNode.DECLARATION_CLASS,

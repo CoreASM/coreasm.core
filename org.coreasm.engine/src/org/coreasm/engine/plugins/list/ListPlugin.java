@@ -237,7 +237,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							Node node = new ListTermNode();
 							addChildren(node, vals);
 							node.setScannerInfo(node.getFirstCSTNode());
@@ -274,7 +274,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							boolean isLeft = ((Node)vals[1]).getToken().equals("left");
 							Node node = new ShiftRuleNode(((Node)vals[0]).getScannerInfo(), isLeft);
 							addChildren(node, vals);
@@ -717,8 +717,9 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 		public ListComprehensionParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new ListCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

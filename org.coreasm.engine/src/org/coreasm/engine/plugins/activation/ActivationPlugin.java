@@ -141,7 +141,8 @@ public class ActivationPlugin extends Plugin implements ParserPlugin, Interprete
 			Parser<Node> activateParser = Parsers
 					.array(new Parser[] { pTools.getKeywParser("activate", PLUGIN_NAME), funcRuleTermParser })
 					.map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ActivationNode(((Node) vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -150,7 +151,8 @@ public class ActivationPlugin extends Plugin implements ParserPlugin, Interprete
 			Parser<Node> deactivateParser = Parsers
 					.array(new Parser[] { pTools.getKeywParser("deactivate", PLUGIN_NAME), funcRuleTermParser })
 					.map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ActivationNode(((Node) vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

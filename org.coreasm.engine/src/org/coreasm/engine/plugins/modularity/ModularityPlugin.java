@@ -188,7 +188,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 					stringParser
 			}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 				@Override
-				public Node map(Object[] from) {
+				public Node apply(Object[] from) {
 					int index = -1;
 					if (from[0]!=null && from[0] instanceof Token)
 						index = ((Token)from[0]).index();

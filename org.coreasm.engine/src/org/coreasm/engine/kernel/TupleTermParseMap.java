@@ -28,8 +28,9 @@ public class TupleTermParseMap extends ParseMap<Object[], Node> {
 	public TupleTermParseMap() {
 		super(Kernel.PLUGIN_NAME);
 	}
-	
-	public Node map(Object[] v) {
+
+	@Override
+	public Node apply(Object[] v) {
 		Node node = new ASTNode(
 				null,
 				"",

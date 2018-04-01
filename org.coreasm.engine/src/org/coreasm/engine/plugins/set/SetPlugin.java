@@ -1143,8 +1143,9 @@ public class SetPlugin extends Plugin
 		public SetEnumerateParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new SetEnumerateNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
@@ -1157,8 +1158,9 @@ public class SetPlugin extends Plugin
 		public SetComprehensionParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = null;
 			// if there is an 'is' clause
 			if (vals[1] != null && vals[1] instanceof Object[]) {

@@ -314,8 +314,9 @@ public class Kernel extends Plugin
 	    			parserTools.getKeywParser("use", this.getName()),
 	    			idParser,
 	    			new ParseMap2(getName()) {
-	
-						public Node map(Node a, Node b) {
+
+	    			    @Override
+						public Node apply(Node a, Node b) {
 							Node node = new ASTNode(
 									pluginName,
 									ASTNode.DECLARATION_CLASS,
@@ -337,8 +338,9 @@ public class Kernel extends Plugin
 	    			parserTools.getKeywParser("init", this.getName()),
 	    			idParser,
 	    			new ParseMap2(getName()) {
-	
-						public Node map(Node a, Node b) {
+
+	    			    @Override
+						public Node apply(Node a, Node b) {
 							Node node = new ASTNode(
 									null,
 									null,
@@ -448,7 +450,8 @@ public class Kernel extends Plugin
     	// Rule : 'skip'
     	Parser<Node> skipRuleParser = parserTools.getKeywParser("skip", PLUGIN_NAME).map(
     			new ParseMap<Node, Node>(PLUGIN_NAME) {
-					public Node map(Node v) {
+    				@Override
+					public Node apply(Node v) {
 						return new SkipRuleNode(v.getScannerInfo());
 					}});
     	parsers.put("SkipRule", new GrammarRule("SkipRule", "'skip'", skipRuleParser, PLUGIN_NAME));
@@ -471,7 +474,8 @@ public class Kernel extends Plugin
        	Parser<Node> macroCallRule = Parsers.array(refFuncRuleTermParser.lazy()).map(
        			new ParseMap<Object[], Node>(PLUGIN_NAME) {
 
-					public Node map(Object[] vals) {
+       				@Override
+					public Node apply(Object[] vals) {
 						Node node = new MacroCallRuleNode(((Node)vals[0]).getScannerInfo());
 						node.addChild("alpha", (Node)vals[0]);
 						return node;
@@ -613,7 +617,8 @@ public class Kernel extends Plugin
     			parserTools.getKeywParser("undef", PLUGIN_NAME),
     			parserTools.getKeywParser("self", PLUGIN_NAME)).map(
     					new ParseMap<Node, Node>(PLUGIN_NAME) {
-    						public Node map(Node v) {
+    						@Override
+    						public Node apply(Node v) {
     							Node node = new ASTNode(
     									pluginName, 
     									ASTNode.EXPRESSION_CLASS, 
@@ -633,7 +638,8 @@ public class Kernel extends Plugin
     			parserTools.getKeywParser("true", PLUGIN_NAME),
     			parserTools.getKeywParser("false", PLUGIN_NAME)).map(
     					new ParseMap<Node, Node>(PLUGIN_NAME) {
-    						public Node map(Node v) {
+    						@Override
+    						public Node apply(Node v) {
     							Node node = new ASTNode(
     									pluginName, 
     									ASTNode.EXPRESSION_CLASS, 
@@ -659,7 +665,8 @@ public class Kernel extends Plugin
     					parserTools.getOprParser(")")
     					).map(new ParseMap<Object[], Node>(PLUGIN_NAME){
 
-							public Node map(Object[] v) {
+    						@Override
+							public Node apply(Object[] v) {
 								Node node = new EnclosedTermNode(((Node)v[0]).getScannerInfo());
 								for (Object o:v) node.addChild((Node)o);
 								return node;
@@ -739,7 +746,8 @@ public class Kernel extends Plugin
     			
     			new ParseMap2(PLUGIN_NAME) {
 
-					public Node map(Node a, Node b) {
+    			    @Override
+					public Node apply(Node a, Node b) {
 						Node node = new ASTNode(
 								pluginName,
 								ASTNode.EXPRESSION_CLASS,
@@ -764,7 +772,8 @@ public class Kernel extends Plugin
     			idParser,
     			new ParseMap2(PLUGIN_NAME) {
 
-					public Node map(Node a, Node d) {
+    			    @Override
+					public Node apply(Node a, Node d) {
 						Node node = new RuleOrFuncElementNode(a.getScannerInfo());
 						node.addChild(a);
 						node.addChild("alpha", d);

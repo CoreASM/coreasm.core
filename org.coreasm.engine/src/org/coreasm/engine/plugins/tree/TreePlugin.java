@@ -218,7 +218,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 					termParser
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new MakeTreeRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -249,7 +250,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new AddChildToRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -276,7 +278,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new RemoveChildFromRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -303,7 +306,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new RemoveChildAtRuleNode();
 					addChildren(node, vals);
 					return node;

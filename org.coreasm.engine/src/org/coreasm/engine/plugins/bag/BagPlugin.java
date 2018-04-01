@@ -1087,8 +1087,9 @@ public class BagPlugin extends Plugin
 		public BagEnumerateParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new BagEnumerateNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
@@ -1101,8 +1102,9 @@ public class BagPlugin extends Plugin
 		public BagComprehensionParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = null;
 			// if there is an 'is' clause
 			if (vals[1] != null && vals[1] instanceof Object[]) {

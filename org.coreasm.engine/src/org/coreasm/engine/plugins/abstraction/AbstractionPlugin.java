@@ -116,7 +116,7 @@ public class AbstractionPlugin extends Plugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							Node node = new AbstractRuleNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node) vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

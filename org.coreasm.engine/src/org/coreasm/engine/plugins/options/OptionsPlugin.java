@@ -143,7 +143,8 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							String str = objectToString(vals);
 							return new ASTNode(
 									PLUGIN_NAME,
@@ -194,7 +195,8 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 				}).map(
 				new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-					public Node map(Object[] vals) {
+					@Override
+					public Node apply(Object[] vals) {
 						Node node = new OptionNode(((Node)vals[0]).getScannerInfo());
 						addChildren(node, vals);
 						return node;

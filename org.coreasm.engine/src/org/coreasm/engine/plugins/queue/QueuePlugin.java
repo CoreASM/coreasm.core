@@ -114,7 +114,8 @@ public class QueuePlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new EnqueueRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -134,7 +135,8 @@ public class QueuePlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new DequeueRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
