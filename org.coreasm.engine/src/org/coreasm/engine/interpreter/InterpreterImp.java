@@ -390,7 +390,7 @@ public class InterpreterImp implements Interpreter {
 									pos.setNode(l, null, storage.getValue(l));
 								} catch (InvalidLocationException e) {
 									throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
-											"This cannot happen!");
+											"This cannot happen!", e);
 								}
 							} else
 								// if this 'x' is not defined before...
@@ -426,7 +426,7 @@ public class InterpreterImp implements Interpreter {
 										pos.setNode(l, null, storage.getValue(l));
 									} catch (InvalidLocationException e) {
 										throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
-												"This cannot happen!");
+												"This cannot happen!", e);
 									}
 								}
 								else
