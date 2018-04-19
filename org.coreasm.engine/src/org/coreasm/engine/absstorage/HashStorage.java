@@ -620,9 +620,17 @@ public class HashStorage implements AbstractStorage {
 		public E getValue(String name) {
 			return table.get(name);
 		}
+
+		public String getKey(E value) {
+			for (Entry<String, E> f: table.entrySet()) {
+				if (f.getValue().equals(value))
+					return f.getKey();
+			}
+			return null;
+		}
 		
 		public Collection<E> values() {
-			return (Collection<E>)table.values();
+			return table.values();
 		}
 
 		public Collection<String> getNames() {
@@ -743,15 +751,11 @@ public class HashStorage implements AbstractStorage {
 		 */
 		@Override
 		public String getFunctionName(FunctionElement function) {
-			for (Entry<String, FunctionElement> f: functionElements.table.entrySet()) {
-				if (f.getValue().equals(function))
-					return f.getKey();
+			String result = functionElements.getKey(function);
+			if (result == null && function instanceof AbstractUniverse) {
+				result = universeElements.getKey((AbstractUniverse)function);
 			}
-			for (Entry<String, AbstractUniverse> u : universeElements.table.entrySet()) {
-				if (u.getValue().equals(function))
-					return u.getKey();
-			}
-			return null;
+			return result;
 		}
 
 		@Override
