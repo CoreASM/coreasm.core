@@ -243,10 +243,18 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 					if (toBeEvaluated == null) {
 						// if all nodes are evaluated...
 						ElementList vList = EngineTools.getValueList(args);
-						
-						//look for the function in the state
-						Element value = null;
-						String fname = capi.getStorage().getFunctionName(fe);
+
+						Element value;
+						String fname;
+						if (fe.getFClass().equals(FunctionElement.FunctionClass.fcStatic)) {
+							// value can be returned directly
+							fname = null;
+						}
+						else {
+							// look for the function in the state
+							fname = capi.getStorage().getFunctionName(fe);
+						}
+
 						Location loc = null;
 						if (fname != null) {
 							try {
