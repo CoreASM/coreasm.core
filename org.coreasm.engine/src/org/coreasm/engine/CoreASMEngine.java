@@ -474,16 +474,6 @@ public interface CoreASMEngine extends VersionInfoProvider {
 	 * @see #removeObserver(EngineObserver)
 	 */
 	public Collection<EngineObserver> getObservers();
-	
-	/** 
-	 * Waits for the engine to go to the idle or error mode. This 
-	 * method should periodically put the current thread in 
-	 * a sleep mode to avoid taking CPU time.
-	 * 
-	 * @deprecated Use {@link #waitWhileBusy()} instead.
-	 */
-	@Deprecated
-	public void waitForIdleOrError();
 
 	/** 
 	 * Waits for the engine to go to the idle/error mode. This 
@@ -497,10 +487,10 @@ public interface CoreASMEngine extends VersionInfoProvider {
 	/** 
 	 * Returns <code>true</code> if the engine is
 	 * busy performing some operation. This condition is
-	 * used in {@link #waitForIdleOrError()} to wait 
+	 * used in {@link #waitWhileBusy()} to wait
 	 * until the engine finishes its work.
 	 *   
-	 * @see #waitForIdleOrError()
+	 * @see #waitWhileBusy()
 	 */
 	public boolean isBusy();
 
