@@ -147,9 +147,7 @@ public class CompositionAPIImp implements EngineCompositionAPI,
 	}
 
 	public boolean isLocationUpdated(int setIndex, Location l) {
-		if (!affectedLocationsComputed)
-			getAffectedLocations();
-		return setIndex == 1 && locUpdates1.containsKey(l) || setIndex == 2 && locUpdates2.containsKey(l);
+		return !getLocUpdates(setIndex, l).isEmpty();
 	}
 
 	public UpdateMultiset getAllUpdates(int setIndex) {
