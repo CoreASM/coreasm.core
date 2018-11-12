@@ -249,6 +249,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INFIXL_KEYWORD:
         if (universe != null) {
           if (universe2 == null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
@@ -262,6 +263,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INFIXN_KEYWORD:
         if (universe != null) {
           if (universe2 == null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
@@ -275,6 +277,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INFIXR_KEYWORD:
         if (universe != null) {
           if (universe2 == null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
@@ -288,6 +291,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case PREFIX_KEYWORD:
         if (universe != null) {
           if (universe2 != null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.PREFIX, operatorSymbols),
@@ -301,6 +305,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case POSTFIX_KEYWORD:
         if (universe != null) {
           if (universe2 != null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.POSTFIX, operatorSymbols),
@@ -314,6 +319,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INDEX_KEYWORD:
         if (universe != null) {
           if (universe2 == null || universe3 != null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INDEX, operatorSymbols),
@@ -327,6 +333,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case TERNARY_KEYWORD:
         if (universe != null) {
           if (universe2 == null || universe3 == null) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.TERNARY, operatorSymbols),
@@ -338,7 +345,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         }
         break;
       default:
-        return false;
+        assert false;
     }
     return true;
   }
@@ -353,9 +360,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   public Collection<OperatorRule> getOperatorRules() {
     List<OperatorRule> opRules = new LinkedList<>();
     for (Entry<OperatorKey, Collection<OperatorValue>> op : opStore.asMap().entrySet()) {
-      if (op.getValue().isEmpty()) {
-        continue;
-      }
+      assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
       if (!op.getValue().stream().map(v -> v.getAssociativity()).allMatch(opVal.getAssociativity()::equals)) {
         throw new IllegalStateException("Multiple syntactically identical operators (" + Arrays
@@ -518,6 +523,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       if (f.getSignature() != null) {
         if (f.getSignature().getDomain().size() == nArgs) {
           return true;
+        } else {
+          capi.error("Arity of the function " + fName + " and operator " + opToken
+              + " does not match in definition of operator " + opToken + ".");
+          return false;
         }
       }
       try {

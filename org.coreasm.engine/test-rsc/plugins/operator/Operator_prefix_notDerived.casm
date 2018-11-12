@@ -1,0 +1,32 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+function test: LIST -> ELEMENT
+
+operator prefix 50 !! = head
+operator prefix 50 ?  = head
+operator prefix 50 ## = test
+operator prefix 50 ~  = test
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: undef"
+ * @require "04: undef"
+ */
+rule initRule =
+  seq
+    print ("01: " + (?[0]))
+  next
+    print ("02: " + (!![0]))
+  next
+    print ("03: " + (~[1]))
+  next
+    print ("04: " + (##[1]))

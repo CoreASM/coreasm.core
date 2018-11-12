@@ -1,0 +1,96 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator index 50 !! E! = dec
+operator index 50 ? E?  = dec
+operator index 50 ## E# = inc
+operator index 50 ~ E~ = inc
+
+derived dec(x, y) = x - y
+derived inc(x, y) = x + y
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: undef"
+ * @require "04: undef"
+ * @require "05: 0"
+ * @require "06: 0"
+ * @require "07: 0"
+ * @require "08: undef"
+ * @require "09: undef"
+ * @require "10: 0"
+ * @require "11: 0"
+ * @require "12: 0"
+ * @require "13: undef"
+ * @require "14: undef"
+ * @require "15: 0"
+ * @require "16: 0"
+ * @require "17: 0"
+ * @require "18: undef"
+ * @require "19: undef"
+ * @require "20: 0"
+ * @require "21: 0"
+ * @require "22: 0"
+ * @require "23: 0"
+ * @require "24: undef"
+ * @require "25: undef"
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?1E?))
+  next
+    print ("02: " + (2?3?1E?E?))
+  next
+    print ("03: " + (3?E?))
+  next
+    print ("04: " + (2?3?E?E?))
+  next
+    print ("05: " + (4?2E??3?1E?E?))
+  next
+    print ("06: " + (1!!1E!))
+  next
+    print ("07: " + (2!!3!!1E!E!))
+  next
+    print ("08: " + (3!!E!))
+  next
+    print ("09: " + (2!!3!!E!E!))
+  next
+    print ("10: " + (4!!2E!!!3!!1E!E!))
+  next
+    print ("11: " + (1##-1E#))
+  next
+    print ("12: " + (-2##3##-1E#E#))
+  next
+    print ("13: " + (3##E#))
+  next
+    print ("14: " + (2##3##E#E#))
+  next
+    print ("15: " + (-4##2E###3##-1E#E#))
+  next
+    print ("16: " + (1~-1E~))
+  next
+    print ("17: " + (-2~3~-1E~E~))
+  next
+    print ("18: " + (3~E~))
+  next
+    print ("19: " + (2~3~E~E~))
+  next
+    print ("20: " + (-4~2E~~3~-1E~E~))
+  next
+    print ("21: " + (5!!6E!~1E~))
+  next
+    print ("22: " + (5!!6E!~1##2?1~1E~E?E#E~))
+  next
+    print ("23: " + (5?6E?##1E#))
+  next
+    print ("24: " + (5!!6E!~1##2?1~E~E?E#E~))
+  next
+    print ("25: " + (5!!E!~1##2?1~1E~E?E#E~))

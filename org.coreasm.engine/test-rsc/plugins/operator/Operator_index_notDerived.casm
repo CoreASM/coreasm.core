@@ -1,0 +1,34 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+function test: LIST * LIST -> ELEMENT
+
+operator index 50 !! E! = map
+operator index 50 ?  E? = map
+operator index 50 ## E# = test
+operator index 50 ~  E~ = test
+
+derived id(x) = x
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: [0]"
+ * @require "02: [0]"
+ * @require "03: undef"
+ * @require "04: undef"
+ */
+rule initRule =
+  seq
+    print ("01: " + ([0]?(@id)E?))
+  next
+    print ("02: " + ([0]!!(@id)E!))
+  next
+    print ("03: " + ([0]~[1]E~))
+  next
+    print ("04: " + ([0]##[1]E#))

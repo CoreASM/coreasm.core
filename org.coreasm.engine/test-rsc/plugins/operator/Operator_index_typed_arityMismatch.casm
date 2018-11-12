@@ -1,0 +1,105 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator index 50 !! E! on STRING = err
+operator index 50 ?  E? on STRING = err
+operator index 50 ## E# on STRING * STRING * STRING = err
+operator index 50 ~  E~ on STRING * STRING * STRING = err
+operator index 50 !! E! on NUMBER = dec
+operator index 50 ?  E? on NUMBER = dec
+operator index 50 ## E# on NUMBER * NUMBER * NUMBER = inc
+operator index 50 ~  E~ on NUMBER * NUMBER * NUMBER = inc
+
+derived dec(x, y) = y - 1
+derived inc(x, y) = y + 1
+derived err(x, y) = "fail"
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + (0?1E?))
+  next
+    print ("02: " + (0?0?2E?E?))
+  next
+    print ("03: " + (0!!1E!))
+  next
+    print ("04: " + (0!!0!!2E!E!))
+  next
+    print ("05: " + (0?0?0!!3E!E?E?))
+  next
+    print ("06: " + (0~-1E~))
+  next
+    print ("07: " + (0~0~-2E~E~))
+  next
+    print ("08: " + (0##-1E#))
+  next
+    print ("09: " + (0##0##-2E#E#))
+  next
+    print ("10: " + (0~0##0~-3E~E#E~))
+  next
+    print ("11: " + (0?0~0E~E?))
+  next
+    print ("12: " + (0?0~0?1E?E~E?))
+  next
+    print ("13: " + (0~0!!0~-1E~E!E~))
+  next
+    print ("14: " + (0!!0##0!!1E!E#E!))
+  next
+    print ("15: " + (0?0~0?0!!0~0##0E#E~E!E?E~E?))
+  next
+    print ("16: " + (0##0?0##0!!0~-1E~E!E#E?E#))
+  next
+    print ("17: " + (0~0?0~0##0!!0~-2E~E!E#E~E?E~))
+  next
+    print ("18: " + (0~0!!0##-1E#E!E~))
+  next
+    print ("19: " + (0##0!!0~0~0?0##-2E#E?E~E~E!E#))
+  next
+    print ("20: " + (0!!0~0?0~0##0~0##-3E#E~E#E~E?E~E!))
+  next
+    print ("21: " + ("0"?"1"E?))
+  next
+    print ("22: " + ("0"?"0"?"2"E?E?))
+  next
+    print ("23: " + ("0"!!"1"E!))
+  next
+    print ("24: " + ("0"!!"0"!!"2"E!E!))
+  next
+    print ("25: " + ("0"?"0"?"0"!!"3"E!E?E?))
+  next
+    print ("26: " + ("0"~"1"E~))
+  next
+    print ("27: " + ("0"~"0"~"2"E~E~))
+  next
+    print ("28: " + ("0"##"1"E#))
+  next
+    print ("29: " + ("0"##"0"##"2"E#E#))
+  next
+    print ("30: " + ("0"~"0"##"0"~"3"E~E#E~))
+  next
+    print ("31: " + ("0"?"0"~"0"E~E?))
+  next
+    print ("32: " + ("0"?"0"~"0"?"1"E?E~E?))
+  next
+    print ("33: " + ("0"~"0"!!"0"~"1"E~E!E~))
+  next
+    print ("34: " + ("0"!!"0"##"0"!!"1"E!E#E!))
+  next
+    print ("35: " + ("0"?"0"~"0"?"0"!!"0"~"0"##"0"E#E~E!E?E~E?))
+  next
+    print ("36: " + ("0"##"0"?"0"##"0"!!"0"~"1"E~E!E#E?E#))
+  next
+    print ("37: " + ("0"~"0"?"0"~"0"##"0"!!"0"~"2"E~E!E#E~E?E~))
+  next
+    print ("38: " + ("0"~"0"!!"0"##"1"E#E!E~))
+  next
+    print ("39: " + ("0"##"0"!!"0"~"0"~"0"?"0"##"2"E#E?E~E~E!E#))
+  next
+    print ("40: " + ("0"!!"0"~"0"?"0"~"0"##"0"~"0"##"3"E#E~E#E~E?E~E!))
