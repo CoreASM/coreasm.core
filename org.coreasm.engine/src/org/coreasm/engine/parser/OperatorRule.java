@@ -37,9 +37,9 @@ package org.coreasm.engine.parser;
 public class OperatorRule {
 
 	/** Operator types. */
-	public enum OpType {INFIX_LEFT, INFIX_NON, INFIX_RIGHT, PREFIX, POSTFIX, INDEX};
+	public enum OpType {INFIX_LEFT, INFIX_NON, INFIX_RIGHT, PREFIX, POSTFIX, INDEX, TERNARY};
     
-    public static final String OPERATOR_DELIMITER = "_";
+    public static final String OPERATOR_DELIMITER = " ";
 	
     /** every operator has at least one (group of) operator symbol */
 	public final String opr;
@@ -109,16 +109,16 @@ public class OperatorRule {
 			return opr;
 	}
 	
-	/**
-	 * Get second (group of) operator symbol(s).
-	 *
-	 * @return operator symbol(s) as a <code>String</code>
-	 */
-	public String getOp2()
-	{
-			return opr2;
-	}
-	
+  /**
+   * Get second (group of) operator symbol(s).
+   *
+   * @return operator symbol(s) as a <code>String</code>
+   */
+  public String getOp2()
+  {
+    return opr2;
+  }
+
 	/**
 	 * Get precedence of operator.
 	 *

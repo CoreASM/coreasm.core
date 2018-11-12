@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.slf4j.Logger;
@@ -40,8 +39,9 @@ public final class OperatorRegistry {
 	public final Map<String, Map<String, OperatorRule>> binOps;
 	public final Map<String, Map<String, OperatorRule>> unOps;
 	public final Map<String, Map<String, OperatorRule>> indexOps;
+  public final Map<String, Map<String, OperatorRule>> ternaryOps;
 
-	/**
+  /**
 	 * Private constructor.
 	 *
 	 */
@@ -49,6 +49,7 @@ public final class OperatorRegistry {
 		binOps = new HashMap<String, Map<String,OperatorRule>>();
 		unOps = new HashMap<String, Map<String,OperatorRule>>();
 		indexOps = new HashMap<String, Map<String,OperatorRule>>();
+    ternaryOps = new HashMap<String, Map<String,OperatorRule>>();
 	}
 	
 	/**
@@ -92,6 +93,8 @@ public final class OperatorRegistry {
 			oprs = unOps;
 		if (grammarClass.equals(ASTNode.INDEX_OPERATOR_CLASS))
 			oprs = indexOps;
+    if (grammarClass.equals(ASTNode.TERNARY_OPERATOR_CLASS))
+      oprs = ternaryOps;
 		
 		if (oprs != null) {
 			Map<String, OperatorRule> mapping = oprs.get(token);

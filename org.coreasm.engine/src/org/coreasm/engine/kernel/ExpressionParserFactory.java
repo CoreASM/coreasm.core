@@ -55,6 +55,7 @@ public class ExpressionParserFactory {
 	private Map<String, Map<String, OperatorRule>> binOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> unOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> indexOps = new HashMap<String, Map<String, OperatorRule>>();
+  private Map<String, Map<String, OperatorRule>> ternaryOps = new HashMap<String, Map<String, OperatorRule>>();
 	
 	// precedence levels
 	private Map<String, Integer> infixLeftOprs = new HashMap<String, Integer>();
@@ -63,6 +64,7 @@ public class ExpressionParserFactory {
 	private Map<String, Integer> prefixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> postfixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> indexOprs = new HashMap<String, Integer>();
+  private Map<String, Integer> ternaryOprs = new HashMap<String, Integer>();
 
 	// operator -> plugins (for convenient)
 	private Map<String, String> infixLeftPlugins = new HashMap<String, String>();
@@ -71,6 +73,7 @@ public class ExpressionParserFactory {
 	private Map<String, String> prefixPlugins = new HashMap<String, String>();
 	private Map<String, String> postfixPlugins = new HashMap<String, String>();
 	private Map<String, String> indexPlugins = new HashMap<String, String>();
+  private Map<String, String> ternaryPlugins = new HashMap<String, String>();
 
 	Parser<IndexMap> indexParser = null;
 	
@@ -127,6 +130,12 @@ public class ExpressionParserFactory {
     				case INDEX:
     					addOperator(indexOprs, oprRule);
     					addOperatorPlugin(indexPlugins, oprRule);
+    					break;
+    					
+            case TERNARY:
+              addOperator(ternaryOprs, oprRule);
+              addOperatorPlugin(ternaryPlugins, oprRule);
+              break;
     					
     				}
     			}
@@ -141,6 +150,7 @@ public class ExpressionParserFactory {
     	oprReg.unOps.putAll(unOps);
     	oprReg.indexOps.clear();
     	oprReg.indexOps.putAll(indexOps);
+      oprReg.ternaryOps.putAll(ternaryOps);
 	}
 
 	/**
@@ -197,6 +207,15 @@ public class ExpressionParserFactory {
 			table.postfix(createIndexParser(opr1, opr2, pluginNames), precedence.intValue());
 		}
 
+    // Ternary
+    for (String opr: ternaryOprs.keySet()) {
+      pluginNames = ternaryPlugins.get(opr);
+      precedence = ternaryOprs.get(opr);
+      String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
+      String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
+      table.postfix(createTernaryParser(opr1, opr2, pluginNames), precedence.intValue());
+    }
+
 		Parser<Node> p = table.build(basicExprParser);
 		return p;
 	}
@@ -237,6 +256,18 @@ public class ExpressionParserFactory {
 				ParserTools.getOprParser(opr2)
 				).map(new IndexParseMap(opr1, opr2, pluginNames, OpType.INDEX));
 	}
+
+  /*
+   * Creates a new ternary parser.
+   */
+  private Parser<TernaryMap> createTernaryParser(String opr1, String opr2, String pluginNames) {
+    return ParserTools.seq(
+        ParserTools.getOprParser(opr1),
+        termParser,
+        ParserTools.getOprParser(opr2),
+        termParser
+    ).map(new TernaryParseMap(opr1, opr2, pluginNames, OpType.TERNARY));
+  }
 	
 	/*
 	 * Adds the name of the plugin contributer of this operator to the database.
@@ -274,6 +305,11 @@ public class ExpressionParserFactory {
 			
 		case INDEX:
 			oprDB = indexOps;
+			break;
+			
+    case TERNARY:
+      oprDB = ternaryOps;
+      break;
 		}
 
 		Integer tempPrec = oprs.get(oprToken);
@@ -333,11 +369,11 @@ public class ExpressionParserFactory {
 			Node node = null;
 			if (type == OpType.POSTFIX) {
 				node = new ASTNode(
-						null, ASTNode.UNARY_OPERATOR_CLASS, "", ((Node)cnodes[1]).getToken(), child.getScannerInfo());
+						null, ASTNode.UNARY_OPERATOR_CLASS, "", ((Node)cnodes[0]).getToken(), child.getScannerInfo());
 				node.addChild(child);
 //				if (cnodes[0] != null)
 //					node.addChild((Node)cnodes[0]);
-				node.addChild(new Node(null, opr, ((Node)cnodes[1]).getScannerInfo()));
+				node.addChild(new Node(null, opr, ((Node)cnodes[0]).getScannerInfo()));
 			}
 			if (type == OpType.PREFIX) {
 				node = new ASTNode(
@@ -491,4 +527,67 @@ public class ExpressionParserFactory {
 	}
 
 
+
+  /* Special index map class */
+  public static class TernaryMap implements Unary<Node> {
+
+    //private String pluginNames;
+    private String opr1;
+    private String opr2;
+    private Object[] cnodes;
+    //private OpType type;
+
+    /**
+     * Creates a new IndexMap.
+     *
+     * @param opr1 first operator token
+     * @param opr2 second operator token
+     * @param pluginNames contributing plugin names
+     * @param type operator type
+     * @param nodes an array of operator and delimiter nodes (without the operands) 
+     */
+    public TernaryMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
+      this.opr1 = opr1;
+      this.opr2 = opr2;
+      //this.pluginNames = pluginNames;
+      this.cnodes = nodes;
+      //this.type = type;
+    }
+
+    /**
+     * Creates a tree for this operator with an {@link ASTNode} as its root.
+     */
+    public Node map(Node child) {
+      Node node = null;
+      node = new ASTNode(
+          null, ASTNode.TERNARY_OPERATOR_CLASS, "", 
+          opr1 + OperatorRule.OPERATOR_DELIMITER + opr2,
+          child.getScannerInfo());
+      node.addChild(child);
+      for (Object obj: cnodes)
+        if (obj != null)
+          node.addChild((Node)obj);
+      return node;
+    }
+  }
+
+  /* Ternary parse map class for ternary operators */
+  public static class TernaryParseMap extends ParseMap<Object[], TernaryMap> {
+
+    private String opr1;
+    private String opr2;
+    private OpType type;
+
+    public TernaryParseMap(String opr1, String opr2, String pluginName, OpType type) {
+      super(pluginName);
+      this.opr1 = opr1;
+      this.opr2 = opr2;
+      this.type = type;
+    }
+
+    public TernaryMap map(Object[] v) {
+      return new TernaryMap(opr1, opr2, pluginName, type, v);
+    }
+
+  }
 }

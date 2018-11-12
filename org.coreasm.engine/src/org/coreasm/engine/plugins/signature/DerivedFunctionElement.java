@@ -94,4 +94,8 @@ public class DerivedFunctionElement extends FunctionElement {
 			interpreter.removeEnv(params.get(i));
 		interpreter.unhideEnvVars();
 	}
+
+  public List<String> getParams() {
+    return params;
+  }
 }

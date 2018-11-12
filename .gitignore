@@ -15,3 +15,4 @@ tmp*
 **/doc/**/*.synctex.gz
 **/doc/**/*.toc
 **/doc/**/*.loc
+.idea/
