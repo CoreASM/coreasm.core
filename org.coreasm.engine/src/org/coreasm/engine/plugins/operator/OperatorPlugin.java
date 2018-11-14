@@ -218,10 +218,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   @Override
   public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {
     if (getSourceModes().containsKey(source) && getTargetModes().containsKey(target)) {
+      CommentRemover cr = new CommentRemover();
       ArrayList<SpecLine> filteredLines = new ArrayList<>();
       for (SpecLine l : this.capi.getSpec().getLines()) {
-        Matcher m = typedOperatorDefinitionGrammar.matcher(l.text);
-        //TODO: add comment support
+        Matcher m = typedOperatorDefinitionGrammar.matcher(cr.append(l.text));
         if (m.matches()) {
           if (m.group("fixity") != null) {
             if (!handleOpDefinition(m.group("fixity"), Integer.valueOf(m.group("precedence")),
