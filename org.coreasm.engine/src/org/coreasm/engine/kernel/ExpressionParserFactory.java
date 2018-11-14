@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.codehaus.jparsec.OperatorTable;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.functors.Binary;
@@ -56,6 +55,7 @@ public class ExpressionParserFactory {
 	private Map<String, Map<String, OperatorRule>> unOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> indexOps = new HashMap<String, Map<String, OperatorRule>>();
   private Map<String, Map<String, OperatorRule>> ternaryOps = new HashMap<String, Map<String, OperatorRule>>();
+  private Map<String, Map<String, OperatorRule>> parenOps = new HashMap<String, Map<String, OperatorRule>>();
 	
 	// precedence levels
 	private Map<String, Integer> infixLeftOprs = new HashMap<String, Integer>();
@@ -65,6 +65,7 @@ public class ExpressionParserFactory {
 	private Map<String, Integer> postfixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> indexOprs = new HashMap<String, Integer>();
   private Map<String, Integer> ternaryOprs = new HashMap<String, Integer>();
+  private Map<String, Integer> parenOprs = new HashMap<String, Integer>();
 
 	// operator -> plugins (for convenient)
 	private Map<String, String> infixLeftPlugins = new HashMap<String, String>();
@@ -74,10 +75,9 @@ public class ExpressionParserFactory {
 	private Map<String, String> postfixPlugins = new HashMap<String, String>();
 	private Map<String, String> indexPlugins = new HashMap<String, String>();
   private Map<String, String> ternaryPlugins = new HashMap<String, String>();
+  private Map<String, String> parenPlugins = new HashMap<String, String>();
 
-	Parser<IndexMap> indexParser = null;
-	
-	/**
+  /**
 	 * Creates a new expression parser factory.  
 	 * @param termParser basic expression parser
 	 * @param plugins a set of plugins
@@ -136,6 +136,11 @@ public class ExpressionParserFactory {
               addOperator(ternaryOprs, oprRule);
               addOperatorPlugin(ternaryPlugins, oprRule);
               break;
+
+            case PAREN:
+              addOperator(parenOprs, oprRule);
+              addOperatorPlugin(parenPlugins, oprRule);
+              break;
     					
     				}
     			}
@@ -151,6 +156,7 @@ public class ExpressionParserFactory {
     	oprReg.indexOps.clear();
     	oprReg.indexOps.putAll(indexOps);
       oprReg.ternaryOps.putAll(ternaryOps);
+      oprReg.parenOps.putAll(parenOps);
 	}
 
 	/**
@@ -216,8 +222,17 @@ public class ExpressionParserFactory {
       table.postfix(createTernaryParser(opr1, opr2, pluginNames), precedence.intValue());
     }
 
-		Parser<Node> p = table.build(basicExprParser);
-		return p;
+    Parser<Node> p = basicExprParser;
+
+    // Paren
+    for (String opr: parenOprs.keySet()) {
+      pluginNames = parenPlugins.get(opr);
+      String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
+      String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
+      p = p.or(createParenParser(opr1, opr2, pluginNames));
+    }
+
+		return table.build(p);
 	}
 	
 	/* 
@@ -268,6 +283,19 @@ public class ExpressionParserFactory {
         termParser
     ).map(new TernaryParseMap(opr1, opr2, pluginNames, OpType.TERNARY));
   }
+
+  /*
+   * Creates a new paren parser.
+   */
+  private Parser<Node> createParenParser(String opr1, String opr2, String pluginNames) {
+    return basicExprParser.between(ParserTools.getOprParser(opr1), ParserTools.getOprParser(opr2))
+        .map(n -> {
+          ASTNode node = new ASTNode(null, ASTNode.PAREN_OPERATOR_CLASS, null,
+              opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, n.getScannerInfo());
+          node.addChild(n);
+          return node;
+        });
+  }
 	
 	/*
 	 * Adds the name of the plugin contributer of this operator to the database.
@@ -309,6 +337,10 @@ public class ExpressionParserFactory {
 			
     case TERNARY:
       oprDB = ternaryOps;
+      break;
+
+    case PAREN:
+      oprDB = parenOps;
       break;
 		}
 
@@ -528,7 +560,7 @@ public class ExpressionParserFactory {
 
 
 
-  /* Special index map class */
+  /* Special ternary map class */
   public static class TernaryMap implements Unary<Node> {
 
     //private String pluginNames;

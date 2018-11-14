@@ -213,7 +213,7 @@ public class Kernel extends Plugin
        			for (String kw: pp.getKeywords())
        				kws.add(kw);
        			for (String opr: pp.getOperators())
-       				oprs.add(opr);
+              oprs.add(opr);
        			if ( p != this )
        				lexers.addAll(pp.getLexers());
        		}

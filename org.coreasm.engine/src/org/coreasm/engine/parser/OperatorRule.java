@@ -37,7 +37,7 @@ package org.coreasm.engine.parser;
 public class OperatorRule {
 
 	/** Operator types. */
-	public enum OpType {INFIX_LEFT, INFIX_NON, INFIX_RIGHT, PREFIX, POSTFIX, INDEX, TERNARY};
+	public enum OpType {INFIX_LEFT, INFIX_NON, INFIX_RIGHT, PREFIX, POSTFIX, INDEX, TERNARY, PAREN};
     
     public static final String OPERATOR_DELIMITER = " ";
 	
