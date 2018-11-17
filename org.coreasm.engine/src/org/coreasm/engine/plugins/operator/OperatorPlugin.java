@@ -64,15 +64,17 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String GR_GENLIST = "GenartorList";
   private static final String GR_ENUMELEM = "EnumerableElement";
 
-  private final Pattern operatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+))\\s+"
-          + "(?<op>\\S+)\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
-  private final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
+  /*private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
           + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|comp)\\s+"
           + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren)\\s+"
+          + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
+          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?\\s+"
+          + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");*/
+  private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
+      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
+          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
+          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren|comp)\\s+"
           + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
           + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?\\s+"
           + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
@@ -383,14 +385,9 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         }
         break;
       case COMP_KEYWORD:
-        if (universe != null) {
-          if (universe2 != null || universe3 != null) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-            return false;
-          }
-          opStore.put(new OperatorKey(Fixity.COMP, operatorSymbols),
-              new OperatorValue(Associativity.NONE, -1, null,
-                  Collections.singletonList(universe)));
+        if (universe != null || universe2 != null || universe3 != null) {
+          capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+          return false;
         } else {
           opStore.put(new OperatorKey(Fixity.COMP, operatorSymbols),
               new OperatorValue(Associativity.NONE, -1, null, null));
