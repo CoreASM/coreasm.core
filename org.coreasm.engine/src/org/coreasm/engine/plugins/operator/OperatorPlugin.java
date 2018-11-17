@@ -662,7 +662,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                       parserTools.getOprParser(op.getKey().operatorSymbols[0]),
                       termParser
                   ).map(ob -> {
-                    System.out.println("GEN");
                     Node n = new ASTNode(
                         PLUGIN_NAME, GR_GEN, "",
                         "",
@@ -676,7 +675,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                       parserTools.getOprParser(op.getKey().operatorSymbols[0]),
                       termParser
                       ).map(ob -> {
-                        System.out.println("GEN");
                         Node n = new ASTNode(
                             PLUGIN_NAME, GR_GEN, "",
                             "",
@@ -688,21 +686,16 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                     List<Object> ob = new ArrayList<>();
                     ob.add(obArr[0]);
                     ob.addAll((List) obArr[1]);
-                    System.out.println("LIST");
                     Node n = new ASTNode(
                         PLUGIN_NAME, GR_GENLIST, "",
                         "",
                         ((Node) ob.get(0)).getScannerInfo());
-                    for (Object o : ob) if (o instanceof Node) {
-                      System.out.println(o);
-                      n.addChild((Node) o);
-                    }
+                    for (Object o : ob) if (o instanceof Node) n.addChild((Node) o);
                     return n;
                   }),
                   parserTools.getOprParser(op.getKey().operatorSymbols[1]),
                   termParser
               ).map(ob -> {
-                System.out.println("COMP");
                 Node n = new ASTNode(
                     PLUGIN_NAME, GR_COMP, "",
                     op.getKey().operatorSymbols[0] + OperatorRule.OPERATOR_DELIMITER + op.getKey().operatorSymbols[1],
@@ -784,8 +777,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    */
   @Override
   public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
-    System.out.println(pos);
-    System.out.println(pos.getAbstractChildNodes());
     switch (pos.getGrammarClass()) {
       case GR_COMP:
         if (!pos.getFirst().isEvaluated()) return pos.getFirst();

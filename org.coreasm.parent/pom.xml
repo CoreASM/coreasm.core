@@ -125,7 +125,7 @@
 		</activation>
 		<!-- requires the following entries in your maven setting.xml:
 			* ossrh account with access to https://issues.sonatype.org/browse/OSSRH-11541 (CoreASM at osshr)
-			* gpg2 / pgp signing information for ossrh maven central repository (default key of the system is used)
+			* gpg2 / pgp signing information for ossrh maven central repository (default id of the system is used)
 
 			<settings>
 				<servers>
