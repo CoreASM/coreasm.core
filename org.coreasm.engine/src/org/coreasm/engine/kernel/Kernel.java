@@ -652,7 +652,7 @@ public class Kernel extends Plugin
     	createBasicTerm(funcRuleTermParser);
     	
     	// BasicExpr : BasicTerm | '(' Term ')'
-    	Parser<Node> beParser = Parsers.or(refBasicTermParser.lazy(), 
+    	Parser<Node> beParser = Parsers.or(refBasicTermParser.lazy(),
     			parserTools.seq(	// '(' Term ')'
     					parserTools.getOprParser("("), 
     					refTermParser.lazy(),
@@ -664,7 +664,6 @@ public class Kernel extends Plugin
 								for (Object o:v) node.addChild((Node)o);
 								return node;
 							}
-							
     					}
     				)
     		);

@@ -158,7 +158,7 @@
          point="org.eclipse.ui.preferencePages">
       <page 
       		class="org.coreasm.eclipse.preferences.ASMTemplatePreferencePage"
-      		id="org.coreasm.eclipse.ASMTemplatePreferencePage" 
+      		id="org.coreasm.eclipse.ASMTemplatePreferencePage"
       		name="Templates"
       		category="org.coreasm.eclipse.ASMPreferencePage"> 
 	  </page>

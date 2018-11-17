@@ -172,35 +172,35 @@ public class ExpressionParserFactory {
 		for (String opr: infixLeftOprs.keySet()) {
 			pluginNames = infixLeftPlugins.get(opr);
 			precedence = infixLeftOprs.get(opr);
-			table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence.intValue());
+			table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
 		}
 
 		// Infix Non-associative
 		for (String opr: infixNonOprs.keySet()) {
 			pluginNames = infixNonPlugins.get(opr);
 			precedence = infixNonOprs.get(opr);
-			table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence.intValue());
+			table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence);
 		}
 
 		// Infix Right-associative
 		for (String opr: infixRightOprs.keySet()) {
 			pluginNames = infixRightPlugins.get(opr);
 			precedence = infixRightOprs.get(opr);
-			table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence.intValue());
+			table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
 		}
 		
 		// Prefix
 		for (String opr: prefixOprs.keySet()) {
 			pluginNames = prefixPlugins.get(opr);
 			precedence = prefixOprs.get(opr);
-			table.prefix(createUnaryParser(opr, pluginNames, OpType.PREFIX), precedence.intValue());
+			table.prefix(createUnaryParser(opr, pluginNames, OpType.PREFIX), precedence);
 		}
 
 		// Postfix
 		for (String opr: postfixOprs.keySet()) {
 			pluginNames = postfixPlugins.get(opr);
 			precedence = postfixOprs.get(opr);
-			table.postfix(createUnaryParser(opr, pluginNames, OpType.POSTFIX), precedence.intValue());
+			table.postfix(createUnaryParser(opr, pluginNames, OpType.POSTFIX), precedence);
 		}
 
 		// Index
@@ -210,7 +210,7 @@ public class ExpressionParserFactory {
 			int i = opr.indexOf(OperatorRule.OPERATOR_DELIMITER);
 			String opr1 = opr.substring(0, i);
 			String opr2 = opr.substring(i + 1);
-			table.postfix(createIndexParser(opr1, opr2, pluginNames), precedence.intValue());
+			table.postfix(createIndexParser(opr1, opr2, pluginNames), precedence);
 		}
 
     // Ternary
@@ -219,7 +219,7 @@ public class ExpressionParserFactory {
       precedence = ternaryOprs.get(opr);
       String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
       String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
-      table.postfix(createTernaryParser(opr1, opr2, pluginNames), precedence.intValue());
+      table.postfix(createTernaryParser(opr1, opr2, pluginNames), precedence);
     }
 
     Parser<Node> p = basicExprParser;
