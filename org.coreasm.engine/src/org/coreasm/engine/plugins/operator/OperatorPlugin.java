@@ -411,7 +411,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     for (Entry<OperatorKey, Collection<OperatorValue>> op : opStore.asMap().entrySet()) {
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
-      if (!op.getValue().stream().map(v -> v.getAssociativity()).allMatch(opVal.getAssociativity()::equals)) {
+      if (!op.getValue().stream().map(OperatorValue::getAssociativity).allMatch(opVal.getAssociativity()::equals)) {
         throw new IllegalStateException("Multiple syntactically identical operators (" + Arrays
             .toString(op.getKey().operatorSymbols) + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
@@ -536,21 +536,26 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           FunctionElement fun = capi.getStorage().getFunction(opFunName);
           if (errorChecks(fun, args.length, finalOpNode.getToken(), opFunName)) {
             List<Element> evaluatedArgs = new ArrayList<>(args.length);
+            ASTNode oldPos = interpreter.getPosition();
             for (ASTNode arg : args) {
               if (arg == null) {
                 evaluatedArgs.add(Element.UNDEF);
                 continue;
               }
+              if (arg.isEvaluated()) evaluatedArgs.add(arg.getValue());
+              ASTNode localCopy = (ASTNode) interpreter.copyTree(arg);
+              localCopy.setParent(arg.getParent());
               try {
-                interpreter.setPosition(arg);
+                interpreter.setPosition(localCopy);
                 do {
                   interpreter.executeTree();
-                } while (!arg.isEvaluated());
-                evaluatedArgs.add(arg.getValue());
+                } while (!localCopy.isEvaluated());
+                evaluatedArgs.add(localCopy.getValue());
               } catch (InterpreterException e) {
                 evaluatedArgs.add(null);
               }
             }
+            interpreter.setPosition(oldPos);
             for (int i = 0; i < evaluatedArgs.size(); ++i) {
               if (op.universes != null) {
                 String domName = op.universes.get(i);
