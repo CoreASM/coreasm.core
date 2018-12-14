@@ -252,11 +252,10 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 	private void loadProperties() {
 		Set<String> definedOptions = capi.getSpec().getOptions();
         ASTNode currentNode = capi.getParser().getRootNode().getFirst();
-        OptionNode optionNode = null;
         
         while (currentNode != null) {
             if (currentNode instanceof OptionNode) {
-            	optionNode = (OptionNode)currentNode;
+            	OptionNode optionNode = (OptionNode)currentNode;
             	if (definedOptions.contains(optionNode.getOptionName())) {
             		try {
             			String pluginName = optionNode.getOptionName().substring(0, optionNode.getOptionName().indexOf('.'));
