@@ -63,8 +63,8 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	
 	public static final String PLUGIN_NAME = ModularityPlugin.class.getSimpleName();
 
-	private final String[] keywords = {"CoreModule", "include"};
-	private final String[] operators = {};
+	private static final String[] keywords = {"CoreModule", "include"};
+	private static final String[] operators = {};
 	
     private Map<String, GrammarRule> parsers = null;
 
@@ -230,21 +230,18 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 	private ArrayList<SpecLine> injectModules(List<SpecLine> lines, String relativePath) {
 		// CHANGE: Includes inside included specifications will be looked up relative to the including specification now
 		ArrayList<SpecLine> newSpec = new ArrayList<SpecLine>();
-		String useRegex;
-		Pattern usePattern;
-		Matcher useMatcher;
 		// compile pattern to find "include " directives using regular expression
-		useRegex = "^[\\s]*[i][n][c][l][u][d][e][\\s]+"; 
-		usePattern = Pattern.compile(useRegex);
+		String useRegex = "^[\\s]*[i][n][c][l][u][d][e][\\s]+";
+		Pattern usePattern = Pattern.compile(useRegex);
 
-		for (SpecLine line: lines) {
+		for (SpecLine line : lines) {
 			// get an "include" directive matcher object for the line
-			useMatcher = usePattern.matcher(line.text);
+			Matcher useMatcher = usePattern.matcher(line.text);
 
 			// if match found
 			if (useMatcher.find()) {
 				// are there inner include files?
-				
+
 				// get the include file name and load the file
 				String fileName = useMatcher.replaceFirst("").trim();
 				// remove potential quotation marks
@@ -252,28 +249,29 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 					fileName = fileName.substring(1, fileName.length()-1);
 				// CHANGE: make sure that filenames have the same format to ensure that equal paths match, not only equal include statements
 				try {
-					fileName = (new File(relativePath + File.separator + fileName)).getCanonicalPath();
+					fileName = (new File(relativePath, fileName)).getCanonicalPath();
 				} catch (IOException e) {
+					logger.info("ModularityPlugin: unable to get canonical path for module '" + fileName + "'. Check " + line.fileName + ":" + line.line + ".");
 				}
+
 				if (loadedModules.contains(fileName))
-					logger.info(
-							"ModularityPlugin: Skipping module '" + fileName + "' since it's already loaded.");
-				else 
+					logger.info("ModularityPlugin: Skipping module '" + fileName + "' since it's already loaded.");
+				else
 					try {
 						loadedModules.add(fileName);
-						logger.info( 
-								"ModularityPlugin: Loading module '" + fileName + "'.");
+						logger.info("ModularityPlugin: Loading module '" + fileName + "'.");
+
 						List<SpecLine> newLines = injectModules(Specification.loadSpec(fileName), fileName.substring(0, fileName.lastIndexOf(File.separator)));
-						for (SpecLine newLine: newLines)
-							newSpec.add(newLine);
+						newSpec.addAll(newLines);
 					} catch (IOException e) {
-						capi.error("Modularity plugin cannot load module file '" 
+						capi.error("Modularity plugin cannot load module file '"
 								+ fileName + "'. The error is:" + Tools.getEOL()
 								+ e.getMessage() + Tools.getEOL()
 								+ "Check " + line.fileName + ":" + line.line + ".");
 					}
-			} else
+			} else {
 				newSpec.add(line);
+			}
 		}
 		return newSpec;
 	}
