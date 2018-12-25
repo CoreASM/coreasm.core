@@ -76,8 +76,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
           + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren|comp)\\s+"
           + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
-          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?\\s+"
-          + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
+          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
+          + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
 
   enum Fixity {
@@ -232,50 +232,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    * @param target the target mode
    */
   @Override
-  public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {/*
-    ParserTools pt = ParserTools.getInstance(null);
-    Parser<Integer> precedenceParser =
-        IntegerLiteral.PARSER.map(Integer::parseInt).map(precedence -> {
-          if (0 > precedence || 1000 < precedence)
-            throw new NumberFormatException("Precendence needs to be an integer between 0 and 1000 (inclusive).");
-          return precedence;
-        });
-    Parser<String> operatorSymbolParser = Parsers.tokenType(String.class, "operator symbol");
-    try {
-      Set<Parser<?>> lexers = new HashSet<>();
-      lexers.add(IntegerLiteral.TOKENIZER);
-      lexers.add(Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES).many1().ifelse(Parsers.never(), Scanners.pattern(
-          Patterns.regex("[^\\s]+"), "operator symbol").source().followedBy(Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES))));
-      pt.init(new String[]{"operator", "=", PREFIX_KEYWORD, POSTFIX_KEYWORD, INFIXL_KEYWORD,
-          INFIXN_KEYWORD, INFIXR_KEYWORD, INDEX_KEYWORD, PAREN_KEYWORD, TERNARY_KEYWORD,
-          COMP_KEYWORD}, new String[]{}, lexers);
-    } catch (EngineError ignored) {}
-    Parser p =
-        Parsers.sequence(
-            pt.getKeywTerminals().token("operator").map(t -> null),
-            Parsers.or(
-                Parsers.tuple(
-                    Parsers.or(
-                        pt.getKeywTerminals().token(PREFIX_KEYWORD).map(t -> PREFIX_KEYWORD),
-                        pt.getKeywTerminals().token(POSTFIX_KEYWORD).map(t -> POSTFIX_KEYWORD),
-                        pt.getKeywTerminals().token(INFIXR_KEYWORD).map(t -> INFIXR_KEYWORD),
-                        pt.getKeywTerminals().token(INFIXN_KEYWORD).map(t -> INFIXN_KEYWORD),
-                        pt.getKeywTerminals().token(INFIXL_KEYWORD).map(t -> INFIXL_KEYWORD)
-                    ),
-                    precedenceParser,
-                    operatorSymbolParser
-                ).map(t -> t.a + " " + t.b + " " + t.c), Parsers.tuple(
-                    Parsers.or(
-                        pt.getKeywTerminals().token(INDEX_KEYWORD).map(t -> INDEX_KEYWORD),
-                        pt.getKeywTerminals().token(PAREN_KEYWORD).map(t -> PAREN_KEYWORD),
-                        pt.getKeywTerminals().token(TERNARY_KEYWORD).map(t -> TERNARY_KEYWORD),
-                        pt.getKeywTerminals().token(COMP_KEYWORD).map(t -> COMP_KEYWORD)
-                    ),
-                    precedenceParser
-                ).map(t -> t.a + " " + t.b)
-            )
-        ).many1().from(pt.getTokenizer(), pt.getIgnored());*/
-    //System.out.println(p.parse("//operator definitions:\noperator index/*this is a prefix operator*/ 800//with precedence 800\noperator infixl 70 *// "));
+  public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {
     if (getSourceModes().containsKey(source) && getTargetModes().containsKey(target)) {
       CommentRemover cr = new CommentRemover();
       ArrayList<SpecLine> filteredLines = new ArrayList<>();
@@ -312,8 +269,15 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     }
   }
 
-  private boolean handleOpDefinition(String fixity, int precedence, String ruleName,
+  private boolean handleOpDefinition(String fixity, int precedence, String functionName,
       String universe, String universe2, String universe3, String... operatorSymbols) {
+    if (functionName != null && COMP_KEYWORD.equals(fixity)) {
+      capi.error("comp operator type does not support a right hand side in the definition.");
+      return false;
+    } else if (functionName == null && !COMP_KEYWORD.equals(fixity)) {
+      capi.error(fixity + " operator type requires a right hand side in the definition.");
+      return false;
+    }
     switch (fixity) {
       case INFIXL_KEYWORD:
         if (universe != null) {
@@ -322,11 +286,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.LEFT, precedence, ruleName,
+              new OperatorValue(Associativity.LEFT, precedence, functionName,
                   Arrays.asList(universe, universe2)));
         } else {
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.LEFT, precedence, ruleName, null));
+              new OperatorValue(Associativity.LEFT, precedence, functionName, null));
         }
         break;
       case INFIXN_KEYWORD:
@@ -336,11 +300,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Arrays.asList(universe, universe2)));
         } else {
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case INFIXR_KEYWORD:
@@ -350,11 +314,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.RIGHT, precedence, ruleName,
+              new OperatorValue(Associativity.RIGHT, precedence, functionName,
                   Arrays.asList(universe, universe2)));
         } else {
           opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
-              new OperatorValue(Associativity.RIGHT, precedence, ruleName, null));
+              new OperatorValue(Associativity.RIGHT, precedence, functionName, null));
         }
         break;
       case PREFIX_KEYWORD:
@@ -364,11 +328,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.PREFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Collections.singletonList(universe)));
         } else {
           opStore.put(new OperatorKey(Fixity.PREFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case POSTFIX_KEYWORD:
@@ -378,11 +342,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.POSTFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Collections.singletonList(universe)));
         } else {
           opStore.put(new OperatorKey(Fixity.POSTFIX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case INDEX_KEYWORD:
@@ -392,11 +356,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INDEX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Arrays.asList(universe, universe2)));
         } else {
           opStore.put(new OperatorKey(Fixity.INDEX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case TERNARY_KEYWORD:
@@ -406,11 +370,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.TERNARY, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Arrays.asList(universe, universe2, universe3)));
         } else {
           opStore.put(new OperatorKey(Fixity.TERNARY, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case PAREN_KEYWORD:
@@ -420,11 +384,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             return false;
           }
           opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName,
+              new OperatorValue(Associativity.NONE, precedence, functionName,
                   Collections.singletonList(universe)));
         } else {
           opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, ruleName, null));
+              new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case COMP_KEYWORD:
