@@ -32,6 +32,7 @@ import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.kernel.Kernel;
 import org.coreasm.engine.kernel.KernelServices;
+import org.coreasm.engine.parser.CommentRemover;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;

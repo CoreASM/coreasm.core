@@ -126,16 +126,13 @@ public class JParsecParser implements Parser {
 				logger.error("Specification file must first be set before its header can be parsed.");
 				throw new ParserException("Specification file must first be set before its header can be parsed.");
 			}
-		
-			boolean multiLineComment = false;
+
 			// for each line of specification file
+      CommentRemover cr = new CommentRemover();
 			for (SpecLine line: specification.getLines()) {
-				if (multiLineComment || line.text.contains("*/")) {
-					multiLineComment = !line.text.contains("*/");
-					continue;
-				}
+			  String lineText = cr.append(line.text);
 				// get a "use" directive matcher object for the line
-				useMatcher = usePattern.matcher(line.text);
+				useMatcher = usePattern.matcher(lineText);
 
 				// if match found
 				if (useMatcher.find())
@@ -144,8 +141,6 @@ public class JParsecParser implements Parser {
 					String pluginName = useMatcher.replaceFirst("").trim();
 					pluginNames.add(pluginName);
 				}
-				else if (line.text.contains("/*"))
-					multiLineComment = true;
 			}
 			
 			headerParsed = true;

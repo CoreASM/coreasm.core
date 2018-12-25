@@ -1,6 +1,4 @@
-package org.coreasm.engine.plugins.operator;
-
-import org.coreasm.engine.parser.ParserException;
+package org.coreasm.engine.parser;
 
 public class CommentRemover {
 
@@ -8,7 +6,7 @@ public class CommentRemover {
   private boolean inString = false;
   private StringBuilder buffer;
 
-  String append(String line) throws ParserException {
+  public String append(String line) throws ParserException {
     boolean maybeComment = false;
     boolean maybeCommentEnd = false;
     boolean escape = false;

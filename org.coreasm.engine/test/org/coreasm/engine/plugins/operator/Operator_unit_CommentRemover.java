@@ -1,5 +1,6 @@
 package org.coreasm.engine.plugins.operator;
 
+import org.coreasm.engine.parser.CommentRemover;
 import org.coreasm.engine.parser.ParserException;
 import org.junit.Assert;
 import org.junit.Test;
