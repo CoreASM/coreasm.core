@@ -232,7 +232,50 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    * @param target the target mode
    */
   @Override
-  public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {
+  public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {/*
+    ParserTools pt = ParserTools.getInstance(null);
+    Parser<Integer> precedenceParser =
+        IntegerLiteral.PARSER.map(Integer::parseInt).map(precedence -> {
+          if (0 > precedence || 1000 < precedence)
+            throw new NumberFormatException("Precendence needs to be an integer between 0 and 1000 (inclusive).");
+          return precedence;
+        });
+    Parser<String> operatorSymbolParser = Parsers.tokenType(String.class, "operator symbol");
+    try {
+      Set<Parser<?>> lexers = new HashSet<>();
+      lexers.add(IntegerLiteral.TOKENIZER);
+      lexers.add(Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES).many1().ifelse(Parsers.never(), Scanners.pattern(
+          Patterns.regex("[^\\s]+"), "operator symbol").source().followedBy(Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES))));
+      pt.init(new String[]{"operator", "=", PREFIX_KEYWORD, POSTFIX_KEYWORD, INFIXL_KEYWORD,
+          INFIXN_KEYWORD, INFIXR_KEYWORD, INDEX_KEYWORD, PAREN_KEYWORD, TERNARY_KEYWORD,
+          COMP_KEYWORD}, new String[]{}, lexers);
+    } catch (EngineError ignored) {}
+    Parser p =
+        Parsers.sequence(
+            pt.getKeywTerminals().token("operator").map(t -> null),
+            Parsers.or(
+                Parsers.tuple(
+                    Parsers.or(
+                        pt.getKeywTerminals().token(PREFIX_KEYWORD).map(t -> PREFIX_KEYWORD),
+                        pt.getKeywTerminals().token(POSTFIX_KEYWORD).map(t -> POSTFIX_KEYWORD),
+                        pt.getKeywTerminals().token(INFIXR_KEYWORD).map(t -> INFIXR_KEYWORD),
+                        pt.getKeywTerminals().token(INFIXN_KEYWORD).map(t -> INFIXN_KEYWORD),
+                        pt.getKeywTerminals().token(INFIXL_KEYWORD).map(t -> INFIXL_KEYWORD)
+                    ),
+                    precedenceParser,
+                    operatorSymbolParser
+                ).map(t -> t.a + " " + t.b + " " + t.c), Parsers.tuple(
+                    Parsers.or(
+                        pt.getKeywTerminals().token(INDEX_KEYWORD).map(t -> INDEX_KEYWORD),
+                        pt.getKeywTerminals().token(PAREN_KEYWORD).map(t -> PAREN_KEYWORD),
+                        pt.getKeywTerminals().token(TERNARY_KEYWORD).map(t -> TERNARY_KEYWORD),
+                        pt.getKeywTerminals().token(COMP_KEYWORD).map(t -> COMP_KEYWORD)
+                    ),
+                    precedenceParser
+                ).map(t -> t.a + " " + t.b)
+            )
+        ).many1().from(pt.getTokenizer(), pt.getIgnored());*/
+    //System.out.println(p.parse("//operator definitions:\noperator index/*this is a prefix operator*/ 800//with precedence 800\noperator infixl 70 *// "));
     if (getSourceModes().containsKey(source) && getTargetModes().containsKey(target)) {
       CommentRemover cr = new CommentRemover();
       ArrayList<SpecLine> filteredLines = new ArrayList<>();

@@ -29,6 +29,9 @@ public class Operator_unit_CommentRemover {
     Assert.assertEquals("CoreASM Test", cr.append("CoreASM Test/*"));
     Assert.assertEquals("\"Test\"", cr.append("CoreASM \"*/\"Test\""));
     Assert.assertEquals("*/CoreASM Test", cr.append("*/CoreASM Test"));
+    Assert.assertEquals("", cr.append("\"//CoreASM Test"));
+    Assert.assertEquals("\"//CoreASM Test\\n*/CoreASM Test\"", cr.append("*/CoreASM Test\""));
+    Assert.assertEquals("*/CoreASM Test", cr.append("*/CoreASM Test"));
   }
 
 }

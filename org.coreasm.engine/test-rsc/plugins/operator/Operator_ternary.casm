@@ -40,8 +40,8 @@ derived inc(x, y, z) = x + y - z
  * @require "21: 0"
  * @require "22: 0"
  * @require "23: 0"
- * @require "24: undef"
- * @require "25: undef"
+ * @require "24: 0"
+ * @require "25: 0"
  */
 rule initRule =
   seq
@@ -73,7 +73,7 @@ rule initRule =
   next
     print ("14: " + (2##3##5E#2E#8))
   next
-    print ("15: " + (5##2E#1##4E#6))
+    print ("15: " + (-3##2E#1##4E#6))
   next
     print ("16: " + (1~1E~2))
   next
@@ -83,16 +83,14 @@ rule initRule =
   next
     print ("19: " + (2~3~5E~2E~8))
   next
-    print ("20: " + (5~2E~1~4E~10))
-  next
     print ("20: " + ((5~2E~1)~4E~10))
   next
     print ("21: " + (5!!6E!0~1E~0))
-  /*next
-    print ("22: " + (5!!6E!~1##2?1~1E~E?E#E~))
   next
-    print ("23: " + (5?6E?##1E#))
+    print ("22: " + (5!!6E!1~1##2?1~1E~1E?1E#1E~2))
   next
-    print ("24: " + (5!!6E!~1##2?1~E~E?E#E~))
+    print ("23: " + (5?6E?1##1E#1))
   next
-    print ("25: " + (5!!E!~1##2?1~1E~E?E#E~))*/
+    print ("24: " + (5!!6E!1~1##2?1~1E~1E?1E#1E~2))
+  next
+    print ("25: " + (5!!1E!1~1##2?1~1E~1E?1E#1E~7))

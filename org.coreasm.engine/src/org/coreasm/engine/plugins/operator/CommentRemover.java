@@ -5,13 +5,14 @@ import org.coreasm.engine.parser.ParserException;
 public class CommentRemover {
 
   private boolean inComment = false;
+  private boolean inString = false;
+  private StringBuilder buffer;
 
   String append(String line) throws ParserException {
-    boolean inString = false;
     boolean maybeComment = false;
     boolean maybeCommentEnd = false;
     boolean escape = false;
-    StringBuilder result = new StringBuilder("");
+    StringBuilder result = inString ? buffer : new StringBuilder();
     for (char c : line.toCharArray()) {
       if (inComment) {
         if (maybeCommentEnd) {
@@ -53,7 +54,11 @@ public class CommentRemover {
         }
       }
     }
-    if (inString) throw new ParserException("Unbalanced \" in string literal.");
+    if (inString) {
+      //throw new ParserException("Unbalanced \" in string literal.");
+      buffer = result.append("\\n");
+      return "";
+    }
     return result.toString();
   }
 
