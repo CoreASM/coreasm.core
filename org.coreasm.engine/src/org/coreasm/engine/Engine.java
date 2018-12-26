@@ -100,10 +100,10 @@ public class Engine implements ControlAPI {
 	private volatile EngineMode engineMode = EngineMode.emIdle;
 
 	/** A flag which is on while engine is busy */
-	private volatile boolean engineBusy = true;
+	private volatile boolean engineBusy = false;
 
 	private final Lock isBusyLock = new ReentrantLock();
-	private final Condition isNotBusy = isBusyLock.newCondition();
+	private final Condition isBusyChange = isBusyLock.newCondition();
 
 	/** Cache of EngineMode events */
 	private final Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
@@ -211,42 +211,28 @@ public class Engine implements ControlAPI {
 		}
 	}
 
-	private void addCommand(EngineCommand command) {
-		isBusyLock.lock();
-		try {
-			// set engine busy here, as the EngineThread could set it only after removing this command,
-			// which would leave a short time in which `isBusy` would erroneously report `false`,
-			// as the queue might be empty before the EngineThread would've set engineBusy = true;
-			engineBusy = true;
-			commandQueue.add(command);
-		}
-		finally {
-			isBusyLock.unlock();
-		}
-	}
-
 	@Override
 	public void initialize() {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecInit,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecInit,
 				null));
 	}
 
 	@Override
 	public void terminate() {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecTerminate,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecTerminate,
 				null));
 	}
 
 	@Override
 	public void recover() {
 		if (getEngineMode() == EngineMode.emError)
-			addCommand(new EngineCommand(EngineCommand.CmdType.ecRecover,
+			commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecRecover,
 					null));
 	}
 
 	@Override
 	public void loadSpecification(String specFileName) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
 				specFileName));
 	}
 
@@ -257,13 +243,13 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void loadSpecification(String name, Reader src) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
 				new NamedStringReader(name, src)));
 	}
 
 	@Override
 	public void parseSpecification(String specFileName) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
 				specFileName));
 	}
 
@@ -274,7 +260,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecification(String name, Reader src) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
 				new NamedStringReader(name, src)));
 	}
 
@@ -298,7 +284,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecificationHeader(String specFileName, boolean loadPlugins) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
 				new ParseCommandData(loadPlugins, specFileName)));
 	}
 
@@ -309,7 +295,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecificationHeader(String name, Reader src, boolean loadPlugins) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
 				new ParseCommandData(loadPlugins, new NamedStringReader(name, src))));
 	}
 
@@ -465,13 +451,13 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void step() {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecStep,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecStep,
 				null));
 	}
 
 	@Override
 	public void run(int i) {
-		addCommand(new EngineCommand(EngineCommand.CmdType.ecRun,
+		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecRun,
 				new Integer(i)));
 	}
 
@@ -744,23 +730,29 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void waitWhileBusy() {
-		isBusyLock.lock();
-		try {
-			if (isBusy()) {
-				isNotBusy.await();
+		while (isBusy()) {
+			isBusyLock.lock();
+			try {
+				isBusyChange.await();
 			}
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		finally {
-			isBusyLock.unlock();
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			finally {
+				isBusyLock.unlock();
+			}
 		}
 	}
 
 	@Override
 	public boolean isBusy() {
-		return (engineMode != EngineMode.emTerminated) && (engineBusy || !commandQueue.isEmpty());
+		isBusyLock.lock();
+		try {
+			return (engineMode != EngineMode.emTerminated) && (engineBusy || !commandQueue.isEmpty());
+		}
+		finally {
+			isBusyLock.unlock();
+		}
 	}
 
 	/**
@@ -800,9 +792,17 @@ public class Engine implements ControlAPI {
 		@Override
 		public void run() {
 			try {
-				while (!terminating) {
-					assert engineBusy;
+				isBusyLock.lock();
+				try {
+					engineBusy = true;
+					isBusyChange.signalAll();
+				}
+				finally {
+					isBusyLock.unlock();
+				}
 
+
+				while (!terminating) {
 					try {
 						EngineMode engineMode = getEngineMode();
 
@@ -813,12 +813,29 @@ public class Engine implements ControlAPI {
 							next(EngineMode.emError);
 						}
 
+						// if engine mode is idle and there is no user command,
+						// sleep for a short time
+						if ((engineMode == EngineMode.emIdle && commandQueue.isEmpty())
+									|| engineMode == EngineMode.emError)
+							Thread.yield();
+
 						engineMode = getEngineMode();
 
 						switch (engineMode) {
 
 						case emIdle:
-							processNextCommand();
+							// Synchronize this with isBusy to avoid isBusy from returning false while the engine actually is busy
+							// What happens is that engineBusy is read as false right before it is set to true and commandQueue.isEmpty()
+							// is checked right after removing the command from the queue. In that case isBusy returns false.
+							isBusyLock.lock();
+							try {
+								processNextCommand();
+								engineBusy = (getEngineMode() != EngineMode.emIdle);
+								isBusyChange.signalAll();
+							}
+							finally {
+								isBusyLock.unlock();
+							}
 							break;
 
 						case emInitKernel:
@@ -1007,7 +1024,7 @@ public class Engine implements ControlAPI {
 								}
 
 								engineBusy = false;
-								isNotBusy.signalAll();
+								isBusyChange.signalAll();
 							}
 							finally {
 								isBusyLock.unlock();
@@ -1052,7 +1069,7 @@ public class Engine implements ControlAPI {
 				commandQueue.clear();
 
 				engineBusy = false;
-				isNotBusy.signalAll();
+				isBusyChange.signalAll();
 			}
 			finally {
 				isBusyLock.unlock();
@@ -1068,8 +1085,19 @@ public class Engine implements ControlAPI {
 		 *            new mode of the engine
 		 */
 		private void next(EngineMode newMode) throws EngineException {
-			final EngineMode oldMode = engineMode;
-			engineMode = newMode;
+			EngineMode oldMode;
+
+			isBusyLock.lock();
+			try {
+				oldMode = engineMode;
+				engineMode = newMode;
+
+				engineBusy = true;
+				isBusyChange.signalAll();
+			}
+			finally {
+				isBusyLock.unlock();
+			}
 
 			Map<EngineMode, EngineModeEvent> map = null;
 			EngineModeEvent event = null;
@@ -1100,13 +1128,17 @@ public class Engine implements ControlAPI {
 
 		/**
 		 * If more steps needs to be performed, fakes a new step command;
-		 * otherwise it blocks for the next command from the command queue and
+		 * otherwise it fetches another command from the command queue and
 		 * switches the engine mode based on that command. It uses
 		 * <code>next(EngineMode)</code> to change the engine mode.
 		 *
 		 * @see #next(EngineMode)
 		 */
-		private void processNextCommand() throws EngineException, InterruptedException {
+		private void processNextCommand() throws EngineException {
+			// This is here to avoid leaving the engine in
+			// a state that is right before changing its
+			// state
+			boolean shouldRemoveFirstCommand = false;
 			EngineCommand cmd;
 			int rrc = remainingRunCount.getAndDecrement();
 			String tempMsg = null;
@@ -1114,27 +1146,16 @@ public class Engine implements ControlAPI {
 			if (rrc > 0)
 				cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
 			else {
-				isBusyLock.lock();
-				try {
-					if (commandQueue.isEmpty()) {
-						// we will block until something is put into the commandQueue,
-						// which means we are not busy. Before something is put into the queue
-						// engineBusy must be set to `true`
-						engineBusy = false;
-						isNotBusy.signalAll();
-					}
+				cmd = commandQueue.peek();
+				if (cmd != null) {
+					shouldRemoveFirstCommand = true;
 				}
-				finally {
-					isBusyLock.unlock();
-				}
-
-				// blocking wait for the next command
-				cmd = commandQueue.take();
 			}
 
-			assert engineBusy;
-
-			lastCommand = cmd;
+			if (cmd == null)
+				return;
+			else
+				lastCommand = cmd;
 
 			switch (cmd.type) {
 
@@ -1198,6 +1219,10 @@ public class Engine implements ControlAPI {
 				break;
 			case ecRecover:
 			break;
+			}
+
+			if (shouldRemoveFirstCommand) {
+				commandQueue.poll();
 			}
 		}
 	}
