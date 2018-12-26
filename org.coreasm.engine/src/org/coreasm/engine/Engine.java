@@ -15,17 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 
 import org.coreasm.engine.absstorage.AbstractStorage;
 import org.coreasm.engine.absstorage.Element;
@@ -57,6 +48,12 @@ import org.coreasm.engine.scheduler.SchedulerImp;
 import org.coreasm.util.Tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class provides the actual implementation of a CoreASM engine. It
@@ -103,7 +100,10 @@ public class Engine implements ControlAPI {
 	private volatile EngineMode engineMode = EngineMode.emIdle;
 
 	/** A flag which is on while engine is busy */
-	private volatile boolean engineBusy = false;
+	private volatile boolean engineBusy = true;
+
+	private final Lock isBusyLock = new ReentrantLock();
+	private final Condition isNotBusy = isBusyLock.newCondition();
 
 	/** Cache of EngineMode events */
 	private final Map<EngineMode, Map<EngineMode, EngineModeEvent>> modeEventCache;
@@ -112,8 +112,7 @@ public class Engine implements ControlAPI {
 	private Map<String, Set<ServiceProvider>> serviceRegistry;
 
 	/** User command queue */
-//	private Queue<EngineCommand> commandQueue;
-	private final CommandQueue commandQueue;
+	private final LinkedBlockingQueue<EngineCommand> commandQueue;
 
 	/** Properties of the engine */
 	private EngineProperties properties;
@@ -125,7 +124,7 @@ public class Engine implements ControlAPI {
 	private final LinkedList<InterpreterListener> interpreterListeners;
 
 	/** Remaining steps of the current run */
-	private int remainingRunCount = 0;
+	private AtomicInteger remainingRunCount = new AtomicInteger(0);
 
 	/** Last error occurred in the engine */
 	private volatile CoreASMError lastError = null;
@@ -162,7 +161,7 @@ public class Engine implements ControlAPI {
 		engineThread = new EngineThread(name);
 
 		// initializing objects
-		commandQueue = new CommandQueue();
+		commandQueue = new LinkedBlockingQueue<>();
 		//allPlugins = new HashMap<String, Plugin>();
 		//loadedPlugins = new PluginDB();
 		pluginLoader = new PluginManager(this);
@@ -212,28 +211,42 @@ public class Engine implements ControlAPI {
 		}
 	}
 
+	private void addCommand(EngineCommand command) {
+		isBusyLock.lock();
+		try {
+			// set engine busy here, as the EngineThread could set it only after removing this command,
+			// which would leave a short time in which `isBusy` would erroneously report `false`,
+			// as the queue might be empty before the EngineThread would've set engineBusy = true;
+			engineBusy = true;
+			commandQueue.add(command);
+		}
+		finally {
+			isBusyLock.unlock();
+		}
+	}
+
 	@Override
 	public void initialize() {
-		commandQueue
-				.add(new EngineCommand(EngineCommand.CmdType.ecInit, null));
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecInit,
+				null));
 	}
 
 	@Override
 	public void terminate() {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecTerminate,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecTerminate,
 				null));
 	}
 
 	@Override
 	public void recover() {
 		if (getEngineMode() == EngineMode.emError)
-			commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecRecover,
+			addCommand(new EngineCommand(EngineCommand.CmdType.ecRecover,
 					null));
 	}
 
 	@Override
 	public void loadSpecification(String specFileName) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
 				specFileName));
 	}
 
@@ -244,13 +257,13 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void loadSpecification(String name, Reader src) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecLoadSpec,
 				new NamedStringReader(name, src)));
 	}
 
 	@Override
 	public void parseSpecification(String specFileName) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
 				specFileName));
 	}
 
@@ -261,7 +274,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecification(String name, Reader src) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseSpec,
 				new NamedStringReader(name, src)));
 	}
 
@@ -285,7 +298,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecificationHeader(String specFileName, boolean loadPlugins) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
 				new ParseCommandData(loadPlugins, specFileName)));
 	}
 
@@ -296,7 +309,7 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void parseSpecificationHeader(String name, Reader src, boolean loadPlugins) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecOnlyParseHeader,
 				new ParseCommandData(loadPlugins, new NamedStringReader(name, src))));
 	}
 
@@ -447,20 +460,18 @@ public class Engine implements ControlAPI {
 
 	@Override
 	public void softInterrupt() {
-		synchronized (engineThread) {
-			remainingRunCount = 0;
-		}
+		remainingRunCount.set(0);
 	}
 
 	@Override
 	public void step() {
-		commandQueue
-				.add(new EngineCommand(EngineCommand.CmdType.ecStep, null));
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecStep,
+				null));
 	}
 
 	@Override
 	public void run(int i) {
-		commandQueue.add(new EngineCommand(EngineCommand.CmdType.ecRun,
+		addCommand(new EngineCommand(EngineCommand.CmdType.ecRun,
 				new Integer(i)));
 	}
 
@@ -732,19 +743,23 @@ public class Engine implements ControlAPI {
 	}
 
 	@Override
-	@Deprecated
-	public void waitForIdleOrError() {
-		waitWhileBusy();
-	}
-
-	@Override
 	public void waitWhileBusy() {
-		while (isBusy())
-			Thread.yield();
+		isBusyLock.lock();
+		try {
+			if (isBusy()) {
+				isNotBusy.await();
+			}
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		finally {
+			isBusyLock.unlock();
+		}
 	}
 
 	@Override
-	public synchronized boolean isBusy() {
+	public boolean isBusy() {
 		return (engineMode != EngineMode.emTerminated) && (engineBusy || !commandQueue.isEmpty());
 	}
 
@@ -785,9 +800,9 @@ public class Engine implements ControlAPI {
 		@Override
 		public void run() {
 			try {
-				engineBusy = true;
-
 				while (!terminating) {
+					assert engineBusy;
+
 					try {
 						EngineMode engineMode = getEngineMode();
 
@@ -798,24 +813,12 @@ public class Engine implements ControlAPI {
 							next(EngineMode.emError);
 						}
 
-						// if engine mode is idle and there is no user command,
-						// sleep for a short time
-						if ((engineMode == EngineMode.emIdle && commandQueue.isEmpty())
-									|| engineMode == EngineMode.emError)
-							Thread.yield();
-
 						engineMode = getEngineMode();
 
 						switch (engineMode) {
 
 						case emIdle:
-							// Synchronize this with isBusy to avoid isBusy from returning false while the engine actually is busy
-							// What happens is that engineBusy is read as false right before it is set to true and commandQueue.isEmpty()
-							// is checked right after removing the command from the queue. In that case isBusy returns false.
-							synchronized (Engine.this) {
-								processNextCommand();
-								engineBusy = (getEngineMode() != EngineMode.emIdle);
-							}
+							processNextCommand();
 							break;
 
 						case emInitKernel:
@@ -984,17 +987,17 @@ public class Engine implements ControlAPI {
 							*/
 
 						case emError:
-							// Throw out all commands except a recovery command
-							while (!commandQueue.isEmpty()) {
-								EngineCommand cmd = commandQueue.remove(0);
-								if (cmd != null) {
+							isBusyLock.lock();
+							try {
+								// Throw out all commands except a recovery command
+								EngineCommand cmd;
+								while ((cmd = commandQueue.poll()) != null) {
 									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
 										next(EngineMode.emTerminating);
 										lastError = null;
 										logger.debug("Engine terminated by user command.");
 										break;
-									}
-									else if (cmd.type == EngineCommand.CmdType.ecRecover) {
+									} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
 										// Recover by going to the idle mode
 										next(EngineMode.emIdle);
 										lastError = null;
@@ -1002,8 +1005,13 @@ public class Engine implements ControlAPI {
 										break;
 									}
 								}
+
+								engineBusy = false;
+								isNotBusy.signalAll();
 							}
-							engineBusy = false;
+							finally {
+								isBusyLock.unlock();
+							}
 						case emTerminated:
 						break;
 						default:
@@ -1012,13 +1020,13 @@ public class Engine implements ControlAPI {
 						}
 					} catch (CoreASMError ce) {
 						error(ce);
-						logger.error( "Error occured: {}", ce.showError());
+						logger.error( "Error occurred: {}", ce.showError());
 					} catch (Throwable e) {
 						if (e instanceof ParserException)
 							error(new CoreASMError((ParserException)e));
 						else
 							error(e);
-						logger.error("Exception occured. ", e);
+						logger.error("Exception occurred. ", e);
 						// StackTraceElement[] trace = e.getStackTrace();
 						// for (StackTraceElement ste: trace)
 						//   logger.error( ste.toString());
@@ -1034,15 +1042,22 @@ public class Engine implements ControlAPI {
 				for (Plugin p: pluginLoader.getPlugins())
 					p.terminate();
 
-				// empty command queue
-				commandQueue.clear();
-
-
 			} catch (Error e) {
 				e.printStackTrace();
 			}
 
-			engineBusy = false;
+			isBusyLock.lock();
+			try {
+				// empty command queue
+				commandQueue.clear();
+
+				engineBusy = false;
+				isNotBusy.signalAll();
+			}
+			finally {
+				isBusyLock.unlock();
+			}
+
 			System.gc();
 		}
 
@@ -1053,14 +1068,8 @@ public class Engine implements ControlAPI {
 		 *            new mode of the engine
 		 */
 		private void next(EngineMode newMode) throws EngineException {
-			engineBusy = true;
-
-			EngineMode oldMode = null;
-
-			synchronized (engineMode) {
-				oldMode = engineMode;
-				engineMode = newMode;
-			}
+			final EngineMode oldMode = engineMode;
+			engineMode = newMode;
 
 			Map<EngineMode, EngineModeEvent> map = null;
 			EngineModeEvent event = null;
@@ -1091,103 +1100,104 @@ public class Engine implements ControlAPI {
 
 		/**
 		 * If more steps needs to be performed, fakes a new step command;
-		 * otherwise it fetches another command from the command queue and
+		 * otherwise it blocks for the next command from the command queue and
 		 * switches the engine mode based on that command. It uses
 		 * <code>next(EngineMode)</code> to change the engine mode.
 		 *
 		 * @see #next(EngineMode)
 		 */
-		private void processNextCommand() throws EngineException {
-			// This is here to avoid leaving the engine in
-			// a state that is right before changing its
-			// state
-			boolean shouldRemoveFirstCommand = false;
-			synchronized (engineMode) {
-				EngineCommand cmd = null;
-				int rrc = 0;
-				String tempMsg = null;
+		private void processNextCommand() throws EngineException, InterruptedException {
+			EngineCommand cmd;
+			int rrc = remainingRunCount.getAndDecrement();
+			String tempMsg = null;
 
-				synchronized (this) {
-					rrc = remainingRunCount--;
-				}
-				if (rrc > 0)
-					cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
-				else if (!commandQueue.isEmpty()) {
-					cmd = commandQueue.get(0);
-					shouldRemoveFirstCommand = true;
-				}
-
-				if (cmd == null)
-					return;
-				else
-					lastCommand = cmd;
-
-				switch (cmd.type) {
-
-				case ecTerminate:
-					next(EngineMode.emTerminating);
-					break;
-
-				case ecInit:
-					next(EngineMode.emInitKernel);
-					break;
-
-				case ecLoadSpec:
-					tempMsg = "Loading specification file";
-				case ecOnlyParseSpec:
-					tempMsg = "Parsing specification file";
-				case ecOnlyParseHeader:
-					tempMsg = "Parsing the header of the specification file";
-					ParseCommandData cmdData = null;
-					if (cmd.metaData instanceof ParseCommandData)
-						cmdData = (ParseCommandData)cmd.metaData;
-					else {
-						cmdData = new ParseCommandData(true, cmd.metaData);
+			if (rrc > 0)
+				cmd = new EngineCommand(EngineCommand.CmdType.ecStep, null);
+			else {
+				isBusyLock.lock();
+				try {
+					if (commandQueue.isEmpty()) {
+						// we will block until something is put into the commandQueue,
+						// which means we are not busy. Before something is put into the queue
+						// engineBusy must be set to `true`
+						engineBusy = false;
+						isNotBusy.signalAll();
 					}
-					if (cmdData.specInfo instanceof String) {
+				}
+				finally {
+					isBusyLock.unlock();
+				}
+
+				// blocking wait for the next command
+				cmd = commandQueue.take();
+			}
+
+			assert engineBusy;
+
+			lastCommand = cmd;
+
+			switch (cmd.type) {
+
+			case ecTerminate:
+				next(EngineMode.emTerminating);
+				break;
+
+			case ecInit:
+				next(EngineMode.emInitKernel);
+				break;
+
+			case ecLoadSpec:
+				tempMsg = "Loading specification file";
+			case ecOnlyParseSpec:
+				tempMsg = "Parsing specification file";
+			case ecOnlyParseHeader:
+				tempMsg = "Parsing the header of the specification file";
+				ParseCommandData cmdData = null;
+				if (cmd.metaData instanceof ParseCommandData)
+					cmdData = (ParseCommandData)cmd.metaData;
+				else {
+					cmdData = new ParseCommandData(true, cmd.metaData);
+				}
+				if (cmdData.specInfo instanceof String) {
+					try {
+						specification = new Specification(Engine.this, new File((String)cmdData.specInfo));
+						parser.setSpecification(specification);
+						logger.debug("{}: {}", tempMsg, cmdData.specInfo);
+						next(EngineMode.emParsingHeader);
+					} catch (FileNotFoundException e) {
+						error("Specification file is not found (" + cmdData.specInfo + ")\n. Nothing is loaded.");
+					} catch (IOException e) {
+						error("Specification file cannot be read from (" + cmdData.specInfo + ")\n. Nothing is loaded.");
+					}
+				} else
+					if (cmdData.specInfo instanceof NamedStringReader) {
+						final NamedStringReader nsrData = (NamedStringReader)cmdData.specInfo;
 						try {
-							specification = new Specification(Engine.this, new File((String)cmdData.specInfo));
+							specification = new Specification(Engine.this, nsrData.reader, nsrData.fileName);
 							parser.setSpecification(specification);
-							logger.debug("{}: {}", tempMsg, cmdData.specInfo);
+							logger.debug("{}.", tempMsg);
 							next(EngineMode.emParsingHeader);
-						} catch (FileNotFoundException e) {
-							error("Specification file is not found (" + cmdData.specInfo + ")\n. Nothing is loaded.");
 						} catch (IOException e) {
-							error("Specification file cannot be read from (" + cmdData.specInfo + ")\n. Nothing is loaded.");
+							error("Specification file cannot be read from (" + nsrData.fileName + ")\n. Nothing is loaded.");
 						}
 					} else
-						if (cmdData.specInfo instanceof NamedStringReader) {
-							final NamedStringReader nsrData = (NamedStringReader)cmdData.specInfo;
-							try {
-								specification = new Specification(Engine.this, nsrData.reader, nsrData.fileName);
-								parser.setSpecification(specification);
-								logger.debug("{}.", tempMsg);
-								next(EngineMode.emParsingHeader);
-							} catch (IOException e) {
-								error("Specification file cannot be read from (" + nsrData.fileName + ")\n. Nothing is loaded.");
-							}
-						} else
-							error("The specification passed to the engine is invalid.");
-					break;
-
-				case ecStep:
-					next(EngineMode.emStartingStep);
-					break;
-
-				case ecRun:
-					if (cmd.metaData instanceof Integer) {
-						int i = ((Integer) cmd.metaData).intValue();
-						if (i > 0)
-							synchronized (this) {
-								remainingRunCount = i;
-							}
-					}
-					break;
-				case ecRecover:
+						error("The specification passed to the engine is invalid.");
 				break;
+
+			case ecStep:
+				next(EngineMode.emStartingStep);
+				break;
+
+			case ecRun:
+				if (cmd.metaData instanceof Integer) {
+					int i = ((Integer) cmd.metaData).intValue();
+					if (i > 0) {
+						remainingRunCount.set(i);
+					}
 				}
-				if (shouldRemoveFirstCommand)
-					commandQueue.remove(0);
+				break;
+			case ecRecover:
+			break;
 			}
 		}
 	}
@@ -1342,68 +1352,6 @@ class EngineCommand {
 	public EngineCommand(CmdType type, Object metaData) {
 		this.type = type;
 		this.metaData = metaData;
-	}
-
-}
-
-/**
- * An array list with synchronized methods.
- *
- * @author Roozbeh Farahbod
- *
- */
-class CommandQueue extends ArrayList<EngineCommand> {
-
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public synchronized boolean add(EngineCommand e) {
-		return super.add(e);
-	}
-
-	@Override
-	public synchronized void add(int index, EngineCommand element) {
-		super.add(index, element);
-	}
-
-	@Override
-	public synchronized void clear() {
-		super.clear();
-	}
-
-	@Override
-	public synchronized boolean contains(Object o) {
-		return super.contains(o);
-	}
-
-	@Override
-	public synchronized EngineCommand get(int index) {
-		return super.get(index);
-	}
-
-	@Override
-	public synchronized boolean isEmpty() {
-		return super.isEmpty();
-	}
-
-	@Override
-	public synchronized EngineCommand remove(int index) {
-		return super.remove(index);
-	}
-
-	@Override
-	public synchronized boolean remove(Object o) {
-		return super.remove(o);
-	}
-
-	@Override
-	public synchronized int size() {
-		return super.size();
-	}
-
-	@Override
-	public synchronized String toString() {
-		return super.toString();
 	}
 
 }

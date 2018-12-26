@@ -1,6 +1,5 @@
 package org.coreasm.engine;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,9 +14,9 @@ import org.coreasm.util.CoreASMGlobal;
 import org.coreasm.util.Logger;
 import org.coreasm.util.Tools;
 
-public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErrorObserver {
+public class TestEngineDriver implements EngineStepObserver, EngineErrorObserver {
 
-	protected static List<TestEngineDriver> runningInstances = null;
+	protected static List<TestEngineDriver> runningInstances = new LinkedList<>();
 
 	protected Engine engine;
 
@@ -25,27 +24,22 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		stopped, running, paused
 	};
 
-	private TestEngineDriverStatus status = TestEngineDriverStatus.running;
+	private TestEngineDriverStatus status = TestEngineDriverStatus.paused;
 
 	private boolean updateFailed;
 	protected CoreASMError lastError;
-	private int stepsLimit;
+	private Exception exception = null;
+
 	private boolean stopOnEmptyUpdates;
 	private boolean stopOnStableUpdates;
 	private boolean stopOnEmptyActiveAgents;
 	private boolean stopOnFailedUpdates;
-	
-	private volatile boolean shouldStop;
-	private volatile boolean shouldPause;
 
 	private TestEngineDriver(String pluginFolders) {
-		if (runningInstances == null)
-			runningInstances = new LinkedList<TestEngineDriver>();
 		runningInstances.add(this);
 		CoreASMGlobal.setRootFolder(Tools.getRootFolder());
 		engine = (Engine) org.coreasm.engine.CoreASMEngineFactory.createEngine();
 		engine.addObserver(this);
-		shouldStop = false;
 
 		if (System.getProperty(EngineProperties.PLUGIN_FOLDERS_PROPERTY) != null)
 			pluginFolders += EngineProperties.PLUGIN_FOLDERS_DELIM
@@ -76,7 +70,6 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		stopOnStableUpdates = false;
 		stopOnEmptyActiveAgents = true;
 		stopOnFailedUpdates = false;
-		stepsLimit = -1; //means infinite steps
 	}
 
 	public Engine getEngine() {
@@ -94,17 +87,7 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 		return td;
 	}
 
-	public void dolaunch(String abspathname) {
-		Thread t = new Thread(this);
-
-		try {
-			t.setName("CoreASM run of " +
-					abspathname.substring(abspathname.lastIndexOf(File.separator)));
-		}
-		catch (Throwable e) {
-			t.setName("CoreASM run of " + abspathname);
-		}
-
+	private void dolaunch(String abspathname) {
 		if (engine.getEngineMode() == EngineMode.emError) {
 			engine.recover();
 			engine.waitWhileBusy();
@@ -112,15 +95,13 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 
 		engine.loadSpecification(abspathname);
 		engine.waitWhileBusy();
-
-		t.start();
 	}
 
-	@Override
-	public void run()
+	private void executeStepsImpl(int stepsLimit)
 	{
 		int step = 0;
-		Exception exception = null;
+
+		boolean doShutdown = false;
 
 		Set<Update> updates, prevupdates = null;
 
@@ -132,81 +113,65 @@ public class TestEngineDriver implements Runnable, EngineStepObserver, EngineErr
 			}
 
 			while (engine.getEngineMode() == EngineMode.emIdle) {
+				status = TestEngineDriverStatus.running;
 
-				//set current mode
-				if (shouldStop) {
-					engine.waitWhileBusy();
+				//execute a step
+				engine.waitWhileBusy();
+				engine.step();
+				step++;
+				engine.waitWhileBusy();
+
+				updates = engine.getUpdateSet(0);
+				if (terminated(updates, prevupdates)) {
+					doShutdown = true;
 					break;
 				}
-				else if (shouldPause) {
-					status = TestEngineDriverStatus.paused;
-					Thread.sleep(1);
+				prevupdates = updates;
+				if (step == stepsLimit) {
+					break;
 				}
-				else
-				{
-					status = TestEngineDriverStatus.running;
-
-					//execute a step
-					engine.waitWhileBusy();
-					engine.step();
-					step++;
-					engine.waitWhileBusy();
-
-					updates = engine.getUpdateSet(0);
-					if (terminated(updates, prevupdates))
-						break;
-					prevupdates = updates;
-					if (step == stepsLimit) {
-						step = 0;
-						shouldPause = true;
-					}
-				}
-
 			}
+
 			if (engine.getEngineMode() != EngineMode.emIdle)
 				handleError();
 		}
 		catch (Exception e) {
+			doShutdown = true;
 			exception = e;
 			e.printStackTrace();
 		}
 		finally {
-			if (runningInstances != null && runningInstances.contains(this)) {
-				runningInstances.remove(this);
-				this.engine.removeObserver(this);
-
-				if (exception != null)
-					System.err.println("[!] Run is terminated with exception " + exception);
-
-				this.engine.terminate();
-				this.engine.hardInterrupt();
-				
-				engine.waitWhileBusy();
-
-				status = TestEngineDriverStatus.stopped;
+			if (doShutdown) {
+				stop();
+			}
+			else {
+				status = TestEngineDriverStatus.paused;
 			}
 		}
 	}
 
-	public void resume() {
-		if (stepsLimit == 0)
-			stepsLimit = -1;
-		shouldPause = false;
-		while (getStatus() != TestEngineDriverStatus.running)
-			Thread.yield();
-	}
-
 	public void stop() {
-		shouldStop = true;
-		while (getStatus() != TestEngineDriverStatus.stopped)
-			Thread.yield();
+		if (runningInstances.contains(this)) {
+			runningInstances.remove(this);
+			this.engine.removeObserver(this);
+
+			if (exception != null)
+				System.err.println("[!] Run is terminated with exception " + exception);
+
+			this.engine.terminate();
+			this.engine.hardInterrupt();
+
+			engine.waitWhileBusy();
+
+			status = TestEngineDriverStatus.stopped;
+		}
 	}
 
 	public void executeSteps(int numberOfSteps) {
-		stepsLimit = numberOfSteps;
-		resume();
-		while (getStatus() == TestEngineDriverStatus.running)
-			Thread.yield();
+		if (numberOfSteps == 0)
+			numberOfSteps = -1; //means infinite steps
+
+		executeStepsImpl(numberOfSteps);
 	}
 
 

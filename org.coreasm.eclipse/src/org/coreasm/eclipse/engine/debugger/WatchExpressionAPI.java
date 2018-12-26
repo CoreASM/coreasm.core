@@ -290,11 +290,6 @@ public class WatchExpressionAPI implements ControlAPI {
 	}
 
 	@Override
-	@Deprecated
-	public void waitForIdleOrError() {
-	}
-
-	@Override
 	public void waitWhileBusy() {
 	}
 
