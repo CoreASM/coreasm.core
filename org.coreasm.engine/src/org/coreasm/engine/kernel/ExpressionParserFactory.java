@@ -9,10 +9,15 @@
 
 package org.coreasm.engine.kernel;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.codehaus.jparsec.OperatorTable;
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.functors.Binary;
@@ -172,21 +177,24 @@ public class ExpressionParserFactory {
 		for (String opr: infixLeftOprs.keySet()) {
 			pluginNames = infixLeftPlugins.get(opr);
 			precedence = infixLeftOprs.get(opr);
-			table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+      table.infixl(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+			//table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
 		}
 
 		// Infix Non-associative
 		for (String opr: infixNonOprs.keySet()) {
 			pluginNames = infixNonPlugins.get(opr);
 			precedence = infixNonOprs.get(opr);
-			table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence);
+      table.infixn(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+			//table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence);
 		}
 
 		// Infix Right-associative
 		for (String opr: infixRightOprs.keySet()) {
 			pluginNames = infixRightPlugins.get(opr);
 			precedence = infixRightOprs.get(opr);
-			table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
+      table.infixr(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+			//table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
 		}
 		
 		// Prefix
@@ -234,13 +242,24 @@ public class ExpressionParserFactory {
 
 		return table.build(p);
 	}
+
+  private Parser<BinaryMap> createInfixHoleParser(String opr, String pluginNames, OpType type) {
+	  List<Parser<List<Node>>> o = Arrays.stream(opr.split("_"))
+        .map(s -> ParserTools.seqList(ParserTools.getOprParser(s), termParser))
+        .collect(Collectors.toList());
+	  o.set(o.size() - 1, ParserTools.getOprParser(opr.split("_")[o.size() - 1]).map(Collections::singletonList));
+    final Parser<Stream<Node>> tempParser = ParserTools.seqList(o)
+        .map(ls -> ls.stream().flatMap(Collection::stream));
+    //final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());
+    return tempParser.peek().followedBy(tempParser).map(new BinaryParseMap(opr, pluginNames, type));
+  }
 	
 	/* 
 	 * Creates a new binary parser.
 	 */
 	private Parser<BinaryMap> createBinaryParser(String opr, String pluginNames, OpType type) {
 		final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());
-		return ParserTools.seq(tempParser.peek(), tempParser).map(
+		return tempParser.peek().followedBy(tempParser).map(Stream::of).map(
 				new BinaryParseMap(opr, pluginNames, type));
 		// without lookahead:
 		// return parserTools.seq(parserTools.getOprParser(opr), optionalDelimiter).map(
@@ -443,7 +462,7 @@ public class ExpressionParserFactory {
 		
 		//private String pluginNames;
 		private String opr;
-		private Object[] cnodes;
+		private Stream<Node> cnodes;
 		//private OpType type;
 		
 		/**
@@ -454,11 +473,10 @@ public class ExpressionParserFactory {
 		 * @param type operator type
 		 * @param cnodes an array of operator and delimiter nodes (without the operands) 
 		 */
-		public BinaryMap(String opr, String pluginNames, OpType type, Object[] cnodes) {
+		public BinaryMap(String opr, String pluginNames, OpType type, Stream<Node> cnodes) {
 			this.opr = opr;
 			//this.pluginNames = pluginNames;
 			//this.type = type;
-			//this.cnodes = (Object[])cnodes[1];
 			this.cnodes = cnodes;
 		}
 
@@ -467,20 +485,17 @@ public class ExpressionParserFactory {
 		 */
 		public Node map(Node o1, Node o2) {
 			Node node = new ASTNode(
-					null, ASTNode.BINARY_OPERATOR_CLASS, "", ((Node)cnodes[1]).getToken(), o1.getScannerInfo());
+					null, ASTNode.BINARY_OPERATOR_CLASS, "", opr, o1.getScannerInfo());
 			node.addChild(o1);
-			node.addChild(new Node(null, opr, o1.getScannerInfo()));
-//			if (cnodes[1] != null)
-//				node.addChild((Node)cnodes[1]);
-			node.addChild(o2);
-			//FIXME INFIX_RIGHT and INFIX_NON are skipped for now
+			cnodes.forEach(c -> node.addChild((Node) c));
+      node.addChild(o2);
 			return node;
 		}
 
 	}
 	
 	/* Binary parse map class for binary operators */
-	public static class BinaryParseMap extends ParseMap<Object[], BinaryMap> {
+	public static class BinaryParseMap extends ParseMap<Stream<Node>, BinaryMap> {
 
 		private String opr;
 		private OpType type;
@@ -491,7 +506,7 @@ public class ExpressionParserFactory {
 			this.type = type;
 		}
 
-		public BinaryMap map(Object[] v) {
+		public BinaryMap map(Stream<Node> v) {
 			return new BinaryMap(opr, pluginName, type, v);
 		}
 		

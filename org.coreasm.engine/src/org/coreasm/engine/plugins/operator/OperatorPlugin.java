@@ -501,9 +501,9 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     switch (opNode.getGrammarClass()) {
       case ASTNode.BINARY_OPERATOR_CLASS:
         f = Fixity.INFIX;
-        args = new ASTNode[2];
+        args = new ASTNode[opNode.getToken().split("_").length + 1];
         args[0] = opNode.getFirst();
-        args[1] = args[0].getNext();
+        for (int i = 1; i < args.length; ++i) args[i] = args[i - 1].getNext();
         break;
       case ASTNode.UNARY_OPERATOR_CLASS:
         if (opNode.unparseTree().startsWith(opNode.getToken())) {
@@ -753,7 +753,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    */
   @Override
   public String[] getOperators() {
-    return opStore.keySet().stream().flatMap(k -> Arrays.stream(k.operatorSymbols))
+    return opStore.keySet().stream().flatMap(k -> Arrays.stream(k.operatorSymbols)).flatMap(o -> Arrays.stream(o.split("_")))
         .toArray(String[]::new);
   }
 

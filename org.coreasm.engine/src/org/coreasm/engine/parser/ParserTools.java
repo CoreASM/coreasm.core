@@ -1,5 +1,6 @@
 package org.coreasm.engine.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -341,7 +342,42 @@ public class ParserTools
 		
 	}
 
+  /**
+   * Returns a parser that is a sequence of the given parsers.
+   * The resulting parser will return a list of Objects.
+   * <p>
+   * P: P1 ... Pn
+   *
+   * @param parsers parsers to be sequenced
+   */
+  public <T> Parser<List<T>> seqList(Parser<? extends T>...parsers) {
+    return seqList("parser", Arrays.asList(parsers));
+  }
 
+  /**
+   * Returns a parser that is a sequence of the given parsers.
+   * The resulting parser will return a list of Objects.
+   * <p>
+   * P: P1 ... Pn
+   *
+   * @param parsers parsers to be sequenced
+   */
+  public <T> Parser<List<T>> seqList(Iterable<? extends Parser<? extends T>> parsers) {
+    return seqList("parser", parsers);
+  }
+
+  /**
+   * Returns a parser that is a sequence of the given parsers.
+   * The resulting parser will return a list of Objects.
+   * <p>
+   * P: P1 ... Pn
+   *
+   * @param name name of the new parser
+   * @param parsers parsers to be sequenced
+   */
+  public <T> Parser<List<T>> seqList(String name, Iterable<? extends Parser<? extends T>> parsers) {
+    return Parsers.list(parsers);
+  }
 	
 	//=======================================================================
 	// KOPIERT VON ParserTools
