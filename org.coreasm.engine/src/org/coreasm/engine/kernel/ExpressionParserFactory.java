@@ -67,7 +67,7 @@ public class ExpressionParserFactory {
   private Map<String, Integer> ternaryOprs = new HashMap<String, Integer>();
   private Map<String, Integer> parenOprs = new HashMap<String, Integer>();
 
-	// operator -> plugins (for convenient)
+	// operator -> plugins (for convenience)
 	private Map<String, String> infixLeftPlugins = new HashMap<String, String>();
 	private Map<String, String> infixRightPlugins = new HashMap<String, String>();
 	private Map<String, String> infixNonPlugins = new HashMap<String, String>();
