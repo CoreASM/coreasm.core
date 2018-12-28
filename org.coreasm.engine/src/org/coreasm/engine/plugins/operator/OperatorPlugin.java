@@ -47,20 +47,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String INFIXR_KEYWORD = "infixr";
   private static final String PREFIX_KEYWORD = "prefix";
   private static final String POSTFIX_KEYWORD = "postfix";
-  private static final String INDEX_KEYWORD = "index";
-  private static final String TERNARY_KEYWORD = "ternary";
-  private static final String PAREN_KEYWORD = "paren";
-  private static final String COMP_KEYWORD = "comp";
-  private static final String GR_COMP = "Comprehension";
-  private static final String GR_COMPRES = "ComprehensionResult";
-  private static final String GR_GEN = "Genartor";
-  private static final String GR_GENLIST = "GenartorList";
-  private static final String GR_ENUMELEM = "EnumerableElement";
 
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>\\d+)\\s+(?<delimiter>#*)\"(?<op>.+)\"\\k<delimiter>"
-          + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\*\\s+[A-z_][A-z_0-9]*)*))?"
+          + "(?<precedence>\\d+)\\s+(?<delimiter>#*)'(?<op>.+)'\\k<delimiter>"
+          + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\s+\\*\\s+[A-z_][A-z_0-9]*)*))?"
           + "\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
 
@@ -215,7 +206,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           if (handleOpDefinition(m.group("fixity"), Integer.valueOf(m.group("precedence")),
               m.group("rule"), m.group("universes"), m.group("op"))) {
             filteredLines.add(new SpecLine("", l.fileName, l.line));
-          } else filteredLines.add(l);
+          } else
+            filteredLines.add(l);
         } else {
           filteredLines.add(l);
         }
@@ -226,7 +218,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
 
   private boolean handleOpDefinition(String fixity, int precedence, String functionName,
       String universes, String opString) {
-    String[] universe = universes != null ? universes.trim().replaceAll("\\s+", OperatorRule.OPERATOR_DELIMITER).split(OperatorRule.OPERATOR_DELIMITER) : new String[0];
+    String[] universe = universes != null ? universes.trim().replaceAll("\\s+", "").split("\\*") : new String[0];
     opString = opString.trim().replaceAll("\\s+", OperatorRule.OPERATOR_DELIMITER);
     String[] operatorSymbols = opString.split(OperatorRule.OPERATOR_DELIMITER);
     switch (fixity) {
