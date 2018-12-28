@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,30 +23,23 @@ import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.CommentRemover;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
-import org.coreasm.engine.plugin.InitializationFailedException;
-import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugins.list.ListElement;
 import org.coreasm.engine.plugins.signature.DerivedFunctionElement;
 
 public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, OperatorProvider,
-    ParserPlugin, InterpreterPlugin {
+    ParserPlugin {
 
   public static final String PLUGIN_NAME = OperatorPlugin.class.getSimpleName();
   private static final String INFIXL_KEYWORD = "infixl";
@@ -65,30 +57,17 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String GR_GENLIST = "GenartorList";
   private static final String GR_ENUMELEM = "EnumerableElement";
 
-  /*private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|comp)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren)\\s+"
-          + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
-          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?\\s+"
-          + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");*/
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren|comp)\\s+"
-          + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
-          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
-          + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
+      "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
+          + "(?<precedence>\\d+)\\s+(?<delimiter>#*)\"(?<op>.+)\"\\k<delimiter>"
+          + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\*\\s+[A-z_][A-z_0-9]*)*))?"
+          + "\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
 
   enum Fixity {
     INFIX,
     PREFIX,
-    POSTFIX,
-    INDEX,
-    TERNARY,
-    PAREN,
-    COMP
+    POSTFIX
   }
 
   enum Associativity {
@@ -100,19 +79,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   static class OperatorKey {
 
     private final Fixity fixity;
-    private final String[] operatorSymbols;
+    private final String operatorSymbols;
 
-    OperatorKey(Fixity fixity, String[] operatorSymbols) {
+    OperatorKey(Fixity fixity, String operatorSymbols) {
       this.fixity = fixity;
       this.operatorSymbols = operatorSymbols;
-    }
-
-    Fixity getFixity() {
-      return fixity;
-    }
-
-    String[] getOperatorSymbols() {
-      return operatorSymbols;
     }
 
     @Override
@@ -126,16 +97,17 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
 
       OperatorKey that = (OperatorKey) o;
 
-      if (getFixity() != that.getFixity()) {
+      if (fixity != that.fixity) {
         return false;
       }
-      return Arrays.equals(getOperatorSymbols(), that.getOperatorSymbols());
+      return operatorSymbols != null ? operatorSymbols.equals(that.operatorSymbols)
+          : that.operatorSymbols == null;
     }
 
     @Override
     public int hashCode() {
-      int result = getFixity() != null ? getFixity().hashCode() : 0;
-      result = 31 * result + Arrays.hashCode(getOperatorSymbols());
+      int result = fixity != null ? fixity.hashCode() : 0;
+      result = 31 * result + (operatorSymbols != null ? operatorSymbols.hashCode() : 0);
       return result;
     }
   }
@@ -169,7 +141,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   }
 
   @Override
-  public void initialize() throws InitializationFailedException {
+  public void initialize() {
     opStore.clear();
   }
 
@@ -178,7 +150,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    */
   @Override
   public VersionInfo getVersionInfo() {
-    return new VersionInfo(0, 0, 1, "alpha");
+    return new VersionInfo(0, 1, 1, "alpha");
   }
 
   /**
@@ -240,28 +212,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       for (SpecLine l : this.capi.getSpec().getLines()) {
         Matcher m = typedOperatorDefinitionGrammar.matcher(cr.append(l.text));
         if (m.matches()) {
-          if (m.group("fixity") != null) {
-            if (!handleOpDefinition(m.group("fixity"), Integer.valueOf(m.group("precedence")),
-                m.group("rule"), m.group("universe"), m.group("universe2"), m.group("universe3"),
-                m.group("op"))) {
-              filteredLines.add(l);
-            }
-          } else if (m.group("fixity2") != null) {
-            //NOTE: op2 being in front of op is NOT a typo, see regex definition.
-            if (!handleOpDefinition(m.group("fixity2"), Integer.valueOf(m.group("precedence2")),
-                m.group("rule"), m.group("universe"), m.group("universe2"), m.group("universe3"),
-                m.group("op2"), m.group("op"))) {
-              filteredLines.add(l);
-            }
-          } else {
-            //NOTE: op3 being in front of op is NOT a typo, see regex definition.
-            if (!handleOpDefinition(m.group("fixity3"), 100, //arbitrary value, not important
-                m.group("rule"), m.group("universe"), m.group("universe2"), m.group("universe3"),
-                m.group("op3"), m.group("op"))) {
-              filteredLines.add(l);
-            }
-          }
-          filteredLines.add(new SpecLine("", l.fileName, l.line));
+          if (handleOpDefinition(m.group("fixity"), Integer.valueOf(m.group("precedence")),
+              m.group("rule"), m.group("universes"), m.group("op"))) {
+            filteredLines.add(new SpecLine("", l.fileName, l.line));
+          } else filteredLines.add(l);
         } else {
           filteredLines.add(l);
         }
@@ -271,134 +225,79 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   }
 
   private boolean handleOpDefinition(String fixity, int precedence, String functionName,
-      String universe, String universe2, String universe3, String... operatorSymbols) {
-    if (functionName != null && COMP_KEYWORD.equals(fixity)) {
-      capi.error("comp operator type does not support a right hand side in the definition.");
-      return false;
-    } else if (functionName == null && !COMP_KEYWORD.equals(fixity)) {
-      capi.error(fixity + " operator type requires a right hand side in the definition.");
-      return false;
-    }
+      String universes, String opString) {
+    String[] universe = universes != null ? universes.trim().replaceAll("\\s+", OperatorRule.OPERATOR_DELIMITER).split(OperatorRule.OPERATOR_DELIMITER) : new String[0];
+    opString = opString.trim().replaceAll("\\s+", OperatorRule.OPERATOR_DELIMITER);
+    String[] operatorSymbols = opString.split(OperatorRule.OPERATOR_DELIMITER);
     switch (fixity) {
       case INFIXL_KEYWORD:
-        if (universe != null) {
-          if (universe2 == null || universe3 != null) {
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length + 1) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.LEFT, precedence, functionName,
-                  Arrays.asList(universe, universe2)));
+                  Arrays.asList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.LEFT, precedence, functionName, null));
         }
         break;
       case INFIXN_KEYWORD:
-        if (universe != null) {
-          if (universe2 == null || universe3 != null) {
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length + 1) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Arrays.asList(universe, universe2)));
+                  Arrays.asList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case INFIXR_KEYWORD:
-        if (universe != null) {
-          if (universe2 == null || universe3 != null) {
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length + 1) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.RIGHT, precedence, functionName,
-                  Arrays.asList(universe, universe2)));
+                  Arrays.asList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.INFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.INFIX, opString),
               new OperatorValue(Associativity.RIGHT, precedence, functionName, null));
         }
         break;
       case PREFIX_KEYWORD:
-        if (universe != null) {
-          if (universe2 != null || universe3 != null) {
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.PREFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.PREFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Collections.singletonList(universe)));
+                  Arrays.asList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.PREFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.PREFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
       case POSTFIX_KEYWORD:
-        if (universe != null) {
-          if (universe2 != null || universe3 != null) {
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.POSTFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.POSTFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Collections.singletonList(universe)));
+                  Arrays.asList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.POSTFIX, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.POSTFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
-        }
-        break;
-      case INDEX_KEYWORD:
-        if (universe != null) {
-          if (universe2 == null || universe3 != null) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-            return false;
-          }
-          opStore.put(new OperatorKey(Fixity.INDEX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Arrays.asList(universe, universe2)));
-        } else {
-          opStore.put(new OperatorKey(Fixity.INDEX, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName, null));
-        }
-        break;
-      case TERNARY_KEYWORD:
-        if (universe != null) {
-          if (universe2 == null || universe3 == null) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-            return false;
-          }
-          opStore.put(new OperatorKey(Fixity.TERNARY, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Arrays.asList(universe, universe2, universe3)));
-        } else {
-          opStore.put(new OperatorKey(Fixity.TERNARY, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName, null));
-        }
-        break;
-      case PAREN_KEYWORD:
-        if (universe != null) {
-          if (universe2 != null || universe3 != null) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-            return false;
-          }
-          opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName,
-                  Collections.singletonList(universe)));
-        } else {
-          opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
-              new OperatorValue(Associativity.NONE, precedence, functionName, null));
-        }
-        break;
-      case COMP_KEYWORD:
-        if (universe != null || universe2 != null || universe3 != null) {
-          capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-          return false;
-        } else {
-          opStore.put(new OperatorKey(Fixity.COMP, operatorSymbols),
-              new OperatorValue(Associativity.NONE, -1, null, null));
         }
         break;
       default:
@@ -420,8 +319,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
       if (!op.getValue().stream().map(OperatorValue::getAssociativity).allMatch(opVal.getAssociativity()::equals)) {
-        throw new IllegalStateException("Multiple syntactically identical operators (" + Arrays
-            .toString(op.getKey().operatorSymbols) + ") with different associativities (" +
+        throw new IllegalStateException("Multiple syntactically identical operators (" + 
+            op.getKey().operatorSymbols + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
       }
@@ -429,42 +328,29 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         case INFIX:
           switch (opVal.getAssociativity()) {
             case LEFT:
-              opRules.add(new OperatorRule(op.getKey().operatorSymbols[0], OpType.INFIX_LEFT,
+              opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.INFIX_LEFT,
                   opVal.getPrecedence(), PLUGIN_NAME));
               break;
             case NONE:
-              opRules.add(new OperatorRule(op.getKey().operatorSymbols[0], OpType.INFIX_NON,
+              opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.INFIX_NON,
                   opVal.getPrecedence(), PLUGIN_NAME));
               break;
             case RIGHT:
-              opRules.add(new OperatorRule(op.getKey().operatorSymbols[0], OpType.INFIX_RIGHT,
+              opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.INFIX_RIGHT,
                   opVal.getPrecedence(), PLUGIN_NAME));
               break;
           }
           break;
         case PREFIX:
-          opRules.add(new OperatorRule(op.getKey().operatorSymbols[0], OpType.PREFIX,
+          opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.PREFIX,
               opVal.getPrecedence(), PLUGIN_NAME));
           break;
         case POSTFIX:
-          opRules.add(new OperatorRule(op.getKey().operatorSymbols[0], OpType.POSTFIX,
+          opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.POSTFIX,
               opVal.getPrecedence(), PLUGIN_NAME));
           break;
-        case INDEX:
-          opRules.add(
-              new OperatorRule(op.getKey().operatorSymbols[0], op.getKey().operatorSymbols[1],
-                  OpType.INDEX, opVal.getPrecedence(), PLUGIN_NAME));
-          break;
-        case TERNARY:
-          opRules.add(
-              new OperatorRule(op.getKey().operatorSymbols[0], op.getKey().operatorSymbols[1],
-                  OpType.TERNARY, opVal.getPrecedence(), PLUGIN_NAME));
-          break;
-        case PAREN:
-          opRules.add(
-              new OperatorRule(op.getKey().operatorSymbols[0], op.getKey().operatorSymbols[1],
-                  OpType.PAREN, opVal.getPrecedence(), PLUGIN_NAME));
-          break;
+        default:
+          assert false;
       }
     }
     return opRules;
@@ -501,44 +387,23 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     switch (opNode.getGrammarClass()) {
       case ASTNode.BINARY_OPERATOR_CLASS:
         f = Fixity.INFIX;
-        args = new ASTNode[opNode.getToken().split("_").length + 1];
-        args[0] = opNode.getFirst();
-        for (int i = 1; i < args.length; ++i) args[i] = args[i - 1].getNext();
+        args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length + 1];
         break;
       case ASTNode.UNARY_OPERATOR_CLASS:
         if (opNode.unparseTree().startsWith(opNode.getToken())) {
           f = Fixity.PREFIX;
-          args = new ASTNode[1];
-          args[0] = opNode.getFirst();
         } else {
           f = Fixity.POSTFIX;
-          args = new ASTNode[1];
-          args[0] = opNode.getFirst();
         }
-        break;
-      case ASTNode.INDEX_OPERATOR_CLASS:
-        f = Fixity.INDEX;
-        args = new ASTNode[2];
-        args[0] = opNode.getFirst();
-        args[1] = args[0].getNext();
-        break;
-      case ASTNode.TERNARY_OPERATOR_CLASS:
-        f = Fixity.TERNARY;
-        args = new ASTNode[3];
-        args[0] = opNode.getFirst();
-        args[1] = args[0].getNext();
-        args[2] = args[1].getNext();
-        break;
-      case ASTNode.PAREN_OPERATOR_CLASS:
-        f = Fixity.PAREN;
-        args = new ASTNode[1];
-        args[0] = opNode.getFirst();
+        args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length];
         break;
       default:
-        throw new InterpreterException("Invalid plugin name: " + opNode.getPluginName());
+        throw new InterpreterException("Invalid grammar class: " + opNode.getGrammarClass());
     }
+    args[0] = opNode.getFirst();
+    for (int i = 1; i < args.length; ++i) args[i] = args[i - 1].getNext();
     final ASTNode finalOpNode = opNode;
-    return opStore.get(new OperatorKey(f, opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER)))
+    return opStore.get(new OperatorKey(f, opNode.getToken()))
         .stream().map(op -> {
           String opFunName = op.getFunName();
           FunctionElement fun = capi.getStorage().getFunction(opFunName);
@@ -649,71 +514,14 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   @Override
   public Map<String, GrammarRule> getParsers() {
     Map<String, GrammarRule> m = new HashMap<>();
-    final ParserTools parserTools = ParserTools.getInstance(capi);
-    final Kernel kernelPlugin = (Kernel)capi.getPlugin("Kernel");
-    final KernelServices kernel = (KernelServices)kernelPlugin.getPluginInterface();
-    final Parser<Node> termParser = kernel.getTermParser();
     for (Entry<OperatorKey, Collection<OperatorValue>> op : opStore.asMap().entrySet()) {
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
       if (!op.getValue().stream().map(OperatorValue::getAssociativity).allMatch(opVal.getAssociativity()::equals)) {
-        throw new IllegalStateException("Multiple syntactically identical operators (" + Arrays
-            .toString(op.getKey().operatorSymbols) + ") with different associativities (" +
+        throw new IllegalStateException("Multiple syntactically identical operators (" + 
+            op.getKey().operatorSymbols + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
-      }
-      switch (op.getKey().fixity) {
-        case COMP:
-          m.put(Kernel.GR_FUNCTION_RULE_TERM, new GrammarRule(Arrays.toString(op.getKey().operatorSymbols), "",
-              parserTools.seq(
-                  parserTools.seq(
-                  parserTools.seq(
-                      parserTools.getIdParser(),
-                      parserTools.getOprParser(op.getKey().operatorSymbols[0]),
-                      termParser
-                  ).map(ob -> {
-                    Node n = new ASTNode(
-                        PLUGIN_NAME, GR_GEN, "",
-                        "",
-                        ((Node) ob[0]).getScannerInfo());
-                    for (Object o : ob) if (o != null) n.addChild((Node) o);
-                    return n;
-                  }),
-                  parserTools.seq(
-                      parserTools.getOprParser(","),
-                      parserTools.getIdParser(),
-                      parserTools.getOprParser(op.getKey().operatorSymbols[0]),
-                      termParser
-                      ).map(ob -> {
-                        Node n = new ASTNode(
-                            PLUGIN_NAME, GR_GEN, "",
-                            "",
-                            ((Node) ob[0]).getScannerInfo());
-                        for (Object o : ob) if (o != null) n.addChild((Node) o);
-                        return n;
-                      }).many()
-                  ).map(obArr -> {
-                    List<Object> ob = new ArrayList<>();
-                    ob.add(obArr[0]);
-                    ob.addAll((List) obArr[1]);
-                    Node n = new ASTNode(
-                        PLUGIN_NAME, GR_GENLIST, "",
-                        "",
-                        ((Node) ob.get(0)).getScannerInfo());
-                    for (Object o : ob) if (o instanceof Node) n.addChild((Node) o);
-                    return n;
-                  }),
-                  parserTools.getOprParser(op.getKey().operatorSymbols[1]),
-                  termParser
-              ).map(ob -> {
-                Node n = new ASTNode(
-                    PLUGIN_NAME, GR_COMP, "",
-                    op.getKey().operatorSymbols[0] + OperatorRule.OPERATOR_DELIMITER + op.getKey().operatorSymbols[1],
-                    ((Node) ob[0]).getScannerInfo());
-                for (Object o : ob) if (o != null) n.addChild((Node) o);
-                return n;
-              }), PLUGIN_NAME));
-          break;
       }
     }
     return m;
@@ -753,105 +561,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
    */
   @Override
   public String[] getOperators() {
-    return opStore.keySet().stream().flatMap(k -> Arrays.stream(k.operatorSymbols)).flatMap(o -> Arrays.stream(o.split("_")))
+    return opStore.keySet().stream().map(k -> k.operatorSymbols)
+        .flatMap(o -> Arrays.stream(o.split(OperatorRule.OPERATOR_DELIMITER)))
         .toArray(String[]::new);
-  }
-
-  static class GeneratorListElement extends Element {
-    private final Map<String, Enumerable> generators;
-
-    GeneratorListElement(Map<String, Enumerable> generators) {
-      this.generators = generators;
-    }
-
-    Map<String, Enumerable> getGenerators() {
-      return generators;
-    }
-  }
-
-  /**
-   * This method is the interpreter rule of this plugin.
-   * This method gets the value of <i>pos</i> and returns
-   * a new value for <i>pos</i>. This is the implementation
-   * of the <i>pluginRule</i> function.
-   * <p>
-   * This method should NOT return <code>null</code>. If this method
-   * cannot interpret <code>pos</code>, it should return <code>pos</code>.
-   * <p>
-   * <b>NOTE:</b> Any implementation of this method must be thread-safe, since
-   * it may be called simultaneously by more than one thread during the simulation.
-   *
-   * @param interpreter the parent interpreter (most likely, component of the engine)
-   * @param pos         the value of <i>pos</i>
-   * @return new value of <i>pos</i>
-   */
-  @Override
-  public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
-    switch (pos.getGrammarClass()) {
-      case GR_COMP:
-        if (!pos.getFirst().isEvaluated()) return pos.getFirst();
-        List<List<EASTNode>> argLists = ((GeneratorListElement) pos.getFirst().getValue())
-            .getGenerators().entrySet().stream().map(gen ->
-                gen.getValue().enumerate().stream()
-                .map(e ->
-                    new EASTNode(PLUGIN_NAME, GR_ENUMELEM, "", e.toString(),
-                        pos.getScannerInfo(), e, gen.getKey())
-                ).collect(Collectors.toList())
-            ).collect(Collectors.toList());
-        EASTNode[][] args = new EASTNode[argLists.stream().map(List::size).reduce(1, (a, b) -> a * b)][argLists.size()];
-        int m = 1;
-        for (int i = 0; i < argLists.size(); ++i) {
-          int idx = 0;
-          while (idx < args.length)
-            for (int j = 0; j < argLists.get(i).size(); ++j)
-              for (int k = 0; k < m; ++k)
-                args[idx++][i] = argLists.get(i).get(j);
-          m *= argLists.get(i).size();
-        }
-        ASTNode fun = pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1);
-        ASTNode res = new ASTNode(PLUGIN_NAME, GR_COMPRES, "", "", pos.getScannerInfo());
-        res.setParent(pos);
-        for (EASTNode[] argList : args) {
-          ASTNode newChild = interpreter.copyTreeSub(fun,
-              Arrays.stream(argList).map(EASTNode::getKey).collect(Collectors.toList()),
-              Arrays.asList(argList));
-          newChild.setParent(res);
-          res.addChild(newChild);
-        }
-        return res;
-
-      case GR_COMPRES:
-        Optional<ASTNode> u = pos.getAbstractChildNodes().stream().filter(n -> !n.isEvaluated()).findFirst();
-        if (u.isPresent()) return u.get();
-        ListElement resVal = new ListElement(pos.getAbstractChildNodes().stream()
-            .map(ASTNode::getValue).collect(Collectors.toList()));
-        pos.setNode(null, null, resVal);
-        pos.getParent().setNode(null, null, resVal);
-        return pos.getParent().getParent();
-
-      case GR_GENLIST:
-        Optional<ASTNode> x = pos.getAbstractChildNodes().stream().filter(n -> !n.isEvaluated()).findFirst();
-        if (x.isPresent()) return x.get();
-        pos.setNode(null, null, new GeneratorListElement(
-            pos.getAbstractChildNodes().stream()
-                .filter(n -> GR_GEN.equals(n.getGrammarClass()))
-                .collect(Collectors.toMap(Node::getToken, gen -> (Enumerable) gen.getValue()))));
-        return pos.getParent();
-
-      case GR_GEN:
-        if (!pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1).isEvaluated())
-          return pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1);
-        pos.setNode(null, null,
-            pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1).getValue());
-        if (!(pos.getValue() instanceof Enumerable))
-          throw new InterpreterException("Right hand side of generator is not enumerable.");
-        pos.setToken(pos.getFirst().getToken());
-        return pos.getParent();
-
-      case GR_ENUMELEM:
-        pos.setNode(null, null, ((EASTNode) pos).getVal());
-        return pos.getParent();
-    }
-    return null;
   }
 }

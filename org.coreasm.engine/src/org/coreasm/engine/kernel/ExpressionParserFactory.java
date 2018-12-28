@@ -244,10 +244,10 @@ public class ExpressionParserFactory {
 	}
 
   private Parser<BinaryMap> createInfixHoleParser(String opr, String pluginNames, OpType type) {
-	  List<Parser<List<Node>>> o = Arrays.stream(opr.split("_"))
+	  List<Parser<List<Node>>> o = Arrays.stream(opr.split(OperatorRule.OPERATOR_DELIMITER))
         .map(s -> ParserTools.seqList(ParserTools.getOprParser(s), termParser))
         .collect(Collectors.toList());
-	  o.set(o.size() - 1, ParserTools.getOprParser(opr.split("_")[o.size() - 1]).map(Collections::singletonList));
+	  o.set(o.size() - 1, ParserTools.getOprParser(opr.split(OperatorRule.OPERATOR_DELIMITER)[o.size() - 1]).map(Collections::singletonList));
     final Parser<Stream<Node>> tempParser = ParserTools.seqList(o)
         .map(ls -> ls.stream().flatMap(Collection::stream));
     //final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());

@@ -9,11 +9,11 @@ public class Operator_unit_OperatorKey {
 
   @Test
   public void performTest() {
-    OperatorKey ok = new OperatorKey(Fixity.PREFIX, new String[]{"++"});
+    OperatorKey ok = new OperatorKey(Fixity.PREFIX, "++");
     OperatorKey ok2 = ok;
-    OperatorKey ok3 = new OperatorKey(Fixity.PREFIX, new String[]{"++"});
-    OperatorKey ok4 = new OperatorKey(Fixity.PREFIX, new String[]{"+"});
-    OperatorKey ok5 = new OperatorKey(Fixity.INFIX, new String[]{"++"});
+    OperatorKey ok3 = new OperatorKey(Fixity.PREFIX, "++");
+    OperatorKey ok4 = new OperatorKey(Fixity.PREFIX, "+");
+    OperatorKey ok5 = new OperatorKey(Fixity.INFIX, "++");
     Object obj = new Object();
     Assert.assertEquals(ok, ok);
     Assert.assertSame(ok, ok);
