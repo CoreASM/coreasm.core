@@ -59,8 +59,7 @@ public class ExpressionParserFactory {
 	private Map<String, Map<String, OperatorRule>> binOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> unOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> indexOps = new HashMap<String, Map<String, OperatorRule>>();
-  private Map<String, Map<String, OperatorRule>> ternaryOps = new HashMap<String, Map<String, OperatorRule>>();
-  private Map<String, Map<String, OperatorRule>> parenOps = new HashMap<String, Map<String, OperatorRule>>();
+  private Map<String, Map<String, OperatorRule>> closedOps = new HashMap<String, Map<String, OperatorRule>>();
 	
 	// precedence levels
 	private Map<String, Integer> infixLeftOprs = new HashMap<String, Integer>();
@@ -69,8 +68,7 @@ public class ExpressionParserFactory {
 	private Map<String, Integer> prefixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> postfixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> indexOprs = new HashMap<String, Integer>();
-  private Map<String, Integer> ternaryOprs = new HashMap<String, Integer>();
-  private Map<String, Integer> parenOprs = new HashMap<String, Integer>();
+  private Map<String, Integer> closedOprs = new HashMap<String, Integer>();
 
 	// operator -> plugins (for convenience)
 	private Map<String, String> infixLeftPlugins = new HashMap<String, String>();
@@ -79,8 +77,7 @@ public class ExpressionParserFactory {
 	private Map<String, String> prefixPlugins = new HashMap<String, String>();
 	private Map<String, String> postfixPlugins = new HashMap<String, String>();
 	private Map<String, String> indexPlugins = new HashMap<String, String>();
-  private Map<String, String> ternaryPlugins = new HashMap<String, String>();
-  private Map<String, String> parenPlugins = new HashMap<String, String>();
+  private Map<String, String> closedPlugins = new HashMap<String, String>();
 
   /**
 	 * Creates a new expression parser factory.  
@@ -132,20 +129,15 @@ public class ExpressionParserFactory {
     					addOperatorPlugin(prefixPlugins, oprRule);
     					break;
 
+            case CLOSED:
+              addOperator(closedOprs, oprRule);
+              addOperatorPlugin(closedPlugins, oprRule);
+              break;
+
     				case INDEX:
     					addOperator(indexOprs, oprRule);
     					addOperatorPlugin(indexPlugins, oprRule);
     					break;
-    					
-            case TERNARY:
-              addOperator(ternaryOprs, oprRule);
-              addOperatorPlugin(ternaryPlugins, oprRule);
-              break;
-
-            case PAREN:
-              addOperator(parenOprs, oprRule);
-              addOperatorPlugin(parenPlugins, oprRule);
-              break;
     					
     				}
     			}
@@ -154,14 +146,14 @@ public class ExpressionParserFactory {
 
     	// Loading the results into the operator registry
     	OperatorRegistry oprReg = OperatorRegistry.getInstance(capi);
-    	oprReg.binOps.clear();
-    	oprReg.binOps.putAll(binOps);
+    	oprReg.infixOps.clear();
+    	oprReg.infixOps.putAll(binOps);
     	oprReg.unOps.clear();
     	oprReg.unOps.putAll(unOps);
     	oprReg.indexOps.clear();
     	oprReg.indexOps.putAll(indexOps);
-      oprReg.ternaryOps.putAll(ternaryOps);
-      oprReg.parenOps.putAll(parenOps);
+    	oprReg.closedOps.clear();
+      oprReg.closedOps.putAll(closedOps);
 	}
 
 	/**
@@ -177,7 +169,7 @@ public class ExpressionParserFactory {
 		for (String opr: infixLeftOprs.keySet()) {
 			pluginNames = infixLeftPlugins.get(opr);
 			precedence = infixLeftOprs.get(opr);
-      table.infixl(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+      table.infixl(createInfixParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
 			//table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
 		}
 
@@ -185,7 +177,7 @@ public class ExpressionParserFactory {
 		for (String opr: infixNonOprs.keySet()) {
 			pluginNames = infixNonPlugins.get(opr);
 			precedence = infixNonOprs.get(opr);
-      table.infixn(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+      table.infixn(createInfixParser(opr, pluginNames, OpType.INFIX_NON), precedence);
 			//table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence);
 		}
 
@@ -193,7 +185,7 @@ public class ExpressionParserFactory {
 		for (String opr: infixRightOprs.keySet()) {
 			pluginNames = infixRightPlugins.get(opr);
 			precedence = infixRightOprs.get(opr);
-      table.infixr(createInfixHoleParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
+      table.infixr(createInfixParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
 			//table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
 		}
 		
@@ -201,14 +193,14 @@ public class ExpressionParserFactory {
 		for (String opr: prefixOprs.keySet()) {
 			pluginNames = prefixPlugins.get(opr);
 			precedence = prefixOprs.get(opr);
-			table.prefix(createUnaryParser(opr, pluginNames, OpType.PREFIX), precedence);
+			table.prefix(createPrefixParser(opr, pluginNames), precedence);
 		}
 
 		// Postfix
 		for (String opr: postfixOprs.keySet()) {
 			pluginNames = postfixPlugins.get(opr);
 			precedence = postfixOprs.get(opr);
-			table.postfix(createUnaryParser(opr, pluginNames, OpType.POSTFIX), precedence);
+			table.postfix(createPostfixParser(opr, pluginNames), precedence);
 		}
 
 		// Index
@@ -220,65 +212,54 @@ public class ExpressionParserFactory {
 			String opr2 = opr.substring(i + 1);
 			table.postfix(createIndexParser(opr1, opr2, pluginNames), precedence);
 		}
-
-    // Ternary
-    for (String opr: ternaryOprs.keySet()) {
-      pluginNames = ternaryPlugins.get(opr);
-      precedence = ternaryOprs.get(opr);
-      String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
-      String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
-      table.postfix(createTernaryParser(opr1, opr2, pluginNames), precedence);
-    }
-
+		
     Parser<Node> p = basicExprParser;
-
-    // Paren
-    for (String opr: parenOprs.keySet()) {
-      pluginNames = parenPlugins.get(opr);
-      String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
-      String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
-      p = p.or(createParenParser(opr1, opr2, pluginNames));
+    
+    // Closed
+    for (String opr: closedOprs.keySet()) {
+      pluginNames = closedPlugins.get(opr);
+      p = p.or(createClosedParser(opr, pluginNames));
     }
 
-		return table.build(p);
+    return table.build(p);
 	}
 
-  private Parser<BinaryMap> createInfixHoleParser(String opr, String pluginNames, OpType type) {
-	  List<Parser<List<Node>>> o = Arrays.stream(opr.split(OperatorRule.OPERATOR_DELIMITER))
+	private Parser<Stream<Node>> internalHoleParser(String opr) {
+    List<Parser<List<Node>>> o = Arrays.stream(opr.split(OperatorRule.OPERATOR_DELIMITER))
         .map(s -> ParserTools.seqList(ParserTools.getOprParser(s), termParser))
         .collect(Collectors.toList());
-	  o.set(o.size() - 1, ParserTools.getOprParser(opr.split(OperatorRule.OPERATOR_DELIMITER)[o.size() - 1]).map(Collections::singletonList));
-    final Parser<Stream<Node>> tempParser = ParserTools.seqList(o)
-        .map(ls -> ls.stream().flatMap(Collection::stream));
-    //final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());
+    o.set(o.size() - 1, ParserTools.getOprParser(opr.split(OperatorRule.OPERATOR_DELIMITER)[o.size() - 1]).map(Collections::singletonList));
+    return ParserTools.seqList(o).map(ls -> ls.stream().flatMap(Collection::stream));
+
+  }
+
+  private Parser<BinaryMap> createInfixParser(String opr, String pluginNames, OpType type) {
+	  final Parser<Stream<Node>> tempParser = internalHoleParser(opr);
     return tempParser.peek().followedBy(tempParser).map(new BinaryParseMap(opr, pluginNames, type));
   }
-	
-	/* 
-	 * Creates a new binary parser.
-	 */
-	private Parser<BinaryMap> createBinaryParser(String opr, String pluginNames, OpType type) {
-		final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());
-		return tempParser.peek().followedBy(tempParser).map(Stream::of).map(
-				new BinaryParseMap(opr, pluginNames, type));
-		// without lookahead:
-		// return parserTools.seq(parserTools.getOprParser(opr), optionalDelimiter).map(
-		//		new BinaryParseMap(opr, pluginNames, type));
+
+	private Parser<UnaryMap> createPrefixParser(String opr, String pluginNames) {
+    final Parser<Stream<Node>> tempParser = internalHoleParser(opr);
+			return tempParser.peek().followedBy(tempParser).map(
+	    			new UnaryParseMap(opr, pluginNames, OpType.PREFIX));
 	}
-	
-	/* 
-	 * Creates a new unary parser.
-	 */
-	private Parser<UnaryMap> createUnaryParser(String opr, String pluginNames, OpType type) {
-		if (type == OpType.PREFIX) {
-			final Parser<Node> tempParser = ParserTools.getOprParser(opr);//, termParser.peek());
-			return ParserTools.seq(tempParser.peek(), tempParser).map(
-	    			new UnaryParseMap(opr, pluginNames, type));
-		}
-		else //if (type == OpType.POSTFIX)
-	    	return ParserTools.seq(ParserTools.getOprParser(opr)).map(
-	    			new UnaryParseMap(opr, pluginNames, type));
-	}
+
+  private Parser<UnaryMap> createPostfixParser(String opr, String pluginNames) {
+    final Parser<Stream<Node>> tempParser = internalHoleParser(opr);
+      return tempParser.map(
+          new UnaryParseMap(opr, pluginNames, OpType.POSTFIX));
+  }
+
+  private Parser<ASTNode> createClosedParser(String opr, String pluginNames) {
+    return internalHoleParser(opr).map(ns -> {
+      List<Node> nsl = ns.collect(Collectors.toList());
+      Node n = nsl.get(0);
+      ASTNode node = new ASTNode(null, ASTNode.CLOSED_OPERATOR_CLASS, null,
+          opr, n.getScannerInfo());
+      nsl.forEach(node::addChild);
+      return node;
+    });
+  }
 
 	/*
 	 * Creates a new index parser.
@@ -291,31 +272,6 @@ public class ExpressionParserFactory {
 				).map(new IndexParseMap(opr1, opr2, pluginNames, OpType.INDEX));
 	}
 
-  /*
-   * Creates a new ternary parser.
-   */
-  private Parser<TernaryMap> createTernaryParser(String opr1, String opr2, String pluginNames) {
-    return ParserTools.seq(
-        ParserTools.getOprParser(opr1),
-        termParser,
-        ParserTools.getOprParser(opr2),
-        termParser
-    ).map(new TernaryParseMap(opr1, opr2, pluginNames, OpType.TERNARY));
-  }
-
-  /*
-   * Creates a new paren parser.
-   */
-  private Parser<Node> createParenParser(String opr1, String opr2, String pluginNames) {
-    return basicExprParser.between(ParserTools.getOprParser(opr1), ParserTools.getOprParser(opr2))
-        .map(n -> {
-          ASTNode node = new ASTNode(null, ASTNode.PAREN_OPERATOR_CLASS, null,
-              opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, n.getScannerInfo());
-          node.addChild(n);
-          return node;
-        });
-  }
-	
 	/*
 	 * Adds the name of the plugin contributer of this operator to the database.
 	 */
@@ -324,7 +280,7 @@ public class ExpressionParserFactory {
 		if (pluginNames == null) {
 			pluginNames = oprRule.contributor;
 		} else
-			if (pluginNames.indexOf(oprRule.contributor) < 0)
+			if (!pluginNames.contains(oprRule.contributor))
 				pluginNames = pluginNames + ", " + oprRule.contributor;
 			else
 				return;
@@ -349,18 +305,14 @@ public class ExpressionParserFactory {
 		case INFIX_RIGHT:
 			oprDB = binOps;
 			break;
-			
+
+    case CLOSED:
+      oprDB = closedOps;
+      break;
+
 		case INDEX:
 			oprDB = indexOps;
 			break;
-			
-    case TERNARY:
-      oprDB = ternaryOps;
-      break;
-
-    case PAREN:
-      oprDB = parenOps;
-      break;
 		}
 
 		Integer tempPrec = oprs.get(oprToken);
@@ -394,7 +346,7 @@ public class ExpressionParserFactory {
 		
 		//private String pluginNames;
 		private String opr;
-		private Object[] cnodes;
+		private Stream<Node> cnodes;
 		private OpType type;
 		
 		/**
@@ -405,7 +357,7 @@ public class ExpressionParserFactory {
 		 * @param type operator type
 		 * @param nodes an array of operator and delimiter nodes (without the operands) 
 		 */
-		public UnaryMap(String opr, String pluginNames, OpType type, Object[] nodes) {
+		public UnaryMap(String opr, String pluginNames, OpType type, Stream<Node> nodes) {
 			this.opr = opr;
 			//this.pluginNames = pluginNames;
 			//this.cnodes = (Object[])nodes[1];
@@ -420,18 +372,14 @@ public class ExpressionParserFactory {
 			Node node = null;
 			if (type == OpType.POSTFIX) {
 				node = new ASTNode(
-						null, ASTNode.UNARY_OPERATOR_CLASS, "", ((Node)cnodes[0]).getToken(), child.getScannerInfo());
+						null, ASTNode.UNARY_OPERATOR_CLASS, "", opr, child.getScannerInfo());
 				node.addChild(child);
-//				if (cnodes[0] != null)
-//					node.addChild((Node)cnodes[0]);
-				node.addChild(new Node(null, opr, ((Node)cnodes[0]).getScannerInfo()));
+        cnodes.forEach(node::addChild);
 			}
 			if (type == OpType.PREFIX) {
 				node = new ASTNode(
-						null, ASTNode.UNARY_OPERATOR_CLASS, "", ((Node)cnodes[0]).getToken(), child.getScannerInfo());
-				node.addChild(new Node(null, opr, ((Node)cnodes[0]).getScannerInfo()));
-//				if (cnodes[1] != null)
-//					node.addChild((Node)cnodes[1]);
+						null, ASTNode.UNARY_OPERATOR_CLASS, "", opr, child.getScannerInfo());
+        cnodes.forEach(node::addChild);
 				node.addChild(child);
 			}
 
@@ -440,7 +388,7 @@ public class ExpressionParserFactory {
 	}
 	
 	/* Unary parse map class for binary operators */
-	public static class UnaryParseMap extends ParseMap<Object[], UnaryMap> {
+	public static class UnaryParseMap extends ParseMap<Stream<Node>, UnaryMap> {
 
 		private String opr;
 		private OpType type;
@@ -451,7 +399,7 @@ public class ExpressionParserFactory {
 			this.type = type;
 		}
 
-		public UnaryMap map(Object[] v) {
+		public UnaryMap map(Stream<Node> v) {
 			return new UnaryMap(opr, pluginName, type, v);
 		}
 		
@@ -487,7 +435,7 @@ public class ExpressionParserFactory {
 			Node node = new ASTNode(
 					null, ASTNode.BINARY_OPERATOR_CLASS, "", opr, o1.getScannerInfo());
 			node.addChild(o1);
-			cnodes.forEach(c -> node.addChild((Node) c));
+			cnodes.forEach(node::addChild);
       node.addChild(o2);
 			return node;
 		}
@@ -572,69 +520,4 @@ public class ExpressionParserFactory {
 		}
 		
 	}
-
-
-
-  /* Special ternary map class */
-  public static class TernaryMap implements Unary<Node> {
-
-    //private String pluginNames;
-    private String opr1;
-    private String opr2;
-    private Object[] cnodes;
-    //private OpType type;
-
-    /**
-     * Creates a new IndexMap.
-     *
-     * @param opr1 first operator token
-     * @param opr2 second operator token
-     * @param pluginNames contributing plugin names
-     * @param type operator type
-     * @param nodes an array of operator and delimiter nodes (without the operands) 
-     */
-    public TernaryMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
-      this.opr1 = opr1;
-      this.opr2 = opr2;
-      //this.pluginNames = pluginNames;
-      this.cnodes = nodes;
-      //this.type = type;
-    }
-
-    /**
-     * Creates a tree for this operator with an {@link ASTNode} as its root.
-     */
-    public Node map(Node child) {
-      Node node = null;
-      node = new ASTNode(
-          null, ASTNode.TERNARY_OPERATOR_CLASS, "", 
-          opr1 + OperatorRule.OPERATOR_DELIMITER + opr2,
-          child.getScannerInfo());
-      node.addChild(child);
-      for (Object obj: cnodes)
-        if (obj != null)
-          node.addChild((Node)obj);
-      return node;
-    }
-  }
-
-  /* Ternary parse map class for ternary operators */
-  public static class TernaryParseMap extends ParseMap<Object[], TernaryMap> {
-
-    private String opr1;
-    private String opr2;
-    private OpType type;
-
-    public TernaryParseMap(String opr1, String opr2, String pluginName, OpType type) {
-      super(pluginName);
-      this.opr1 = opr1;
-      this.opr2 = opr2;
-      this.type = type;
-    }
-
-    public TernaryMap map(Object[] v) {
-      return new TernaryMap(opr1, opr2, pluginName, type, v);
-    }
-
-  }
 }

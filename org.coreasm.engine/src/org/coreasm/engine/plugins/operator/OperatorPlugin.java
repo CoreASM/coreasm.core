@@ -47,10 +47,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String INFIXR_KEYWORD = "infixr";
   private static final String PREFIX_KEYWORD = "prefix";
   private static final String POSTFIX_KEYWORD = "postfix";
+  private static final String CLOSED_KEYWORD = "closed";
 
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>\\d+)\\s+(?<delimiter>#*)'(?<op>.+)'\\k<delimiter>"
+      "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix|closed)\\s+"
+          + "((?<precedence>\\d+)\\s+)?(?<delimiter>#*)'(?<op>.+)'\\k<delimiter>"
           + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\s+\\*\\s+[A-z_][A-z_0-9]*)*))?"
           + "\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
@@ -58,7 +59,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   enum Fixity {
     INFIX,
     PREFIX,
-    POSTFIX
+    POSTFIX,
+    CLOSED,
   }
 
   enum Associativity {
@@ -203,8 +205,12 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       for (SpecLine l : this.capi.getSpec().getLines()) {
         Matcher m = typedOperatorDefinitionGrammar.matcher(cr.append(l.text));
         if (m.matches()) {
-          if (handleOpDefinition(m.group("fixity"), Integer.valueOf(m.group("precedence")),
-              m.group("rule"), m.group("universes"), m.group("op"))) {
+          int p = -1;
+          try {
+            p = Integer.valueOf(m.group("precedence"));
+          } catch (NumberFormatException ignored) {}
+          if (handleOpDefinition(m.group("fixity"), p, m.group("rule"), 
+              m.group("universes"), m.group("op"))) {
             filteredLines.add(new SpecLine("", l.fileName, l.line));
           } else
             filteredLines.add(l);
@@ -221,11 +227,17 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     String[] universe = universes != null ? universes.trim().replaceAll("\\s+", "").split("\\*") : new String[0];
     opString = opString.trim().replaceAll("\\s+", OperatorRule.OPERATOR_DELIMITER);
     String[] operatorSymbols = opString.split(OperatorRule.OPERATOR_DELIMITER);
+    if (CLOSED_KEYWORD.equals(fixity) && precedence >= 0)
+      capi.warning(PLUGIN_NAME, "Precedence is ignored for closed operator " + opString + ".");
+    else if (!CLOSED_KEYWORD.equals(fixity) && precedence < 0) {
+      capi.error("Precedence is required for " + fixity + " operator " + opString + ".");
+      return false;
+    }
     switch (fixity) {
       case INFIXL_KEYWORD:
         if (universe.length > 0) {
           if (universe.length != operatorSymbols.length + 1) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, opString),
@@ -239,7 +251,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INFIXN_KEYWORD:
         if (universe.length > 0) {
           if (universe.length != operatorSymbols.length + 1) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, opString),
@@ -253,7 +265,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case INFIXR_KEYWORD:
         if (universe.length > 0) {
           if (universe.length != operatorSymbols.length + 1) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.INFIX, opString),
@@ -267,7 +279,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case PREFIX_KEYWORD:
         if (universe.length > 0) {
           if (universe.length != operatorSymbols.length) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.PREFIX, opString),
@@ -281,7 +293,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       case POSTFIX_KEYWORD:
         if (universe.length > 0) {
           if (universe.length != operatorSymbols.length) {
-            capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
             return false;
           }
           opStore.put(new OperatorKey(Fixity.POSTFIX, opString),
@@ -290,6 +302,20 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         } else {
           opStore.put(new OperatorKey(Fixity.POSTFIX, opString),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
+        }
+        break;
+      case CLOSED_KEYWORD:
+        if (universe.length > 0) {
+          if (universe.length != operatorSymbols.length - 1) {
+            capi.error("Arity of signature and operator does not match in definition of operator " + opString + ".");
+            return false;
+          }
+          opStore.put(new OperatorKey(Fixity.CLOSED, opString),
+              new OperatorValue(Associativity.NONE, 999, functionName,
+                  Arrays.asList(universe)));
+        } else {
+          opStore.put(new OperatorKey(Fixity.CLOSED, opString),
+              new OperatorValue(Associativity.NONE, 999, functionName, null));
         }
         break;
       default:
@@ -341,6 +367,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.POSTFIX,
               opVal.getPrecedence(), PLUGIN_NAME));
           break;
+        case CLOSED:
+          opRules.add(new OperatorRule(op.getKey().operatorSymbols, OpType.CLOSED,
+              opVal.getPrecedence(), PLUGIN_NAME));
+          break;
         default:
           assert false;
       }
@@ -388,6 +418,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           f = Fixity.POSTFIX;
         }
         args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length];
+        break;
+      case ASTNode.CLOSED_OPERATOR_CLASS:
+        f = Fixity.CLOSED;
+        args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length - 1];
         break;
       default:
         throw new InterpreterException("Invalid grammar class: " + opNode.getGrammarClass());

@@ -36,22 +36,20 @@ public final class OperatorRegistry {
 	private static Map<ControlAPI, OperatorRegistry> instances = null;
 	
 	// Maps of the form: Operator -> (PluginName -> OperatorRule) 
-	public final Map<String, Map<String, OperatorRule>> binOps;
+	public final Map<String, Map<String, OperatorRule>> infixOps;
 	public final Map<String, Map<String, OperatorRule>> unOps;
 	public final Map<String, Map<String, OperatorRule>> indexOps;
-  public final Map<String, Map<String, OperatorRule>> ternaryOps;
-  public final Map<String, Map<String, OperatorRule>> parenOps;
+  public final Map<String, Map<String, OperatorRule>> closedOps;
 
   /**
 	 * Private constructor.
 	 *
 	 */
 	private OperatorRegistry() {
-		binOps = new HashMap<String, Map<String,OperatorRule>>();
-		unOps = new HashMap<String, Map<String,OperatorRule>>();
-		indexOps = new HashMap<String, Map<String,OperatorRule>>();
-    ternaryOps = new HashMap<String, Map<String,OperatorRule>>();
-    parenOps = new HashMap<String, Map<String,OperatorRule>>();
+		infixOps = new HashMap<>();
+		unOps = new HashMap<>();
+		indexOps = new HashMap<>();
+    closedOps = new HashMap<>();
 	}
 	
 	/**
@@ -90,15 +88,13 @@ public final class OperatorRegistry {
 		Map<String, Map<String, OperatorRule>> oprs = null;
 		
 		if (grammarClass.equals(ASTNode.BINARY_OPERATOR_CLASS))
-			oprs = binOps;
+			oprs = infixOps;
 		if (grammarClass.equals(ASTNode.UNARY_OPERATOR_CLASS))
 			oprs = unOps;
 		if (grammarClass.equals(ASTNode.INDEX_OPERATOR_CLASS))
 			oprs = indexOps;
-    if (grammarClass.equals(ASTNode.TERNARY_OPERATOR_CLASS))
-      oprs = ternaryOps;
-    if (grammarClass.equals(ASTNode.PAREN_OPERATOR_CLASS))
-      oprs = parenOps;
+    if (grammarClass.equals(ASTNode.CLOSED_OPERATOR_CLASS))
+      oprs = closedOps;
 		
 		if (oprs != null) {
 			Map<String, OperatorRule> mapping = oprs.get(token);
