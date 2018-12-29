@@ -5,14 +5,14 @@ use OperatorPlugin
 
 init initRule
 
-operator prefix 50 !! on STRING = err
-operator prefix 50 ?  on STRING = err
-operator prefix 50 ## on STRING = err
-operator prefix 50 ~  on STRING = err
-operator prefix 50 !! on NUMBER = dec
-operator prefix 50 ?  on NUMBER = dec
-operator prefix 50 ## on NUMBER = inc
-operator prefix 50 ~  on NUMBER = inc
+operator prefix 50 '!!' on STRING = err
+operator prefix 50 '?'  on STRING = err
+operator prefix 50 '##' on STRING = err
+operator prefix 50 '~'  on STRING = err
+operator prefix 50 '!!' on NUMBER = dec
+operator prefix 50 '?'  on NUMBER = dec
+operator prefix 50 '##' on NUMBER = inc
+operator prefix 50 '~'  on NUMBER = inc
 
 derived dec(x) = x - 1
 derived inc(x) = x + 1

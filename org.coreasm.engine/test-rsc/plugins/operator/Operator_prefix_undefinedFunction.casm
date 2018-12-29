@@ -5,10 +5,10 @@ use OperatorPlugin
 
 init initRule
 
-operator prefix 50 !! = xyz
-operator prefix 50 ?  = xyz
-operator prefix 50 ## = xyz
-operator prefix 50 ~  = xyz
+operator prefix 50 '!!' = xyz
+operator prefix 50 '?'  = xyz
+operator prefix 50 '##' = xyz
+operator prefix 50 '~'  = xyz
 
 /*
  * @minsteps 1

@@ -7,10 +7,10 @@ init initRule
 
 function test: LIST -> ELEMENT
 
-operator prefix 50 !! = head
-operator prefix 50 ?  = head
-operator prefix 50 ## = test
-operator prefix 50 ~  = test
+operator prefix 50 '!!' = head
+operator prefix 50 '?'  = head
+operator prefix 50 '##' = test
+operator prefix 50 '~'  = test
 
 /*
  * @minsteps 1
