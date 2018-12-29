@@ -51,7 +51,7 @@ public class ASTNode extends Node implements Serializable {
 	public static final String UNARY_OPERATOR_CLASS = "UnaryOperator";
 	public static final String BINARY_OPERATOR_CLASS = "BinaryOperator";
   public static final String CLOSED_OPERATOR_CLASS = "ClosedOperator";
-    public static final String INDEX_OPERATOR_CLASS = "UnaryOperator";
+  public static final String INDEX_OPERATOR_CLASS = "UnaryOperator";
     
 	/** grammar class of this node */
 	protected String grammarClass;

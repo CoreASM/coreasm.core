@@ -5,10 +5,10 @@ use OperatorPlugin
 
 init initRule
 
-operator index 50 !! E! = dec
-operator index 50 ? E?  = dec
-operator index 50 ## E# = inc
-operator index 50 ~ E~ = inc
+operator postfix 50 '!! E!' = dec
+operator postfix 50 '? E?'  = dec
+operator postfix 50 '## E#' = inc
+operator postfix 50 '~ E~'  = inc
 
 derived dec(x, y) = x - y
 derived inc(x, y) = x + y
