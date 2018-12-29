@@ -456,8 +456,8 @@ public class InterpreterImp implements Interpreter {
 		// if class is an operator then
 		else if (gClass.equals(ASTNode.UNARY_OPERATOR_CLASS) || 
                  gClass.equals(ASTNode.BINARY_OPERATOR_CLASS) ||
-                 gClass.equals(ASTNode.CLOSED_OPERATOR_CLASS) ||
-                 gClass.equals(ASTNode.INDEX_OPERATOR_CLASS))
+                 gClass.equals(ASTNode.INDEX_OPERATOR_CLASS) ||
+                 gClass.equals(ASTNode.CLOSED_OPERATOR_CLASS))
 		{
 			pos = interpretOperators(pos);
 		}

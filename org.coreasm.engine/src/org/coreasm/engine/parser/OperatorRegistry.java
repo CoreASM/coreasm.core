@@ -38,7 +38,6 @@ public final class OperatorRegistry {
 	// Maps of the form: Operator -> (PluginName -> OperatorRule) 
 	public final Map<String, Map<String, OperatorRule>> infixOps;
 	public final Map<String, Map<String, OperatorRule>> unOps;
-	public final Map<String, Map<String, OperatorRule>> indexOps;
   public final Map<String, Map<String, OperatorRule>> closedOps;
 
   /**
@@ -48,7 +47,6 @@ public final class OperatorRegistry {
 	private OperatorRegistry() {
 		infixOps = new HashMap<>();
 		unOps = new HashMap<>();
-		indexOps = new HashMap<>();
     closedOps = new HashMap<>();
 	}
 	
@@ -91,8 +89,6 @@ public final class OperatorRegistry {
 			oprs = infixOps;
 		if (grammarClass.equals(ASTNode.UNARY_OPERATOR_CLASS))
 			oprs = unOps;
-		if (grammarClass.equals(ASTNode.INDEX_OPERATOR_CLASS))
-			oprs = indexOps;
     if (grammarClass.equals(ASTNode.CLOSED_OPERATOR_CLASS))
       oprs = closedOps;
 		

@@ -58,7 +58,6 @@ public class ExpressionParserFactory {
 	// Maps of the form: Operator -> (PluginName -> OperatorRule) 
 	private Map<String, Map<String, OperatorRule>> binOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> unOps = new HashMap<String, Map<String, OperatorRule>>();
-	private Map<String, Map<String, OperatorRule>> indexOps = new HashMap<String, Map<String, OperatorRule>>();
   private Map<String, Map<String, OperatorRule>> closedOps = new HashMap<String, Map<String, OperatorRule>>();
 	
 	// precedence levels
@@ -67,7 +66,6 @@ public class ExpressionParserFactory {
 	private Map<String, Integer> infixNonOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> prefixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> postfixOprs = new HashMap<String, Integer>();
-	private Map<String, Integer> indexOprs = new HashMap<String, Integer>();
   private Map<String, Integer> closedOprs = new HashMap<String, Integer>();
 
 	// operator -> plugins (for convenience)
@@ -76,7 +74,6 @@ public class ExpressionParserFactory {
 	private Map<String, String> infixNonPlugins = new HashMap<String, String>();
 	private Map<String, String> prefixPlugins = new HashMap<String, String>();
 	private Map<String, String> postfixPlugins = new HashMap<String, String>();
-	private Map<String, String> indexPlugins = new HashMap<String, String>();
   private Map<String, String> closedPlugins = new HashMap<String, String>();
 
   /**
@@ -123,7 +120,10 @@ public class ExpressionParserFactory {
     					addOperator(postfixOprs, oprRule);
     					addOperatorPlugin(postfixPlugins, oprRule);
     					break;
-    					
+
+    				case INDEX:
+    				  oprRule = new OperatorRule(oprRule.opr + OperatorRule.OPERATOR_DELIMITER +
+                  oprRule.opr2, OpType.PREFIX, oprRule.precedence, oprRule.contributor);
     				case PREFIX:
     					addOperator(prefixOprs, oprRule);
     					addOperatorPlugin(prefixPlugins, oprRule);
@@ -133,12 +133,6 @@ public class ExpressionParserFactory {
               addOperator(closedOprs, oprRule);
               addOperatorPlugin(closedPlugins, oprRule);
               break;
-
-    				case INDEX:
-    					addOperator(indexOprs, oprRule);
-    					addOperatorPlugin(indexPlugins, oprRule);
-    					break;
-    					
     				}
     			}
     		}
@@ -150,8 +144,6 @@ public class ExpressionParserFactory {
     	oprReg.infixOps.putAll(binOps);
     	oprReg.unOps.clear();
     	oprReg.unOps.putAll(unOps);
-    	oprReg.indexOps.clear();
-    	oprReg.indexOps.putAll(indexOps);
     	oprReg.closedOps.clear();
       oprReg.closedOps.putAll(closedOps);
 	}
@@ -201,16 +193,6 @@ public class ExpressionParserFactory {
 			pluginNames = postfixPlugins.get(opr);
 			precedence = postfixOprs.get(opr);
 			table.postfix(createPostfixParser(opr, pluginNames), precedence);
-		}
-
-		// Index
-		for (String opr: indexOprs.keySet()) {
-			pluginNames = indexPlugins.get(opr);
-			precedence = indexOprs.get(opr);
-			int i = opr.indexOf(OperatorRule.OPERATOR_DELIMITER);
-			String opr1 = opr.substring(0, i);
-			String opr2 = opr.substring(i + 1);
-			table.postfix(createIndexParser(opr1, opr2, pluginNames), precedence);
 		}
 		
     Parser<Node> p = basicExprParser;
@@ -262,17 +244,6 @@ public class ExpressionParserFactory {
   }
 
 	/*
-	 * Creates a new index parser.
-	 */
-	private Parser<IndexMap> createIndexParser(String opr1, String opr2, String pluginNames) {
-		return ParserTools.seq(
-				ParserTools.getOprParser(opr1), 
-				termParser.optional(), 
-				ParserTools.getOprParser(opr2)
-				).map(new IndexParseMap(opr1, opr2, pluginNames, OpType.INDEX));
-	}
-
-	/*
 	 * Adds the name of the plugin contributer of this operator to the database.
 	 */
 	private void addOperatorPlugin(Map<String, String> oprPlugins, OperatorRule oprRule) {
@@ -297,6 +268,7 @@ public class ExpressionParserFactory {
 		switch (oprRule.type) {
 		case PREFIX:
 		case POSTFIX:
+    case INDEX:
 			oprDB = unOps;
 			break;
 			
@@ -309,10 +281,6 @@ public class ExpressionParserFactory {
     case CLOSED:
       oprDB = closedOps;
       break;
-
-		case INDEX:
-			oprDB = indexOps;
-			break;
 		}
 
 		Integer tempPrec = oprs.get(oprToken);
@@ -327,7 +295,7 @@ public class ExpressionParserFactory {
 			}
 			pMap.put(oprRule.contributor, oprRule);
 		} else
-			if (tempPrec.intValue() == oprRule.precedence) { 
+			if (tempPrec.intValue() == oprRule.precedence) {
 				pMap.put(oprRule.contributor, oprRule);
 			} else {
 				// there should be another rule in pMap
@@ -456,67 +424,6 @@ public class ExpressionParserFactory {
 
 		public BinaryMap map(Stream<Node> v) {
 			return new BinaryMap(opr, pluginName, type, v);
-		}
-		
-	}
-
-	/* Special index map class */
-	public static class IndexMap implements Unary<Node> {
-		
-		//private String pluginNames;
-		private String opr1;
-		private String opr2;
-		private Object[] cnodes;
-		//private OpType type;
-		
-		/**
-		 * Creates a new IndexMap.
-		 * 
-		 * @param opr1 first operator token
-		 * @param opr2 second operator token
-		 * @param pluginNames contributing plugin names
-		 * @param type operator type
-		 * @param nodes an array of operator and delimiter nodes (without the operands) 
-		 */
-		public IndexMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
-			this.opr1 = opr1;
-			this.opr2 = opr2;
-			//this.pluginNames = pluginNames;
-			this.cnodes = nodes;
-			//this.type = type;
-		}
-
-		/**
-		 * Creates a tree for this operator with an {@link ASTNode} as its root.
-		 */
-		public Node map(Node child) {
-			Node node = null;
-			node = new ASTNode(
-					null, ASTNode.INDEX_OPERATOR_CLASS, "", opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, child.getScannerInfo());
-			node.addChild(child);
-			for (Object obj: cnodes)
-				if (obj != null)
-					node.addChild((Node)obj);
-			return node;
-		}
-	}
-	
-	/* Index parse map class for index operators */
-	public static class IndexParseMap extends ParseMap<Object[], IndexMap> {
-
-		private String opr1;
-		private String opr2;
-		private OpType type;
-		
-		public IndexParseMap(String opr1, String opr2, String pluginName, OpType type) {
-			super(pluginName);
-			this.opr1 = opr1;
-			this.opr2 = opr2;
-			this.type = type;
-		}
-
-		public IndexMap map(Object[] v) {
-			return new IndexMap(opr1, opr2, pluginName, type, v);
 		}
 		
 	}
