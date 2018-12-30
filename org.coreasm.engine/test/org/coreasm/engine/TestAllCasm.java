@@ -45,7 +45,7 @@ public class TestAllCasm {
 	private final ByteArrayOutputStream logContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-	final static PrintStream origOutput = System.out;
+	public final static PrintStream origOutput = System.out;
 	final static PrintStream origError = System.err;
 
 	public static List<String> getFilteredOutput(File file, String filter) {
