@@ -19,12 +19,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Token;
 import org.codehaus.jparsec.Tokens;
 import org.codehaus.jparsec.Tokens.Fragment;
 import org.codehaus.jparsec.Tokens.Tag;
@@ -38,7 +36,6 @@ import org.coreasm.engine.absstorage.BackgroundElement;
 import org.coreasm.engine.absstorage.BooleanElement;
 import org.coreasm.engine.absstorage.ConstantFunction;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.absstorage.RuleElement;
 import org.coreasm.engine.absstorage.UniverseElement;
@@ -126,8 +123,6 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 										".", "^", ">", "<", ">=", 
 										"<=", "|", "[", "]", "..", ":"};
 
-	private SizeFunctionElement sizeFunction = null;
-
 	private final CompilerPlugin compilerPlugin = new CompilerNumberPlugin(this);
 	
 	public NumberPlugin() {
@@ -177,7 +172,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 				}
 
 				Element toElement = nrNode.getEnd().getValue();
-				double to = 0;
+				double to;
 				if (toElement instanceof NumberElement) {
 					to = ((NumberElement) toElement).value;
 				} else {
@@ -210,24 +205,6 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 				return pos;
 			}
 		}
-
-		else if (pos instanceof SizeOfEnumNode) {
-			SizeOfEnumNode node = (SizeOfEnumNode) pos;
-			ASTNode enumerable = node.getEnumerableNode();
-
-			if (!enumerable.isEvaluated()) {
-				return enumerable;
-			} else {
-				Element value = enumerable.getValue();
-				if (value instanceof Enumerable) {
-					if (sizeFunction == null)
-						sizeFunction = new SizeFunctionElement();
-					pos.setNode(null, null, sizeFunction.getValue((Enumerable)value));
-				} else
-					pos.setNode(null, null, Element.UNDEF);
-			}
-		}
-
 		// if number related expression
 		else if (gClass.equals(ASTNode.EXPRESSION_CLASS)) {
 			// it is a number constant
@@ -323,28 +300,9 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 							getParser("NumberRangeTerm"), PLUGIN_NAME));
 			refNumberRangeParser.set(numberRangeTermParser);
 
-			// TODO this has to go to EnumerablePlugin
-			Parser<Node> sizeOfEnumTermParser = Parsers.array(
-					new Parser[] {
-						pTools.getOprParser("|"),
-						termParser,
-						pTools.getOprParser("|")
-					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
-							Node node = new SizeOfEnumNode(((Node)vals[0]).getScannerInfo());
-							addChildren(node, vals);
-							return node;
-						}
-			} );
-			parsers.put("SizeOfEnumTerm", 
-					new GrammarRule("SizeOfEnumTerm",
-							"'|' Term '|'", sizeOfEnumTermParser, PLUGIN_NAME));
-
 			parsers.put("BasicTerm", 
-					new GrammarRule("NumberBasicTerm",
-							"NumberRangeTerm | SizeOfEnumTerm", Parsers.or(
-									getParser("NumberRangeTerm"),
-									sizeOfEnumTermParser), PLUGIN_NAME));
+					new GrammarRule("NumberBasicTerm", "NumberRangeTerm",
+              getParser("NumberRangeTerm"), PLUGIN_NAME));
 		}
 		return parsers;
 	}
@@ -358,13 +316,8 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	
 		if (refNumberTermParser.get() == null) {
 			Parser<Node> nrParser = Terminals.fragment(Tag.DECIMAL).token().map(
-				new org.codehaus.jparsec.functors.Map<Token,Node> () {
-					@Override
-					public Node map(Token from) {
-						return new NumberTermNode(new ScannerInfo(from), from.toString());
-					}
-				}
-			);
+          from -> new NumberTermNode(new ScannerInfo(from), from.toString())
+      );
 			refNumberTermParser.set(nrParser);
 		}
 		return refNumberTermParser.lazy();
@@ -380,12 +333,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	 */
 	public Map<String, FunctionElement> getFunctions() {
 		if (functionElements == null) {
-			functionElements = new HashMap<String, FunctionElement>();
-
-			sizeFunction  = new SizeFunctionElement();
-			functionElements.put(
-					SizeFunctionElement.NAME, 
-					sizeFunction);
+			functionElements = new HashMap<>();
 
 			functionElements.put(
 					NumberNaturalFunction.NUMBER_NATURAL_FUNCTION_NAME,
@@ -429,7 +377,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 	 */
 	public Map<String, BackgroundElement> getBackgrounds() {
 		if (backgroundElements == null) {
-			backgroundElements = new HashMap<String, BackgroundElement>();
+			backgroundElements = new HashMap<>();
 
 			// initialize number background element
 			numberBackgroundElement = new NumberBackgroundElement();

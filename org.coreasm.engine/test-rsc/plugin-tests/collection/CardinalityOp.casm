@@ -1,0 +1,13 @@
+CoreASM CardinalityOp
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "3"
+ */
+rule Start = print |{1, 2, 3}|
