@@ -691,7 +691,7 @@ public class InterpreterImp implements Interpreter {
 		
 		// find first unevaluated child
 		ASTNode unevaluatedChild = pos.getFirst();
-		while (unevaluatedChild != null && unevaluatedChild.isEvaluated() == true)
+		while (unevaluatedChild != null && unevaluatedChild.isEvaluated())
 			unevaluatedChild = unevaluatedChild.getNext();
 		
 		// if there is an unevaluated child, then we need to pass control to that

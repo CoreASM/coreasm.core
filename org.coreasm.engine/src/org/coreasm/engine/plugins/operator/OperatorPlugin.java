@@ -497,7 +497,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       throws InterpreterException {
     Fixity f;
     ASTNode[] args;
-    opNode = (ASTNode) opNode.cloneTree();
     switch (opNode.getGrammarClass()) {
       case ASTNode.BINARY_OPERATOR_CLASS:
         f = Fixity.INFIX;
@@ -551,17 +550,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                 continue;
               }
               if (arg.isEvaluated()) evaluatedArgs.add(arg.getValue());
-              ASTNode localCopy = (ASTNode) interpreter.copyTree(arg);
-              localCopy.setParent(arg.getParent());
-              try {
-                interpreter.setPosition(localCopy);
-                do {
-                  interpreter.executeTree();
-                } while (!localCopy.isEvaluated());
-                evaluatedArgs.add(localCopy.getValue());
-              } catch (InterpreterException e) {
-                evaluatedArgs.add(null);
-              }
+              else throw new IllegalStateException("Unevaluated child node. Kernel should have "
+                  + "evaluated this beforehand!");
             }
             interpreter.setPosition(oldPos);
             for (int i = 0; i < evaluatedArgs.size(); ++i) {
