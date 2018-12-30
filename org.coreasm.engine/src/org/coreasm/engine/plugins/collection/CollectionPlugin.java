@@ -347,7 +347,7 @@ public class CollectionPlugin extends Plugin
    */
   @Override
   public Collection<OperatorRule> getOperatorRules() {
-    return Collections.singleton(new OperatorRule("|", "|", OpType.PAREN, 999,
+    return Collections.singleton(new OperatorRule("| |", OpType.CLOSED, 999,
         PLUGIN_NAME));
   }
 
