@@ -450,8 +450,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                 String domName = op.universes.get(i);
                 if (domName != null) {
                   AbstractUniverse domain = capi.getStorage().getUniverse(domName);
-                  if (domain != null && !domain.member(evaluatedArgs.get(i))) {
-                    return null;
+                  if (domain != null) {
+                    if (!domain.member(evaluatedArgs.get(i))) return null;
+                  } else {
+                    capi.warning(PLUGIN_NAME, "No universe named " + domName +
+                        " found in definition of operator " + finalOpNode.getToken());
                   }
                 }
               }
