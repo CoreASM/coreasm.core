@@ -40,7 +40,7 @@ public final class OperatorRegistry {
 	public final Map<String, Map<String, OperatorRule>> unOps;
 	public final Map<String, Map<String, OperatorRule>> indexOps;
   public final Map<String, Map<String, OperatorRule>> ternaryOps;
-  public final Map<String, Map<String, OperatorRule>> parenOps;
+  public final Map<String, Map<String, OperatorRule>> closedOps;
 
   /**
 	 * Private constructor.
@@ -51,7 +51,7 @@ public final class OperatorRegistry {
 		unOps = new HashMap<String, Map<String,OperatorRule>>();
 		indexOps = new HashMap<String, Map<String,OperatorRule>>();
     ternaryOps = new HashMap<String, Map<String,OperatorRule>>();
-    parenOps = new HashMap<String, Map<String,OperatorRule>>();
+    closedOps = new HashMap<String, Map<String,OperatorRule>>();
 	}
 	
 	/**
@@ -97,8 +97,8 @@ public final class OperatorRegistry {
 			oprs = indexOps;
     if (grammarClass.equals(ASTNode.TERNARY_OPERATOR_CLASS))
       oprs = ternaryOps;
-    if (grammarClass.equals(ASTNode.PAREN_OPERATOR_CLASS))
-      oprs = parenOps;
+    if (grammarClass.equals(ASTNode.CLOSED_OPERATOR_CLASS))
+      oprs = closedOps;
 		
 		if (oprs != null) {
 			Map<String, OperatorRule> mapping = oprs.get(token);

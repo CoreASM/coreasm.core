@@ -57,7 +57,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String POSTFIX_KEYWORD = "postfix";
   private static final String INDEX_KEYWORD = "index";
   private static final String TERNARY_KEYWORD = "ternary";
-  private static final String PAREN_KEYWORD = "paren";
+  private static final String CLOSED_KEYWORD = "closed";
   private static final String COMP_KEYWORD = "comp";
   private static final String GR_COMP = "Comprehension";
   private static final String GR_COMPRES = "ComprehensionResult";
@@ -68,14 +68,14 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   /*private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
           + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|comp)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren)\\s+"
+          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>closed)\\s+"
           + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
           + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?\\s+"
           + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");*/
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
           + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>paren|comp)\\s+"
+          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>closed|comp)\\s+"
           + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
           + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
           + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
@@ -87,7 +87,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     POSTFIX,
     INDEX,
     TERNARY,
-    PAREN,
+    CLOSED,
     COMP
   }
 
@@ -378,17 +378,17 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
-      case PAREN_KEYWORD:
+      case CLOSED_KEYWORD:
         if (universe != null) {
           if (universe2 != null || universe3 != null) {
             capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
             return false;
           }
-          opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.CLOSED, operatorSymbols),
               new OperatorValue(Associativity.NONE, precedence, functionName,
                   Collections.singletonList(universe)));
         } else {
-          opStore.put(new OperatorKey(Fixity.PAREN, operatorSymbols),
+          opStore.put(new OperatorKey(Fixity.CLOSED, operatorSymbols),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
         }
         break;
@@ -460,10 +460,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
               new OperatorRule(op.getKey().operatorSymbols[0], op.getKey().operatorSymbols[1],
                   OpType.TERNARY, opVal.getPrecedence(), PLUGIN_NAME));
           break;
-        case PAREN:
+        case CLOSED:
           opRules.add(
               new OperatorRule(op.getKey().operatorSymbols[0], op.getKey().operatorSymbols[1],
-                  OpType.PAREN, opVal.getPrecedence(), PLUGIN_NAME));
+                  OpType.CLOSED, opVal.getPrecedence(), PLUGIN_NAME));
           break;
       }
     }
@@ -528,8 +528,8 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         args[1] = args[0].getNext();
         args[2] = args[1].getNext();
         break;
-      case ASTNode.PAREN_OPERATOR_CLASS:
-        f = Fixity.PAREN;
+      case ASTNode.CLOSED_OPERATOR_CLASS:
+        f = Fixity.CLOSED;
         args = new ASTNode[1];
         args[0] = opNode.getFirst();
         break;

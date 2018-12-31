@@ -55,7 +55,7 @@ public class ExpressionParserFactory {
 	private Map<String, Map<String, OperatorRule>> unOps = new HashMap<String, Map<String, OperatorRule>>();
 	private Map<String, Map<String, OperatorRule>> indexOps = new HashMap<String, Map<String, OperatorRule>>();
   private Map<String, Map<String, OperatorRule>> ternaryOps = new HashMap<String, Map<String, OperatorRule>>();
-  private Map<String, Map<String, OperatorRule>> parenOps = new HashMap<String, Map<String, OperatorRule>>();
+  private Map<String, Map<String, OperatorRule>> closedOps = new HashMap<String, Map<String, OperatorRule>>();
 	
 	// precedence levels
 	private Map<String, Integer> infixLeftOprs = new HashMap<String, Integer>();
@@ -65,7 +65,7 @@ public class ExpressionParserFactory {
 	private Map<String, Integer> postfixOprs = new HashMap<String, Integer>();
 	private Map<String, Integer> indexOprs = new HashMap<String, Integer>();
   private Map<String, Integer> ternaryOprs = new HashMap<String, Integer>();
-  private Map<String, Integer> parenOprs = new HashMap<String, Integer>();
+  private Map<String, Integer> closedOprs = new HashMap<String, Integer>();
 
 	// operator -> plugins (for convenience)
 	private Map<String, String> infixLeftPlugins = new HashMap<String, String>();
@@ -75,7 +75,7 @@ public class ExpressionParserFactory {
 	private Map<String, String> postfixPlugins = new HashMap<String, String>();
 	private Map<String, String> indexPlugins = new HashMap<String, String>();
   private Map<String, String> ternaryPlugins = new HashMap<String, String>();
-  private Map<String, String> parenPlugins = new HashMap<String, String>();
+  private Map<String, String> closedPlugins = new HashMap<String, String>();
 
   /**
 	 * Creates a new expression parser factory.  
@@ -137,9 +137,9 @@ public class ExpressionParserFactory {
               addOperatorPlugin(ternaryPlugins, oprRule);
               break;
 
-            case PAREN:
-              addOperator(parenOprs, oprRule);
-              addOperatorPlugin(parenPlugins, oprRule);
+            case CLOSED:
+              addOperator(closedOprs, oprRule);
+              addOperatorPlugin(closedPlugins, oprRule);
               break;
     					
     				}
@@ -155,8 +155,10 @@ public class ExpressionParserFactory {
     	oprReg.unOps.putAll(unOps);
     	oprReg.indexOps.clear();
     	oprReg.indexOps.putAll(indexOps);
+      oprReg.ternaryOps.clear();
       oprReg.ternaryOps.putAll(ternaryOps);
-      oprReg.parenOps.putAll(parenOps);
+      oprReg.closedOps.clear();
+      oprReg.closedOps.putAll(closedOps);
 	}
 
 	/**
@@ -224,12 +226,12 @@ public class ExpressionParserFactory {
 
     Parser<Node> p = basicExprParser;
 
-    // Paren
-    for (String opr: parenOprs.keySet()) {
-      pluginNames = parenPlugins.get(opr);
+    // Closed
+    for (String opr: closedOprs.keySet()) {
+      pluginNames = closedPlugins.get(opr);
       String opr1 = opr.split(OperatorRule.OPERATOR_DELIMITER)[0];
       String opr2 = opr.split(OperatorRule.OPERATOR_DELIMITER)[1];
-      p = p.or(createParenParser(opr1, opr2, pluginNames));
+      p = p.or(createClosedParser(opr1, opr2, pluginNames));
     }
 
 		return table.build(p);
@@ -285,12 +287,12 @@ public class ExpressionParserFactory {
   }
 
   /*
-   * Creates a new paren parser.
+   * Creates a new closed parser.
    */
-  private Parser<Node> createParenParser(String opr1, String opr2, String pluginNames) {
+  private Parser<Node> createClosedParser(String opr1, String opr2, String pluginNames) {
     return basicExprParser.between(ParserTools.getOprParser(opr1), ParserTools.getOprParser(opr2))
         .map(n -> {
-          ASTNode node = new ASTNode(null, ASTNode.PAREN_OPERATOR_CLASS, null,
+          ASTNode node = new ASTNode(null, ASTNode.CLOSED_OPERATOR_CLASS, null,
               opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, n.getScannerInfo());
           node.addChild(n);
           return node;
@@ -339,8 +341,8 @@ public class ExpressionParserFactory {
       oprDB = ternaryOps;
       break;
 
-    case PAREN:
-      oprDB = parenOps;
+    case CLOSED:
+      oprDB = closedOps;
       break;
 		}
 
