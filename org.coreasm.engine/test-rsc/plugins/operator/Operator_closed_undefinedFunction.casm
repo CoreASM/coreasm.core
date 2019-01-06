@@ -1,0 +1,25 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator closed !! E! = xyz
+operator closed ?? E? = xyz
+operator closed !! E! = xyz
+operator closed ?? E? = xyz
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + (??1E?))
+  next
+    print ("02: " + (!!1E!))
+  next
+    print ("03: " + (??"1"E?))
+  next
+    print ("04: " + (!!"1"E!))

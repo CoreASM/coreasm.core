@@ -290,7 +290,7 @@ public class ExpressionParserFactory {
    * Creates a new closed parser.
    */
   private Parser<Node> createClosedParser(String opr1, String opr2, String pluginNames) {
-    return basicExprParser.between(ParserTools.getOprParser(opr1), ParserTools.getOprParser(opr2))
+    return termParser.between(ParserTools.getOprParser(opr1), ParserTools.getOprParser(opr2))
         .map(n -> {
           ASTNode node = new ASTNode(null, ASTNode.CLOSED_OPERATOR_CLASS, null,
               opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, n.getScannerInfo());

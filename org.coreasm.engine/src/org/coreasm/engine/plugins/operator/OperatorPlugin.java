@@ -51,12 +51,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String INDEX_KEYWORD = "index";
   private static final String TERNARY_KEYWORD = "ternary";
   private static final String CLOSED_KEYWORD = "closed";
-  private static final String COMP_KEYWORD = "comp";
-  private static final String GR_COMP = "Comprehension";
-  private static final String GR_COMPRES = "ComprehensionResult";
-  private static final String GR_GEN = "Genartor";
-  private static final String GR_GENLIST = "GenartorList";
-  private static final String GR_ENUMELEM = "EnumerableElement";
 
   /*private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
@@ -67,9 +61,9 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           + "=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");*/
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
       "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary)\\s+"
-          + "(?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+(?<op2>\\S+)|(?<fixity3>closed|comp)\\s+"
-          + "(?<op3>\\S+))\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
+          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|closed)\\s+"
+          + "((?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+)?(?<op2>\\S+))"
+          + "\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
           + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
           + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
@@ -241,16 +235,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             }
           } else if (m.group("fixity2") != null) {
             //NOTE: op2 being in front of op is NOT a typo, see regex definition.
-            if (!handleOpDefinition(m.group("fixity2"), Integer.valueOf(m.group("precedence2")),
+            int p = -1;
+            if (m.group("precedence2") != null) p = Integer.valueOf(m.group("precedence2"));
+            if (!handleOpDefinition(m.group("fixity2"), p,
                 m.group("rule"), m.group("universe"), m.group("universe2"), m.group("universe3"),
                 m.group("op2"), m.group("op"))) {
-              filteredLines.add(l);
-            }
-          } else {
-            //NOTE: op3 being in front of op is NOT a typo, see regex definition.
-            if (!handleOpDefinition(m.group("fixity3"), 100, //arbitrary value, not important
-                m.group("rule"), m.group("universe"), m.group("universe2"), m.group("universe3"),
-                m.group("op3"), m.group("op"))) {
               filteredLines.add(l);
             }
           }
@@ -265,12 +254,11 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
 
   private boolean handleOpDefinition(String fixity, int precedence, String functionName,
       String universe, String universe2, String universe3, String... operatorSymbols) {
-    if (functionName != null && COMP_KEYWORD.equals(fixity)) {
-      capi.error("comp operator type does not support a right hand side in the definition.");
+    if (precedence < 0 && !CLOSED_KEYWORD.equals(fixity)) {
+      capi.error("Operator " + Arrays.toString(operatorSymbols) + " of type " + fixity + " requires precedence in operator definition.");
       return false;
-    } else if (functionName == null && !COMP_KEYWORD.equals(fixity)) {
-      capi.error(fixity + " operator type requires a right hand side in the definition.");
-      return false;
+    } else if (precedence >= 0 && CLOSED_KEYWORD.equals(fixity)) {
+      capi.warning(PLUGIN_NAME, "Closed form operator " + Arrays.toString(operatorSymbols) + " does not require precedence in operator definition. Value will be ignored.");
     }
     switch (fixity) {
       case INFIXL_KEYWORD:
@@ -383,15 +371,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         } else {
           opStore.put(new OperatorKey(Fixity.CLOSED, operatorSymbols),
               new OperatorValue(Associativity.NONE, precedence, functionName, null));
-        }
-        break;
-      case COMP_KEYWORD:
-        if (universe != null || universe2 != null || universe3 != null) {
-          capi.error("Arity of signature and operator does not match in definition of operator " + Arrays.toString(operatorSymbols) + ".");
-          return false;
-        } else {
-          opStore.put(new OperatorKey(Fixity.COMP, operatorSymbols),
-              new OperatorValue(Associativity.NONE, -1, null, null));
         }
         break;
       default:
