@@ -1,0 +1,25 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator infixl 50 !! = xyz
+operator infixl 50 ?  = xyz
+operator infixl 50 ## = xyz
+operator infixl 50 ~  = xyz
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + ([0]?(@id)))
+  next
+    print ("02: " + ([0]!!(@id)))
+  next
+    print ("03: " + ([0]~[1]))
+  next
+    print ("04: " + ([0]##[1]))

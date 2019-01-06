@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,30 +23,24 @@ import org.coreasm.engine.SpecLine;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.AbstractUniverse;
 import org.coreasm.engine.absstorage.Element;
-import org.coreasm.engine.absstorage.Enumerable;
 import org.coreasm.engine.absstorage.FunctionElement;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Interpreter;
 import org.coreasm.engine.interpreter.InterpreterException;
 import org.coreasm.engine.interpreter.Node;
-import org.coreasm.engine.kernel.Kernel;
-import org.coreasm.engine.kernel.KernelServices;
 import org.coreasm.engine.parser.CommentRemover;
 import org.coreasm.engine.parser.GrammarRule;
 import org.coreasm.engine.parser.OperatorRule;
 import org.coreasm.engine.parser.OperatorRule.OpType;
-import org.coreasm.engine.parser.ParserTools;
 import org.coreasm.engine.plugin.ExtensionPointPlugin;
 import org.coreasm.engine.plugin.InitializationFailedException;
-import org.coreasm.engine.plugin.InterpreterPlugin;
 import org.coreasm.engine.plugin.OperatorProvider;
 import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
-import org.coreasm.engine.plugins.list.ListElement;
 import org.coreasm.engine.plugins.signature.DerivedFunctionElement;
 
 public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, OperatorProvider,
-    ParserPlugin, InterpreterPlugin {
+    ParserPlugin {
 
   public static final String PLUGIN_NAME = OperatorPlugin.class.getSimpleName();
   private static final String INFIXL_KEYWORD = "infixl";
@@ -642,10 +635,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   @Override
   public Map<String, GrammarRule> getParsers() {
     Map<String, GrammarRule> m = new HashMap<>();
-    final ParserTools parserTools = ParserTools.getInstance(capi);
-    final Kernel kernelPlugin = (Kernel)capi.getPlugin("Kernel");
-    final KernelServices kernel = (KernelServices)kernelPlugin.getPluginInterface();
-    final Parser<Node> termParser = kernel.getTermParser();
     for (Entry<OperatorKey, Collection<OperatorValue>> op : opStore.asMap().entrySet()) {
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
@@ -654,59 +643,6 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             .toString(op.getKey().operatorSymbols) + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
-      }
-      switch (op.getKey().fixity) {
-        case COMP:
-          m.put(Kernel.GR_FUNCTION_RULE_TERM, new GrammarRule(Arrays.toString(op.getKey().operatorSymbols), "",
-              parserTools.seq(
-                  parserTools.seq(
-                  parserTools.seq(
-                      parserTools.getIdParser(),
-                      parserTools.getOprParser(op.getKey().operatorSymbols[0]),
-                      termParser
-                  ).map(ob -> {
-                    Node n = new ASTNode(
-                        PLUGIN_NAME, GR_GEN, "",
-                        "",
-                        ((Node) ob[0]).getScannerInfo());
-                    for (Object o : ob) if (o != null) n.addChild((Node) o);
-                    return n;
-                  }),
-                  parserTools.seq(
-                      parserTools.getOprParser(","),
-                      parserTools.getIdParser(),
-                      parserTools.getOprParser(op.getKey().operatorSymbols[0]),
-                      termParser
-                      ).map(ob -> {
-                        Node n = new ASTNode(
-                            PLUGIN_NAME, GR_GEN, "",
-                            "",
-                            ((Node) ob[0]).getScannerInfo());
-                        for (Object o : ob) if (o != null) n.addChild((Node) o);
-                        return n;
-                      }).many()
-                  ).map(obArr -> {
-                    List<Object> ob = new ArrayList<>();
-                    ob.add(obArr[0]);
-                    ob.addAll((List) obArr[1]);
-                    Node n = new ASTNode(
-                        PLUGIN_NAME, GR_GENLIST, "",
-                        "",
-                        ((Node) ob.get(0)).getScannerInfo());
-                    for (Object o : ob) if (o instanceof Node) n.addChild((Node) o);
-                    return n;
-                  }),
-                  parserTools.getOprParser(op.getKey().operatorSymbols[1]),
-                  termParser
-              ).map(ob -> {
-                Node n = new ASTNode(
-                    PLUGIN_NAME, GR_COMP, "",
-                    op.getKey().operatorSymbols[0] + OperatorRule.OPERATOR_DELIMITER + op.getKey().operatorSymbols[1],
-                    ((Node) ob[0]).getScannerInfo());
-                for (Object o : ob) if (o != null) n.addChild((Node) o);
-                return n;
-              }), PLUGIN_NAME));
-          break;
       }
     }
     return m;
@@ -748,103 +684,5 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   public String[] getOperators() {
     return opStore.keySet().stream().flatMap(k -> Arrays.stream(k.operatorSymbols))
         .toArray(String[]::new);
-  }
-
-  static class GeneratorListElement extends Element {
-    private final Map<String, Enumerable> generators;
-
-    GeneratorListElement(Map<String, Enumerable> generators) {
-      this.generators = generators;
-    }
-
-    Map<String, Enumerable> getGenerators() {
-      return generators;
-    }
-  }
-
-  /**
-   * This method is the interpreter rule of this plugin.
-   * This method gets the value of <i>pos</i> and returns
-   * a new value for <i>pos</i>. This is the implementation
-   * of the <i>pluginRule</i> function.
-   * <p>
-   * This method should NOT return <code>null</code>. If this method
-   * cannot interpret <code>pos</code>, it should return <code>pos</code>.
-   * <p>
-   * <b>NOTE:</b> Any implementation of this method must be thread-safe, since
-   * it may be called simultaneously by more than one thread during the simulation.
-   *
-   * @param interpreter the parent interpreter (most likely, component of the engine)
-   * @param pos         the value of <i>pos</i>
-   * @return new value of <i>pos</i>
-   */
-  @Override
-  public ASTNode interpret(Interpreter interpreter, ASTNode pos) throws InterpreterException {
-    switch (pos.getGrammarClass()) {
-      case GR_COMP:
-        if (!pos.getFirst().isEvaluated()) return pos.getFirst();
-        List<List<EASTNode>> argLists = ((GeneratorListElement) pos.getFirst().getValue())
-            .getGenerators().entrySet().stream().map(gen ->
-                gen.getValue().enumerate().stream()
-                .map(e ->
-                    new EASTNode(PLUGIN_NAME, GR_ENUMELEM, "", e.toString(),
-                        pos.getScannerInfo(), e, gen.getKey())
-                ).collect(Collectors.toList())
-            ).collect(Collectors.toList());
-        EASTNode[][] args = new EASTNode[argLists.stream().map(List::size).reduce(1, (a, b) -> a * b)][argLists.size()];
-        int m = 1;
-        for (int i = 0; i < argLists.size(); ++i) {
-          int idx = 0;
-          while (idx < args.length)
-            for (int j = 0; j < argLists.get(i).size(); ++j)
-              for (int k = 0; k < m; ++k)
-                args[idx++][i] = argLists.get(i).get(j);
-          m *= argLists.get(i).size();
-        }
-        ASTNode fun = pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1);
-        ASTNode res = new ASTNode(PLUGIN_NAME, GR_COMPRES, "", "", pos.getScannerInfo());
-        res.setParent(pos);
-        for (EASTNode[] argList : args) {
-          ASTNode newChild = interpreter.copyTreeSub(fun,
-              Arrays.stream(argList).map(EASTNode::getKey).collect(Collectors.toList()),
-              Arrays.asList(argList));
-          newChild.setParent(res);
-          res.addChild(newChild);
-        }
-        return res;
-
-      case GR_COMPRES:
-        Optional<ASTNode> u = pos.getAbstractChildNodes().stream().filter(n -> !n.isEvaluated()).findFirst();
-        if (u.isPresent()) return u.get();
-        ListElement resVal = new ListElement(pos.getAbstractChildNodes().stream()
-            .map(ASTNode::getValue).collect(Collectors.toList()));
-        pos.setNode(null, null, resVal);
-        pos.getParent().setNode(null, null, resVal);
-        return pos.getParent().getParent();
-
-      case GR_GENLIST:
-        Optional<ASTNode> x = pos.getAbstractChildNodes().stream().filter(n -> !n.isEvaluated()).findFirst();
-        if (x.isPresent()) return x.get();
-        pos.setNode(null, null, new GeneratorListElement(
-            pos.getAbstractChildNodes().stream()
-                .filter(n -> GR_GEN.equals(n.getGrammarClass()))
-                .collect(Collectors.toMap(Node::getToken, gen -> (Enumerable) gen.getValue()))));
-        return pos.getParent();
-
-      case GR_GEN:
-        if (!pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1).isEvaluated())
-          return pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1);
-        pos.setNode(null, null,
-            pos.getAbstractChildNodes().get(pos.getAbstractChildNodes().size() - 1).getValue());
-        if (!(pos.getValue() instanceof Enumerable))
-          throw new InterpreterException("Right hand side of generator is not enumerable.");
-        pos.setToken(pos.getFirst().getToken());
-        return pos.getParent();
-
-      case GR_ENUMELEM:
-        pos.setNode(null, null, ((EASTNode) pos).getVal());
-        return pos.getParent();
-    }
-    return null;
   }
 }
