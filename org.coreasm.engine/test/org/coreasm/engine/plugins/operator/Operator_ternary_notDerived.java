@@ -7,16 +7,16 @@ import java.util.LinkedList;
 import org.coreasm.engine.TestAllCasm;
 import org.junit.BeforeClass;
 
-public class Operator_ternary extends TestAllCasm {
+public class Operator_ternary_notDerived extends TestAllCasm {
 
   @BeforeClass
   public static void onlyOnce() {
-    URL url = Operator_ternary_nArgs.class.getClassLoader().getResource(".");
+    URL url = Operator_ternary_notDerived.class.getClassLoader().getResource(".");
 
     try {
       testFiles = new LinkedList<File>();
       assert url != null;
-      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_ternary.class);
+      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_ternary_notDerived.class);
     }
     catch (URISyntaxException e) {
       e.printStackTrace();

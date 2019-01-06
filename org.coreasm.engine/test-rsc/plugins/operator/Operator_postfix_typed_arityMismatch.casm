@@ -1,0 +1,105 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator postfix 50 !! on STRING * NUMBER = err
+operator postfix 50 ?  on STRING * NUMBER = err
+operator postfix 50 ## on STRING * NUMBER = err
+operator postfix 50 ~  on STRING * NUMBER = err
+operator postfix 50 !! on NUMBER * NUMBER = dec
+operator postfix 50 ?  on NUMBER * NUMBER = dec
+operator postfix 50 ## on NUMBER * NUMBER = inc
+operator postfix 50 ~  on NUMBER * NUMBER = inc
+
+derived dec(x) = x - 1
+derived inc(x) = x + 1
+derived err(x) = "fail"
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?))
+  next
+    print ("02: " + (2??))
+  next
+    print ("03: " + (1!!))
+  next
+    print ("04: " + (2!!!!))
+  next
+    print ("05: " + (3??!!))
+  next
+    print ("06: " + (-1~))
+  next
+    print ("07: " + (-2~~))
+  next
+    print ("08: " + (-1##))
+  next
+    print ("09: " + (-2####))
+  next
+    print ("10: " + (-3~##~))
+  next
+    print ("11: " + (0?~))
+  next
+    print ("12: " + (1?~?))
+  next
+    print ("13: " + (-1~!!~))
+  next
+    print ("14: " + (1!!##!!))
+  next
+    print ("15: " + (0?~?!!~##))
+  next
+    print ("16: " + (-1##?##!!~))
+  next
+    print ("17: " + (-2~?~##!!~))
+  next
+    print ("18: " + (-1~!!##))
+  next
+    print ("19: " + (-2##!!~~?##))
+  next
+    print ("20: " + (-3!!~?~##~##))
+  next
+    print ("21: " + ("1"?))
+  next
+    print ("22: " + ("2"??))
+  next
+    print ("23: " + ("1"!!))
+  next
+    print ("24: " + ("2"!!!!))
+  next
+    print ("25: " + ("3"??!!))
+  next
+    print ("26: " + ("1"~))
+  next
+    print ("27: " + ("2"~~))
+  next
+    print ("28: " + ("1"##))
+  next
+    print ("29: " + ("2"####))
+  next
+    print ("30: " + ("3"~##~))
+  next
+    print ("31: " + ("0"?~))
+  next
+    print ("32: " + ("1"?~?))
+  next
+    print ("33: " + ("1"~!!~))
+  next
+    print ("34: " + ("1"!!##!!))
+  next
+    print ("35: " + ("0"?~?!!~##))
+  next
+    print ("36: " + ("1"##?##!!~))
+  next
+    print ("37: " + ("2"~?~##!!~))
+  next
+    print ("38: " + ("1"~!!##))
+  next
+    print ("39: " + ("2"##!!~~?##))
+  next
+    print ("40: " + ("3"!!~?~##~##))

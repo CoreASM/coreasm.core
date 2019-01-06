@@ -4,10 +4,12 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
+import junit.framework.AssertionFailedError;
 import org.coreasm.engine.TestAllCasm;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
-public class Operator_ternary extends TestAllCasm {
+public class Operator_ternary_nArgs extends TestAllCasm {
 
   @BeforeClass
   public static void onlyOnce() {
@@ -16,10 +18,16 @@ public class Operator_ternary extends TestAllCasm {
     try {
       testFiles = new LinkedList<File>();
       assert url != null;
-      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_ternary.class);
+      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_ternary_nArgs.class);
     }
     catch (URISyntaxException e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  @Test(expected=AssertionFailedError.class)
+  public void performTest() {
+    super.performTest();
   }
 }

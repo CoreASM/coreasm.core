@@ -1,0 +1,95 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+function test: NUMBER * NUMBER * NUMBER -> NUMBER
+
+operator ternary 50 !! E! = test
+operator ternary 50 ? E?  = test
+operator ternary 50 ## E# = test
+operator ternary 50 ~ E~  = test
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: undef"
+ * @require "02: undef"
+ * @require "03: undef"
+ * @require "04: undef"
+ * @require "05: undef"
+ * @require "06: undef"
+ * @require "07: undef"
+ * @require "08: undef"
+ * @require "09: undef"
+ * @require "10: undef"
+ * @require "11: undef"
+ * @require "12: undef"
+ * @require "13: undef"
+ * @require "14: undef"
+ * @require "15: undef"
+ * @require "16: undef"
+ * @require "17: undef"
+ * @require "18: undef"
+ * @require "19: undef"
+ * @require "20: undef"
+ * @require "21: undef"
+ * @require "22: undef"
+ * @require "23: undef"
+ * @require "24: undef"
+ * @require "25: undef"
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?1E?0))
+  next
+    print ("02: " + (2?3?1E?1E?1))
+  next
+    print ("03: " + (3?5E?2))
+  next
+    print ("04: " + (2?3?5E?2E?-2))
+  next
+    print ("05: " + (5?2E?1?4E?0))
+  next
+    print ("06: " + (1!!1E!0))
+  next
+    print ("07: " + (2!!3!!1E!1E!1))
+  next
+    print ("08: " + (3!!5E!2))
+  next
+    print ("09: " + (2!!3!!5E!2E!-2))
+  next
+    print ("10: " + (5!!2E!1!!4E!0))
+  next
+    print ("11: " + (1##1E#2))
+  next
+    print ("12: " + (2##3##1E#1E#5))
+  next
+    print ("13: " + (3##5E#8))
+  next
+    print ("14: " + (2##3##5E#2E#8))
+  next
+    print ("15: " + (-3##2E#1##4E#6))
+  next
+    print ("16: " + (1~1E~2))
+  next
+    print ("17: " + (2~3~1E~1E~5))
+  next
+    print ("18: " + (3~5E~8))
+  next
+    print ("19: " + (2~3~5E~2E~8))
+  next
+    print ("20: " + ((5~2E~1)~4E~10))
+  next
+    print ("21: " + (5!!6E!0~1E~0))
+  next
+    print ("22: " + (5!!6E!1~1##2?1~1E~1E?1E#1E~2))
+  next
+    print ("23: " + (5?6E?1##1E#1))
+  next
+    print ("24: " + (5!!6E!1~1##2?1~1E~1E?1E#1E~2))
+  next
+    print ("25: " + (5!!1E!1~1##2?1~1E~1E?1E#1E~7))
