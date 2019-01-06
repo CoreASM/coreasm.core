@@ -1,0 +1,40 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator closed '!! E!' = dec
+operator closed '?? E?' = dec
+operator closed '## E#' = inc
+operator closed '~~ E~' = inc
+
+derived dec = 1 - 1
+derived inc = 1 + 1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + (??1E?))
+  next
+    print ("02: " + (????2E?E?))
+  next
+    print ("03: " + (!!1E!))
+  next
+    print ("04: " + (!!!!2E!E!))
+  next
+    print ("05: " + (##-1E#))
+  next
+    print ("06: " + (####-2E#E#))
+  next
+    print ("07: " + (~~-1E~))
+  next
+    print ("08: " + (~~~~-2E~E~))
+  next
+    print ("09: " + (##!!??~~0E~E?E!E#))
+  next
+    print ("10: " + (##~~-2E~E#))

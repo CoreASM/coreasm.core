@@ -1,0 +1,39 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+function test: LIST * LIST -> ELEMENT
+
+operator closed '!! E!' = map
+operator closed '?? E?' = map
+operator closed '## E#' = test
+operator closed '~~ E~' = test
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+rule initRule =
+  seq
+    print ("01: " + (??[0]E?))
+  next
+    print ("02: " + (????[[0, 1, 2], [2]]E?E?))
+  next
+    print ("03: " + (!![0, 2, 3]E!))
+  next
+    print ("04: " + (!!!![[0, 2], [2]]E!E!))
+  next
+    print ("05: " + (##-1E#))
+  next
+    print ("06: " + (####-2E#E#))
+  next
+    print ("07: " + (~~-1E~))
+  next
+    print ("08: " + (~~~~-2E~E~))
+  next
+    print ("09: " + (!!??[[0, 2], [2]]E?E!))
+  next
+    print ("10: " + (##~~-2E~E#))

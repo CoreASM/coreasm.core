@@ -1,0 +1,51 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator closed '!! E!' = dec
+operator closed '?? E?'  = dec
+operator closed '## E#' = inc
+operator closed '~~ E~' = inc
+
+derived dec(x) = x - 1
+derived inc(x) = x + 1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: 0"
+ * @require "04: 0"
+ * @require "05: 0"
+ * @require "06: 0"
+ * @require "07: 0"
+ * @require "08: 0"
+ * @require "09: 0"
+ * @require "10: 0"
+ */
+rule initRule =
+  seq
+    print ("01: " + (??1E?))
+  next
+    print ("02: " + (????2E?E?))
+  next
+    print ("03: " + (!!1E!))
+  next
+    print ("04: " + (!!!!2E!E!))
+  next
+    print ("05: " + (##-1E#))
+  next
+    print ("06: " + (####-2E#E#))
+  next
+    print ("07: " + (~~-1E~))
+  next
+    print ("08: " + (~~~~-2E~E~))
+  next
+    print ("09: " + (##!!??~~0E~E?E!E#))
+  next
+    print ("10: " + (##~~-2E~E#))
