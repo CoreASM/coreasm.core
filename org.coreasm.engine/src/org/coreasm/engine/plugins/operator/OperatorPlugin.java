@@ -411,7 +411,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
         args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length + 1];
         break;
       case ASTNode.UNARY_OPERATOR_CLASS:
-        if (opNode.unparseTree().startsWith(opNode.getToken())) {
+        if (opNode.unparseTree().startsWith(opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER)[0])) {
           f = Fixity.PREFIX;
         } else {
           f = Fixity.POSTFIX;
