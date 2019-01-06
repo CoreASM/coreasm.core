@@ -7,10 +7,10 @@ init initRule
 
 function test: LIST * LIST -> ELEMENT
 
-operator index 50 !! E! = map
-operator index 50 ?  E? = map
-operator index 50 ## E# = test
-operator index 50 ~  E~ = test
+operator infixl 50 '!!' = map
+operator infixl 50 '?' = map
+operator infixl 50 '##' = test
+operator infixl 50 '~' = test
 
 derived id(x) = x
 
@@ -25,10 +25,10 @@ derived id(x) = x
  */
 rule initRule =
   seq
-    print ("01: " + ([0]?(@id)E?))
+    print ("01: " + ([0]?(@id)))
   next
-    print ("02: " + ([0]!!(@id)E!))
+    print ("02: " + ([0]!!(@id)))
   next
-    print ("03: " + ([0]~[1]E~))
+    print ("03: " + ([0]~[1]))
   next
-    print ("04: " + ([0]##[1]E#))
+    print ("04: " + ([0]##[1]))

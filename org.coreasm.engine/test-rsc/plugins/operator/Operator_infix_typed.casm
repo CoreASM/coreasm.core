@@ -1,0 +1,187 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator infixl 50 '!!'  on STRING * STRING = err
+operator infixl 50 '?'  on STRING * STRING = err
+operator infixl 50 '##'  on STRING * STRING = err
+operator infixl 50 '~'  on STRING * STRING = err
+operator infixl 50 '!!'  on NUMBER * NUMBER = dec
+operator infixl 50 '?'  on NUMBER * NUMBER = dec
+operator infixl 50 '##'  on NUMBER * NUMBER = inc
+operator infixl 50 '~'  on NUMBER * NUMBER = inc
+
+derived dec(x, y) = y - 1
+derived inc(x, y) = y + 1
+derived err(x, y) = "fail"
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: 0"
+ * @require "04: 0"
+ * @require "05: 0"
+ * @require "06: 0"
+ * @require "07: 0"
+ * @require "08: 0"
+ * @require "09: 0"
+ * @require "10: 0"
+ * @require "11: 0"
+ * @require "12: 0"
+ * @require "13: 0"
+ * @require "14: 0"
+ * @require "15: 0"
+ * @require "16: 0"
+ * @require "17: 0"
+ * @require "18: 0"
+ * @require "19: 0"
+ * @require "20: 0"
+ * @require "21: fail"
+ * @require "22: fail"
+ * @require "23: fail"
+ * @require "24: fail"
+ * @require "25: fail"
+ * @require "26: fail"
+ * @require "27: fail"
+ * @require "28: fail"
+ * @require "29: fail"
+ * @require "30: fail"
+ * @require "31: fail"
+ * @require "32: fail"
+ * @require "33: fail"
+ * @require "34: fail"
+ * @require "35: fail"
+ * @require "36: fail"
+ * @require "37: fail"
+ * @require "38: fail"
+ * @require "39: fail"
+ * @require "40: fail"
+ *
+ * @refuse "01: fail"
+ * @refuse "02: fail"
+ * @refuse "03: fail"
+ * @refuse "04: fail"
+ * @refuse "05: fail"
+ * @refuse "06: fail"
+ * @refuse "07: fail"
+ * @refuse "08: fail"
+ * @refuse "09: fail"
+ * @refuse "10: fail"
+ * @refuse "11: fail"
+ * @refuse "12: fail"
+ * @refuse "13: fail"
+ * @refuse "14: fail"
+ * @refuse "15: fail"
+ * @refuse "16: fail"
+ * @refuse "17: fail"
+ * @refuse "18: fail"
+ * @refuse "19: fail"
+ * @refuse "20: fail"
+ * @refuse "21: 0"
+ * @refuse "22: 0"
+ * @refuse "23: 0"
+ * @refuse "24: 0"
+ * @refuse "25: 0"
+ * @refuse "26: 0"
+ * @refuse "27: 0"
+ * @refuse "28: 0"
+ * @refuse "29: 0"
+ * @refuse "30: 0"
+ * @refuse "31: 0"
+ * @refuse "32: 0"
+ * @refuse "33: 0"
+ * @refuse "34: 0"
+ * @refuse "35: 0"
+ * @refuse "36: 0"
+ * @refuse "37: 0"
+ * @refuse "38: 0"
+ * @refuse "39: 0"
+ * @refuse "40: 0"
+ */
+rule initRule =
+  seq
+    print ("01: " + (0?1))
+  next
+    print ("02: " + (0?0?1))
+  next
+    print ("03: " + (0!!1))
+  next
+    print ("04: " + (0!!0!!1))
+  next
+    print ("05: " + (0?0?0!!1))
+  next
+    print ("06: " + (0~-1))
+  next
+    print ("07: " + (0~0~-1))
+  next
+    print ("08: " + (0##-1))
+  next
+    print ("09: " + (0##0##-1))
+  next
+    print ("10: " + (0~0##0~-1))
+  next
+    print ("11: " + (0?0~-1))
+  next
+    print ("12: " + (0?0~0?1))
+  next
+    print ("13: " + (0~0!!0~-1))
+  next
+    print ("14: " + (0!!0##0!!1))
+  next
+    print ("15: " + (0?0~0?0!!0~0##-1))
+  next
+    print ("16: " + (0##0?0##0!!0~-1))
+  next
+    print ("17: " + (0~0?0~0##0!!0~-1))
+  next
+    print ("18: " + (0~0!!0##-1))
+  next
+    print ("19: " + (0##0!!0~0~0?0##-1))
+  next
+    print ("20: " + (0!!0~0?0~0##0~0##-1))
+  next
+    print ("21: " + ("0"?"1"))
+  next
+    print ("22: " + ("0"?"0"?"2"))
+  next
+    print ("23: " + ("0"!!"1"))
+  next
+    print ("24: " + ("0"!!"0"!!"2"))
+  next
+    print ("25: " + ("0"?"0"?"0"!!"3"))
+  next
+    print ("26: " + ("0"~"1"))
+  next
+    print ("27: " + ("0"~"0"~"2"))
+  next
+    print ("28: " + ("0"##"1"))
+  next
+    print ("29: " + ("0"##"0"##"2"))
+  next
+    print ("30: " + ("0"~"0"##"0"~"3"))
+  next
+    print ("31: " + ("0"?"0"~"0"))
+  next
+    print ("32: " + ("0"?"0"~"0"?"1"))
+  next
+    print ("33: " + ("0"~"0"!!"0"~"1"))
+  next
+    print ("34: " + ("0"!!"0"##"0"!!"1"))
+  next
+    print ("35: " + ("0"?"0"~"0"?"0"!!"0"~"0"##"0"))
+  next
+    print ("36: " + ("0"##"0"?"0"##"0"!!"0"~"1"))
+  next
+    print ("37: " + ("0"~"0"?"0"~"0"##"0"!!"0"~"2"))
+  next
+    print ("38: " + ("0"~"0"!!"0"##"1"))
+  next
+    print ("39: " + ("0"##"0"!!"0"~"0"~"0"?"0"##"2"))
+  next
+    print ("40: " + ("0"!!"0"~"0"?"0"~"0"##"0"~"0"##"3"))

@@ -7,16 +7,16 @@ import java.util.LinkedList;
 import org.coreasm.engine.TestAllCasm;
 import org.junit.BeforeClass;
 
-public class Operator_index_notDerived extends TestAllCasm {
+public class Operator_infix extends TestAllCasm {
 
   @BeforeClass
   public static void onlyOnce() {
-    URL url = Operator_index_notDerived.class.getClassLoader().getResource(".");
+    URL url = Operator_infix.class.getClassLoader().getResource(".");
 
     try {
       testFiles = new LinkedList<File>();
       assert url != null;
-      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_index_notDerived.class);
+      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_infix.class);
     }
     catch (URISyntaxException e) {
       e.printStackTrace();

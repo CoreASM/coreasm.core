@@ -9,16 +9,16 @@ import org.coreasm.engine.TestAllCasm;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class Operator_index_notDerived_arityMismatch extends TestAllCasm {
+public class Operator_infix_assoc_fail extends TestAllCasm {
 
   @BeforeClass
   public static void onlyOnce() {
-    URL url = Operator_index_notDerived_arityMismatch.class.getClassLoader().getResource(".");
+    URL url = Operator_infix_assoc_fail.class.getClassLoader().getResource(".");
 
     try {
       testFiles = new LinkedList<File>();
       assert url != null;
-      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_index_notDerived_arityMismatch.class);
+      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_infix_assoc_fail.class);
     }
     catch (URISyntaxException e) {
       e.printStackTrace();

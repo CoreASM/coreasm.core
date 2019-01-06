@@ -9,16 +9,16 @@ import org.coreasm.engine.TestAllCasm;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class Operator_prefix_nArgs extends TestAllCasm {
+public class Operator_infix_nArgs2 extends TestAllCasm {
 
   @BeforeClass
   public static void onlyOnce() {
-    URL url = Operator_prefix_nArgs.class.getClassLoader().getResource(".");
+    URL url = Operator_infix_nArgs2.class.getClassLoader().getResource(".");
 
     try {
       testFiles = new LinkedList<File>();
       assert url != null;
-      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_prefix_nArgs.class);
+      getTestFile(testFiles, new File(url.toURI()).getParentFile(), Operator_infix_nArgs2.class);
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }

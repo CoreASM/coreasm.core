@@ -1,0 +1,81 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator postfix 50 '!!' = dec
+operator postfix 50 '?' = dec
+operator postfix 50 '##' = inc
+operator postfix 50 '~' = inc
+
+derived dec(x) = x - 1
+derived inc(x) = x + 1
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: 0"
+ * @require "04: 0"
+ * @require "05: 0"
+ * @require "06: 0"
+ * @require "07: 0"
+ * @require "08: 0"
+ * @require "09: 0"
+ * @require "10: 0"
+ * @require "11: 0"
+ * @require "12: 0"
+ * @require "13: 0"
+ * @require "14: 0"
+ * @require "15: 0"
+ * @require "16: 0"
+ * @require "17: 0"
+ * @require "18: 0"
+ * @require "19: 0"
+ * @require "20: 0"
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?))
+  next
+    print ("02: " + (2??))
+  next
+    print ("03: " + (1!!))
+  next
+    print ("04: " + (2!!!!))
+  next
+    print ("05: " + (3??!!))
+  next
+    print ("06: " + (-1~))
+  next
+    print ("07: " + (-2~~))
+  next
+    print ("08: " + (-1##))
+  next
+    print ("09: " + (-2####))
+  next
+    print ("10: " + (-3~##~))
+  next
+    print ("11: " + (0?~))
+  next
+    print ("12: " + (1?~?))
+  next
+    print ("13: " + (-1~!!~))
+  next
+    print ("14: " + (1!!##!!))
+  next
+    print ("15: " + (0?~?!!~##))
+  next
+    print ("16: " + (-1##?##!!~))
+  next
+    print ("17: " + (-2~?~##!!~))
+  next
+    print ("18: " + (-1~!!##))
+  next
+    print ("19: " + (-2##!!~~?##))
+  next
+    print ("20: " + (-3!!~?~##~##))

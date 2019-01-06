@@ -1,0 +1,36 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator infixl 50 '!' = fun1
+operator infixr 50 '?'  = fun2
+operator infixn 50 '#' = fun3
+
+derived fun1(x, y) = x - y
+derived fun2(x, y) = x / y
+derived fun3(x, y) = x * y
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 1"
+ * @require "02: 0.375"
+ * @require "03: -8"
+ * @require "04: -0.5"
+ * @require "05: -0.2"
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?1#2!1))
+  next
+    print ("02: " + (1?2?3?4))
+  next
+    print ("03: " + (1!2!3!4))
+  next
+    print ("04: " + (1?2?3!4))
+  next
+    print ("05: " + (1?2!3!4))

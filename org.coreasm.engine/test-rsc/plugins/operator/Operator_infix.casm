@@ -1,0 +1,96 @@
+CoreASM Test
+
+use StandardPlugins
+use OperatorPlugin
+
+init initRule
+
+operator infixl 50 '!!' = dec
+operator infixl 50 '?' = dec
+operator infixl 50 '##' = inc
+operator infixl 50 '~' = inc
+
+derived dec(x, y) = x - y
+derived inc(x, y) = x + y
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ *
+ * @require "01: 0"
+ * @require "02: 0"
+ * @require "03: 0"
+ * @require "04: 0"
+ * @require "05: 0"
+ * @require "06: 0"
+ * @require "07: 0"
+ * @require "08: 0"
+ * @require "09: 0"
+ * @require "10: 0"
+ * @require "11: 0"
+ * @require "12: 0"
+ * @require "13: 0"
+ * @require "14: 0"
+ * @require "15: 0"
+ * @require "16: 0"
+ * @require "17: 0"
+ * @require "18: 0"
+ * @require "19: 0"
+ * @require "20: 0"
+ * @require "21: 0"
+ * @require "22: 0"
+ * @require "23: 0"
+ * @require "24: 0"
+ * @require "25: 0"
+ */
+rule initRule =
+  seq
+    print ("01: " + (1?1))
+  next
+    print ("02: " + (2?3?-1))
+  next
+    print ("03: " + (3?3))
+  next
+    print ("04: " + (2?3?-1))
+  next
+    print ("05: " + (4?2?3?-1))
+  next
+    print ("06: " + (1!!1))
+  next
+    print ("07: " + (2!!3!!-1))
+  next
+    print ("08: " + (3!!3))
+  next
+    print ("09: " + (2!!3!!-1))
+  next
+    print ("10: " + (4!!2!!3!!-1))
+  next
+    print ("11: " + (1##-1))
+  next
+    print ("12: " + (-2##3##-1))
+  next
+    print ("13: " + (3##-3))
+  next
+    print ("14: " + (2##3##-5))
+  next
+    print ("15: " + (-4##2##3##-1))
+  next
+    print ("16: " + (1~-1))
+  next
+    print ("17: " + (-2~3~-1))
+  next
+    print ("18: " + (3~-3))
+  next
+    print ("19: " + (2~3~-5))
+  next
+    print ("20: " + (-4~2~3~-1))
+  next
+    print ("21: " + (5!!6~1))
+  next
+    print ("22: " + (5!!6~1##2?1~-1))
+  next
+    print ("23: " + (5?6##1))
+  next
+    print ("24: " + (5!!6~1##2?1~-1))
+  next
+    print ("25: " + (5!!1~1##2?1~-6))
