@@ -801,10 +801,10 @@ public class Engine implements ControlAPI {
 		public void run() {
 			try {
 				while (!terminating) {
+					assert engineBusy;
+
 					try {
 						EngineMode engineMode = getEngineMode();
-
-						assert engineBusy || (engineMode == EngineMode.emError);
 
 						// if an error is occurred and the engine is not
 						// in error mode, go to the error mode
@@ -987,44 +987,40 @@ public class Engine implements ControlAPI {
 							*/
 
 						case emError:
-							boolean hasNextCommand = false;
-
-							isBusyLock.lock();
-							try {
-								// Throw out all commands except a recovery command
-								EngineCommand cmd;
-								while ((cmd = commandQueue.poll()) != null) {
-									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
-										next(EngineMode.emTerminating);
-										hasNextCommand = true;
-										lastError = null;
-										logger.debug("Engine terminated by user command.");
-										break;
-									} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
-										// Recover by going to the idle mode
-										next(EngineMode.emIdle);
-										hasNextCommand = true;
-										lastError = null;
-										logger.debug("Engine recovered from error by user command.");
-										break;
+							// blocking wait for termination or recover command
+							// we are not busy while waiting
+							// throw out all other commands
+							while (true) {
+								isBusyLock.lock();
+								try {
+									if (commandQueue.isEmpty()) {
+										engineBusy = false;
+										isNotBusy.signalAll();
 									}
 								}
-
-								if (!hasNextCommand) {
-									engineBusy = false;
-									isNotBusy.signalAll();
+								finally {
+									isBusyLock.unlock();
 								}
-								else {
-									assert engineBusy;
+
+								EngineCommand cmd = commandQueue.take();
+								assert engineBusy;
+
+								if (cmd.type == EngineCommand.CmdType.ecTerminate) {
+									next(EngineMode.emTerminating);
+									lastError = null;
+									logger.debug("Engine terminated by user command.");
+									break;
+								} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
+									// Recover by going to the idle mode
+									next(EngineMode.emIdle);
+									lastError = null;
+									logger.debug("Engine recovered from error by user command.");
+									break;
+								} else {
+									logger.warn("Ignore user command {}, Engine is in error state and needs to be terminated or reset", cmd.type);
 								}
 							}
-							finally {
-								isBusyLock.unlock();
-							}
 
-							if (!hasNextCommand) {
-								Thread.yield();
-							}
 							break;
 						case emTerminated:
 						break;
