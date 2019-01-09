@@ -801,10 +801,10 @@ public class Engine implements ControlAPI {
 		public void run() {
 			try {
 				while (!terminating) {
-					assert engineBusy;
-
 					try {
 						EngineMode engineMode = getEngineMode();
+
+						assert engineBusy || (engineMode == EngineMode.emError);
 
 						// if an error is occurred and the engine is not
 						// in error mode, go to the error mode
@@ -987,6 +987,8 @@ public class Engine implements ControlAPI {
 							*/
 
 						case emError:
+							boolean hasNextCommand = false;
+
 							isBusyLock.lock();
 							try {
 								// Throw out all commands except a recovery command
@@ -994,24 +996,36 @@ public class Engine implements ControlAPI {
 								while ((cmd = commandQueue.poll()) != null) {
 									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
 										next(EngineMode.emTerminating);
+										hasNextCommand = true;
 										lastError = null;
 										logger.debug("Engine terminated by user command.");
 										break;
 									} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
 										// Recover by going to the idle mode
 										next(EngineMode.emIdle);
+										hasNextCommand = true;
 										lastError = null;
 										logger.debug("Engine recovered from error by user command.");
 										break;
 									}
 								}
 
-								engineBusy = false;
-								isNotBusy.signalAll();
+								if (!hasNextCommand) {
+									engineBusy = false;
+									isNotBusy.signalAll();
+								}
+								else {
+									assert engineBusy;
+								}
 							}
 							finally {
 								isBusyLock.unlock();
 							}
+
+							if (!hasNextCommand) {
+								Thread.yield();
+							}
+							break;
 						case emTerminated:
 						break;
 						default:
