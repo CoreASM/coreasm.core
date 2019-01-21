@@ -834,18 +834,14 @@ public class SetPlugin extends Plugin
 
 		// value should be a set
 		if (value instanceof SetElement) {
-			Set<Element> resultSet = new HashSet<Element>(((SetElement)value).enumerate());
-			
-			for (Element e: resultSet) {
-				Update removeUpdate = new Update(l, e, SETREMOVE_ACTION, (Element)null, null);
-				
-				if (!uMset2.contains(removeUpdate)) 
-					resultSet.add(e);
-			}
+      Set<Element> resultSet = new HashSet<>(((SetElement) value).enumerate());
 			
 			for (Update u: uMset2) {
 				if (u.action.equals(SETADD_ACTION)) 
 					resultSet.add(u.value);
+				else if (u.action.equals(SETREMOVE_ACTION)) {
+				  resultSet.remove(u.value);
+        }
 				contributingAgents.addAll(u.agents);
 				contributingNodes.addAll(u.sources);
 			}
