@@ -342,6 +342,12 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
       }
+      if (!op.getValue().stream().map(OperatorValue::getPrecedence).allMatch(x -> opVal.getPrecedence() == x)) {
+        throw new IllegalStateException("Multiple syntactically identical operators (" +
+            op.getKey().operatorSymbols + ") with different precedence levels (" +
+            op.getValue().stream().map(v -> String.valueOf(v.getPrecedence())).distinct().collect(
+                Collectors.joining(",")) + ") are not allowed!");
+      }
       switch (op.getKey().fixity) {
         case INFIX:
           switch (opVal.getAssociativity()) {
