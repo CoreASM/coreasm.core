@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.codehaus.jparsec.OperatorTable;
 import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.functors.Binary;
 import org.codehaus.jparsec.functors.Unary;
 import org.coreasm.engine.ControlAPI;
@@ -163,7 +162,6 @@ public class ExpressionParserFactory {
 			pluginNames = infixLeftPlugins.get(opr);
 			precedence = infixLeftOprs.get(opr);
       table.infixl(createInfixParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
-			//table.infixl(createBinaryParser(opr, pluginNames, OpType.INFIX_LEFT), precedence);
 		}
 
 		// Infix Non-associative
@@ -171,7 +169,6 @@ public class ExpressionParserFactory {
 			pluginNames = infixNonPlugins.get(opr);
 			precedence = infixNonOprs.get(opr);
       table.infixn(createInfixParser(opr, pluginNames, OpType.INFIX_NON), precedence);
-			//table.infixn(createBinaryParser(opr, pluginNames, OpType.INFIX_NON), precedence);
 		}
 
 		// Infix Right-associative
@@ -179,7 +176,6 @@ public class ExpressionParserFactory {
 			pluginNames = infixRightPlugins.get(opr);
 			precedence = infixRightOprs.get(opr);
       table.infixr(createInfixParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
-			//table.infixr(createBinaryParser(opr, pluginNames, OpType.INFIX_RIGHT), precedence);
 		}
 		
 		// Prefix
@@ -312,8 +308,7 @@ public class ExpressionParserFactory {
 	
 	/* Special unary map class */
 	public static class UnaryMap implements Unary<Node> {
-		
-		//private String pluginNames;
+
 		private String opr;
 		private Stream<Node> cnodes;
 		private OpType type;
@@ -328,8 +323,6 @@ public class ExpressionParserFactory {
 		 */
 		public UnaryMap(String opr, String pluginNames, OpType type, Stream<Node> nodes) {
 			this.opr = opr;
-			//this.pluginNames = pluginNames;
-			//this.cnodes = (Object[])nodes[1];
 			this.cnodes = nodes;
 			this.type = type;
 		}
@@ -376,11 +369,9 @@ public class ExpressionParserFactory {
 
 	/* Special binary map class */
 	public static class BinaryMap implements Binary<Node> {
-		
-		//private String pluginNames;
+
 		private String opr;
 		private Stream<Node> cnodes;
-		//private OpType type;
 		
 		/**
 		 * Creates a new BinaryMap.
@@ -392,8 +383,6 @@ public class ExpressionParserFactory {
 		 */
 		public BinaryMap(String opr, String pluginNames, OpType type, Stream<Node> cnodes) {
 			this.opr = opr;
-			//this.pluginNames = pluginNames;
-			//this.type = type;
 			this.cnodes = cnodes;
 		}
 
