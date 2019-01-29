@@ -1,12 +1,17 @@
 package org.coreasm.engine.parser;
 
+/**
+ * Removes Java-style comments
+ *
+ * @author Nathan Maier
+ */
 public class CommentRemover {
 
   private boolean inComment = false;
   private boolean inString = false;
   private StringBuilder buffer;
 
-  public String append(String line) throws ParserException {
+  public String append(String line) {
     boolean maybeComment = false;
     boolean maybeCommentEnd = false;
     boolean escape = false;
@@ -53,7 +58,6 @@ public class CommentRemover {
       }
     }
     if (inString) {
-      //throw new ParserException("Unbalanced \" in string literal.");
       buffer = result.append("\\n");
       return "";
     }

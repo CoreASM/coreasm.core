@@ -38,6 +38,11 @@ import org.coreasm.engine.plugin.ParserPlugin;
 import org.coreasm.engine.plugin.Plugin;
 import org.coreasm.engine.plugins.signature.DerivedFunctionElement;
 
+/**
+ * OperatorPlugin allowing users to define new operators directly within CoreASM specifications.
+ *
+ * @author Nathan Maier
+ */
 public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, OperatorProvider,
     ParserPlugin {
 
@@ -49,11 +54,14 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   private static final String POSTFIX_KEYWORD = "postfix";
   private static final String CLOSED_KEYWORD = "closed";
 
+  //Operator definition regex
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix|closed)\\s+"
-          + "((?<precedence>\\d+)\\s+)?(?<delimiter>#*)'(?<op>.+)'\\k<delimiter>"
-          + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\s+\\*\\s+[A-z_][A-z_0-9]*)*))?"
-          + "\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
+      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
+          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|closed)\\s+"
+          + "((?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+)?(?<op2>\\S+))"
+          + "\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
+          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
+          + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
 
   enum Fixity {
@@ -69,6 +77,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     RIGHT
   }
 
+  //Key for opStore
   static class OperatorKey {
 
     private final Fixity fixity;
@@ -105,6 +114,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     }
   }
 
+  //Value for opStore
   static class OperatorValue {
 
     private final Associativity associativity;
@@ -200,6 +210,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   @Override
   public void fireOnModeTransition(EngineMode source, EngineMode target) throws EngineException {
     if (getSourceModes().containsKey(source) && getTargetModes().containsKey(target)) {
+      //Parse operator definitions
       CommentRemover cr = new CommentRemover();
       ArrayList<SpecLine> filteredLines = new ArrayList<>();
       for (SpecLine l : this.capi.getSpec().getLines()) {
@@ -209,7 +220,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
           try {
             p = Integer.valueOf(m.group("precedence"));
           } catch (NumberFormatException ignored) {}
-          if (handleOpDefinition(m.group("fixity"), p, m.group("rule"), 
+          if (handleOpDefinition(m.group("fixity"), p, m.group("rule"),
               m.group("universes"), m.group("op"))) {
             filteredLines.add(new SpecLine("", l.fileName, l.line));
           } else
@@ -222,6 +233,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     }
   }
 
+  //Takes raw data from regex-parsing step and puts defined operators into opStore
   private boolean handleOpDefinition(String fixity, int precedence, String functionName,
       String universes, String opString) {
     String[] universe = universes != null ? universes.trim().replaceAll("\\s+", "").split("\\*") : new String[0];
@@ -333,11 +345,12 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
   @Override
   public Collection<OperatorRule> getOperatorRules() {
     List<OperatorRule> opRules = new LinkedList<>();
+    //retrieves the operators from opStore and builds according OperatorRules
     for (Entry<OperatorKey, Collection<OperatorValue>> op : opStore.asMap().entrySet()) {
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
       if (!op.getValue().stream().map(OperatorValue::getAssociativity).allMatch(opVal.getAssociativity()::equals)) {
-        throw new IllegalStateException("Multiple syntactically identical operators (" + 
+        throw new IllegalStateException("Multiple syntactically identical operators (" +
             op.getKey().operatorSymbols + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
@@ -411,12 +424,14 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       throws InterpreterException {
     Fixity f;
     ASTNode[] args;
+    //find arguments of the operation
     switch (opNode.getGrammarClass()) {
       case ASTNode.BINARY_OPERATOR_CLASS:
         f = Fixity.INFIX;
         args = new ASTNode[opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER).length + 1];
         break;
       case ASTNode.UNARY_OPERATOR_CLASS:
+        //determine if prefix or postfix
         if (opNode.unparseTree().startsWith(opNode.getToken().split(OperatorRule.OPERATOR_DELIMITER)[0])) {
           f = Fixity.PREFIX;
         } else {
@@ -435,12 +450,12 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
     for (int i = 1; i < args.length; ++i) args[i] = args[i - 1].getNext();
     final ASTNode finalOpNode = opNode;
     return opStore.get(new OperatorKey(f, opNode.getToken()))
-        .stream().map(op -> {
+        .stream().map(op -> {  //map over all existing implementations for this operator
           String opFunName = op.getFunName();
           FunctionElement fun = capi.getStorage().getFunction(opFunName);
           if (errorChecks(fun, args.length, finalOpNode.getToken(), opFunName)) {
+            //get values from arguments
             List<Element> evaluatedArgs = new ArrayList<>(args.length);
-            ASTNode oldPos = interpreter.getPosition();
             for (ASTNode arg : args) {
               if (arg == null) {
                 evaluatedArgs.add(Element.UNDEF);
@@ -450,7 +465,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
               else throw new IllegalStateException("Unevaluated child node. Kernel should have "
                   + "evaluated this beforehand!");
             }
-            interpreter.setPosition(oldPos);
+            //check if arguments match the given operator signature
             for (int i = 0; i < evaluatedArgs.size(); ++i) {
               if (op.universes != null) {
                 String domName = op.universes.get(i);
@@ -465,11 +480,12 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
                 }
               }
             }
+            //evaluate the function
             return fun.getValue(evaluatedArgs);
           } else {
             return null;
           }
-        }).distinct().filter(Objects::nonNull)
+        }).distinct().filter(Objects::nonNull) //find the unambiguous result, if it exists
         .collect(Collectors.collectingAndThen(Collectors.toList(),
             list -> {
               if (list.size() != 1) {
@@ -543,7 +559,7 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
       assert !op.getValue().isEmpty();
       OperatorValue opVal = op.getValue().iterator().next();
       if (!op.getValue().stream().map(OperatorValue::getAssociativity).allMatch(opVal.getAssociativity()::equals)) {
-        throw new IllegalStateException("Multiple syntactically identical operators (" + 
+        throw new IllegalStateException("Multiple syntactically identical operators (" +
             op.getKey().operatorSymbols + ") with different associativities (" +
             op.getValue().stream().map(v -> v.getAssociativity().toString()).distinct().collect(
                 Collectors.joining(",")) + ") are not allowed!");
