@@ -56,12 +56,10 @@ public class OperatorPlugin extends Plugin implements ExtensionPointPlugin, Oper
 
   //Operator definition regex
   private static final Pattern typedOperatorDefinitionGrammar = Pattern.compile(
-      "^\\s*operator\\s+((?<fixity>infixl|infixn|infixr|prefix|postfix)\\s+"
-          + "(?<precedence>0|[1-9][0-9]?[0-9]?|1000)|(?<fixity2>index|ternary|closed)\\s+"
-          + "((?<precedence2>0|[1-9][0-9]?[0-9]?|1000)\\s+)?(?<op2>\\S+))"
-          + "\\s+(?<op>\\S+)(\\s+on\\s+(?<universe>[A-z_][A-z_0-9]*)"
-          + "(\\s+\\*\\s+(?<universe2>[A-z_][A-z_0-9]*)(\\s+\\*\\s+(?<universe3>[A-z_][A-z_0-9]*))?)?)?(\\s+"
-          + "=\\s+(?<rule>[A-z_][A-z_0-9]*))?\\s*$");
+      "^\\s*operator\\s+(?<fixity>infixl|infixn|infixr|prefix|postfix|closed)\\s+"
+          + "((?<precedence>\\d+)\\s+)?(?<delimiter>#*)'(?<op>.+)'\\k<delimiter>"
+          + "(\\s+on(?<universes>\\s+[A-z_][A-z_0-9]*(\\s+\\*\\s+[A-z_][A-z_0-9]*)*))?"
+          + "\\s+=\\s+(?<rule>[A-z_][A-z_0-9]*)\\s*$");
   private final Multimap<OperatorKey, OperatorValue> opStore = LinkedListMultimap.create();
 
   enum Fixity {
