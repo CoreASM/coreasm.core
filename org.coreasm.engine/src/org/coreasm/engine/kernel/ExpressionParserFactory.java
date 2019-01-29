@@ -501,12 +501,10 @@ public class ExpressionParserFactory {
 
 	/* Special index map class */
 	public static class IndexMap implements Unary<Node> {
-		
-		//private String pluginNames;
+
 		private String opr1;
 		private String opr2;
 		private Object[] cnodes;
-		//private OpType type;
 		
 		/**
 		 * Creates a new IndexMap.
@@ -520,9 +518,7 @@ public class ExpressionParserFactory {
 		public IndexMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
 			this.opr1 = opr1;
 			this.opr2 = opr2;
-			//this.pluginNames = pluginNames;
 			this.cnodes = nodes;
-			//this.type = type;
 		}
 
 		/**
@@ -565,11 +561,9 @@ public class ExpressionParserFactory {
   /* Special ternary map class */
   public static class TernaryMap implements Unary<Node> {
 
-    //private String pluginNames;
     private String opr1;
     private String opr2;
     private Object[] cnodes;
-    //private OpType type;
 
     /**
      * Creates a new IndexMap.
@@ -583,9 +577,7 @@ public class ExpressionParserFactory {
     public TernaryMap(String opr1, String opr2, String pluginNames, OpType type, Object[] nodes) {
       this.opr1 = opr1;
       this.opr2 = opr2;
-      //this.pluginNames = pluginNames;
       this.cnodes = nodes;
-      //this.type = type;
     }
 
     /**
