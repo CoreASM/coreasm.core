@@ -342,7 +342,7 @@ public class SignaturePlugin extends Plugin
 
 						@Override
 						public Node apply(Object[] vals) {
-							ScannerInfo info = null;
+							ScannerInfo info;
 							if (vals[0] != null)
 								info = ((Node)((Object[])vals[0])[0]).getScannerInfo();
 							else

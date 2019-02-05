@@ -218,8 +218,7 @@ public class ParserTools
 
 		@Override
 		public Node apply(Object[] vals) {
-			ScannerInfo info = null;
-			info = ((Node)vals[0]).getScannerInfo();
+			ScannerInfo info = ((Node)vals[0]).getScannerInfo();
 			
 			Node node = new ASTNode(
 					null,
@@ -259,7 +258,7 @@ public class ParserTools
 
 		@Override
 		public Node apply(Object[] vals) {
-			ScannerInfo info = null;
+			ScannerInfo info;
 			
 			// consider the possiblity of starting with a 
 			// comment or whitespace

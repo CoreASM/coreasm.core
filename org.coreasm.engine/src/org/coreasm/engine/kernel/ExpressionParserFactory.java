@@ -464,8 +464,7 @@ public class ExpressionParserFactory {
 		 */
 		@Override
 		public Node apply(Node child) {
-			Node node = null;
-			node = new ASTNode(
+			Node node = new ASTNode(
 					null, ASTNode.INDEX_OPERATOR_CLASS, "", opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, child.getScannerInfo());
 			node.addChild(child);
 			for (Object obj: cnodes)

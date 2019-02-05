@@ -1161,7 +1161,6 @@ public class SetPlugin extends Plugin
 
 		@Override
 		public Node apply(Object[] vals) {
-			Node node = null;
 			// if there is an 'is' clause
 			if (vals[1] != null && vals[1] instanceof Object[]) {
 				Object[] newVals = new Object[vals.length - 1];
@@ -1170,7 +1169,7 @@ public class SetPlugin extends Plugin
 					newVals[i] = vals[i + 1];
 				vals = newVals;
 			}
-			node = new SetCompNode(((Node)vals[0]).getScannerInfo());
+			Node node = new SetCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
 		}

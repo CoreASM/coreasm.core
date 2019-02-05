@@ -32,7 +32,7 @@ public class CoreModuleParseMap extends ParserTools.ArrayParseMap {
 
 	@Override
 	public Node apply(Object[] vals) {
-		ScannerInfo info = null;
+		ScannerInfo info;
 		
 		// consider the possibility of starting with a 
 		// comment or whitespace
