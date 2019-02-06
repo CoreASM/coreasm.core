@@ -56,7 +56,7 @@ public class ParserTools
 		initialized = false;
 	}
 	
-	public void init(String [] keywords, String[] ops, Set<Parser<? extends Object>> lexers)
+	public void init(String [] keywords, String[] ops, Set<Parser<?>> lexers)
 	{
 		if (initialized == true)
 			throw new EngineError("Cannot re-initialize ParserTools.");
@@ -70,7 +70,7 @@ public class ParserTools
 		
 		// Convert set with lexers into a list, because the keyword tokenizer must be first
 		// and the identifier tokenizer must be last.
-		List<Parser<? extends Object>> _lexers = new LinkedList<Parser<? extends Object>>(lexers);
+		List<Parser<?>> _lexers = new LinkedList<>(lexers);
 		_lexers.add(0, tokenizer_keyw);	
 		_lexers.add(tokenizer_id);
 		tokenizer = Parsers.or(_lexers);
@@ -362,22 +362,8 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param parsers parsers to be sequenced
 	 */
-	public Parser<Object[]> seq(String name, Parser<? extends Object>...parsers) {
-		Parser<Object[]> seqParser = Parsers.array(parsers);
-		/*.new ParseMapN<Object[]>("") {
-
-			public Object[] map(Object... vals) {
-				Object[] nodes = new Object[vals.length];
-				
-				for (int i=0; i < vals.length; i++) 
-					nodes[i] = vals[i];
-				
-				return nodes;
-			}
-			
-		});*/
-			
-		return seqParser;
+	public Parser<Object[]> seq(String name, Parser<?>...parsers) {
+		return Parsers.array(parsers);
 	}
 	
 	/**
@@ -387,7 +373,7 @@ public class ParserTools
 	 *
 	 * @param parser parser to be repeated
 	 */
-	public Parser<Object[]> many(Parser<? extends Object> parser) {
+	public Parser<Object[]> many(Parser<?> parser) {
 		return many("parser", parser);
 	}
 	
@@ -399,10 +385,8 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
 	 */
-	public Parser<Object[]> many(String name, Parser<? extends Object> parser) {
-		//Parser<Object[]> result = Parsers.many(name, Object.class, parser);
-		Parser<Object[]> result = parser.many().map(from -> from.toArray());
-		return result;
+	public Parser<Object[]> many(String name, Parser<?> parser) {
+		return parser.many().map(List::toArray);
 	}
 	
 	/**
@@ -412,7 +396,7 @@ public class ParserTools
 	 *
 	 * @param parser parser to be repeated
 	 */
-	public Parser<Object[]> star(Parser<? extends Object> parser) {
+	public Parser<Object[]> star(Parser<?> parser) {
 		return star("parser", parser);
 	}
 	
@@ -424,22 +408,8 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
 	 */
-	public Parser<Object[]> star(String name, Parser<? extends Object> parser) {
-//		Parser<Object[]> result = seq(name, parser, getOptionalDelimiterParser()).many(Object[].class).map(
-//				new Map<Object[][], Object[]>() {
-//
-//					public Object[] map(Object[][] v) {
-//						ArrayList list = new ArrayList();
-//						for (Object[] arr: v) 
-//							for (Object obj: arr)
-//								list.add(obj);
-//						return list.toArray();
-//					}
-//				}
-//		);
-		Parser<Object[]> result = this.many(name, parser);
-		
-		return result;
+	public Parser<Object[]> star(String name, Parser<?> parser) {
+		return this.many(name, parser);
 	}
 	
 	/**
@@ -449,7 +419,7 @@ public class ParserTools
 	 *
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> plus(Parser<? extends Object> parser) {
+	public Parser<Object[]> plus(Parser<?> parser) {
 		return plus("parser", parser);
 	}
 	
@@ -461,46 +431,8 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated at least once
 	 */
-	//public Parser<Object[]> plus(String name, Parser<? extends Object> parser) {
-	//	return plus(name, parser, getOptionalDelimiterParser());
-	//}
-	
-	/**
-	 * Returns a parser P that is:
-	 * <p>
-	 * P: ( parser delimiter )+
-	 * 
-	 * @param parser parser to be repeated at least once
-	 * @param delimiter the delimiter parser
-	 */
-	//public Parser<Object[]> plus(Parser<? extends Object> parser, Parser<Node> delimiter) {
-	//	return plus("parser", parser, delimiter);
-	//}
-	
-	/**
-	 * Returns a parser P that is:
-	 * <p>
-	 * P: ( parser delimiter )+
-	 * 
-	 * @param name name of the new parser
-	 * @param parser parser to be repeated at least once
-	 */
-	public Parser<Object[]> plus(String name, Parser<? extends Object> parser) {
-		/*Parser<Object[]> result = seq(name, parser, delimiter).many1(Object[].class).map(
-				new Map<Object[][], Object[]>() {
-
-					public Object[] map(Object[][] v) {
-						ArrayList list = new ArrayList();
-						for (Object[] arr: v) 
-							for (Object obj: arr)
-								list.add(obj);
-						return list.toArray();
-					}
-				}
-		);*/
-		Parser<Object[]> result = parser.many1().map(from -> from.toArray());
-		
-		return result;
+	public Parser<Object[]> plus(String name, Parser<?> parser) {
+		return parser.many1().map(List::toArray);
 	}
 	
 	/**
@@ -510,7 +442,7 @@ public class ParserTools
      * 
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> csplus(Parser<? extends Object> parser) {
+	public Parser<Object[]> csplus(Parser<?> parser) {
 		return csplus("parser", parser);
 	}
 	
@@ -522,7 +454,7 @@ public class ParserTools
      * @param commaParser the parser that parses the comma or any other symbol 
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> csplus(Parser<? extends Object> commaParser, Parser<? extends Object> parser) {
+	public Parser<Object[]> csplus(Parser<?> commaParser, Parser<?> parser) {
 		return csplus("parser", commaParser, parser);
 	}
 	
@@ -534,7 +466,7 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param parser parsers to be repeated at least once
 	 */
-	public Parser<Object[]> csplus(String name, Parser<? extends Object> parser) {
+	public Parser<Object[]> csplus(String name, Parser<?> parser) {
 		return csplus(name, getOprParser(","), parser);
 	}
 	
@@ -547,8 +479,7 @@ public class ParserTools
 	 * @param commaParser the parser that parses the comma or any other symbol
 	 * @param parser parser to be repeated at least once
 	 */
-	@SuppressWarnings("unchecked")
-	public Parser<Object[]> csplus(String name, Parser<? extends Object> commaParser, Parser<? extends Object> parser) {
+	public Parser<Object[]> csplus(String name, Parser<?> commaParser, Parser<?> parser) {
 		Parser<Object[]> repeated = 
 			star(
 				seq(
@@ -558,14 +489,12 @@ public class ParserTools
 					//getOptionalDelimiterParser()
 					)
 				);
-		
-		Parser<Object[]> result = seq(name, 
-				parser, 
+
+		return seq(name,
+				parser,
 				//getOptionalDelimiterParser(),
 				repeated
 				);
-		
-		return result;
 	}
 
 	
