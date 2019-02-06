@@ -1,0 +1,190 @@
+CoreASM Set4_compose
+
+use Standard
+
+init Start
+
+/*
+ * @minsteps 1
+ * @maxsteps 1
+ */
+
+function foo : -> SET
+rule Start = seqblock
+    Case1a()
+
+    Case1b()
+
+    Case2()
+
+    Case3a_add()
+
+    Case3a_remove()
+
+    Case3a_mixed()
+
+    Case3b_i()
+
+    Case3b_ii_1()
+
+    Case3b_ii_2()
+
+    Case3b_iii()
+endseqblock
+
+
+rule Case1a = {
+    seq
+        foo := {}
+    next {
+        seq
+            add 1 to foo
+        next
+            skip
+    }
+    next {
+        // @require "Case1a: {1}"
+        print "Case1a: " + foo
+    }
+}
+
+rule Case1b = {
+    seq
+        foo := {}
+    next {
+        seq
+            skip
+        next
+            add 1 to foo
+    }
+    next {
+        // @require "Case1b: {1}"
+        print "Case1b: " + foo
+    }
+}
+
+rule Case2 = {
+    seq
+        foo := {3}
+    next {
+        seq
+            skip
+        next {
+            remove 1 from foo
+            foo := {2}
+            add 2 to foo
+        }
+    }
+    next {
+        // @require "Case2: {2}"
+        print "Case2: " + foo
+    }
+}
+
+rule Case3a_add = {
+    seq
+        foo := {}
+    next {
+        seq
+            foo := {1}
+        next
+            add 2 to foo
+    }
+    next {
+        // @require "Case3a_add: {1, 2}"
+        print "Case3a_add: " + foo
+    }
+}
+
+rule Case3a_remove = {
+    seq
+        foo := {}
+    next {
+        seq
+            foo := {1, 2}
+        next
+            remove 2 from foo
+    }
+    next {
+        // @require "Case3a_remove: {1}"
+        print "Case3a_remove: " + foo
+    }
+}
+
+
+rule Case3a_mixed = {
+    seq
+        foo := {}
+    next {
+        seq
+            foo := {1, 2}
+        next {
+            remove 2 from foo
+            add 3 to foo
+        }
+    }
+    next {
+        // @require "Case3a_mixed: {1, 3}"
+        print "Case3a_mixed: " + foo
+    }
+}
+
+rule Case3b_i = {
+    seq
+        foo := {3}
+    next {
+        seq
+            add 1 to foo
+        next
+            remove 1 from foo
+    }
+    next {
+        // @require "Case3b_i: {3}"
+        print "Case3b_i: " + foo
+    }
+}
+
+rule Case3b_ii_1 = {
+    seq
+        foo := {3}
+    next {
+        seq
+            remove 3 from foo
+        next
+            add 3 to foo
+    }
+    next {
+        // @require "Case3b_ii_1: {3}"
+        print "Case3b_ii_1: " + foo
+    }
+}
+
+rule Case3b_ii_2 = {
+    seq
+        foo := {3}
+    next {
+        seq
+            remove 1 from foo
+        next
+            add 1 to foo
+    }
+    next {
+        // @require "Case3b_ii_2: {1, 3}"
+        print "Case3b_ii_2: " + foo
+    }
+}
+
+rule Case3b_iii = {
+    seq
+        foo := {3}
+    next {
+        seq
+            add 1 to foo
+        next
+            remove 2 from foo
+    }
+    next {
+        // @require "Case3b_iii: {1, 3}"
+        print "Case3b_iii: " + foo
+    }
+}

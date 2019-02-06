@@ -51,9 +51,10 @@ public abstract class Plugin implements ICoreASMPlugin {
 		super();
 	}
 
+	private final String pluginName = this.getClass().getSimpleName();
 	@Override
 	public final String getName() {
-		return this.getClass().getSimpleName();
+		return pluginName;
 	}
 	
 	@Override

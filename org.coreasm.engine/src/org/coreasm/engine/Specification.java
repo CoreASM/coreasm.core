@@ -323,11 +323,12 @@ public class Specification {
 	 * @see #loadSpec(String)
 	 */
 	public static ArrayList<SpecLine> loadSpec(Specification mainSpec, String fileName) throws IOException {
-		String specRoot = "";
-		if (mainSpec != null) 
-			specRoot = mainSpec.getFileDir() + File.separator;
-
-		return loadSpec(specRoot + fileName);
+		if (mainSpec == null) {
+			return loadSpec(new File(fileName));
+		}
+		else {
+			return loadSpec(new File(mainSpec.getFileDir(), fileName));
+		}
 	}
 
 	/**

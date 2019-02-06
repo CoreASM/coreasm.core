@@ -11,6 +11,10 @@
 		<relativePath>../org.coreasm.parent</relativePath>
 	</parent>
 
+	<properties>
+		<skipTests>true</skipTests>
+	</properties>
+
 	<build>
 		<resources>
 			<resource>
@@ -60,7 +64,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.16</version>
 				<configuration>
-					<skipTests>true</skipTests>
+					<skipTests>${skipTests}</skipTests>
 					<reuseForks>false</reuseForks>
 					<forkCount>0</forkCount>
 				</configuration>
@@ -103,7 +107,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>3.8.0</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
@@ -138,7 +142,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
+			<version>4.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.coreasm</groupId>

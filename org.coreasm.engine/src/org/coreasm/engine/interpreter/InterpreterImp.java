@@ -362,7 +362,6 @@ public class InterpreterImp implements Interpreter {
 	private ASTNode interpretExpressions(ASTNode pos) throws InterpreterException {
 		final AbstractStorage storage = capi.getStorage();
 		final String gClass = pos.getGrammarClass();
-		String x = pos.getToken();
 		
 		// If the current node is a function/rule term
 		if (gClass.equals(ASTNode.FUNCTION_RULE_CLASS)) {
@@ -372,7 +371,7 @@ public class InterpreterImp implements Interpreter {
 				// If the current node is of the form 'x' or 'x(...)'
 				if (frNode.hasName()) {
 	
-					x = frNode.getName();
+					final String x = frNode.getName();
 					
 					// If the current node is of the form 'x' with no arguments
 					if (!frNode.hasArguments()) {
@@ -383,14 +382,14 @@ public class InterpreterImp implements Interpreter {
 						else {
 							// If this 'x' refers to a function in the state...
 							final FunctionElement f = storage.getFunction(x);
-//							if (storage.isFunctionName(x)) {
+
 							if (f != null) {
 								final Location l = new Location(x, ElementList.NO_ARGUMENT, f.isModifiable());
 								try {
 									pos.setNode(l, null, storage.getValue(l));
 								} catch (InvalidLocationException e) {
 									throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
-											"This cannot happen!");
+											"This cannot happen!", e);
 								}
 							} else
 								// if this 'x' is not defined before...
@@ -399,11 +398,19 @@ public class InterpreterImp implements Interpreter {
 								}
 						}
 					} else { // if current node is 'x(...)' (with arguments)
-						
+
 						// If this 'x' refers to a function in the state...
 						FunctionElement f = storage.getFunction(x);
-						if (getEnv(x) instanceof FunctionElement)
-							f = (FunctionElement)getEnv(x);
+						String name = null;
+						if (f != null) {
+							name = x;
+						}
+
+						if (getEnv(x) instanceof FunctionElement) {
+							f = (FunctionElement) getEnv(x);
+							name = null;
+						}
+
 						if (f == null) {
 							try {
 								Element value = storage.getValue(new Location(x, ElementList.NO_ARGUMENT));
@@ -412,6 +419,7 @@ public class InterpreterImp implements Interpreter {
 							} catch (InvalidLocationException e) {
 							}
 						}
+
 						if (f != null) {
 							final List<ASTNode> args = frNode.getArguments();
 							// look for the parameter that needs to be evaluated
@@ -419,14 +427,13 @@ public class InterpreterImp implements Interpreter {
 							if (toBeEvaluated == null) {
 								// if all nodes are evaluated...
 								final ElementList vList = EngineTools.getValueList(args);
-								final String name = storage.getFunctionName(f);
 								if (name != null) {
 									final Location l = new Location(name, vList, f.isModifiable());
 									try {
 										pos.setNode(l, null, storage.getValue(l));
 									} catch (InvalidLocationException e) {
 										throw new EngineError("Location is invalid in 'interpretExpressions()'." + 
-												"This cannot happen!");
+												"This cannot happen!", e);
 									}
 								}
 								else
