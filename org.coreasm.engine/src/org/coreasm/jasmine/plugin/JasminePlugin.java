@@ -338,12 +338,12 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 			// TODO uncomment this line and change the rest of the code accordingly when the used feature becomes available
 			//Parser<Node> tupleTermParser = kernel.getBasicExprParser();
 						
-			Parser<Object[]> repeated = 
-				pTools.star(
-					pTools.seq(
-						pTools.getOprParser("."),
-						idParser
-						)
+			Parser<Object[]> repeated =
+					pTools.many(
+							pTools.seq(
+									pTools.getOprParser("."),
+									idParser
+							)
 					);
 			
 			Parser<Node> javaIdParser = 

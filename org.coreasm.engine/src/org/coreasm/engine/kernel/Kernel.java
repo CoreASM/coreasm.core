@@ -388,14 +388,14 @@ public class Kernel extends Plugin
 	    	Parser<Node> coreASMParser = Parsers.array(new Parser[] {
 	    			parserTools.getKeywParser("CoreASM", this.getName()),
 	    			idParser,
-	    			parserTools.star(
-	    					Parsers.or(
-	    							useClauseParser,
-	    							refHeaderParser.lazy(),
-	    							initializationParser,
-	    							ruleDeclarationParser
-	    						)
-	    				)
+					parserTools.many(
+							Parsers.or(
+									useClauseParser,
+									refHeaderParser.lazy(),
+									initializationParser,
+									ruleDeclarationParser
+							)
+					)
 	    			}).map(new ParserTools.CoreASMParseMap())
 	    			.followedBy(Parsers.EOF);
 	    	parsers.put("CoreASM", new GrammarRule("CoreASM", 
