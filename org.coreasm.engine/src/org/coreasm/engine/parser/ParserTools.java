@@ -350,8 +350,8 @@ public class ParserTools
 	 *  
 	 * @param parsers parsers to be sequenced
 	 */
-	public Parser<Object[]> seq(Parser<?>...parsers) {
-		return seq("parser", parsers);
+	public Parser<Object[]> seq(Parser<?>... parsers) {
+		return Parsers.array(parsers);
 	}
 	
 	/**
@@ -362,9 +362,11 @@ public class ParserTools
 	 *
 	 * @param name name of the new parser
 	 * @param parsers parsers to be sequenced
+	 * @deprecated use {@link #seq(Parser[])} instead
 	 */
-	public Parser<Object[]> seq(String name, Parser<?>...parsers) {
-		return Parsers.array(parsers);
+	@Deprecated
+	public Parser<Object[]> seq(String name, Parser<?>... parsers) {
+		return seq(parsers);
 	}
 	
 	/**
@@ -375,7 +377,7 @@ public class ParserTools
 	 * @param parser parser to be repeated
 	 */
 	public Parser<Object[]> many(Parser<?> parser) {
-		return many("parser", parser);
+		return parser.many().map(List::toArray);
 	}
 	
 	/**
@@ -385,9 +387,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> many(String name, Parser<?> parser) {
-		return parser.many().map(List::toArray);
+		return many(parser);
 	}
 	
 	/**
@@ -396,9 +400,11 @@ public class ParserTools
 	 * P: ( parser delimiter )*
 	 *
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> star(Parser<?> parser) {
-		return star("parser", parser);
+		return this.many(parser);
 	}
 	
 	/**
@@ -408,9 +414,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> star(String name, Parser<?> parser) {
-		return this.many(name, parser);
+		return this.many(parser);
 	}
 	
 	/**
@@ -421,7 +429,7 @@ public class ParserTools
 	 * @param parser parser to be repeated at least once
 	 */
 	public Parser<Object[]> plus(Parser<?> parser) {
-		return plus("parser", parser);
+		return parser.many1().map(List::toArray);
 	}
 	
 	/**
@@ -431,9 +439,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated at least once
+	 * @deprecated use {@link #plus(Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> plus(String name, Parser<?> parser) {
-		return parser.many1().map(List::toArray);
+		return plus(parser);
 	}
 	
 	/**
@@ -444,7 +454,7 @@ public class ParserTools
 	 * @param parser parser to be repeated at least once
 	 */
 	public Parser<Object[]> csplus(Parser<?> parser) {
-		return csplus("parser", parser);
+		return csplus(getOprParser(","), parser);
 	}
 	
 	/**
@@ -456,7 +466,21 @@ public class ParserTools
 	 * @param parser parser to be repeated at least once
 	 */
 	public Parser<Object[]> csplus(Parser<?> commaParser, Parser<?> parser) {
-		return csplus("parser", commaParser, parser);
+		Parser<Object[]> repeated =
+				many(
+						seq(
+								commaParser,
+								//getOptionalDelimiterParser(),
+								parser
+								//getOptionalDelimiterParser()
+						)
+				);
+
+		return seq(
+				parser,
+				//getOptionalDelimiterParser(),
+				repeated
+		);
 	}
 	
 	/**
@@ -466,9 +490,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parsers to be repeated at least once
+	 * @deprecated use {@link #csplus(Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> csplus(String name, Parser<?> parser) {
-		return csplus(name, getOprParser(","), parser);
+		return csplus(parser);
 	}
 	
 	/**
@@ -479,25 +505,11 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param commaParser the parser that parses the comma or any other symbol
 	 * @param parser parser to be repeated at least once
+	 * @deprecated use {@link #csplus(Parser, Parser)} instead
 	 */
+	@Deprecated
 	public Parser<Object[]> csplus(String name, Parser<?> commaParser, Parser<?> parser) {
-		Parser<Object[]> repeated = 
-			star(
-				seq(
-					commaParser,
-					//getOptionalDelimiterParser(),
-					parser
-					//getOptionalDelimiterParser()
-					)
-				);
-
-		return seq(name,
-				parser,
-				//getOptionalDelimiterParser(),
-				repeated
-				);
+		return csplus(commaParser, parser);
 	}
 
-	
-	
 }
