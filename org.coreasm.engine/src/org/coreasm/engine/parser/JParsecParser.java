@@ -185,8 +185,7 @@ public class JParsecParser implements Parser {
 						}
 						logger.error(errorLogMsg);
 						
-						throw new ParserException(msg, 
-								new CharacterPosition(pe.getLocation().line, pe.getLocation().column));
+						throw new ParserException(msg, new CharacterPosition(pe.getLine(), pe.getColumn()));
 					}
 					throw new ParserException(e);
 				}

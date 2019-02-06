@@ -59,7 +59,7 @@ public class ParserException extends EngineException {
 		        showEncountered(buf, err.getEncountered());
 			}
 			this.msg = buf.toString();
-			pos = new CharacterPosition(pcause.getLocation().line, pcause.getLocation().column);
+			pos = new CharacterPosition(pcause.getLine(), pcause.getColumn());
 		} else {
 			initCause(cause);
 			pos = CharacterPosition.NO_POSITION;
