@@ -174,8 +174,8 @@ public class ConditionalRulePlugin extends Plugin
 							ruleParser,
 							Parsers.array(
 									pTools.getKeywParser("else", PLUGIN_NAME),
-									ruleParser).optional(),
-							pTools.getKeywParser("endif", PLUGIN_NAME).optional()
+									ruleParser).optional(null),
+							pTools.getKeywParser("endif", PLUGIN_NAME).optional(null)
 					}).map(new ConditionalParseMap());
 			parsers.put("Rule",
 					new GrammarRule("ConditionalRule",

@@ -125,13 +125,13 @@ public class ForallRulePlugin extends Plugin implements ParserPlugin,
 						termParser)),
 					pTools.seq(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getKeywParser("do", PLUGIN_NAME),
 					ruleParser,
 					pTools.seq(
 						pTools.getKeywParser("ifnone", PLUGIN_NAME),
-						ruleParser).optional(),
-					pTools.getKeywParser("endforall", PLUGIN_NAME).optional()
+						ruleParser).optional(null),
+					pTools.getKeywParser("endforall", PLUGIN_NAME).optional(null)
 					}).map(
 					new ForallParseMap());
 			parsers.put("Rule", 

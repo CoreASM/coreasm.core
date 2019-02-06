@@ -457,7 +457,7 @@ public class BagPlugin extends Plugin
 			Parser<Node> bagEnumerateParser = Parsers.array(
 					new Parser[] {
 							pTools.getOprParser(BAG_OPEN_SYMBOL),
-							pTools.csplus(termParser).optional(),
+							pTools.csplus(termParser).optional(null),
 							pTools.getOprParser(BAG_CLOSE_SYMBOL)
 							}).map(
 					new BagEnumerateParseMap());
@@ -479,7 +479,7 @@ public class BagPlugin extends Plugin
 					),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser(BAG_CLOSE_SYMBOL)
 				}),
 				Parsers.array(new Parser[] {
@@ -496,7 +496,7 @@ public class BagPlugin extends Plugin
 					),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser(BAG_CLOSE_SYMBOL)
 				})
 			).map(new BagComprehensionParseMap());

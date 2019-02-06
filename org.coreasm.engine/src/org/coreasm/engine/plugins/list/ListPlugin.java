@@ -204,7 +204,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 					termParser)),
 				Parsers.array(
 					pTools.getKeywParser("with", PLUGIN_NAME),
-					guardParser).optional(),
+					guardParser).optional(null),
 				pTools.getOprParser("]")
 			}).map(new ListComprehensionParseMap());
 			parsers.put("ListComprehension", 
@@ -215,7 +215,7 @@ public class ListPlugin extends Plugin implements ParserPlugin,
 			// [ Term, ..., Term ]
 			Parser<Object[]> listTermParser1 = Parsers.array(
 					pTools.getOprParser(LIST_OPEN_SYMBOL_1),
-					csTerms.optional(),
+					csTerms.optional(null),
 					pTools.getOprParser(LIST_CLOSE_SYMBOL_1));
 			
 			// << Term, ..., Term >>

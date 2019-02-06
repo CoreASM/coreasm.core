@@ -317,7 +317,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 			Parser<Node> showGraphParser = Parsers.array(
 					new Parser[] {
 					pTools.getKeywParser(SHOW_GRAPH_KW_NAME, PLUGIN_NAME),
-					pTools.getKeywParser("at", PLUGIN_NAME).optional(),
+					pTools.getKeywParser("at", PLUGIN_NAME).optional(null),
 					termParser}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 					

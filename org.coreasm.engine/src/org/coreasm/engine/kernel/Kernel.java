@@ -364,7 +364,7 @@ public class Kernel extends Plugin
 							parserTools.getOprParser("("),
 	    					parserTools.csplus(idParser),
 	    					parserTools.getOprParser(")")
-	    					).optional(),
+	    					).optional(null),
 	    			}).map(new ParserTools.RuleSignatureParseMap());
 	    	refRuleSignatureParser.set(rulesignParser);
 	    	parsers.put("RuleSignature", new GrammarRule("RuleSignature", "ID ( '(' ID (',' ID)* ')' )?", refRuleSignatureParser.lazy(), this.getName()));
@@ -533,7 +533,7 @@ public class Kernel extends Plugin
     	// TupleTerm: '(' ( Term  ( ',' Term )* )? ')'
     	Parser<Node> ttParser = Parsers.array(        //parserTools.seq(
     			parserTools.getOprParser("("),
-				parserTools.csplus(refTermParser.lazy()).optional(),
+				parserTools.csplus(refTermParser.lazy()).optional(null),
     			parserTools.getOprParser(")")
 			).map(new TupleTermParseMap());
     	refTupleTermParser.set(ttParser);
@@ -565,7 +565,7 @@ public class Kernel extends Plugin
        	Parser<Node> basicFunctionRuleTermParser = Parsers.array(
        			new Parser[] {
        				idParser,
-       				refTupleTermParser.lazy().optional()
+       				refTupleTermParser.lazy().optional(null)
        				}).map(new ParserTools.FunctionRuleTermParseMap());
        	parsers.put("BasicFunctionRuleTerm", 
        			new GrammarRule("BasicFunctionRuleTerm",

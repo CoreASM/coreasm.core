@@ -355,7 +355,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 						pTools.getKeywParser("import", PLUGIN_NAME),
 						pTools.getKeywParser("native", PLUGIN_NAME),
 						javaIdParser,
-						tupleTermParser.optional(),
+						tupleTermParser.optional(null),
 						pTools.getKeywParser("into", PLUGIN_NAME),
 						termParser
 					}).map(
@@ -391,7 +391,7 @@ public class JasminePlugin extends Plugin implements ParserPlugin,
 								pTools.getKeywParser("result", PLUGIN_NAME),
 								pTools.getKeywParser("into", PLUGIN_NAME),
 								termParser
-						).optional()
+						).optional(null)
 					}).map(
 					new InvokeParseMap());
 			

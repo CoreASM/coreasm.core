@@ -229,7 +229,7 @@ public class IOPlugin extends Plugin implements
 											npTools.getOprParser(OPERATOR_LINUX_TO),
 											npTools.getKeywParser(KEYWORD_INTO, PLUGIN_NAME),
 											npTools.getOprParser(OPERATOR_LINUX_INTO)),
-									termParser).optional()
+									termParser).optional(null)
 					}).map(vals -> {
                         if (vals[2] == null) {
                             Node node = new PrintRuleNode(((Node) vals[0]).getScannerInfo());

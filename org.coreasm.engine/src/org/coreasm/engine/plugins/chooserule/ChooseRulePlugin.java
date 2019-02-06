@@ -139,13 +139,13 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 							termParser)),
 					npTools.seq(
 							npTools.getKeywParser("with", PLUGIN_NAME),
-							guardParser).optional(),
+							guardParser).optional(null),
 					npTools.getKeywParser("do", PLUGIN_NAME),
 					ruleParser, 
 					npTools.seq(
 							npTools.getKeywParser("ifnone", PLUGIN_NAME),
-							ruleParser).optional(),
-					npTools.getKeywParser("endchoose", PLUGIN_NAME).optional()).map(
+							ruleParser).optional(null),
+					npTools.getKeywParser("endchoose", PLUGIN_NAME).optional(null)).map(
 					new ChooseParseMap());
 			parsers.put("Rule", 
 					new GrammarRule("Rule",
@@ -161,7 +161,7 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 						termParser,
 						npTools.seq(
 								npTools.getKeywParser("with", PLUGIN_NAME),
-								termParser).optional()
+								termParser).optional(null)
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 					    @Override

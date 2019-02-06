@@ -230,7 +230,7 @@ public class SignaturePlugin extends Plugin
 								pTools.getOprParser("="),
 								pTools.getOprParser("{"),
 								pTools.csplus(idParser),
-								pTools.getOprParser("}")).optional(),
+								pTools.getOprParser("}")).optional(null),
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
@@ -302,10 +302,10 @@ public class SignaturePlugin extends Plugin
 			Parser<Node> funcSigParser = Parsers.array(
 					new Parser[] {
 						pTools.getKeywParser("function", PLUGIN_NAME),
-						funcClassParser.optional(),
+						funcClassParser.optional(null),
 						idParser,
 						pTools.getOprParser(":"),
-						univTupleParser.optional(),
+						univTupleParser.optional(null),
 						pTools.getOprParser("->"),
 						univTermParser,
 						Parsers.or(
@@ -316,7 +316,7 @@ public class SignaturePlugin extends Plugin
 								pTools.getKeywParser("initialized", PLUGIN_NAME),
 								pTools.getKeywParser("by", PLUGIN_NAME),
 								termParser).atomic()
-						).optional()
+						).optional(null)
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
@@ -332,7 +332,7 @@ public class SignaturePlugin extends Plugin
 			Parser<Node> derivedFuncParser = Parsers.array(
 					new Parser[] {
 						pTools.seq(
-								pTools.getKeywParser("function", PLUGIN_NAME)).optional(),
+								pTools.getKeywParser("function", PLUGIN_NAME)).optional(null),
 						pTools.getKeywParser("derived", PLUGIN_NAME),
 						ruleSignatureParser,
 						pTools.getOprParser("="),

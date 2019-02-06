@@ -88,7 +88,7 @@ public class PropertyPlugin extends Plugin implements ParserPlugin, OperatorProv
 
 			// 'property' Term
 			Parser<Object[]> propertyExpr = pTools.seq(
-					pTools.getKeywParser("check", PLUGIN_NAME).atomic().optional(),
+					pTools.getKeywParser("check", PLUGIN_NAME).atomic().optional(null),
 					pTools.getKeywParser("property", PLUGIN_NAME),
 					termParser
 					);

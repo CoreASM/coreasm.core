@@ -172,7 +172,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 									ruleParser
 							)
 					),
-					pTools.getKeywParser("endseq", PLUGIN_NAME).optional()
+					pTools.getKeywParser("endseq", PLUGIN_NAME).optional(null)
 				),
 				Parsers.array(
 						pTools.getKeywParser("seq", PLUGIN_NAME),
@@ -217,7 +217,7 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					new Parser[] {
 						pTools.getKeywParser("while", PLUGIN_NAME),
 						termParser, //a term already allows surrounding brackets
-						pTools.getKeywParser("do", PLUGIN_NAME).optional(),
+						pTools.getKeywParser("do", PLUGIN_NAME).optional(null),
 						ruleParser
 					}).map(
 					new WhileParseMap());
@@ -264,10 +264,10 @@ public class TurboASMPlugin extends Plugin implements ParserPlugin, InterpreterP
 					new Parser[] {
 						pTools.getKeywParser("local", PLUGIN_NAME),
 						Parsers.array(	pTools.getOprParser(LOCAL_INIT_OPERATOR),
-										termParser).optional(),
+										termParser).optional(null),
 						pTools.csplus(	Parsers.array(	idParser,
 														Parsers.array(	pTools.getOprParser(LOCAL_INIT_OPERATOR),
-																		termParser).optional())),
+																		termParser).optional(null))),
 						pTools.getKeywParser("in", PLUGIN_NAME),
 						ruleParser
 					}).map(

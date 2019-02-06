@@ -161,7 +161,7 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 							pTools.getKeywParser("as", PLUGIN_NAME),
 							idParser,
 							pTools.getKeywParser("do", PLUGIN_NAME),
-							ruleParser).optional(),
+							ruleParser).optional(null),
 					}).map(
 					new SignalRuleParseMap());
 

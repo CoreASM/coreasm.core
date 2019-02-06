@@ -233,7 +233,7 @@ public class ExpressionParserFactory {
 	private Parser<IndexMap> createIndexParser(String opr1, String opr2, String pluginNames) {
 		return ParserTools.seq(
 				ParserTools.getOprParser(opr1), 
-				termParser.optional(), 
+				termParser.optional(null),
 				ParserTools.getOprParser(opr2)
 				).map(new IndexParseMap(opr1, opr2, pluginNames, OpType.INDEX));
 	}

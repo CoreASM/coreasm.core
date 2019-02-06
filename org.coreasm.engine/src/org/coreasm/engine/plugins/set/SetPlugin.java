@@ -470,7 +470,7 @@ public class SetPlugin extends Plugin
 			Parser<Node> setEnumerateParser = Parsers.array(
 					new Parser[] {
 							pTools.getOprParser("{"),
-							pTools.csplus(termParser).optional(),
+							pTools.csplus(termParser).optional(null),
 							pTools.getOprParser("}")
 							}).map(
 					new SetEnumerateParseMap());
@@ -491,7 +491,7 @@ public class SetPlugin extends Plugin
 						termParser)),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser("}")
 				}),
 				Parsers.array(new Parser[] {
@@ -507,7 +507,7 @@ public class SetPlugin extends Plugin
 						termParser)),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser("}")
 				})
 			).map(new SetComprehensionParseMap());

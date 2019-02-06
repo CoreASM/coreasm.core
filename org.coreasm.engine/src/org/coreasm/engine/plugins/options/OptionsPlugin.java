@@ -191,7 +191,7 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 				new Parser[] {
 					pTools.getKeywParser("option", PLUGIN_NAME),
 					optionNameParser,
-					pTools.seq(termParser.optional()).optional(),
+					pTools.seq(termParser.optional(null)).optional(null),
 				}).map(
 				new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 

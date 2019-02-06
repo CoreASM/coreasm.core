@@ -225,7 +225,7 @@ public class MapPlugin extends Plugin implements ParserPlugin, InterpreterPlugin
 					termParser)),
 				Parsers.array(
 					pTools.getKeywParser("with", PLUGIN_NAME),
-					guardParser).optional(),
+					guardParser).optional(null),
 				pTools.getOprParser("}")
 			}).map(new MapComprehensionParseMap());
 			parsers.put("MapComprehension", 

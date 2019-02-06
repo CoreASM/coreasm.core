@@ -127,7 +127,7 @@ public class StepPlugin extends Plugin implements ParserPlugin,
 					new Parser[] {
 						pTools.getKeywParser("step", PLUGIN_NAME),
 						ruleParser, 
-						pTools.getKeywParser("then", PLUGIN_NAME).optional(), 
+						pTools.getKeywParser("then", PLUGIN_NAME).optional(null),
 						ruleParser
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {

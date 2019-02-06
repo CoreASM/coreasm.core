@@ -145,7 +145,7 @@ public class PlotterPlugin extends Plugin implements
 					termParser,
 					pTools.seq(
 							pTools.getKeywParser("in", PLUGIN_NAME),
-							termParser).optional()
+							termParser).optional(null)
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 

@@ -301,7 +301,7 @@ public class NumberPlugin extends Plugin implements ParserPlugin,
 						termParser,
 						pTools.seq(
 								Parsers.or(pTools.getOprParser(":"), pTools.getKeywParser("step", PLUGIN_NAME)),
-								termParser).optional(),
+								termParser).optional(null),
 						pTools.getOprParser("]")
 					}).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 						@Override

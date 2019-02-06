@@ -246,7 +246,7 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 					pTools.seq(
 							pTools.getKeywParser(AT_STR, PLUGIN_NAME),
 							termParser
-					).optional()
+					).optional(null)
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
