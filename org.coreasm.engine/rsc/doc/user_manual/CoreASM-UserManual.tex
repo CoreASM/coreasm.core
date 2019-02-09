@@ -84,9 +84,9 @@
 
 \title{\huge \CoreASM Language User Manual \\ {\Large engine version \version} \\ {\large \url{github.com/CoreASM/}}}
 
-\author{Roozbeh Farahbod \\ \texttt{info@coreasm.org}\\\\Marcel Dausend \\ \texttt{marcel.dausend@uni-ulm.de}}  
+\author{Roozbeh Farahbod \\ \texttt{info@coreasm.org}\\\\Marcel Dausend \\ \texttt{marcel.dausend@uni-ulm.de}\\\\Nathan Maier \\ \texttt{nathan.maier@uni-ulm.de}}  
 
-\date{\copyrightNotice{2006-2014} \\~\\ {\bf DRAFT of \today} \\ {This document is still under construction to match the latest version of the engine. Your criticism is welcome!}}
+\date{\copyrightNotice{2006-2019} \\~\\ {\bf DRAFT of \today} \\ {This document is still under construction to match the latest version of the engine. Your criticism is welcome!}}
 
  \maketitle
 
@@ -2346,6 +2346,71 @@ sum( {1, 2, 100}, @a ) = 515
 sin(30) = 0.5
 \end{verbatim}
 \end{shell}
+
+\subsection{User-Defined Operators}
+\label{sec:user-defined-operators}
+
+The Operator plugin\index{Operator plugin} enables users to define new mixifx operators within
+\CoreASM specifications.
+It can be loaded by the following \asm{use} phrase:
+
+\begin{lstlisting}
+use OperatorPlugin
+\end{lstlisting}
+
+This plugin provides operator definitions of the following form:
+
+\ruleform{
+	\asm{operator fixity precedence opSymbols}
+	\optional{\asm{on u$_{1}$ * ... * u$_{n}$}}
+	\asm{= functionName}
+}{Operator Plugin}
+
+In this operator definition 
+
+\begin{itemize}
+	\item \asm{fixity} is one of \asm{infixl} (left-associative), \asm{infixn} (non-associative), 
+		\asm{infixr} (right-associative), \asm{prefix}, \asm{postfix}, \asm{closed}.
+
+	\item \asm{precedence} is an integer precedence level between 0 (lowest) and 1000 (highest).
+
+	\item	\asm{opSymbols} is a string defining the symbols of the operators enclosed by single quotes.
+		To use single quotes within that string it can also be enclosed by additional \asm{#} like 
+		\asm{#'''#} or \asm{##'''##}.
+		Internal ``holes'' for operator arguments can be denoted by whitespaces like \asm{'? :'}.
+
+	\item \asm{functionName} is the name of some function with the same arity as the defined operator.
+		This function will be called with the operators arguments ordered from left to right to evaluate 
+		the operators value.
+
+\end{itemize}
+
+As an example, consider the following definition of the well-known ternary operator using a function 
+\asm{ternary(a, b, c)} which will return \asm{b} if \asm{a} evaluates to \asm{true} and \asm{c} 
+otherwise:
+
+\begin{lstlisting}
+operator infixr 250 '? :' = ternary
+\end{lstlisting}
+
+Additionally one can provide an optional signature for an operator, specifying that the operator 
+will only be evaluated for arguments which are from the given universe.
+Otherwise the operator will return \asm{undef}.
+
+The following example defines an operator which will only be evaluated if the first argument is a 
+\asm{Number} and the second is a \asm{String}.
+
+\begin{lstlisting}
+operator infixl 750 '*' on Number * String = f
+derived f(x, y) = return res in
+	if x = 0 then
+		res := ""
+	else
+		res := y + ((x - 1) * y)
+\end{lstlisting}
+
+Therefore \asm{3 * "abc"} would yield \asm{"abcabcabc"}, while \asm{"abc" * 3} would yield 
+\asm{undef} since \asm{"abc"} is not a \asm{Number} and \asm{3} is not a \asm{String}.
 
 \section{Notes about the \CoreASM Compiler}
 \label{sec:compiler}
