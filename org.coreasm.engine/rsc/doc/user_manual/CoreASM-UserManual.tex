@@ -2412,6 +2412,13 @@ derived f(x, y) = return res in
 Therefore \asm{3 * "abc"} would yield \asm{"abcabcabc"}, while \asm{"abc" * 3} would yield 
 \asm{undef} since \asm{"abc"} is not a \asm{Number} and \asm{3} is not a \asm{String}.
 
+Operator overloading between multiple user-defined operators works just as usual between operators 
+defined by multiple different plugins.
+That means all the matching operators are evaluated and only if all of them yield one unambiguous 
+result (ignoring \asm{undef} results) it is determined as the overall result of the operator 
+application.
+Otherwise the operator application results in \asm{undef}.
+
 \section{Notes about the \CoreASM Compiler}
 \label{sec:compiler}
 
