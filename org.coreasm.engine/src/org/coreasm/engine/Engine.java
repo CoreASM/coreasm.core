@@ -987,31 +987,41 @@ public class Engine implements ControlAPI {
 							*/
 
 						case emError:
-							isBusyLock.lock();
-							try {
-								// Throw out all commands except a recovery command
-								EngineCommand cmd;
-								while ((cmd = commandQueue.poll()) != null) {
-									if (cmd.type == EngineCommand.CmdType.ecTerminate) {
-										next(EngineMode.emTerminating);
-										lastError = null;
-										logger.debug("Engine terminated by user command.");
-										break;
-									} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
-										// Recover by going to the idle mode
-										next(EngineMode.emIdle);
-										lastError = null;
-										logger.debug("Engine recovered from error by user command.");
-										break;
+							// blocking wait for termination or recover command
+							// we are not busy while waiting
+							// throw out all other commands
+							while (true) {
+								isBusyLock.lock();
+								try {
+									if (commandQueue.isEmpty()) {
+										engineBusy = false;
+										isNotBusy.signalAll();
 									}
 								}
+								finally {
+									isBusyLock.unlock();
+								}
 
-								engineBusy = false;
-								isNotBusy.signalAll();
+								EngineCommand cmd = commandQueue.take();
+								assert engineBusy;
+
+								if (cmd.type == EngineCommand.CmdType.ecTerminate) {
+									next(EngineMode.emTerminating);
+									lastError = null;
+									logger.debug("Engine terminated by user command.");
+									break;
+								} else if (cmd.type == EngineCommand.CmdType.ecRecover) {
+									// Recover by going to the idle mode
+									next(EngineMode.emIdle);
+									lastError = null;
+									logger.debug("Engine recovered from error by user command.");
+									break;
+								} else {
+									logger.warn("Ignore user command {}, Engine is in error state and needs to be terminated or reset", cmd.type);
+								}
 							}
-							finally {
-								isBusyLock.unlock();
-							}
+
+							break;
 						case emTerminated:
 						break;
 						default:
