@@ -3,16 +3,16 @@ package org.coreasm.engine.parser;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.Plugin;
 
-import org.codehaus.jparsec.functors.Map2;
+import java.util.function.BiFunction;
 
 /** 
- * Specialized version of {@link Map3} that gets a plug-in name as well. 
+ * Specialized version that gets a plug-in name as well.
  *   
  * @author Roozbeh Farahbod
  * 
  */
 
-public abstract class ParseMap2 implements Map2<Node, Node, Node> {
+public abstract class ParseMap2 implements BiFunction<Node, Node, Node> {
 
 	public final String pluginName;
 	

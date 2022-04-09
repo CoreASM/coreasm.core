@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import org.codehaus.jparsec.Parser;
+import org.jparsec.Parser;
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.parser.GrammarRule.GRType;
 import org.coreasm.util.CoreASMGlobal;

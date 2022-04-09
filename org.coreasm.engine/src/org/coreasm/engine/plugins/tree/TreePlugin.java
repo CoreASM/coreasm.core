@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -218,7 +218,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 					termParser
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new MakeTreeRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -245,11 +246,12 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 					pTools.seq(
 							pTools.getKeywParser(AT_STR, PLUGIN_NAME),
 							termParser
-					).optional()
+					).optional(null)
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new AddChildToRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -276,7 +278,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new RemoveChildFromRuleNode();
 					addChildren(node, vals);
 					return node;
@@ -303,7 +306,8 @@ implements ParserPlugin, InterpreterPlugin,	VocabularyExtender {
 			}).map(
 			new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-				public Node map(Object[] vals) {
+				@Override
+				public Node apply(Object[] vals) {
 					Node node = new RemoveChildAtRuleNode();
 					addChildren(node, vals);
 					return node;

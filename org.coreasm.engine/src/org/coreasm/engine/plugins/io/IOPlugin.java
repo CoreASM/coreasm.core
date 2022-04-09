@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.io.CompilerIOPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
@@ -229,24 +229,22 @@ public class IOPlugin extends Plugin implements
 											npTools.getOprParser(OPERATOR_LINUX_TO),
 											npTools.getKeywParser(KEYWORD_INTO, PLUGIN_NAME),
 											npTools.getOprParser(OPERATOR_LINUX_INTO)),
-									termParser).optional()
-					}).map(new org.codehaus.jparsec.functors.Map<Object[], Node>() {
-						public Node map(Object[] vals) {
-							if (vals[2] == null) {
-								Node node = new PrintRuleNode(((Node) vals[0]).getScannerInfo());
-								node.addChild((Node) vals[0]);
-								node.addChild("alpha", (Node) vals[1]);
-								return node;
-							}
-							Node node = new PrintToFileRuleNode(((Node) vals[0]).getScannerInfo());
-							node.addChild((Node) vals[0]);
-							node.addChild("alpha", (Node) vals[1]);
-							Object[] toPart = (Object[]) vals[2];
-							node.addChild((Node) toPart[0]);
-							node.addChild("beta", (Node) toPart[1]);
-							return node;
-						}
-					});
+									termParser).optional(null)
+					}).map(vals -> {
+                        if (vals[2] == null) {
+                            Node node = new PrintRuleNode(((Node) vals[0]).getScannerInfo());
+                            node.addChild((Node) vals[0]);
+                            node.addChild("alpha", (Node) vals[1]);
+                            return node;
+                        }
+                        Node node = new PrintToFileRuleNode(((Node) vals[0]).getScannerInfo());
+                        node.addChild((Node) vals[0]);
+                        node.addChild("alpha", (Node) vals[1]);
+                        Object[] toPart = (Object[]) vals[2];
+                        node.addChild((Node) toPart[0]);
+                        node.addChild("beta", (Node) toPart[1]);
+                        return node;
+                    });
 
 
 			parsers.put("Rule",

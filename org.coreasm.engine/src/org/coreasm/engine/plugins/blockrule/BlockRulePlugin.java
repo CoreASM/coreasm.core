@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.blockrule.CompilerBlockRulePlugin;
 import org.coreasm.engine.EngineTools;
@@ -149,7 +149,7 @@ public class BlockRulePlugin extends Plugin
 					).map(new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] from) {
+						public Node apply(Object[] from) {
 							ASTNode node = new ASTNode(
 									BlockRulePlugin.PLUGIN_NAME,
 									ASTNode.RULE_CLASS,

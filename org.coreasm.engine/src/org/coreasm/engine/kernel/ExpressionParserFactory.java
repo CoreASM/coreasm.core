@@ -13,11 +13,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
-import org.codehaus.jparsec.OperatorTable;
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.functors.Binary;
-import org.codehaus.jparsec.functors.Unary;
+import org.jparsec.OperatorTable;
+import org.jparsec.Parser;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -233,7 +233,7 @@ public class ExpressionParserFactory {
 	private Parser<IndexMap> createIndexParser(String opr1, String opr2, String pluginNames) {
 		return ParserTools.seq(
 				ParserTools.getOprParser(opr1), 
-				termParser.optional(), 
+				termParser.optional(null),
 				ParserTools.getOprParser(opr2)
 				).map(new IndexParseMap(opr1, opr2, pluginNames, OpType.INDEX));
 	}
@@ -303,7 +303,7 @@ public class ExpressionParserFactory {
 	}
 	
 	/* Special unary map class */
-	public static class UnaryMap implements Unary<Node> {
+	public static class UnaryMap implements UnaryOperator<Node> {
 		
 		//private String pluginNames;
 		private String opr;
@@ -329,7 +329,8 @@ public class ExpressionParserFactory {
 		/**
 		 * Creates a tree for this operator with an {@link ASTNode} as its root.
 		 */
-		public Node map(Node child) {
+		@Override
+		public Node apply(Node child) {
 			Node node = null;
 			if (type == OpType.POSTFIX) {
 				node = new ASTNode(
@@ -364,14 +365,15 @@ public class ExpressionParserFactory {
 			this.type = type;
 		}
 
-		public UnaryMap map(Object[] v) {
+		@Override
+		public UnaryMap apply(Object[] v) {
 			return new UnaryMap(opr, pluginName, type, v);
 		}
 		
 	}
 
 	/* Special binary map class */
-	public static class BinaryMap implements Binary<Node> {
+	public static class BinaryMap implements BinaryOperator<Node> {
 		
 		//private String pluginNames;
 		private String opr;
@@ -397,7 +399,8 @@ public class ExpressionParserFactory {
 		/**
 		 * Creates a tree for this operator with an {@link ASTNode} as its root.
 		 */
-		public Node map(Node o1, Node o2) {
+		@Override
+		public Node apply(Node o1, Node o2) {
 			Node node = new ASTNode(
 					null, ASTNode.BINARY_OPERATOR_CLASS, "", ((Node)cnodes[1]).getToken(), o1.getScannerInfo());
 			node.addChild(o1);
@@ -423,14 +426,15 @@ public class ExpressionParserFactory {
 			this.type = type;
 		}
 
-		public BinaryMap map(Object[] v) {
+		@Override
+		public BinaryMap apply(Object[] v) {
 			return new BinaryMap(opr, pluginName, type, v);
 		}
 		
 	}
 
 	/* Special index map class */
-	public static class IndexMap implements Unary<Node> {
+	public static class IndexMap implements UnaryOperator<Node> {
 		
 		//private String pluginNames;
 		private String opr1;
@@ -458,9 +462,9 @@ public class ExpressionParserFactory {
 		/**
 		 * Creates a tree for this operator with an {@link ASTNode} as its root.
 		 */
-		public Node map(Node child) {
-			Node node = null;
-			node = new ASTNode(
+		@Override
+		public Node apply(Node child) {
+			Node node = new ASTNode(
 					null, ASTNode.INDEX_OPERATOR_CLASS, "", opr1 + OperatorRule.OPERATOR_DELIMITER + opr2, child.getScannerInfo());
 			node.addChild(child);
 			for (Object obj: cnodes)
@@ -484,7 +488,8 @@ public class ExpressionParserFactory {
 			this.type = type;
 		}
 
-		public IndexMap map(Object[] v) {
+		@Override
+		public IndexMap apply(Object[] v) {
 			return new IndexMap(opr1, opr2, pluginName, type, v);
 		}
 		

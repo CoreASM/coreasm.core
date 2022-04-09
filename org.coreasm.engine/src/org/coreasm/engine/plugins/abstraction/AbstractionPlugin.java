@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.abstraction.CompilerAbstractionPlugin;
 import org.coreasm.engine.VersionInfo;
@@ -116,7 +116,7 @@ public class AbstractionPlugin extends Plugin
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] vals) {
+						public Node apply(Object[] vals) {
 							Node node = new AbstractRuleNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node) vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

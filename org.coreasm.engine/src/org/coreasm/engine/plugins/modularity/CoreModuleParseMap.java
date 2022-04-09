@@ -29,9 +29,10 @@ public class CoreModuleParseMap extends ParserTools.ArrayParseMap {
 	public CoreModuleParseMap() {
 		super(ModularityPlugin.PLUGIN_NAME);
 	}
-	
-	public Node map(Object[] vals) {
-		ScannerInfo info = null;
+
+	@Override
+	public Node apply(Object[] vals) {
+		ScannerInfo info;
 		
 		// consider the possibility of starting with a 
 		// comment or whitespace

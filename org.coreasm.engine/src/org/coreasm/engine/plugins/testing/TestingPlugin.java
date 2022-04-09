@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.interpreter.ASTNode;
 import org.coreasm.engine.interpreter.Node;
@@ -65,7 +65,7 @@ public class TestingPlugin extends Plugin implements ParserPlugin {
 					}).map(
 						new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 							@Override
-							public Node map(Object[] from) {
+							public Node apply(Object[] from) {
 								Node node = new ASTNode(PLUGIN_NAME, ASTNode.EXPRESSION_CLASS, "PARAM", null, ((Node) from[0]).getScannerInfo());
 								addChildren(node, from);
 								return node;
@@ -79,7 +79,7 @@ public class TestingPlugin extends Plugin implements ParserPlugin {
 							paramkeyw,
 							pTools.getIdParser()
 					}).map(new ArrayParseMap(PLUGIN_NAME){
-						public Node map(Object[] vals){
+						public Node apply(Object[] vals){
 							Node node = new ASTNode(PLUGIN_NAME, ASTNode.RULE_CLASS, "PARAM", null, ((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -121,7 +121,7 @@ public class TestingPlugin extends Plugin implements ParserPlugin {
 		}
 		
 		@Override
-		public Node map(Object[] vals){
+		public Node apply(Object[] vals){
 			Node node = new ASTNode(PLUGIN_NAME, ASTNode.RULE_CLASS, "TestRule", null, ((Node) vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

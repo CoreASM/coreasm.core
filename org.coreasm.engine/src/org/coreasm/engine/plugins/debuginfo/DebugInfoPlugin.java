@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.UpdateMultiset;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -163,7 +163,8 @@ public class DebugInfoPlugin extends Plugin implements ParserPlugin, Interpreter
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new DebugInfoNode(((Node)vals[0]).getScannerInfo());
 							node.addChild((Node)vals[0]);
 							node.addChild("alpha", (Node)vals[1]);

@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.Element;
 import org.coreasm.engine.absstorage.Update;
@@ -114,7 +114,8 @@ public class QueuePlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new EnqueueRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -134,7 +135,8 @@ public class QueuePlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new DequeueRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

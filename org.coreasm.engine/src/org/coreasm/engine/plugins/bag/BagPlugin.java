@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.EngineException;
 import org.coreasm.engine.VersionInfo;
@@ -457,7 +457,7 @@ public class BagPlugin extends Plugin
 			Parser<Node> bagEnumerateParser = Parsers.array(
 					new Parser[] {
 							pTools.getOprParser(BAG_OPEN_SYMBOL),
-							pTools.csplus(termParser).optional(),
+							pTools.csplus(termParser).optional(null),
 							pTools.getOprParser(BAG_CLOSE_SYMBOL)
 							}).map(
 					new BagEnumerateParseMap());
@@ -479,7 +479,7 @@ public class BagPlugin extends Plugin
 					),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser(BAG_CLOSE_SYMBOL)
 				}),
 				Parsers.array(new Parser[] {
@@ -496,7 +496,7 @@ public class BagPlugin extends Plugin
 					),
 					Parsers.array(
 						pTools.getKeywParser("with", PLUGIN_NAME),
-						guardParser).optional(),
+						guardParser).optional(null),
 					pTools.getOprParser(BAG_CLOSE_SYMBOL)
 				})
 			).map(new BagComprehensionParseMap());
@@ -1087,8 +1087,9 @@ public class BagPlugin extends Plugin
 		public BagEnumerateParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new BagEnumerateNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
@@ -1101,9 +1102,9 @@ public class BagPlugin extends Plugin
 		public BagComprehensionParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
-			Node node = null;
+
+		@Override
+		public Node apply(Object[] vals) {
 			// if there is an 'is' clause
 			if (vals[1] != null && vals[1] instanceof Object[]) {
 				Object[] newVals = new Object[vals.length - 1];
@@ -1112,7 +1113,7 @@ public class BagPlugin extends Plugin
 					newVals[i] = vals[i + 1];
 				vals = newVals;
 			}
-			node = new BagCompNode(((Node)vals[0]).getScannerInfo());
+			Node node = new BagCompNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;
 		}

@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.letrule.CompilerLetRulePlugin;
 import org.coreasm.engine.CoreASMError;
@@ -313,8 +313,9 @@ public class LetRulePlugin extends Plugin implements ParserPlugin, InterpreterPl
 		}
 
 		String nextChildName = "alpha";
-		
-		public Node map(Object[] vals) {
+
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
 			LetRuleNode node = new LetRuleNode(((Node)vals[0]).getScannerInfo());
 			if (vals[1] instanceof Object[] && ((Object[])vals[1])[0] instanceof Node) {

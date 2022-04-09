@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
+import org.jparsec.Parser;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.math.CompilerMathPlugin;
 import org.coreasm.engine.VersionInfo;
@@ -194,7 +194,8 @@ public class MathPlugin extends Plugin implements VocabularyExtender, ParserPlug
 					pTools.getKeywParser(KW_RANDOM_VALUE, PLUGIN_NAME).map(
 					new ParseMap<Node, Node>(PLUGIN_NAME) {
 
-						public Node map(Node v) {
+						@Override
+						public Node apply(Node v) {
 							Node node = new ASTNode(
 									PLUGIN_NAME, 
 									ASTNode.EXPRESSION_CLASS, 

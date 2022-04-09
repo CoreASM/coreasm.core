@@ -1,17 +1,14 @@
 package org.coreasm.engine.parser;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Scanners;
-import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Token;
-import org.codehaus.jparsec.Tokens.Fragment;
-import org.codehaus.jparsec.functors.Map;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
+import org.jparsec.Scanners;
+import org.jparsec.Terminals;
+import org.jparsec.Token;
+import org.jparsec.Tokens.Fragment;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.EngineError;
 import org.coreasm.engine.interpreter.ASTNode;
@@ -59,7 +56,7 @@ public class ParserTools
 		initialized = false;
 	}
 	
-	public void init(String [] keywords, String[] operators, Set<Parser<? extends Object>> lexers)
+	public void init(String [] keywords, String[] ops, Set<Parser<?>> lexers)
 	{
 		if (initialized == true)
 			throw new EngineError("Cannot re-initialize ParserTools.");
@@ -67,13 +64,13 @@ public class ParserTools
 		keywParsers = new HashMap<String, Parser<Node>>();
 		oprParsers = new HashMap<String, Parser<Node>>();
 		
-		terminals_keyw = Terminals.caseSensitive(operators, keywords);
+		terminals_keyw = Terminals.operators(ops).words(Scanners.IDENTIFIER).keywords(Arrays.asList(keywords)).build();
 		tokenizer_keyw = terminals_keyw.tokenizer();
 		tokenizer_id = Terminals.Identifier.TOKENIZER;
 		
 		// Convert set with lexers into a list, because the keyword tokenizer must be first
 		// and the identifier tokenizer must be last.
-		List<Parser<? extends Object>> _lexers = new LinkedList<Parser<? extends Object>>(lexers);
+		List<Parser<?>> _lexers = new LinkedList<>(lexers);
 		_lexers.add(0, tokenizer_keyw);	
 		_lexers.add(tokenizer_id);
 		tokenizer = Parsers.or(_lexers);
@@ -95,18 +92,15 @@ public class ParserTools
 	
 	public Parser<Node> getKeywParser(String keyword, final String pluginName) {
 		if ( ! keywParsers.containsKey(keyword) ) {
-			Parser<Node> parser = terminals_keyw.token(keyword).map(new Map<Token, Node>() {
-				@Override
-				public Node map(Token from) {
-					int index = from.index();
-					return new Node(
-						pluginName,
-						from.toString(),
-						new ScannerInfo(index),
-						Node.KEYWORD_NODE
-					);
-				}
-			});
+			Parser<Node> parser = terminals_keyw.token(keyword).map(from -> {
+                int index = from.index();
+                return new Node(
+                    pluginName,
+                    from.toString(),
+                    new ScannerInfo(index),
+                    Node.KEYWORD_NODE
+                );
+            });
 			keywParsers.put(keyword, parser);
 		}
 		return keywParsers.get(keyword);
@@ -114,18 +108,15 @@ public class ParserTools
 	
 	public Parser<Node> getOprParser(String operator) {
 		if ( ! oprParsers.containsKey(operator) ) {
-			Parser<Node> parser = terminals_keyw.token(operator).map(new Map<Token, Node>() {
-				@Override
-				public Node map(Token from) {
-					int index = from.index();
-					return new Node(
-							"Kernel",
-							from.toString(),
-							new ScannerInfo(index),
-							Node.OPERATOR_NODE
-							);
-				}
-			});
+			Parser<Node> parser = terminals_keyw.token(operator).map(from -> {
+                int index = from.index();
+                return new Node(
+                        "Kernel",
+                        from.toString(),
+                        new ScannerInfo(index),
+                        Node.OPERATOR_NODE
+                        );
+            });
 			oprParsers.put(operator, parser);
 		}
 		return oprParsers.get(operator);
@@ -144,7 +135,7 @@ public class ParserTools
 	
 	
 	public static abstract class ArrayParseMap
-	implements Map<Object[], Node>
+	implements Function<Object[], Node>
 	{
 		String pluginname;
 		
@@ -155,9 +146,10 @@ public class ParserTools
 		public ArrayParseMap(Plugin plugin) {
 			this(plugin.getName());
 		}
-		
-		public abstract Node map(Object[] from);
-		
+
+		@Override
+		public abstract Node apply(Object[] from);
+
 		/**
 		 * Assumes all the children are instances of {@link Node} and
 		 * adds all of them as children of parent.
@@ -190,7 +182,6 @@ public class ParserTools
 		public void addChild(Node parent, Node child) {
 			parent.addChild(child);
 		}
-		
 	}
 	
 	
@@ -203,7 +194,7 @@ public class ParserTools
 		}
 		
 		@Override
-		public Node map(Object[] from) {
+		public Node apply(Object[] from) {
 			Node node = new ASTNode(
 					"Kernel",
 					ASTNode.DECLARATION_CLASS,
@@ -224,10 +215,10 @@ public class ParserTools
 		public RuleDeclarationParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
-			ScannerInfo info = null;
-			info = ((Node)vals[0]).getScannerInfo();
+
+		@Override
+		public Node apply(Object[] vals) {
+			ScannerInfo info = ((Node)vals[0]).getScannerInfo();
 			
 			Node node = new ASTNode(
 					null,
@@ -237,17 +228,18 @@ public class ParserTools
 					info
 					);
 
-			for (int i=0; i < vals.length; i++) {
-				Node child = (Node)vals[i];
-				if (child != null)
+			for (Object val : vals) {
+				if (val != null) {
+					Node child = (Node) val;
 					// to give proper names to ASTNode children:
 					if (child instanceof ASTNode) {
-						if (((ASTNode)child).getGrammarClass().equals("RuleSignature"))
+						if (((ASTNode) child).getGrammarClass().equals("RuleSignature"))
 							node.addChild("alpha", child);
 						else
 							node.addChild("beta", child);
 					} else
 						node.addChild(child);
+				}
 			}
 			
 			return node;
@@ -264,9 +256,10 @@ public class ParserTools
 		public CoreASMParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] vals) {
-			ScannerInfo info = null;
+
+		@Override
+		public Node apply(Object[] vals) {
+			ScannerInfo info;
 			
 			// consider the possiblity of starting with a 
 			// comment or whitespace
@@ -299,8 +292,9 @@ public class ParserTools
 		public FunctionRuleTermParseMap() {
 			super(Kernel.PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			Node node = new FunctionRuleTermNode(((Node)v[0]).getScannerInfo());
 			node.addChild("alpha", (Node)v[0]); // ID
 			
@@ -327,7 +321,8 @@ public class ParserTools
 			super("Kernel");
 		}
 
-		public Node map(Token v)
+		@Override
+		public Node apply(Token v)
 		{
 			return new ASTNode(
 							pluginName, 
@@ -355,8 +350,8 @@ public class ParserTools
 	 *  
 	 * @param parsers parsers to be sequenced
 	 */
-	public Parser<Object[]> seq(Parser<?>...parsers) {
-		return seq("parser", parsers);
+	public Parser<Object[]> seq(Parser<?>... parsers) {
+		return Parsers.array(parsers);
 	}
 	
 	/**
@@ -367,23 +362,11 @@ public class ParserTools
 	 *
 	 * @param name name of the new parser
 	 * @param parsers parsers to be sequenced
+	 * @deprecated use {@link #seq(Parser[])} instead
 	 */
-	public Parser<Object[]> seq(String name, Parser<? extends Object>...parsers) {
-		Parser<Object[]> seqParser = Parsers.array(parsers);
-		/*.new ParseMapN<Object[]>("") {
-
-			public Object[] map(Object... vals) {
-				Object[] nodes = new Object[vals.length];
-				
-				for (int i=0; i < vals.length; i++) 
-					nodes[i] = vals[i];
-				
-				return nodes;
-			}
-			
-		});*/
-			
-		return seqParser;
+	@Deprecated
+	public Parser<Object[]> seq(String name, Parser<?>... parsers) {
+		return seq(parsers);
 	}
 	
 	/**
@@ -393,8 +376,8 @@ public class ParserTools
 	 *
 	 * @param parser parser to be repeated
 	 */
-	public Parser<Object[]> many(Parser<? extends Object> parser) {
-		return many("parser", parser);
+	public Parser<Object[]> many(Parser<?> parser) {
+		return parser.many().map(List::toArray);
 	}
 	
 	/**
@@ -404,16 +387,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
-	public Parser<Object[]> many(String name, Parser<? extends Object> parser) {
-		//Parser<Object[]> result = Parsers.many(name, Object.class, parser);
-		Parser<Object[]> result = parser.many().map( new Map<List<? extends Object>, Object[]>() {
-			@Override
-			public Object[] map(List<? extends Object> from) {
-				return from.toArray();
-			}
-		});
-		return result;
+	@Deprecated
+	public Parser<Object[]> many(String name, Parser<?> parser) {
+		return many(parser);
 	}
 	
 	/**
@@ -422,9 +400,11 @@ public class ParserTools
 	 * P: ( parser delimiter )*
 	 *
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
-	public Parser<Object[]> star(Parser<? extends Object> parser) {
-		return star("parser", parser);
+	@Deprecated
+	public Parser<Object[]> star(Parser<?> parser) {
+		return this.many(parser);
 	}
 	
 	/**
@@ -434,23 +414,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated
+	 * @deprecated use {@link #many(Parser)} instead
 	 */
-	public Parser<Object[]> star(String name, Parser<? extends Object> parser) {
-//		Parser<Object[]> result = seq(name, parser, getOptionalDelimiterParser()).many(Object[].class).map(
-//				new Map<Object[][], Object[]>() {
-//
-//					public Object[] map(Object[][] v) {
-//						ArrayList list = new ArrayList();
-//						for (Object[] arr: v) 
-//							for (Object obj: arr)
-//								list.add(obj);
-//						return list.toArray();
-//					}
-//				}
-//		);
-		Parser<Object[]> result = this.many(name, parser);
-		
-		return result;
+	@Deprecated
+	public Parser<Object[]> star(String name, Parser<?> parser) {
+		return this.many(parser);
 	}
 	
 	/**
@@ -460,8 +428,8 @@ public class ParserTools
 	 *
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> plus(Parser<? extends Object> parser) {
-		return plus("parser", parser);
+	public Parser<Object[]> plus(Parser<?> parser) {
+		return parser.many1().map(List::toArray);
 	}
 	
 	/**
@@ -471,53 +439,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parser to be repeated at least once
+	 * @deprecated use {@link #plus(Parser)} instead
 	 */
-	//public Parser<Object[]> plus(String name, Parser<? extends Object> parser) {
-	//	return plus(name, parser, getOptionalDelimiterParser());
-	//}
-	
-	/**
-	 * Returns a parser P that is:
-	 * <p>
-	 * P: ( parser delimiter )+
-	 * 
-	 * @param parser parser to be repeated at least once
-	 * @param delimiter the delimiter parser
-	 */
-	//public Parser<Object[]> plus(Parser<? extends Object> parser, Parser<Node> delimiter) {
-	//	return plus("parser", parser, delimiter);
-	//}
-	
-	/**
-	 * Returns a parser P that is:
-	 * <p>
-	 * P: ( parser delimiter )+
-	 * 
-	 * @param name name of the new parser
-	 * @param parser parser to be repeated at least once
-	 * @param delimiter the delimiter parser [REMOVED]
-	 */
-	public Parser<Object[]> plus(String name, Parser<? extends Object> parser) {
-		/*Parser<Object[]> result = seq(name, parser, delimiter).many1(Object[].class).map(
-				new Map<Object[][], Object[]>() {
-
-					public Object[] map(Object[][] v) {
-						ArrayList list = new ArrayList();
-						for (Object[] arr: v) 
-							for (Object obj: arr)
-								list.add(obj);
-						return list.toArray();
-					}
-				}
-		);*/
-		Parser<Object[]> result = parser.many1().map(new Map<List<? extends Object>, Object[]> () {
-			@Override
-			public Object[] map(List<? extends Object> from) {
-				return from.toArray();
-			}
-		});
-		
-		return result;
+	@Deprecated
+	public Parser<Object[]> plus(String name, Parser<?> parser) {
+		return plus(parser);
 	}
 	
 	/**
@@ -527,8 +453,8 @@ public class ParserTools
      * 
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> csplus(Parser<? extends Object> parser) {
-		return csplus("parser", parser);
+	public Parser<Object[]> csplus(Parser<?> parser) {
+		return csplus(getOprParser(","), parser);
 	}
 	
 	/**
@@ -539,8 +465,22 @@ public class ParserTools
      * @param commaParser the parser that parses the comma or any other symbol 
 	 * @param parser parser to be repeated at least once
 	 */
-	public Parser<Object[]> csplus(Parser<? extends Object> commaParser, Parser<? extends Object> parser) {
-		return csplus("parser", commaParser, parser);
+	public Parser<Object[]> csplus(Parser<?> commaParser, Parser<?> parser) {
+		Parser<Object[]> repeated =
+				many(
+						seq(
+								commaParser,
+								//getOptionalDelimiterParser(),
+								parser
+								//getOptionalDelimiterParser()
+						)
+				);
+
+		return seq(
+				parser,
+				//getOptionalDelimiterParser(),
+				repeated
+		);
 	}
 	
 	/**
@@ -550,9 +490,11 @@ public class ParserTools
 	 * 
 	 * @param name name of the new parser
 	 * @param parser parsers to be repeated at least once
+	 * @deprecated use {@link #csplus(Parser)} instead
 	 */
-	public Parser<Object[]> csplus(String name, Parser<? extends Object> parser) {
-		return csplus(name, getOprParser(","), parser);
+	@Deprecated
+	public Parser<Object[]> csplus(String name, Parser<?> parser) {
+		return csplus(parser);
 	}
 	
 	/**
@@ -563,28 +505,11 @@ public class ParserTools
 	 * @param name name of the new parser
 	 * @param commaParser the parser that parses the comma or any other symbol
 	 * @param parser parser to be repeated at least once
+	 * @deprecated use {@link #csplus(Parser, Parser)} instead
 	 */
-	@SuppressWarnings("unchecked")
-	public Parser<Object[]> csplus(String name, Parser<? extends Object> commaParser, Parser<? extends Object> parser) {
-		Parser<Object[]> repeated = 
-			star(
-				seq(
-					commaParser,
-					//getOptionalDelimiterParser(),
-					parser
-					//getOptionalDelimiterParser()
-					)
-				);
-		
-		Parser<Object[]> result = seq(name, 
-				parser, 
-				//getOptionalDelimiterParser(),
-				repeated
-				);
-		
-		return result;
+	@Deprecated
+	public Parser<Object[]> csplus(String name, Parser<?> commaParser, Parser<?> parser) {
+		return csplus(commaParser, parser);
 	}
 
-	
-	
 }

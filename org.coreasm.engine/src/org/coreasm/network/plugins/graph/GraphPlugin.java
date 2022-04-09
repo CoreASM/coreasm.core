@@ -22,8 +22,8 @@ import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.CoreASMEngine;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.EngineException;
@@ -305,7 +305,7 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
 						@Override
-						public Node map(Object[] nodes) {
+						public Node apply(Object[] nodes) {
 							NewEdgeNode node = new NewEdgeNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;
@@ -317,12 +317,12 @@ public class GraphPlugin extends Plugin implements VocabularyExtender, ParserPlu
 			Parser<Node> showGraphParser = Parsers.array(
 					new Parser[] {
 					pTools.getKeywParser(SHOW_GRAPH_KW_NAME, PLUGIN_NAME),
-					pTools.getKeywParser("at", PLUGIN_NAME).optional(),
+					pTools.getKeywParser("at", PLUGIN_NAME).optional(null),
 					termParser}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 					
 						@Override
-						public Node map(Object[] nodes) {
+						public Node apply(Object[] nodes) {
 							ShowGraphNode node = new ShowGraphNode(((Node)nodes[0]).getScannerInfo());
 							addChildren(node, nodes);
 							return node;

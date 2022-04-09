@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -145,11 +145,12 @@ public class PlotterPlugin extends Plugin implements
 					termParser,
 					pTools.seq(
 							pTools.getKeywParser("in", PLUGIN_NAME),
-							termParser).optional()
+							termParser).optional(null)
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new PlotRuleNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;

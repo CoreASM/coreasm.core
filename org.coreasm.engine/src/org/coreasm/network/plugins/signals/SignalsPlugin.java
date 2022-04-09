@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.engine.ControlAPI;
 import org.coreasm.engine.VersionInfo;
 import org.coreasm.engine.absstorage.BackgroundElement;
@@ -161,7 +161,7 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 							pTools.getKeywParser("as", PLUGIN_NAME),
 							idParser,
 							pTools.getKeywParser("do", PLUGIN_NAME),
-							ruleParser).optional(),
+							ruleParser).optional(null),
 					}).map(
 					new SignalRuleParseMap());
 
@@ -402,8 +402,9 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	    public SignalRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new SignalRuleNode(((Node)v[0]).getScannerInfo());
 
@@ -436,8 +437,9 @@ public class SignalsPlugin extends Plugin implements ParserPlugin,
 	    public OnSignalRuleParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			ASTNode node = new OnSignalRuleNode(((Node)v[0]).getScannerInfo());
 			addChildren(node, v);
 			return node;

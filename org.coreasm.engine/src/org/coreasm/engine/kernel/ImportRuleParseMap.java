@@ -31,7 +31,8 @@ public class ImportRuleParseMap extends ParseMap<Object[], Node> {
 		super(Kernel.PLUGIN_NAME);
 	}
 
-	public Node map(Object[] v) {
+	@Override
+	public Node apply(Object[] v) {
 		Node node = new ASTNode(
 				null,
 				ASTNode.RULE_CLASS,

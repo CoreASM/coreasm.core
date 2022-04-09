@@ -13,7 +13,7 @@
  
 package org.coreasm.engine.kernel;
 
-import org.codehaus.jparsec.Parser;
+import org.jparsec.Parser;
 
 import org.coreasm.engine.interpreter.Node;
 import org.coreasm.engine.plugin.PluginServiceInterface;

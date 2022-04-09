@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
-import org.codehaus.jparsec.Token;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
+import org.jparsec.Token;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.modularity.CompilerModularityPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
@@ -188,7 +188,7 @@ public class ModularityPlugin extends Plugin implements ParserPlugin,
 					stringParser
 			}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 				@Override
-				public Node map(Object[] from) {
+				public Node apply(Object[] from) {
 					int index = -1;
 					if (from[0]!=null && from[0] instanceof Token)
 						index = ((Token)from[0]).index();

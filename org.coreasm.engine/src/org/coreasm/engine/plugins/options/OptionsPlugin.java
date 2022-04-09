@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.options.CompilerOptionsPlugin;
 import org.coreasm.engine.CoreASMEngine.EngineMode;
@@ -143,7 +143,8 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							String str = objectToString(vals);
 							return new ASTNode(
 									PLUGIN_NAME,
@@ -190,11 +191,12 @@ public class OptionsPlugin extends Plugin implements ParserPlugin,
 				new Parser[] {
 					pTools.getKeywParser("option", PLUGIN_NAME),
 					optionNameParser,
-					pTools.seq(termParser.optional()).optional(),
+					pTools.seq(termParser.optional(null)).optional(null),
 				}).map(
 				new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-					public Node map(Object[] vals) {
+					@Override
+					public Node apply(Object[] vals) {
 						Node node = new OptionNode(((Node)vals[0]).getScannerInfo());
 						addChildren(node, vals);
 						return node;

@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.extendrule.CompilerExtendRulePlugin;
 import org.coreasm.engine.VersionInfo;
@@ -179,7 +179,8 @@ public class ExtendRulePlugin extends Plugin implements ParserPlugin, Interprete
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			Node node = new ExtendRuleNode(((Node)vals[0]).getScannerInfo());
 			addChildren(node, vals);
 			return node;

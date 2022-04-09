@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.chooserule.CompilerChooseRulePlugin;
 import org.coreasm.engine.ControlAPI;
@@ -139,13 +139,13 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 							termParser)),
 					npTools.seq(
 							npTools.getKeywParser("with", PLUGIN_NAME),
-							guardParser).optional(),
+							guardParser).optional(null),
 					npTools.getKeywParser("do", PLUGIN_NAME),
 					ruleParser, 
 					npTools.seq(
 							npTools.getKeywParser("ifnone", PLUGIN_NAME),
-							ruleParser).optional(),
-					npTools.getKeywParser("endchoose", PLUGIN_NAME).optional()).map(
+							ruleParser).optional(null),
+					npTools.getKeywParser("endchoose", PLUGIN_NAME).optional(null)).map(
 					new ChooseParseMap());
 			parsers.put("Rule", 
 					new GrammarRule("Rule",
@@ -161,10 +161,11 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 						termParser,
 						npTools.seq(
 								npTools.getKeywParser("with", PLUGIN_NAME),
-								termParser).optional()
+								termParser).optional(null)
 					}).map(
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+					    @Override
+						public Node apply(Object[] vals) {
 							Node node = new PickExpNode(((Node)vals[0]).getScannerInfo());
 							addChildren(node, vals);
 							return node;
@@ -729,8 +730,9 @@ public class ChooseRulePlugin extends Plugin implements ParserPlugin,
 	    public ChooseParseMap() {
 			super(PLUGIN_NAME);
 		}
-		
-		public Node map(Object[] v) {
+
+		@Override
+		public Node apply(Object[] v) {
 			nextChildName = "alpha";
 			ASTNode node = new ChooseRuleNode(((Node)v[0]).getScannerInfo());
 

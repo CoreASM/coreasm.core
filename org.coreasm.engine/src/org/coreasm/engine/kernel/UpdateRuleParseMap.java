@@ -28,7 +28,8 @@ public class UpdateRuleParseMap extends ParseMap<Object[], Node> {
 		super(Kernel.PLUGIN_NAME);
 	}
 
-	public Node map(Object[] v) {
+	@Override
+	public Node apply(Object[] v) {
 		Node node = new UpdateRuleNode(((Node)v[0]).getScannerInfo());
 		
 		for (int i=0; i < v.length; i++) {

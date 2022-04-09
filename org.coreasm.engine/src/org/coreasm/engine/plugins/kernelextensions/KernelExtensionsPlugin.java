@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.kernelextensions.CompilerKernelExtensionsPlugin;
 import org.coreasm.engine.EngineTools;
@@ -143,7 +143,8 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
        				tupleTermParser
        				}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+       					@Override
+						public Node apply(Object[] vals) {
 							Node node = new ExtendedFunctionRuleTermNode(((Node)vals[0]).getScannerInfo());
 							addChild(node, (new FunctionRuleTermParseMap()).map((Node)vals[0], (Node)vals[1]));
 							for (Node n: ((Node)vals[2]).getChildNodes())
@@ -164,7 +165,8 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
        				pTools.getOprParser(")"),
        				tupleTermParser
        				}).map( new ParserTools.ArrayParseMap(PLUGIN_NAME) {
-						public Node map(Object[] vals) {
+       					@Override
+						public Node apply(Object[] vals) {
 							Node node = new ExtendedFunctionRuleTermNode(((Node)vals[0]).getScannerInfo());
 							for (int i = 0; i < 3; i++)
 								if (vals[i] != null)
@@ -190,7 +192,8 @@ public class KernelExtensionsPlugin extends Plugin implements ParserPlugin, Inte
 					}).map( 
 					new ParserTools.ArrayParseMap(PLUGIN_NAME) {
 
-						public Node map(Object[] vals) {
+						@Override
+						public Node apply(Object[] vals) {
 							Node node = new ExtendedRuleCallNode(((Node)vals[0]).getScannerInfo());
 							addChild(node, (Node)vals[0]);
 							for (NameNodeTuple nt: ((Node)vals[1]).getChildNodesWithNames())

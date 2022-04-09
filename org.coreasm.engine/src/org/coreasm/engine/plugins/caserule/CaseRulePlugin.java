@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.codehaus.jparsec.Parser;
-import org.codehaus.jparsec.Parsers;
+import org.jparsec.Parser;
+import org.jparsec.Parsers;
 import org.coreasm.compiler.interfaces.CompilerPlugin;
 import org.coreasm.compiler.plugins.caserule.CompilerCaseRulePlugin;
 import org.coreasm.engine.VersionInfo;
@@ -197,7 +197,8 @@ public class CaseRulePlugin extends Plugin
 			super(PLUGIN_NAME);
 		}
 
-		public Node map(Object[] vals) {
+		@Override
+		public Node apply(Object[] vals) {
 			nextChildName = "alpha";
             Node node = new CaseRuleNode(((Node)vals[0]).getScannerInfo());
             addChildren(node, vals);
